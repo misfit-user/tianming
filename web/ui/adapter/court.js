@@ -12,10 +12,10 @@ import { claimOverlays, legacyMutation } from './kernel.js';
 const w = window;
 const G = () => w.GM || {};
 const $ = (id) => document.getElementById(id);
-const EMOJI = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{2190}-\u{21FF}\u{25A0}-\u{25FF}]/gu;
+const EMOJI = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{2190}-\u{21FF}\u{25A0}-\u{25FF}\u{22EF}]/gu;
 // 去表情、并空白；汉字之间的空格（老界面为排版插的，如「准 奏」）去掉
 // 内核朝议文案偶夹英文数值名（如廷议预审「奏者 prestige-2」），照游戏里的叫法译过来
-const clean = (s) => String(s || '').replace(EMOJI, '').replace(/prestige\s*/gi, '声望').replace(/\s+/g, ' ').replace(/(?<=[\u3400-\u9fff\u3000-\u303f\uff00-\uffef·])\s+(?=[\u3400-\u9fff\u3000-\u303f\uff00-\uffef·])/g, '').trim();
+const clean = (s) => String(s || '').replace(EMOJI, '').replace(/prestige\s*/gi, '声望').replace(/\bloyalty\s*/gi, '忠诚').replace(/\bblocked\b\s*/gi, '不行').replace(/\s*(?<![A-Za-z])[XYZ](?![A-Za-z])\s*/g, '某').replace(/\s+/g, ' ').replace(/(?<=[\u3400-\u9fff\u3000-\u303f\uff00-\uffef·])\s+(?=[\u3400-\u9fff\u3000-\u303f\uff00-\uffef·])/g, '').trim();
 const hidden = (el) => !!el.closest('[style*="display:none"], [style*="display: none"]');
 
 export const MODES = [['changchao', '常朝', '例行朝参，多事并奏', 10], ['tinyi', '廷议', '集议一桩大政，群臣各陈可否', 15], ['yuqian', '御前会议', '屏退宫人，密召心腹议机要', 10]];
@@ -110,9 +110,12 @@ function control(b) {
   const on = b.getAttribute('onclick') || '';
   const cls = String(b.className || '');
   const kids = [...b.children].filter((k) => clean(k.textContent));
+  const hint = b.querySelector(':scope > .hint');
+  const bare = hint ? b.cloneNode(true) : null;
+  if (bare) bare.querySelector(':scope > .hint').remove();
   // 「朕欲插言续议」之类签上只写所做之事（竖签六字比旁签高出一截）
-  const label = (kids.length > 1 ? clean(kids[0].textContent) : clean(b.textContent)).replace(/^朕欲(?=\S{2})/, '');
-  const note = kids.length > 1 ? kids.slice(1).map((k) => clean(k.textContent)).filter(Boolean).join('·') : '';
+  const label = (bare ? clean(bare.textContent) : kids.length > 1 ? clean(kids[0].textContent) : clean(b.textContent)).replace(/^朕欲(?=\S{2})/, '');
+  const note = hint ? clean(hint.textContent) : kids.length > 1 ? kids.slice(1).map((k) => clean(k.textContent)).filter(Boolean).join('·') : '';
   return { id: idOf(b), label, key: callOf(on) || label, title: clean([note, b.title || ''].filter(Boolean).join('　')), go: /\bprimary\b|\bbp\b|\bkey\b/.test(cls), danger: /danger|vermillion/.test(cls + (b.getAttribute('style') || '')),
     muted: /\bmuted\b/.test(cls), prompts: PROMPTS.test(on), ask: (on.match(/_yq2_askAdvisor\(\s*'([^']+)'/) || [])[1] || '' };
 }
@@ -152,13 +155,14 @@ function setupOf(bg, pre) {
 }
 
 // ---------- 读：浮层（菜单、二级输入、散朝总结） ----------
+const MENU_TITLE = { 'more-popover': '更多', 'strict-queue-popover': '诸臣请奏' };
 function overlayOf() {
   const modal = document.querySelector('.cy-input-modal');
   if (modal) {
     const field = modal.querySelector('#modal-input');
     const title = clean((modal.querySelector('h3, h4, .title, .cy-input-title') || {}).textContent || modal.textContent.split('\n')[0]);
     return {
-      type: 'input', id: idOf(modal), title,
+      type: 'input', id: idOf(modal), title, hint: clean((modal.querySelector('.hint') || {}).textContent || ''),
       field: field ? { tag: field.tagName.toLowerCase(), value: field.value || '', placeholder: field.placeholder || '', options: field.tagName === 'SELECT' ? [...field.options].map((o) => ({ value: o.value, label: clean(o.textContent) })) : [] } : null,
       ok: $('modal-ok') ? idOf($('modal-ok')) : '', cancel: $('modal-cancel') ? idOf($('modal-cancel')) : ''
     };
@@ -166,15 +170,27 @@ function overlayOf() {
   const sum = document.querySelector('.cy-summary-mask');
   if (sum) {
     const copy = sum.cloneNode(true);
-    copy.querySelectorAll('button').forEach((b) => b.remove());
-    return { type: 'summary', id: idOf(sum), text: String(copy.innerText || copy.textContent || '').replace(/\n{3,}/g, '\n\n').trim(), buttons: [...sum.querySelectorAll('button')].filter((b) => clean(b.textContent)).map(control) };
+    copy.querySelectorAll('button, .skip-row').forEach((b) => b.remove());
+    // 准、驳、留各几事，一事一行的裁处：读成结构；读不出来才退回整段文字
+    const pills = [...sum.querySelectorAll('.tally-pill')].map((t) => { const m = clean(t.textContent).match(/^(\S+?)\s*(\d+)$/); return m ? { label: m[1], n: +m[2] } : null; }).filter(Boolean);
+    const tally = sum.querySelector('.cy-summary-tally');
+    const rows = tally ? [...tally.querySelectorAll('div > span:last-child')].filter((v) => v.previousElementSibling && !v.classList.contains('tally-pill')) : [];
+    const items = rows.map((v) => ({ title: clean(v.previousElementSibling.textContent).replace(/^\d+[.、．]\s*/, ''), verdict: clean(v.textContent) }));
+    const extra = tally ? [...tally.querySelectorAll(':scope > div')].map((d) => (!d.querySelector('.tally-pill') && !d.querySelector('span') ? clean(d.textContent).replace(/\s*·\s*$/, '') : '')).filter(Boolean).join('　') : '';
+    return { type: 'summary', id: idOf(sum), text: String(copy.innerText || copy.textContent || '').replace(/\n{3,}/g, '\n\n').trim(), pills, items, extra, buttons: [...sum.querySelectorAll('button')].filter((b) => clean(b.textContent)).map(control) };
   }
   const pop = document.querySelector('.cy-popover.show, #strict-queue-popover');
   if (pop && pop.querySelector('button')) {
     const btns = [...pop.querySelectorAll('button')].filter((b) => clean(b.textContent));
     const copy = pop.cloneNode(true);
     copy.querySelectorAll('button').forEach((b) => b.remove());
-    return { type: 'menu', id: idOf(pop), title: clean(copy.textContent).slice(0, 40), buttons: btns.map(control) };
+    const tierEl = pop.querySelector('.tier-preview');
+    const tierRows = tierEl ? [...tierEl.children].map((k) => clean(k.textContent)) : [];
+    const title = pop.classList.contains('jinkou') ? '金口' : MENU_TITLE[pop.id] || clean(copy.textContent).slice(0, 8) || '择一';
+    // 老菜单用分隔线分段：线后第一项记一笔，新卷里也隔开
+    const buttons = btns.map((b) => ({ ...control(b), sep: !!(b.previousElementSibling && b.previousElementSibling.classList.contains('cy-popover-divider')) }));
+    return { type: 'menu', id: idOf(pop), title, buttons,
+      tier: tierRows.length ? { name: (tierRows[0] || '').replace(/^当前预测\s*·?\s*/, ''), stats: tierRows[1] || '', desc: tierRows[2] || '' } : null };
   }
   const layers = [...document.querySelectorAll('body > div[id^="ty3-"][id$="-bg"]'), ...[...extras].filter((n) => n.isConnected)];
   const layer = layers[layers.length - 1];
@@ -274,6 +290,44 @@ export function submit(values, buttonId, text) {
   press(buttonId, text);
 }
 
+// ---------- 读：常朝的议程与时段 ----------
+// 议程的老元素 #cc-agenda 内核从未建过（列表函数一进门就退），议程只在内核的 AGENDA 与 state 里。
+// 这两个是脚本顶层的 const：不在 window 上，要写裸名才够得着；常朝脚本没载到时 typeof 不抛错
+function agendaOf() {
+  const list = typeof AGENDA !== 'undefined' && Array.isArray(AGENDA) ? AGENDA : [];
+  const st = typeof state !== 'undefined' && state && state.mode ? state : null;
+  if (!list.length || !st) return null;
+  const cur = Math.max(0, Math.min(list.length - 1, Number(st.currentIdx) || 0));
+  return { cur, done: (st.decisions || []).length, total: list.length, over: st.phase === 'closing' || !!st.done,
+    items: list.map((it, i) => ({ title: clean((it && (it.title || it.presenter)) || '议题'), presenter: clean((it && it.presenter) || ''), urgent: !!it && it.urgency === 'urgent',
+      state: i < cur ? 'done' : i === cur ? 'cur' : 'wait' })) };
+}
+function phaseOf(root) {
+  const label = root.querySelector('#cy-phase-label');
+  const hint = root.querySelector('#cy-phase-hint');
+  return { label: clean(label ? label.textContent : '').replace(/[【】\s]/g, ''), hint: clean(hint ? hint.textContent : '') };
+}
+// 分班：内核只分三列，提督东厂的太监算进武列、锦衣卫算进文列；这里照职衔再认一遍，内廷单列
+const BANDS = ['文班', '武班', '科道', '内廷'];
+function bandOf(colId, title) {
+  if (/太监|司礼监|内官|内臣|中官|近侍|内侍/.test(title)) return '内廷';
+  if (colId === 'bench-kdao') return '科道';
+  if (/尚书|侍郎|大学士/.test(title)) return '文班';
+  return colId === 'bench-west' || /锦衣|指挥使|镇抚|都统|统制|节度使|招讨/.test(title) ? '武班' : '文班';
+}
+const SEATS = [['left', '左班'], ['center', '中班'], ['right', '右班']];
+
+// 名字查人：画面上的立轴、名牌、朝班小像都从这里取。查不到的（内侍、外来者）只给名字
+export function person(name) {
+  const c = typeof w.findCharByName === 'function' ? w.findCharByName(name) : null;
+  if (!c) return { name, title: '', party: '', rank: '', portrait: '', loyalty: null, known: false };
+  let rank = '';
+  try { rank = typeof w._cyGetRank === 'function' ? w._cyGetRank(c) || '' : ''; } catch (_e) { rank = ''; }
+  const workshop = w.TM && w.TM.WorkshopAssets && w.TM.WorkshopAssets.portraitFor;
+  return { name, title: clean(c.officialTitle || c.title || ''), party: /^(无|无党|中立)?$/.test(String(c.party || '')) ? '' : String(c.party), rank: typeof rank === 'string' ? rank : '',
+    portrait: c.portrait || (workshop ? workshop(name) || '' : ''), loyalty: Number.isFinite(Number(c.loyalty)) ? Math.round(Number(c.loyalty)) : null, known: true };
+}
+
 // ---------- 快照 ----------
 export function snapshot() {
   const stage = $('cy-stage'), modal = $('chaoyi-modal'), ty = $('ty2-setup-bg'), yq = $('yq2-setup-bg');
@@ -284,29 +338,40 @@ export function snapshot() {
   const kind = stage ? 'changchao' : CY.mode === 'yuqian' ? 'yuqian' : 'tinyi';
   const root = stage || modal;
   const setup = ty ? setupOf(ty, 'ty2') : yq ? setupOf(yq, 'yq2') : null;
-  let topic = '', progress = '', roster = [];
+  let topic = '', progress = '', roster = [], agenda = null, phase = null, absent = 0, secret = false;
   if (kind === 'changchao') {
-    const cur = root.querySelector('#cc-agenda .cc-ag-item.cur .cc-ag-ti');
-    topic = cur ? clean(cur.textContent) : '';
-    const head = root.querySelector('#cc-agenda .cc-ag-h');
-    progress = head ? clean(head.textContent).replace(/^本日议程·?/, '') : '';
-    roster = [...root.querySelectorAll('.bench-avatar[data-name]')].filter((a) => !a.classList.contains('absent')).map((a) => {
+    agenda = root ? agendaOf() : null;
+    phase = root ? phaseOf(root) : null;
+    topic = agenda && !agenda.over ? agenda.items[agenda.cur].title : '';
+    absent = root ? root.querySelectorAll('.bench-avatar.absent').length : 0;
+    roster = root ? [...root.querySelectorAll('.bench-avatar[data-name]')].filter((a) => !a.classList.contains('absent')).map((a) => {
       const t = String(a.getAttribute('title') || '');
-      return { name: a.dataset.name, title: clean(t.split('·').slice(1).join('·').replace(/\(.*\)$/, '')) };
-    });
+      const col = a.closest('#bench-east, #bench-west, #bench-kdao');
+      const img = a.querySelector('img');
+      const title = clean(t.split('·').slice(1).join('·').replace(/\(.*\)$/, ''));
+      return { name: a.dataset.name, title, group: bandOf(col ? col.id : '', title), portrait: img ? img.getAttribute('src') || '' : '' };
+    }).map((r, i) => [r, i]).sort((a, b) => BANDS.indexOf(a[0].group) - BANDS.indexOf(b[0].group) || a[1] - b[1]).map(([r]) => r) : [];
   } else if (CY._ty2) {
     topic = CY._ty2.topic || '';
     progress = CY._ty2.roundNum ? `第${CY._ty2.roundNum}轮` : '';
-    roster = (CY._ty2.attendees || []).map((n) => ({ name: n, stance: STANCE[((CY._ty2.stances || {})[n] || {}).current] || ((CY._ty2.stances || {})[n] || {}).current || '' }));
+    // 三班站定后按班列名（左、中、右）：与起议站班那一卷同一个分法
+    const seat = new Map();
+    const bench = CY._ty3 && CY._ty3.bench;
+    if (bench) for (const [k, label] of SEATS) for (const it of Array.isArray(bench[k]) ? bench[k] : []) if (it && it.name) seat.set(it.name, label);
+    const order = (r) => { const i = SEATS.findIndex(([, label]) => label === r.group); return i < 0 ? SEATS.length : i; };
+    roster = (CY._ty2.attendees || []).map((n) => ({ name: n, group: seat.get(n) || '', stance: STANCE[((CY._ty2.stances || {})[n] || {}).current] || ((CY._ty2.stances || {})[n] || {}).current || '' }));
+    if (seat.size) roster = roster.map((r, i) => [r, i]).sort((a, b) => order(a[0]) - order(b[0]) || a[1] - b[1]).map(([r]) => r);
   } else if (CY._yq2) {
+    secret = CY._yq2.record === 'secret';
     topic = CY._yq2.topic || '';
     roster = (CY._yq2.advisors || []).map((n) => ({ name: n, stance: ((CY._yq2.opinions || {})[n] || {}).stance || '', candor: Math.round(((CY._yq2.opinions || {})[n] || {}).candor || 0) }));
   }
-  const inputOpen = kind === 'changchao' ? !!(root && root.querySelector('#cy-player-input')) : !!($('cy-input-row') && !/none/.test($('cy-input-row').style.display || ''));
+  const noItem = kind === 'changchao' && (!agenda || agenda.over);
+  const inputOpen = kind === 'changchao' ? !!(root && root.querySelector('#cy-player-input')) && !noItem : !!($('cy-input-row') && !/none/.test($('cy-input-row').style.display || ''));
   return {
-    open: true, lingering: !root && !setup, kind, setup, topic, progress, roster,
+    open: true, lingering: !root && !setup, kind, setup, topic, progress, roster, agenda, phase, absent, secret,
     entries: root && !setup ? (kind === 'changchao' ? ccEntries(root) : cyEntries(root)) : [],
-    controls: root && !setup ? controlsOf(kind, root) : [],
+    controls: root && !setup ? controlsOf(kind, root).filter((c) => !(noItem && c.label === '金口')) : [],
     status: root && !setup ? statusOf(kind, root) : '',
     input: inputOpen, overlay: overlayOf()
   };
@@ -335,9 +400,21 @@ function stop() {
 }
 
 // ---------- 动作 ----------
+// 有的剧本把党派的 policyStance 写成一句话（晚唐）。内核别处两种写法都认，唯独廷议两处（起议站班时算议题立场、议题提示）
+// 当数组用，一抛整场廷议起不来。内核共用不动，开议前切成标签——数组本来就是它的正式写法
+function tidyParties() {
+  const list = G().parties;
+  if (!Array.isArray(list)) return;
+  for (const p of list) {
+    const raw = p && p.policyStance;
+    if (!raw || Array.isArray(raw)) continue;
+    p.policyStance = typeof raw === 'string' ? raw.split(/[、，,；;／/\s]+/).filter(Boolean) : Object.values(raw).map(String);
+  }
+}
 // 开议：同老卡片的路子（openChaoyi 建宿主，_cy_pickMode 过精力、次数关）
 export function begin(mode, { topic = '' } = {}) {
   if (typeof w.openChaoyi !== 'function' || typeof w._cy_pickMode !== 'function') throw new Error('内核缺 openChaoyi / _cy_pickMode');
+  tidyParties();
   active = true;
   watch();
   if (!$('chaoyi-modal') && !$('cy-stage')) w.openChaoyi();
@@ -358,6 +435,7 @@ export function postTurn() {
   const g = w.GM;
   if (!g || !g._isPostTurnCourt) return false;
   if (typeof w._cc3_open !== 'function') throw new Error('内核缺 _cc3_open');
+  tidyParties();
   active = true;
   watch();
   if (!g._chaoyiCount) g._chaoyiCount = {};
@@ -424,6 +502,11 @@ export function cancelSetup() {
   if (yq) yq.remove();
   close();
 }
+// 径自收起菜单：金口是临时挂上的，更多是挂着 .show
+export function dismissMenu() {
+  document.querySelectorAll('.cy-popover.jinkou').forEach((p) => p.remove());
+  document.querySelectorAll('.cy-popover.show').forEach((p) => p.classList.remove('show'));
+}
 // 退朝：常朝 _cc3_close，廷议御前 closeChaoyi
 export function close() {
   if ($('cy-stage') && typeof w._cc3_close === 'function') w._cc3_close();
@@ -440,6 +523,7 @@ export function todayCount() {
 // 时政「御前召对群臣」：内核把议题记入待议，开廷议筹备并填好议题（_shizhengConvene）
 export function convene(issueId) {
   if (typeof w._shizhengConvene !== 'function') throw new Error('内核缺 _shizhengConvene');
+  tidyParties();
   active = true;
   watch();
   w._shizhengConvene(issueId);

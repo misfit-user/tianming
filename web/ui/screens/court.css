@@ -3,22 +3,65 @@
 html.tm-newui body > div#chaoyi-modal, html.tm-newui body > div#cy-stage, html.tm-newui body > div#ty2-setup-bg, html.tm-newui body > div#yq2-setup-bg {
   display: flex !important; position: fixed !important; left: -300vw !important; top: 0 !important; width: 1200px !important; height: 860px !important;
   opacity: 0 !important; pointer-events: none !important; }
-/* 见：朝议。景同召对（压暗两侧）；左列朝班，右展实录（沿用召对的 .au-rec / .au-flow），案底签与插言 */
-.scr-court { z-index: 8; }
+/* 见：朝议。景同召对（压暗两侧）；左列朝班，中挂出班者立轴，右展实录（沿用召对的 .au-rec / .au-flow），案底签与插言 */
+.scr-court { z-index: 8; --ct-rec-w: min(56vw, 66rem); --ct-left: calc(2.25rem + 15.5rem); --ct-top: 6.25rem; --ct-foot: 12rem;
+  /* 朝班与实录之间这块空当：轴按它算，宽够高不够的窗口以高为准；轴下紧跟名牌，三栏上下齐平 */
+  --ct-gap-w: calc(100vw - var(--ct-left) - 3rem - 2.25rem - var(--ct-rec-w)); --ct-gap-h: calc(100vh - var(--ct-top) - var(--ct-foot)); --ct-plate-h: 8.5rem;
+  --ct-zhou-w: min(var(--ct-gap-w), calc((var(--ct-gap-h) - .875rem - var(--ct-plate-h)) * .75)); }
 .scr-court::before { content: ''; position: fixed; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, rgba(12, 6, 3, .62), rgba(12, 6, 3, .12) 22%, rgba(12, 6, 3, .1) 40%, rgba(12, 6, 3, .6) 54%), linear-gradient(0deg, rgba(12, 6, 3, .72), rgba(12, 6, 3, 0) 26%); }
+  background: linear-gradient(90deg, rgba(12, 6, 3, .66), rgba(12, 6, 3, .3) 20%, rgba(12, 6, 3, .3) 40%, rgba(12, 6, 3, .62) 54%), linear-gradient(0deg, rgba(12, 6, 3, .76), rgba(12, 6, 3, 0) 26%); }
 .scr-court .crumb { position: fixed; left: 1.875rem; top: 1.625rem; display: flex; align-items: baseline; gap: .875rem; padding: .375rem .875rem; }
 .scr-court .crumb b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .2em; }
 .scr-court .crumb small { font-size: var(--fs-1); letter-spacing: .2em; color: var(--ivory-soft); }
-.scr-court .back { position: fixed; right: 1.875rem; top: 1.625rem; padding: .5rem 1.125rem .4375rem; }
-.ct-topic { position: fixed; left: 50%; top: 1.875rem; transform: translateX(-50%); max-width: 46rem; padding: .375rem 1.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font: var(--fs-4) var(--f-kai); letter-spacing: .14em; color: #f9ead2; background: linear-gradient(180deg, rgba(120, 30, 18, .88), rgba(80, 18, 10, .88)); box-shadow: var(--sh-lift); }
+/* 退朝牌的底贴着实录上沿：小窗口字号有下限，牌子变高也往上长，不压纸 */
+.scr-court .back { position: fixed; right: 1.875rem; bottom: calc(100vh - var(--ct-top) + .1875rem); padding: .5rem 1.125rem .4375rem; }
+/* 议题签：朱漆一条，贴着实录的左上角垂下来；常朝带本日议程的小点，指上去看全 */
+.ct-topic { position: fixed; left: calc(100vw - 2.25rem - var(--ct-rec-w)); top: calc(var(--ct-top) - 2.75rem); height: 2.75rem; box-sizing: border-box; max-width: calc(var(--ct-rec-w) - 12.5rem); padding: 0 1.125rem;
+  display: flex; align-items: center; gap: .75rem; white-space: nowrap;
+  font: var(--fs-4)/1.5 var(--f-kai); letter-spacing: .12em; color: #f9ead2; background: linear-gradient(180deg, #8c2416, #6a1a0e); box-shadow: 0 .375rem .875rem rgba(10, 5, 2, .5), inset 0 0 0 1px rgba(236, 210, 154, .35); }
 .ct-topic[hidden] { display: none; }
+.ct-topic > small { flex: none; font: var(--fs-2)/1.75 var(--f-title); letter-spacing: .2em; color: var(--gold-hi); }
+.ct-topic > span:not(.ct-pips) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ct-pips { flex: none; display: inline-flex; align-items: center; gap: .3125rem; margin-left: .25rem; }
+.ct-pips:empty { display: none; }
+.ct-pips i { width: .4375rem; height: .4375rem; transform: rotate(45deg); box-shadow: inset 0 0 0 1px rgba(236, 210, 154, .7); }
+.ct-pips i.done { background: rgba(236, 210, 154, .62); }
+.ct-pips i.cur { background: var(--gold-hi); box-shadow: 0 0 .375rem rgba(255, 225, 160, .85); }
+.ct-agenda { display: flex; flex-direction: column; gap: .25rem; min-width: 16rem; }
+.ct-agenda > b { font-weight: 400; letter-spacing: .1em; }
+.ct-agenda p { display: flex; align-items: baseline; gap: .5rem; margin: 0; }
+.ct-agenda p em { flex: none; font-style: normal; font-size: .85em; opacity: .7; }
+.ct-agenda p.cur span { color: var(--gold-hi); }
+.ct-agenda p.done span { opacity: .6; }
+.ct-agenda p i { flex: none; font-style: normal; font-size: .85em; color: #f0a080; }
 
-/* 朝班 */
-.ct-roster { position: fixed; left: 2.25rem; top: 6.25rem; bottom: 12rem; width: 15.5rem; padding: .625rem .75rem .75rem; display: flex; flex-direction: column; }
-.ct-roster-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .125rem; }
-.ct-mem { display: flex; align-items: baseline; gap: .375rem; padding: .25rem .375rem; border-left: 2px solid transparent; color: var(--ivory); font-family: var(--f-kai); }
+/* 朝班：分班列名，一人一枚小像；正说话的描金、已表态的亮一点，脚下一道众议之潮 */
+.ct-roster { position: fixed; left: 2.25rem; top: var(--ct-top); bottom: var(--ct-foot); width: 15.5rem; box-sizing: border-box; padding: .625rem .75rem .75rem; display: flex; flex-direction: column; }
+.ct-roster-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .0625rem; }
+.ct-band { position: sticky; top: 0; z-index: 1; flex: none; display: flex; align-items: baseline; justify-content: space-between; margin: 0; padding: .3125rem .375rem .1875rem; font: 400 var(--fs-2) var(--f-title); letter-spacing: .3em; color: var(--gold);
+  background: #26170f; }
+.ct-band small { font: var(--fs-1) var(--f-kai); letter-spacing: .08em; color: var(--ivory-soft); }
+.ct-mem { flex: none; display: flex; align-items: baseline; gap: .375rem; padding: .25rem .375rem; border: 0; border-left: 2px solid transparent; background: none; text-align: left; color: var(--ivory); font-family: var(--f-kai); }
+button.ct-mem { align-items: center; padding: .1875rem .375rem; cursor: pointer; color: rgba(236, 224, 202, .78); transition: background var(--t-1, .12s); }
+button.ct-mem:hover { background: rgba(255, 230, 190, .07); color: var(--ivory); }
+button.ct-mem.spoke { color: var(--ivory); }
+.ct-face { flex: none; display: grid; place-items: center; width: 1.625rem; height: 1.625rem; border-radius: 50%; overflow: hidden; background: var(--face-blank); box-shadow: 0 0 0 1px rgba(201, 164, 92, .5); }
+.ct-face img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
+.ct-face i { font: normal var(--fs-1) var(--f-title); color: rgba(236, 210, 154, .75); }
+button.ct-mem.speaking .ct-face { box-shadow: 0 0 0 1.5px var(--gold-hi), 0 0 .5rem rgba(255, 220, 150, .6); }
+button.ct-mem .ct-st { margin-left: auto; }
+.ct-mem-who { min-width: 0; display: flex; flex-direction: column; }
+.ct-mem small.ct-mem-sub { display: none; margin: 0; }
+.ct-mem small.ct-mem-note { flex: none; margin-left: auto; color: var(--ivory-soft); }
+.ct-mem small.ct-mem-note:empty { display: none; }
+.ct-mem small.ct-mem-note:not(:empty) + .ct-st { margin-left: 0; }
+/* 人少的朝班：一人一张名片 */
+.ct-roster.few .ct-roster-list { gap: .25rem; }
+.ct-roster.few button.ct-mem { gap: .625rem; padding: .375rem .5rem; }
+.ct-roster.few .ct-face { width: 2.75rem; height: 2.75rem; }
+.ct-roster.few .ct-mem small.ct-mem-sub { display: block; font-size: var(--fs-1); color: var(--ivory-soft); -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-roster.few .ct-mem b { font-size: var(--fs-4); }
+.ct-st[hidden] { display: none; }
 /* 名字不折（职衔长的人原先名字被挤成一字一行）；职衔至多两行、悬停看全 */
 .ct-mem b { flex: none; white-space: nowrap; font-weight: 400; font-size: var(--fs-3); letter-spacing: .06em; }
 .ct-mem small { margin-left: auto; min-width: 0; font-size: var(--fs-1); color: var(--ivory-soft); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
@@ -30,9 +73,66 @@ html.tm-newui body > div#chaoyi-modal, html.tm-newui body > div#cy-stage, html.t
 .ct-st.opp { color: #f0a080; }
 .ct-st.med { color: #e8c982; }
 .ct-st.neu, .ct-st.alt { color: #c9bca4; }
+/* 众议之潮 */
+.ct-tally { flex: none; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid rgba(201, 164, 92, .28); }
+.ct-tally[hidden] { display: none; }
+.ct-tally .ct-tide { height: .4375rem; box-shadow: none; }
+.ct-tide i.med { background: linear-gradient(180deg, #b48a3c, #8a6424); }
+.ct-tally p { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 .5rem; margin: .3125rem 0 0; font: var(--fs-1)/1.5 var(--f-kai); }
+.ct-tally span.sup { color: #7fc4a2; } .ct-tally span.opp { color: #f0a080; } .ct-tally span.med { color: #e8c982; } .ct-tally span.neu { color: #c9bca4; }
+
+/* 出班：朝班与实录之间挂一轴，下面一块名牌。轴的大小跟着这块空当走（宽够高不够的窗口以高为准） */
+.ct-pres { position: fixed; left: calc(var(--ct-left) + 1.5rem); right: calc(2.25rem + var(--ct-rec-w) + 1.5rem); top: var(--ct-top); bottom: var(--ct-foot); display: flex; flex-direction: column; align-items: center; gap: .875rem; }
+.ct-pres-stage { flex: none; width: var(--ct-zhou-w); height: calc(var(--ct-zhou-w) * 4 / 3 + .125rem); display: grid; place-items: start center; }
+.ct-pres-stage > .q-zhou { grid-area: 1 / 1; box-sizing: border-box; width: 100%; box-shadow: 0 1rem 2.25rem rgba(0, 0, 0, .65); }
+.ct-pres-stage > .q-zhou[data-person=''] { cursor: default; }
+.ct-pres-stage > .q-zhou:hover { transform: none; }
+.ct-pres-stage > .q-zhou > figcaption { display: none; }
+.ct-pres-stage > .q-zhou.in { animation: ct-pres-in .34s var(--ease-out) both; }
+.ct-pres-stage > .q-zhou.out { animation: ct-pres-out .3s ease both; pointer-events: none; }
+@keyframes ct-pres-in { from { opacity: 0; transform: translateY(.625rem); } to { opacity: 1; transform: none; } }
+@keyframes ct-pres-out { from { opacity: 1; } to { opacity: 0; } }
+[data-motion='less'] .ct-pres-stage > .q-zhou.in, [data-motion='less'] .ct-pres-stage > .q-zhou.out { animation-duration: .01s; }
+/* 这么大一幅，粉本的线太粗陋：没有立像的（还有没人开口时的空轴）是一幅素绢，竖写名字 */
+.ct-pres-stage > .q-zhou > .face { display: grid !important; place-items: center !important; background: var(--paper-grain), linear-gradient(180deg, #ece1c8, #dccdab) !important; }
+.ct-pres-stage > .q-zhou > .face > span { writing-mode: vertical-rl; font: 400 calc(var(--ct-zhou-w) * .14) var(--f-title); letter-spacing: .3em; color: rgba(50, 30, 16, .72); }
+.ct-pres-stage > .ct-pres-empty { cursor: default; }
+.ct-pres-stage > .ct-pres-empty > .face > span { color: rgba(90, 60, 30, .3); }
+/* 立场盖成一方印 */
+.ct-pres-stamp { position: absolute; right: 6%; bottom: 4.5%; display: block; padding: .4375rem .25rem; writing-mode: vertical-rl; font: 400 var(--fs-5)/1.25 var(--f-title); letter-spacing: .08em; color: #f6e6c8; border-radius: .1875rem;
+  box-shadow: inset 0 0 0 .125rem rgba(246, 230, 200, .45), 0 .125rem .5rem rgba(20, 8, 2, .5); transform: rotate(-4deg); animation: ct-stamp .24s cubic-bezier(.2, 1.5, .4, 1) both; }
+.ct-pres-stamp.sup { background: #2f6b55; }
+.ct-pres-stamp.opp { background: #a8261a; }
+.ct-pres-stamp.med { background: #8a5a12; }
+.ct-pres-stamp.neu, .ct-pres-stamp.alt { background: #6a5a44; }
+@keyframes ct-stamp { from { opacity: 0; transform: rotate(-4deg) scale(1.5); } to { opacity: .96; transform: rotate(-4deg) scale(1); } }
+[data-motion='less'] .ct-pres-stamp { animation: none; }
+/* 名牌 */
+.ct-pres-plate { position: relative; flex: 1 1 auto; min-height: 0; max-height: 13rem; box-sizing: border-box; width: var(--ct-zhou-w); padding: .5rem .875rem; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+.ct-pres-plate h3 { margin: 0; font: 400 var(--fs-7, 1.75rem)/1.25 var(--f-title); letter-spacing: .24em; padding-left: .24em; color: var(--gold-hi); white-space: nowrap; overflow: hidden; }
+.ct-pres-sub { margin: .1875rem 0 0; font: var(--fs-2)/1.55 var(--f-kai); letter-spacing: .06em; color: var(--ivory-soft); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.ct-pres-meta { display: flex; flex-wrap: wrap; justify-content: center; gap: .125rem .5rem; margin: .25rem 0 0; font: var(--fs-1)/1.6 var(--f-kai); letter-spacing: .08em; color: #f3dcb0; }
+.ct-pres-meta:empty { display: none; }
+.ct-pres-meta span + span::before { content: '·'; margin-right: .5rem; color: rgba(201, 164, 92, .6); }
+.ct-pres.idle .ct-pres-plate h3 { color: rgba(236, 210, 154, .6); }
+.ct-pres-live { position: absolute; right: .75rem; top: .625rem; display: inline-flex; align-items: center; gap: .3125rem; font: var(--fs-1) var(--f-kai); letter-spacing: .1em; color: var(--gold-hi); opacity: 0; transition: opacity var(--t-2, .2s); }
+.ct-pres-live i { width: .375rem; height: .375rem; border-radius: 50%; background: #e0543c; box-shadow: 0 0 .375rem rgba(240, 100, 70, .9); animation: au-blink 1s steps(2) infinite; }
+.ct-pres.live .ct-pres-live { opacity: 1; }
+.ct-pres.live .ct-pres-plate { box-shadow: 0 0 1rem rgba(255, 215, 140, .28), var(--sh-lift, 0 0 0 transparent); }
 
 /* 实录 */
-.ct-rec { right: 2.25rem; width: min(56vw, 66rem); bottom: 12rem; }
+.ct-rec { right: 2.25rem; width: var(--ct-rec-w); top: var(--ct-top); bottom: var(--ct-foot); }
+/* 字滚到纸边淡出去，不是半个字切在那里 */
+.ct-flow { -webkit-mask-image: linear-gradient(90deg, transparent, #000 1rem, #000 calc(100% - 1rem), transparent); mask-image: linear-gradient(90deg, transparent, #000 1rem, #000 calc(100% - 1rem), transparent); }
+.ct-flow .au-brush { display: none; }
+.ct-flow .live .au-brush { display: inline-block; }
+.ct-flow .au-them.live { background: linear-gradient(90deg, rgba(201, 150, 60, 0), rgba(201, 150, 60, .13) 12%, rgba(201, 150, 60, .13) 88%, rgba(201, 150, 60, 0)); }
+/* 竖写的页脚细线：纸上看不见滚动条，这条告诉人翻到哪了；翻回去读旧话时有新奏亮一枚小签 */
+.ct-rail { position: absolute; left: 2.25rem; right: 2.25rem; bottom: .9375rem; height: 2px; background: rgba(120, 90, 50, .16); }
+.ct-rail[hidden] { display: none; }
+.ct-rail i { position: absolute; top: 0; bottom: 0; background: rgba(163, 40, 27, .55); }
+.ct-newer { position: absolute; left: .875rem; top: 50%; transform: translateY(-50%); padding: .625rem .25rem; border: 0; cursor: pointer; writing-mode: vertical-rl; font: var(--fs-2) var(--f-kai); letter-spacing: .2em; color: #f9ead2; background: linear-gradient(90deg, #7d1d12, #a3301f); box-shadow: 0 .25rem .75rem rgba(40, 10, 4, .5); }
+.ct-newer[hidden] { display: none; }
 .ct-flow .au-them b small { font-weight: 400; font-size: .9375rem; color: rgba(70, 46, 22, .7); }
 .ct-flow .ct-st { margin: .25em 0; font-size: calc(max(.875rem, 12px) * var(--fs-k)); }
 .ct-flow .ct-st.sup { color: #2f6b55; }
@@ -44,25 +144,50 @@ html.tm-newui body > div#chaoyi-modal, html.tm-newui body > div#cy-stage, html.t
 
 /* 案底：左一排签；右边上为状态（至多两行，悬停看全）、下为插言（科议表决时换作表决之潮）。
    原先状态压在签上头，签一多、状态一长，就顶进实录纸面，插言也给挤成一小块 */
-.ct-bar { position: fixed; right: 2.25rem; width: min(56vw, 66rem); bottom: 1.25rem; height: 10rem; display: grid; grid-template-columns: auto minmax(min(24rem, 30vw), 1fr); grid-template-rows: minmax(0, 1fr) auto;
+.ct-bar { position: fixed; right: 2.25rem; width: var(--ct-rec-w); bottom: 1.25rem; height: 10rem; display: grid; grid-template-columns: auto minmax(min(24rem, 30vw), 1fr); grid-template-rows: minmax(0, 1fr) auto;
   align-items: end; column-gap: 1.25rem; row-gap: .375rem; }
 .ct-ctl { display: contents; }
 .ct-status { grid-column: 2; grid-row: 1; margin: 0; font: var(--fs-2)/1.7 var(--f-kai); letter-spacing: .14em; color: #f3dcb0; text-shadow: 0 1px 3px #000;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .ct-status:empty { display: none; }
-.ct-slips { grid-column: 1; grid-row: 1 / 3; display: flex; align-items: flex-end; flex-wrap: wrap; gap: .75rem; }
+/* 一排签一样高（原先四字的比两字的高出一截，参差不齐） */
+.ct-slips { grid-column: 1; grid-row: 1 / 3; display: flex; align-items: stretch; flex-wrap: wrap; gap: .75rem; align-self: end; }
 .ct-bar > .ct-say, .ct-bar > .ky-tide { grid-column: 2; grid-row: 2; }
-.scr-court .slip { position: relative; width: 3rem; min-height: 5.5rem; padding: 1rem 0 .75rem; border: 0; border-radius: 0 0 .3125rem .3125rem; cursor: pointer; writing-mode: vertical-rl;
+.scr-court .slip { position: relative; width: 3rem; min-height: 5.5rem; padding: .875rem 0; text-align: center; border: 0; border-radius: 0 0 .3125rem .3125rem; cursor: pointer; writing-mode: vertical-rl;
   font: 400 var(--fs-4)/3rem var(--f-title); letter-spacing: .14em; color: var(--ink);
   background: var(--paper-grain), linear-gradient(90deg, #d8c49c, #f4ecdb 45%, #d6c298); box-shadow: 0 .5rem 1.125rem rgba(10, 5, 2, .5), inset 0 0 0 1px rgba(120, 90, 50, .4);
   transition: transform var(--t-2) var(--ease-out); }
 .scr-court .slip.go { color: #f9ead2; background: linear-gradient(90deg, #7d1d12, #b13423 45%, #7d1d12); box-shadow: 0 .625rem 1.375rem rgba(40, 10, 4, .55), inset 0 0 0 1px rgba(236, 210, 154, .6); }
 .scr-court .slip.danger { color: #8a2a1c; }
+.scr-court .slip.muted { color: var(--ink-soft); background: var(--paper-grain), linear-gradient(90deg, #c9b58c, #e2d6bc 45%, #c7b48a); }
 .scr-court .slip:hover { transform: translateY(-.25rem); }
 .ct-say { min-width: 0; display: flex; align-items: flex-end; gap: .75rem; }
 .ct-say.off { opacity: .35; pointer-events: none; }
 .ct-in { height: 4.5rem; }
 
+/* 卷：金口的皇威预测、分段的菜单 */
+.ct-menu { display: flex; flex-direction: column; gap: .875rem; }
+.ct-tier { padding: .625rem .875rem .6875rem; border-left: 3px solid #a3301f; background: rgba(163, 40, 27, .06); }
+.ct-tier b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .2em; color: #6a1f12; }
+.ct-tier small { margin-left: .75rem; font: var(--fs-2) var(--f-kai); color: var(--ink-faint); }
+.ct-tier p { margin: .25rem 0 0; font: var(--fs-2)/1.7 var(--f-kai); color: var(--ink-soft); }
+.au-pick-row.sep { margin-top: .625rem; }
+/* 卷：散朝 */
+.ct-sum { display: flex; flex-direction: column; gap: 1rem; }
+.ct-sum-pills { display: flex; justify-content: center; gap: 2.25rem; padding: .25rem 0 .75rem; border-bottom: 1px solid rgba(163, 40, 27, .35); }
+.ct-sum-pill { display: flex; flex-direction: column; align-items: center; gap: .125rem; }
+.ct-sum-pill b { font: 400 var(--fs-7, 1.75rem)/1.2 var(--f-title); }
+.ct-sum-pill small { font: var(--fs-2) var(--f-kai); letter-spacing: .2em; color: var(--ink-faint); }
+.ct-sum-pill.sup b, .ct-sum-list em.sup { color: #2f6b55; }
+.ct-sum-pill.opp b, .ct-sum-list em.opp { color: #a8261a; }
+.ct-sum-pill.med b, .ct-sum-list em.med { color: #8a5a12; }
+.ct-sum-pill.neu b, .ct-sum-list em.neu { color: #6a5a44; }
+.ct-sum-extra { margin: -.375rem 0 0; text-align: center; font: var(--fs-2) var(--f-kai); letter-spacing: .1em; color: var(--ink-soft); }
+.ct-sum-list { margin: 0; padding: 0; list-style: none; counter-reset: ct-sum; }
+.ct-sum-list li { counter-increment: ct-sum; display: flex; align-items: baseline; gap: 1rem; padding: .375rem .25rem; border-bottom: 1px solid rgba(163, 40, 27, .16); font: var(--fs-3)/1.6 var(--f-kai); color: var(--ink); }
+.ct-sum-list li::before { content: counter(ct-sum, cjk-decimal); flex: none; width: 1.5em; color: var(--ink-faint); }
+.ct-sum-list li span { flex: 1; min-width: 0; }
+.ct-sum-list li em { flex: none; font: normal var(--fs-4) var(--f-title); letter-spacing: .1em; }
 /* 卷：筹备、散朝 */
 .ct-setup { display: flex; flex-direction: column; gap: .75rem; }
 .ct-setup label, .ct-row { display: flex; align-items: center; gap: .875rem; }
@@ -138,3 +263,15 @@ html.tm-newui body > div#chaoyi-modal, html.tm-newui body > div#cy-stage, html.t
 .ct-bench .au-none { margin: 0; }
 .ct-field.long { flex-direction: column; align-items: stretch; gap: .375rem; }
 .ct-field.long > span { width: auto; font: var(--fs-2) var(--f-kai); letter-spacing: .08em; color: var(--ink-soft); }
+
+/* 矮窗口：名牌只留名字和职衔，轴多占一点 */
+@media (max-height: 620px) {
+  .scr-court { --ct-plate-h: 5.25rem; }
+  .ct-pres-meta { display: none; }
+  .ct-pres-sub { -webkit-line-clamp: 1; }
+  .ct-pres-live { right: .375rem; top: .375rem; font-size: 0; gap: 0; }
+  .ct-pres-plate { padding: .25rem .5rem; }
+  .ct-pres-plate h3 { font-size: var(--fs-4); letter-spacing: .12em; padding-left: .12em; }
+  .scr-court .back small { display: none; }
+  .scr-court .back { padding: .25rem .875rem; }
+}

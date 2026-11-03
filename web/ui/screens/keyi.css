@@ -1,7 +1,8 @@
 /* 科议：老弹层照建、挪到画外、点不着；画面借朝议（.scr-court、.ct-*） */
 html.tm-newui body > div#keyi-modal {
   position: fixed !important; left: -300vw !important; top: 0 !important; width: 1200px !important; height: 860px !important; opacity: 0 !important; pointer-events: none !important; }
-.scr-keyi .ct-topic p { margin: .25rem 0 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ivory-soft); overflow: hidden; text-overflow: ellipsis; }
+.scr-keyi .ct-topic b { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+.scr-keyi .ct-topic p { flex: none; margin: 0; font-size: var(--fs-2); line-height: 1.7; color: rgba(249, 234, 210, .72); }
 .scr-keyi .ct-say[hidden], .scr-keyi .ky-tide[hidden] { display: none; }
 .scr-keyi .slip:disabled { opacity: .5; cursor: default; transform: none; }
 .scr-keyi .slip.warn { color: #f9ead2; background: linear-gradient(90deg, #2a1d14, #4a3424 45%, #2a1d14); box-shadow: 0 .625rem 1.375rem rgba(20, 10, 4, .55), inset 0 0 0 1px rgba(240, 160, 128, .55); }

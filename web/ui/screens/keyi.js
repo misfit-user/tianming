@@ -1,19 +1,21 @@
-// 科议：科举诸事付在京诸臣公议，景同朝议（望宝座）。左列上台陈词的六臣与其立场，右展竖写实录（诸臣流式陈词、上之插言），
+// 科议：科举诸事付在京诸臣公议，景同朝议（望宝座）。左列上台陈词的六臣与其立场，中挂正在陈词那位的立轴，右展竖写实录（诸臣流式陈词、上之插言），
 // 案底随阶段换：议论时可插言、再议一轮、付表决；表决时看赞成观望反对之潮与门槛，可展众臣立场；裁决时依议／强推／暂缓。
 // 开议前先展一卷问可否（人数、议题、耗精力）。一切经 game.keyi（adapter/keyi.js 照 KEYI_STATE 读）；叫法取 profile().keyi 与 audience。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
 import { juan, loadFonts, closeScrolls } from '../kit/index.js';
+import { createPresenter } from './presenter.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const CLS = { support: 'sup', oppose: 'opp', abstain: 'neu' };
 
-export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
+export function createKeyi({ root, study, game, profile, onOpen, onClose, onPerson }) {
   const Y = game.keyi;
   let opened = false;
   let snap = null;
   const nodes = new Map();
+  let rosterSig = '', slipsSig = '';
 
   const crumbName = h('b.q-gold');
   const crumbNote = h('small');
@@ -24,6 +26,7 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
   const rosterList = h('div.ct-roster-list.q-scroll');
   const rosterTitle = h('span.q-gold');
   const roster = h('aside.ct-roster.q-qi', h('h3.q-ti', rosterTitle), rosterList);
+  const presenter = createPresenter({ word: '陈词', idle: '诸臣待议，尚无人陈词', onPerson: (name) => onPerson?.(name) });
   const flow = h('div.au-flow.ct-flow');
   const rec = h('article.au-rec.ct-rec', flow);
   const statusEl = h('p.ct-status');
@@ -33,7 +36,7 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
   const sayBox = h('div.ct-say', say, sayBtn);
   const tide = h('div.ky-tide');
   const bar = h('div.ct-bar', h('div.ct-ctl', statusEl, slips), sayBox, tide);
-  const el = h('section.scr.scr-court.scr-keyi', crumb, leave, topicEl, roster, rec, bar);
+  const el = h('section.scr.scr-court.scr-keyi', crumb, leave, topicEl, roster, presenter.el, rec, bar);
   root.append(el);
   flow.addEventListener('wheel', (e) => {
     if (flow.scrollWidth <= flow.clientWidth) return;
@@ -71,17 +74,35 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
   function renderRoster(s) {
     const live = s.speeches.find((e) => e.streaming);
     rosterTitle.textContent = `上台${num(s.speakers.length)}人`;
-    replaceChildren(rosterList, s.speakers.map((c) => h('div.ct-mem' + (live && live.name === c.name ? '.speaking' : ''), h('b', c.name), c.title ? h('small', { title: c.title }, c.title) : null,
-      c.stance ? h('em.ct-st.' + CLS[c.stance], Y.STANCE[c.stance]) : null)));
+    // 名单、立场、谁在说都没变就别重建：流式时快照一直来，小像会闪、悬停小签会掉
+    const sig = s.speakers.map((c) => `${c.name}/${c.stance || ''}`).join('|') + (live ? live.name : '');
+    if (sig !== rosterSig) {
+      rosterSig = sig;
+      replaceChildren(rosterList, s.speakers.map((c) => {
+        const src = game.court.person(c.name).portrait;
+        const initial = () => h('i', [...c.name][0] || '');
+        return h('button.ct-mem' + (live && live.name === c.name ? '.speaking' : '') + (c.stance ? '.spoke' : ''), { type: 'button', dataset: { person: c.name }, onclick: () => onPerson?.(c.name) },
+          h('span.ct-face', src ? h('img', { src, alt: '', loading: 'lazy', decoding: 'async', onerror: (e) => e.target.replaceWith(initial()) }) : initial()),
+          h('b', c.name), c.stance ? h('em.ct-st.' + CLS[c.stance], Y.STANCE[c.stance]) : null);
+      }));
+    }
+    // 出班：正说的那位；没人在说时留最后开口的
+    const last = live || [...s.speeches].reverse().find((e) => !e.me && e.name);
+    if (last) presenter.show(game.court.person(last.name), { stance: Y.STANCE[last.stance] || '', live: !!live });
   }
   function renderControls(s) {
     const t = T();
     const slip = (label, f, on = true, cls = '') => h('button.slip' + (cls ? '.' + cls : ''), { type: 'button', disabled: !on, onclick: () => run(f) }, label);
+    // 签的状态没变就别重建：流式时快照每帧都来，重建会让按下与松开落在两颗按钮上
+    const putSlips = (...list) => {
+      const sig = list.map((b) => `${b.textContent}/${b.disabled ? 1 : 0}/${b.className}`).join('|');
+      if (sig !== slipsSig) { slipsSig = sig; replaceChildren(slips, ...list); }
+    };
     sayBox.hidden = s.phase !== 'discuss';
     tide.hidden = s.phase === 'discuss';
     if (s.phase === 'discuss') {
       statusEl.textContent = s.busy ? (s.busyText || '诸臣议论中……') : s.discussDone ? `已议${num(s.round)}轮 · 可付表决或再议` : '议论将起……';
-      replaceChildren(slips, slip(t.again || '再议一轮', () => Y.extraRound(), s.discussDone && !s.busy), slip(t.vote || '付表决', () => Y.toVote(), s.discussDone && !s.busy, 'go'));
+      putSlips(slip(t.again || '再议一轮', () => Y.extraRound(), s.discussDone && !s.busy), slip(t.vote || '付表决', () => Y.toVote(), s.discussDone && !s.busy, 'go'));
       say.disabled = false;
       say.placeholder = `${t.hint || '插言……'}（Ctrl+Enter ${t.speak || '插言'}）`;
       sayBtn.textContent = t.speak || '插言';
@@ -90,7 +111,7 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
     const v = s.vote || {};
     if (!v.done) {
       statusEl.textContent = '众臣付表决……';
-      replaceChildren(slips);
+      putSlips();
       replaceChildren(tide, h('div.track', h('i', { style: { width: `${v.progress}%` } })), h('small', `${num(v.progress)}%`));
       return;
     }
@@ -100,9 +121,9 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
       .map(([k, n, label]) => h('i.' + k, { style: { flexGrow: n } }, `${label}${num(n)}`)), h('b.ky-line', { style: { left: `${v.threshold}%` }, title: `门槛${num(v.threshold)}%` })),
       h('small', `${num(Math.round((v.support * 100) / total))}%`));
     if (s.phase === 'vote') {
-      replaceChildren(slips, slip('众臣立场', () => showStances(v)), slip(t.decide || '继续裁决', () => Y.toDecide(), true, 'go'));
+      putSlips(slip('众臣立场', () => showStances(snap.vote || v)), slip(t.decide || '继续裁决', () => Y.toDecide(), true, 'go'));
     } else {
-      replaceChildren(slips, slip('众臣立场', () => showStances(v)),
+      putSlips(slip('众臣立场', () => showStances(snap.vote || v)),
         ...(v.passed ? [slip(s.methods.council, () => Y.decide('council'), true, 'go')] : [slip(s.methods.edict, () => Y.decide('edict'), true, 'go'), slip(s.methods.defy, () => Y.decide('defy'), true, 'warn')]));
     }
   }
@@ -146,6 +167,8 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
   async function enter(s) {
     opened = true;
     nodes.clear();
+    rosterSig = slipsSig = '';
+    presenter.clear();
     replaceChildren(flow);
     closeScrolls();
     await fade(true);

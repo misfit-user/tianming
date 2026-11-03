@@ -1,20 +1,22 @@
-// 独召密问：时政一桩，择几位在侧之臣召入。先一卷选人选题；入对后景同朝议（望宝座），左列所召诸臣，
+// 独召密问：时政一桩，择几位在侧之臣召入。先一卷选人选题；入对后景同朝议（望宝座），左列所召诸臣，中挂正在进言那位的立轴，
 // 右展竖写实录（诸臣依次流式进言），案底垂询、建言要点、摘入。退下时内核自记纪事、起居注与诸臣记忆。
 // 一切经 game.mizhao（adapter/mizhao.js 镜老流程）；版式借朝议（.scr-court、.ct-*、.au-rec）。叫法取 profile().issues 与 audience。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
 import { juan, zhou, loadFonts, closeScrolls } from '../kit/index.js';
+import { createPresenter } from './presenter.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 
-export function createMizhao({ root, study, game, profile, onOpen, onClose }) {
+export function createMizhao({ root, study, game, profile, onOpen, onClose, onPerson }) {
   const M = game.mizhao;
   let opened = false;
   let snap = null;
   let sel = { text: '', who: '' };
   let sumJuan = null, sumBox = null;
   const nodes = new Map();
+  let rosterSig = '', slipsSig = '';
 
   const crumbName = h('b.q-gold');
   const crumbNote = h('small');
@@ -24,6 +26,7 @@ export function createMizhao({ root, study, game, profile, onOpen, onClose }) {
   const topicEl = h('div.ct-topic');
   const rosterList = h('div.ct-roster-list.q-scroll');
   const roster = h('aside.ct-roster.q-qi', h('h3.q-ti', h('span.q-gold', '密召')), rosterList);
+  const presenter = createPresenter({ word: '进言', idle: '诸臣在侧，尚无人进言', onPerson: (name) => onPerson?.(name) });
   const flow = h('div.au-flow.ct-flow');
   const rec = h('article.au-rec.ct-rec', flow);
   const statusEl = h('p.ct-status');
@@ -32,7 +35,7 @@ export function createMizhao({ root, study, game, profile, onOpen, onClose }) {
   const sayBtn = h('button.slip.go', { type: 'button', onclick: () => ask() });
   const sayBox = h('div.ct-say', say, sayBtn);
   const bar = h('div.ct-bar', h('div.ct-ctl', statusEl, slips), sayBox);
-  const el = h('section.scr.scr-court.scr-mizhao', crumb, leave, topicEl, roster, rec, bar);
+  const el = h('section.scr.scr-court.scr-mizhao', crumb, leave, topicEl, roster, presenter.el, rec, bar);
   root.append(el);
   flow.addEventListener('wheel', (e) => {
     if (flow.scrollWidth <= flow.clientWidth) return;
@@ -79,14 +82,34 @@ export function createMizhao({ root, study, game, profile, onOpen, onClose }) {
   }
   function renderRoster(s) {
     const live = s.entries.find((e) => e.streaming);
-    replaceChildren(rosterList, s.chars.map((c) => h('div.ct-mem' + (live && live.name === c.name ? '.speaking' : ''), h('b', c.name), c.title ? h('small', { title: c.title }, c.title) : null, c.said ? h('em.ct-st.neu', `言${num(c.said)}`) : null)));
+    // 名单、谁已进言、谁在说都没变就别重建：流式时快照一直来，小像会闪、悬停小签会掉
+    const sig = s.chars.map((c) => `${c.name}/${c.said || 0}`).join('|') + (live ? live.name : '');
+    if (sig !== rosterSig) {
+      rosterSig = sig;
+      roster.classList.toggle('few', s.chars.length <= 10);
+      replaceChildren(rosterList, s.chars.map((c) => {
+        const src = game.court.person(c.name).portrait;
+        const initial = () => h('i', [...c.name][0] || '');
+        return h('button.ct-mem' + (live && live.name === c.name ? '.speaking' : '') + (c.said ? '.spoke' : ''), { type: 'button', dataset: { person: c.name }, onclick: () => onPerson?.(c.name) },
+          h('span.ct-face', src ? h('img', { src, alt: '', loading: 'lazy', decoding: 'async', onerror: (e) => e.target.replaceWith(initial()) }) : initial()),
+          h('span.ct-mem-who', h('b', c.name), c.title ? h('small.ct-mem-sub', String(c.title).split(/[·(（,，]/)[0]) : null),
+          c.said ? h('em.ct-st.neu', `言${num(c.said)}`) : null);
+      }));
+    }
+    const last = live || [...s.entries].reverse().find((e) => e.role !== 'me' && e.role !== 'note' && e.name);
+    if (last) presenter.show(game.court.person(last.name), { live: !!live });
   }
   function renderControls(s) {
     const t = I();
     statusEl.textContent = s.speaking ? '诸臣奏对中……' : s.canAsk ? '群臣已进言；若欲再问，垂询即续两轮' : '';
-    replaceChildren(slips,
-      h('button.slip', { type: 'button', disabled: s.speaking, onclick: () => run(() => M.showSummary()) }, t.secretSummary || '建言要点'),
-      h('button.slip', { type: 'button', disabled: !sel.text, title: sel.text ? `摘入「${sel.text.slice(0, 20)}…」` : '先在实录里划选一段', onclick: () => excerpt() }, A().excerpt));
+    // 签的状态没变就别重建：流式时快照每帧都来，重建会让按下与松开落在两颗按钮上
+    const slipSig = `${s.speaking ? 1 : 0}|${sel.text}`;
+    if (slipSig !== slipsSig) {
+      slipsSig = slipSig;
+      replaceChildren(slips,
+        h('button.slip', { type: 'button', disabled: s.speaking, onclick: () => run(() => M.showSummary()) }, t.secretSummary || '建言要点'),
+        h('button.slip', { type: 'button', disabled: !sel.text, title: sel.text ? `摘入「${sel.text.slice(0, 20)}…」` : '先在实录里划选一段', onclick: () => excerpt() }, A().excerpt));
+    }
     say.disabled = !s.canAsk;
     say.placeholder = s.canAsk ? `${A().hint}（Ctrl+Enter ${A().send}）` : '诸臣奏对中……';
     sayBtn.disabled = !s.canAsk;

@@ -1026,12 +1026,23 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     tiao(t, () => (t.dataset.person ? personTip(t.dataset.person) : null));
   }, true);
   // ---------- 可为：右键人像（立轴、图志、列传、立像）出一张交互单，照 CK3 右键人物——按五渠道分组，做不了的灰着、写明差什么 ----------
-  root.addEventListener('contextmenu', (e) => {
-    const t = e.target && e.target.closest ? e.target.closest('[data-person]') : null;
-    if (!t || !t.dataset.person) return;
-    e.preventDefault();
-    personMenu(t.dataset.person, e.clientX, e.clientY);
-  });
+  // 老桥（phase8-formal-bridge）在 document 的捕获段抢右键：按钮文字里带人名就钉到老右栏「臣」，还把事件掐了，
+  // 带 data-person 的按钮永远等不到这张单。所以这里挂在更早的 window 捕获段，新前端里凡它会抢的目标都先截下
+  const LEGACY_GRABS = 'button, .rw-card, .cd, [data-renwu-id], [data-person-id]';
+  const shieldRight = (e) => root.contains(e.target) && e.target.closest && !!e.target.closest(LEGACY_GRABS);
+  window.addEventListener('mousedown', (e) => { if (e.button === 2 && shieldRight(e)) e.stopPropagation(); }, true);
+  window.addEventListener('contextmenu', (e) => {
+    if (!root.contains(e.target)) return;
+    const t = e.target.closest ? e.target.closest('[data-person]') : null;
+    if (t && t.dataset.person) {
+      e.preventDefault();
+      e.stopPropagation();
+      personMenu(t.dataset.person, e.clientX, e.clientY);
+    } else if (shieldRight(e)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
   // 志窗卷首小景：从活舆图斜看此地（一府、或一道诸府），本块描金；同一处一局只渲一回，回合过后重渲（易主、营造会变）
   const sceneCache = new Map();
   bus.on('game:advanced', () => sceneCache.clear());
@@ -1109,9 +1120,11 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   function opensBook(vol) {
     return per.tier !== 'sovereign' && !!standing && standing.charges.some((c) => c.kind === 'office' && (DEPT_VOLS[c.name] || []).includes(vol));
   }
+  // 朝议、科议开着：殿上还在议事，看人可以，召对、传书、入图这些要换场面的事得等散了
+  const inHall = () => !!(courtPage.opened || keyiPage.opened || mizhaoPage.opened);
   // 对一个人能做什么（右键可为单与人物窗左缘圆钮同一份）：见、书照身份取叫法；任官只元首一档有，余者不列；做不了的写缘由
   function personCan(name) {
-    const ro = per.previewing ? '借视角时只读' : '';
+    const ro = per.previewing ? '借视角时只读' : inHall() ? '殿上议事，散了再说' : '';
     const near = (() => { try { return game.audience.canAudience(name); } catch (_e) { return false; } })();
     const far = (() => { try { return game.letters.contacts().some((p) => p.name === name); } catch (_e) { return false; } })();
     return {
@@ -1123,6 +1136,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
   // 地名 → 舆图镜头飞去（在书房就先俯身入图）；认不出返回 false
   function locatePlace(text) {
+    if (inHall()) { bus.emit('kernel:toast', { text: '殿上议事，散了再看舆图' }); return true; }
     const [i] = byPlace(text);
     const r = i == null ? null : mapRegionList[i];
     if (!r || !r.center) return false;
@@ -1193,7 +1207,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     can: (name) => personCan(name),
     onAudience: (name) => audiencePage.summon(name), onLetter: (name) => openLetters(name), onOffice: (name) => bioPage.show(name, 'office'),
     onBio: (name) => bioPage.show(name), onFind: (name) => xunren.show(name), locate: (text) => locatePlace(text), compare: xunren.compare,
-    onFaction: (key) => realmPage.showDock(key),
+    onFaction: (key) => { if (inHall()) bus.emit('kernel:toast', { text: '殿上议事，散了再看' }); else realmPage.showDock(key); },
     sealOf: (name) => {
       let s = null;
       try { s = game.realm.factionSeal(name); } catch (_e) { return null; }
@@ -1223,14 +1237,14 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const audiencePage = createAudience({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); gaizhiPage.resume(); backHome(); }, onLetter: (name) => openLetters(name), onCourt: (mode) => courtPage.begin(mode),
     onExternal: () => { kejuPage.hide(); wenyuanPage.hide(); gongweiPage.hide(); } });
   // 朝议：镜老流程；筹备卷、实录页都跟着内核的快照走
-  const courtPage = createCourt({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); backHome(); } });
+  const courtPage = createCourt({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); backHome(); }, onPerson: (name) => renwu.show(name) });
   game.on('court:entered', () => { el.classList.remove('on'); toStudyIfHome(); });
   // 独召密问：选人选题一卷，入对后景同朝议
   createPrison({ game, profile: () => prof });     // 狱中问对：召对下狱之人时自起，不占书案
   // 终局：一局到头时自起满屏一幅；回启幕不再问「未封存的进度将会失去」（局已终）
   createEndgame({ root, game, onSaves: () => openSaves({ game, inGame: true }),
     onLeave: () => game.leave().catch((err) => bus.emit('kernel:toast', { text: String(err && err.message || err) })) });
-  const mizhaoPage = createMizhao({ root, study, game, profile: () => prof, onOpen: () => { el.classList.remove('on'); toStudyIfHome(); }, onClose: () => { el.classList.add('on'); refresh(); backHome(); } });
+  const mizhaoPage = createMizhao({ root, study, game, profile: () => prof, onOpen: () => { el.classList.remove('on'); toStudyIfHome(); }, onClose: () => { el.classList.add('on'); refresh(); backHome(); }, onPerson: (name) => renwu.show(name) });
   game.on('audience:open', () => { el.classList.remove('on'); toStudyIfHome(); });
   // 职官志：册页浮在书案上；点任职者名字开人物窗
   const fiscalPage = createFiscal({ root, game });
@@ -1277,7 +1291,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 召史策对时改制册暂收、不展科举册（召对场景接手，问毕 audiencePage 的 onClose 里 resume 复开改制册）
   const gaizhiPage = createGaizhi({ root, game, profile: () => prof, seated: () => el.classList.contains('on'), onPerson: (name) => bioPage.show(name), onOpen: () => kejuPage.hide(), onClose: (why) => { if (why !== 'cedui') kejuPage.show(); } });
   let keyiFromBook = false;
-  const keyiPage = createKeyi({ root, study, game, profile: () => prof,
+  const keyiPage = createKeyi({ root, study, game, profile: () => prof, onPerson: (name) => renwu.show(name),
     onOpen: () => { keyiFromBook = kejuPage.opened; kejuPage.hide(); el.classList.remove('on'); toStudyIfHome(); },
     onClose: () => { el.classList.add('on'); refresh(); if (keyiFromBook) kejuPage.show(); backHome(); } });
   bus.on('ui:keju', () => { if (!readOnly()) kejuPage.show(); });

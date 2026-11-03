@@ -84,6 +84,18 @@
 @container (max-width: 560px) { .scr-desk .ledger .q-zhang li > s { display: none; } }
 .scr-desk .gauges { display: flex; gap: 1rem; flex: none; }
 .scr-desk .gauges .q-pin.energy { padding-right: 1rem; box-shadow: 1px 0 0 rgba(201, 164, 92, .25); }
+/* 顶栏的九品刻度：名、品第上下叠着，一格一项（左右摊开时「吏治 中下 民心 中中」连成一串，分不清谁配谁）。低品转朱、高品转亮，扫一眼知冷暖 */
+.scr-desk .gauges .q-pin { width: auto; min-width: 3.625rem; }
+.scr-desk .gauges .q-pin > div { flex-direction: column; align-items: center; gap: .125rem; font-size: max(.75rem, 11px); line-height: 1; letter-spacing: .14em; text-indent: .14em; }
+.scr-desk .gauges .q-pin > div > b { font-size: 1.1875rem; line-height: 1.15; letter-spacing: 0; text-indent: 0; white-space: nowrap; }
+.scr-desk .gauges .q-pin > ol { margin-top: .25rem; }
+.scr-desk .gauges .q-pin li { background: rgba(201, 164, 92, .42); }
+.scr-desk .gauges .q-pin li.f { background: var(--gold); }
+.scr-desk .gauges .q-pin li.n { background: var(--gold-hi); }
+.scr-desk .gauges .q-pin.low > div > b { background-image: linear-gradient(180deg, #f6b49a, #dc6f53); }
+.scr-desk .gauges .q-pin.low li.f { background: #c9614a; }
+.scr-desk .gauges .q-pin.low li.n { background: #f6b49a; box-shadow: 0 0 6px rgba(246, 180, 154, .8); }
+.scr-desk .gauges .q-pin.high > div > b { background-image: linear-gradient(180deg, #fff5d6, var(--gold-hi)); }
 .scr-desk .tools { display: flex; gap: .4375rem; flex: none; }
 .scr-desk .left { position: fixed; left: 1.25rem; top: 6.25rem; width: 21rem; display: flex; flex-direction: column; gap: 1.25rem; }
 .scr-desk .left .q-qi { padding: .625rem .75rem .8125rem; }

@@ -21,7 +21,7 @@
 /* 靠右展开（舆图为家、人在图上；设计稿「人物窗靠左展开，各册靠右展开，舆图露着」）：不再整屏压暗，册页靠右、与寻人同一位置
    （右让书目、上让读数条、下让舆图之具与时钟）；册外空处不接指针，图那侧照常可点可拖，合册或 Esc 收起。
    左叶是目录、右叶是正文，按一比二分（左叶至少 15rem）；册宽让出左边一扇人物窗、志窗（1366 下刚好并排，再窄才压上去）。回案（书房）时照旧居中 */
-body:has(.scr-desk.home-map.inmap) .ce-ov { place-items: stretch end; grid-template-rows: minmax(0, 1fr); padding: 5rem 5.25rem 8.75rem 0; background: none; }
+body:has(.scr-desk.home-map.inmap) .ce-ov { place-items: stretch end; grid-template-rows: minmax(0, 1fr); padding: 5.75rem 5.25rem 8.75rem 0; background: none; }   /* 上 5.75rem：「合册」牙牌（探出 .875rem）刚好挂在匾下沿，不压回纹 */
 body:has(.scr-desk.home-map.inmap) .ce-ov.on { pointer-events: none; }
 body:has(.scr-desk.home-map.inmap) .ce-ov.on .ce-book { pointer-events: auto; }
 body:has(.scr-desk.home-map.inmap) .ce-ov .ce-book { width: clamp(42rem, calc(100vw - 43rem), 64rem); height: auto; min-height: 0; padding: 1.25rem;

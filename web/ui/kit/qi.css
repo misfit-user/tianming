@@ -104,12 +104,13 @@ button.q-yapai:disabled:hover { transform: none; box-shadow: var(--sh-lift), ins
 /* ---------- 账：竖写类名，右边一列账目（汉字记数、单位、亏盈） ---------- */
 .q-zhang { display: flex; align-items: center; gap: .5625rem; padding-left: .75rem; border-left: 1px solid var(--gold-faint); }
 .q-zhang > em { writing-mode: vertical-rl; font: 400 var(--fs-3)/1 var(--f-title); font-style: normal; letter-spacing: .28em; }
-.q-zhang > ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 1px; }
-.q-zhang li { display: flex; align-items: baseline; gap: .3125rem; font-size: max(.875rem, 12px); line-height: 1.125rem; white-space: nowrap; }
-.q-zhang li > i { font-style: normal; font-size: var(--fs-1); color: var(--gold); }
-.q-zhang li > b { font-weight: 400; color: #f6ecd8; letter-spacing: .04em; }
-.q-zhang li > u { text-decoration: none; font-size: max(.6875rem, 11px); color: var(--ivory-soft); margin-left: -.1875rem; }
-.q-zhang li > s { text-decoration: none; font-size: max(.6875rem, 11px); color: var(--loss); }
+/* 一账一张小表：名、数、单位、盈亏各成一列（数靠右，「万」字对齐；盈亏靠左，「亏」字对齐），几行才读得齐。行里缺项的列留空，所以每项钉死列号 */
+.q-zhang > ol { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, auto); row-gap: 1px; align-items: baseline; }
+.q-zhang li { display: contents; font-size: max(.875rem, 12px); line-height: 1.125rem; white-space: nowrap; }
+.q-zhang li > i { grid-column: 1; margin-right: .375rem; font-style: normal; font-size: var(--fs-1); color: var(--gold); }
+.q-zhang li > b { grid-column: 2; text-align: right; font-weight: 400; color: #f6ecd8; letter-spacing: .04em; }
+.q-zhang li > u { grid-column: 3; margin-left: .1875rem; text-decoration: none; font-size: max(.6875rem, 11px); color: var(--ivory-soft); }
+.q-zhang li > s { grid-column: 4; margin-left: .4375rem; text-decoration: none; font-size: max(.6875rem, 11px); color: var(--loss); }
 .q-zhang li > s.up { color: var(--gain); }
 
 /* ---------- 九品刻度 ---------- */

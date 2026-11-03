@@ -8,7 +8,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { homeMode } from '../core/settings.js';
 import { bus } from '../core/bus.js';
-import { num, yearNum, grade } from '../core/numerals.js';
+import { num, yearNum, grade, gradeIndex } from '../core/numerals.js';
 import { pinned, pinnedFirst, togglePin } from '../core/pins.js';
 import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, btn, clock, qiPanel, tag, tiao, kaiguan, kewei, closeSideScrolls } from '../kit/index.js';
 import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
@@ -162,6 +162,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const outline = h('aside.hm-outline');
   let outlineOpen = (() => { try { return localStorage.getItem('tm_ui_outline') !== '0'; } catch (_e) { return true; } })();
   el.append(selfBox, alerts, corner, outline);
+  // 待办菱章贴着读数匾左端：匾宽随账目多少、窗宽变，量给 CSS（world.css 的 --hm-bar-w）
+  new ResizeObserver(() => el.style.setProperty('--hm-bar-w', `${topbar.offsetWidth}px`)).observe(topbar);
   let ringBtns = {}, deskBtn = null, diveReady = false;
   // 两种主画面各自的摆法：舆图为家时时钟、工具挪到右下，顶栏只留读数
   function arrange() {
@@ -685,6 +687,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (enPin) { enPin.classList.add('energy'); tiao(enPin, { title: '精力', text: `余${num(en.value)}，满${num(en.max)}\n召对、批阅诸事皆耗` }); }
     replaceChildren(gauges, enPin, ...gs.map((g) => {
       const el = pin(g.label, g.value, { text: g.text, note: g.note });
+      // 顶栏这几项都是越高越好（吏治已按清浊翻过）：低品转朱、高品转亮
+      const gi = gradeIndex(g.value);
+      el.classList.toggle('low', gi <= 2);
+      el.classList.toggle('high', gi >= 6);
       if (prof.gauges === 'realm' && g.key && !per.previewing) { el.classList.add('link'); el.addEventListener('click', () => guoshiPage.show(g.key)); }
       return el;
     }));

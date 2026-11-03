@@ -1,7 +1,7 @@
 // 人物窗：照 CK3 的角色窗口，靠左展开，舆图露着（同志 10-11：「人物图志没必要做成专门 UI，可以做成 CK3 那种」）。
 // 点任何一处人像（案前诸人、提纲、寻人、各册里的人名、右键可为单）都开这一扇；再点别人就换人，左上「‹」退回上一位。
 //   一整卷只有一处滚动：往下读时立像收成一条压着姓名职衔的窄带，页签吸在窄带之下，读生平不必在一条缝里翻；卷底的事一直在手边。
-//   卷首：立像按卷首的高铺、顶对齐，两侧化入同一张图的虚影，脸总落在亮处；右下配偶与子嗣两枚小像，左上压处境印（殁、狱、谪、行、谋），底下姓名、品级、职衔。
+//   卷首：立像按卷首的高铺、顶对齐，两侧化入同一张图的虚影，脸总落在亮处；点立像展开看全像，再点收回。右下配偶与子嗣两枚小像，左上压处境印（殁、狱、谪、行、谋），底下势力印、姓名、品级、职衔。
 //   年齿与亲疏（此即本人／视我亲疏与好感）一行，性情一行、才具八项、心性声望一行（忠诚、野心、名望、贤能，九品刻度）。
 //   职掌：所在（点了舆图镜头飞去）、所掌之地与兵；势力、党派、门第、出身。
 //   四页：家人（尊长、同辈、晚辈一条线排成世系，本人居中；门生、同僚、所事之主另列）、交游（亲疏与好感）、履历、生平（史料一条一条列）。
@@ -45,7 +45,8 @@ function splitBio(text) {
 // viewer() → { name, player: 是否玩家本人（非借视角）, sovereign: 是否元首一档（见臣下之心）, lord: 称君上之词 }
 // 人心（所知之律，同列传）：元首见他人的忠诚、野心；余者只见自己的，他人只列名望、贤能这类公论
 // can(name) → { audience: 缘由或空, letter: 缘由或空, office: 缘由或空（空即可行）, readOnly }
-export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onOffice, onBio, onFind, locate, compare }) {
+// sealOf(势力名) → { key, name, short, hostile, color } 名衔旁那枚势力印；onFaction(key) 点印开势力窗
+export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onOffice, onBio, onFind, locate, compare, sealOf = null, onFaction = null }) {
   let cur = null;               // 当前之人的名
   let back = [];                // 看过的人，「‹」退回
   let tab = 'kin';
@@ -71,6 +72,20 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
   const scroller = h('div.rw-scroll.q-scroll', hero, body, tabBar, page);
   const el = h('aside.rw', { role: 'dialog', 'aria-label': '人物' }, scroller, h('div.rw-ctls', backBtn, shutBtn), foot);
   root.append(el);
+  // 展像：点立像，卷首展开到正好露全这幅画（立像都是整幅的画，平时只露上半截）；窗矮就展到窗底。再点收回
+  function gaze(on) {
+    const fg = pic.querySelector('.fg');
+    if (on && !fg) return;
+    el.classList.toggle('gaze', on);
+    if (on) {
+      scroller.scrollTop = 0;
+      const band = parseFloat(getComputedStyle(tabBar).top);
+      const ratio = fg.naturalWidth ? fg.naturalHeight / fg.naturalWidth : 4 / 3;
+      el.style.setProperty('--rw-hero', `${Math.min(scroller.clientHeight, Math.round(scroller.clientWidth * ratio + band * .45))}px`);
+    } else el.style.removeProperty('--rw-hero');
+  }
+  pic.addEventListener('click', () => gaze(!el.classList.contains('gaze')));
+  window.addEventListener('resize', () => gaze(false));
   // 往下读时卷首右下的小像先淡去（窄带里放不下，也别压到右上的按钮）
   let rollTick = 0;
   scroller.addEventListener('scroll', () => {
@@ -123,6 +138,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
 
     // 卷首
     // 同一人重画（翻页签、过回合）不换图，免得闪；没有立像写粉本（一幅只勾了轮廓的绢）
+    pic.title = b.portrait ? '看全像' : '';
     const picKey = `${b.name}|${b.portrait || ''}`;
     if (pic.dataset.key !== picKey) {
       pic.dataset.key = picKey;
@@ -155,16 +171,22 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     const t = tome(b);
     const fam = (b.family && b.family.family) || '';
     const ages = [b.age != null ? `${num(b.age)}岁` : '', b.gender, fam.replace(/[（(].*$/, '')].filter(Boolean).join(' · ');
+    // 名衔左边一枚势力印（国色、简称，同势力窗的印），点开势力窗
+    const fac = b.faction && sealOf ? sealOf(b.faction) : null;
     replaceChildren(name,
-      h('div.rw-title', h('h2', b.name, b.zi ? h('small', `字${b.zi}`) : null), b.rank ? h('span.rw-rank', b.rank) : null),
-      h('p.rw-office', { title: b.office.length > 1 ? b.office.join('、') : null }, b.office.join('、') || '布衣'));
+      fac ? tiao(h('button.zw-seal.sw-seal.rw-fseal' + (fac.hostile ? '.hostile' : ''), { type: 'button', style: fac.color ? { background: fac.color } : {}, onclick: () => onFaction && onFaction(fac.key) }, fac.short),
+        () => ({ title: fac.name, text: '点开其势力' })) : null,
+      h('div.rw-names',
+        h('div.rw-title', h('h2', b.name, b.zi ? h('small', `字${b.zi}`) : null), b.rank ? h('span.rw-rank', b.rank) : null),
+        h('p.rw-office', { title: b.office.length > 1 ? b.office.join('、') : null }, b.office.join('、') || '布衣')));
     replaceChildren(lead,
       h('p.rw-line', ages),
       !t ? null : t.self ? h('p.rw-tome.self', h('i', '我'), '此即本人')
         : h('p.rw-tome' + (t.score > 0 ? '.good' : t.score < 0 ? '.bad' : ''), h('i', '与'), t.lord ? `视${v.lord}：${t.label}` : `视我：${t.label}`, t.score != null ? h('em', signed(t.score)) : null));
 
     // 性情、才具、心性声望
-    replaceChildren(traits, (b.traits || []).map((x) => h('span.' + (x.tone || 'plain'), x.name)));   // 没有词条就空着：性情的文字在生平页
+    // 没有词条就空着：性情的文字在生平页。悬停写加成与行事（特质库里有的）
+    replaceChildren(traits, (b.traits || []).map((x) => tiao(h('span.' + (x.tone || 'plain'), x.name), () => (x.note || x.tend ? { title: x.name, text: [numText(x.note || ''), x.tend].filter(Boolean).join('　') } : null))));
     replaceChildren(skills, (b.eight || []).map(([k, val]) => tiao(h('li' + (val >= 80 ? '.hi' : val > 0 && val <= 30 ? '.lo' : ''), { '--v': `${Math.max(0, Math.min(100, val))}%` }, h('i', k), h('b', num(val))), () => ({ title: SKILL_NAMES[k] || k, text: `${num(val)}` }))));
     const fame = game.select.fameRank(row.fame);
     const virtue = game.select.virtueRank(row.merit);
@@ -182,10 +204,12 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     const KIND = { region: '地', circuit: '省', army: '兵', office: '署' };
     const place = b.location ? h('button.rw-place', { type: 'button', title: '舆图镜头飞往此地', disabled: !locate, onclick: () => locate && !locate(b.location) && bus.emit('kernel:toast', { text: `舆图上认不出「${b.location}」` }) },
       b.location, b.travelTo ? h('small', ` → ${b.travelTo}`) : null) : h('span', '未详');
-    const facts = [['势力', b.faction], ['党派', b.party ? `${b.party}${b.partyRank ? '·' + b.partyRank : ''}` : ''], ['门第', (b.family && b.family.tier) || ''], ['出身', b.origin && !b.origin.inferred && b.origin.title && b.origin.title !== '布衣' ? b.origin.title : '']].filter((x) => x[1]);
+    const facts = [['势力', fac ? '' : b.faction], ['党派', b.party ? `${b.party}${b.partyRank ? '·' + b.partyRank : ''}` : ''], ['门第', (b.family && b.family.tier) || ''], ['出身', b.origin && !b.origin.inferred && b.origin.title && b.origin.title !== '布衣' ? b.origin.title : '']].filter((x) => x[1]);
+    // 所在、所掌短就并一行；所掌有几处或名字长才各占一行
+    const longCharge = charges.length > 1 || (charges[0] && charges[0].name.length > 10);
     replaceChildren(post,
-      h('div.rw-kv.wide', h('span', '所在'), place),
-      charges.length ? h('div.rw-kv.wide', h('span', '所掌'), h('div.rw-charges', charges.map((x) => h('button.rw-charge', { type: 'button', disabled: !(locate && (x.kind === 'region' || x.kind === 'circuit' || x.kind === 'army')),
+      h('div.rw-kv' + (longCharge ? '.wide' : ''), h('span', '所在'), place),
+      charges.length ? h('div.rw-kv' + (longCharge ? '.wide' : ''), h('span', '所掌'), h('div.rw-charges', charges.map((x) => h('button.rw-charge', { type: 'button', disabled: !(locate && (x.kind === 'region' || x.kind === 'circuit' || x.kind === 'army')),
         onclick: () => locate && locate(x.kind === 'army' ? x.location : x.name) }, h('i', KIND[x.kind] || '掌'), x.name.replace(/布政使司$/, ''), x.kind === 'army' ? h('small', `${num(x.soldiers)}人`) : null)))) : null,
       facts.map(([k, x]) => h('div.rw-kv', h('span', k), h('b', x))));
 
@@ -265,6 +289,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     if (at && TABS.some(([k]) => k === at)) tab = at;
     if (cur && cur !== n && !fresh && el.classList.contains('on')) back = [...back.filter((x) => x !== cur), cur].slice(-12);
     if (fresh || !el.classList.contains('on')) back = [];
+    if (cur !== n) gaze(false);
     cur = n;
     peopleCache = null;
     render();
@@ -277,6 +302,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
   function goBack() {
     const prev = back.pop();
     if (!prev) return;
+    gaze(false);
     cur = prev;
     peopleCache = null;
     render();
@@ -286,6 +312,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
   function hide() {
     if (!el.classList.contains('on')) return;
     el.classList.remove('on');
+    gaze(false);
     back = [];
     bus.emit('renwu:hidden', {});
   }

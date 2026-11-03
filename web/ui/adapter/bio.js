@@ -8,6 +8,16 @@
 import { num, turnTag } from '../core/numerals.js';
 
 const w = window;
+// 性情词条的说明（特质库：加成一句、行事一句）；库里没有的词条（剧本自拟）就不写
+let traitIndex = null;
+function traitInfo(name) {
+  if (!traitIndex) {
+    traitIndex = new Map();
+    const lib = typeof w.TRAIT_LIBRARY === 'object' && w.TRAIT_LIBRARY ? w.TRAIT_LIBRARY : {};
+    for (const t of Object.values(lib)) if (t && t.name) traitIndex.set(t.name, { note: String(t.description || ''), tend: String(t.behaviorTendency || '') });
+  }
+  return traitIndex.get(name) || {};
+}
 const G = () => w.GM || {};
 const n0 = (v, fb = null) => { const n = Number(v); return v == null || v === '' || !Number.isFinite(n) ? fb : n; };
 const r0 = (v) => { const n = n0(v); return n == null ? null : Math.round(n); };
@@ -92,7 +102,7 @@ export function person(name) {
     eight: [['智', p.intelligence], ['武', p.valor], ['军', p.military], ['政', p.administration], ['管', p.management], ['交', p.diplomacy], ['魅', p.charisma], ['仁', p.benevolence]].map(([k, v]) => [k, r0(v) ?? 0]),
     wuchang: ['仁', '义', '礼', '智', '信'].map((k) => [k, r0(wc[k])]),
     gongming: { merit: p.gongming, tier: str(p.gongmingTier), log: (p.meritLog || []).map((m) => ({ turn: m.turn || 0, delta: n0(m.delta, 0), reason: str(m.reason) })) },
-    goal: str(p.personalGoal), traits: (p.traits || []).map((t) => ({ name: t.n, tone: t.c || '' })).filter((t) => t.name && !ASCII_ID.test(t.name)), personality: str(p.personality),
+    goal: str(p.personalGoal), traits: (p.traits || []).map((t) => ({ name: t.n, tone: t.c || '', ...traitInfo(t.n) })).filter((t) => t.name && !ASCII_ID.test(t.name)), personality: str(p.personality),
     identity: [['姓名', p.name], ['字号', p.zi], ['性别', [p.age ? `${num(Number(p.age) || 0)}岁` : '', p.gender].filter(Boolean).join('·')], ['籍贯', p.birthplace], ['民族', p.ethnicity], ['信仰', p.faith],
       ['文化', p.culture], ['学识', p.learning], ['立场', p.stance], ['家族', [p.family, TIER[p.familyTier]].filter(Boolean).join('·')], ['辞令', p.speechStyle], ['当前所在', p.location]]
       .map(([k, v]) => [k, str(v)]),

@@ -132,6 +132,13 @@ export function factions() {
   }).sort((a, b) => (b.mine - a.mine) || (b.strength - a.strength));
 }
 
+// 一枚势力印：人物窗名衔旁用，只取名字、简称、敌我
+export function factionSeal(name) {
+  const f = (G().facs || []).find((x) => x && (x.name === name || String(x.id || x.name) === name));
+  if (!f) return null;
+  return { key: String(f.id || f.name), name: String(f.name), short: pp(first(f.short, f.name)).slice(0, 2), hostile: /敌/.test(attitudeOf(f)), mine: isMine(f) };
+}
+
 export function faction(key) {
   const f = (G().facs || []).find((x) => x && (String(x.id || x.name) === key || x.name === key));
   if (!f) throw new Error('此势力已不在');

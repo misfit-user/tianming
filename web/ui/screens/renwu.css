@@ -59,7 +59,11 @@
 .rw-relface > .rw-face > i { font-size: .8125rem; }
 
 /* ---------- 名衔：压在卷首的窄带里 ---------- */
-.rw-name { position: absolute; left: 1.375rem; right: 1.25rem; bottom: .5rem; z-index: 2; display: flex; flex-direction: column; gap: .125rem; }
+.rw-name { position: absolute; left: 1.125rem; right: 1.25rem; bottom: .5rem; z-index: 2; display: flex; align-items: flex-end; gap: .75rem; }
+.rw-names { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .125rem; }
+/* 势力印：同方志的印、势力窗的印一个样子，国色；点开势力窗 */
+.rw-fseal { flex: none; margin-bottom: .1875rem; padding: 0; border: 0; cursor: pointer; transition: filter var(--t-2); }
+.rw-fseal:hover { filter: brightness(1.18); }
 .rw-title { display: flex; align-items: baseline; gap: .75rem; }
 .rw-title > h2 { margin: 0; font: 400 var(--fs-7)/1.1 var(--f-title); letter-spacing: .14em; white-space: nowrap; color: transparent;
   background: linear-gradient(180deg, #fbefcf, #e2c37f 60%, #b48a45); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .85)); }
@@ -71,7 +75,7 @@
 /* ---------- 卷身 ---------- */
 .rw-body { flex: none; display: flex; flex-direction: column; gap: .625rem; padding: .5rem 1.25rem .25rem 1.375rem; }
 .rw-lead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem .875rem; }
-.rw-line { margin: 0; font-size: var(--fs-2); letter-spacing: .1em; color: var(--ivory-soft); }
+.rw-line { margin: 0; font-size: var(--fs-2); letter-spacing: .1em; color: rgba(243, 226, 184, .82); }
 .rw-line:empty { display: none; }
 .rw-tome { display: flex; align-items: center; gap: .5rem; margin: 0; font: var(--fs-3) var(--f-kai); letter-spacing: .08em; color: var(--ivory); }
 .rw-tome > i { display: grid; place-items: center; width: 1.375rem; height: 1.375rem; font: 400 .875rem/1 var(--f-seal); font-style: normal; color: #f9ead2;
@@ -85,8 +89,8 @@
 /* 性情：一行签 */
 .rw-traits { display: flex; flex-wrap: wrap; gap: .375rem; }
 .rw-traits > span { padding: .125rem .5rem; font: var(--fs-2)/1.45 var(--f-kai); letter-spacing: .1em; color: #f3e2b8; background: rgba(236, 210, 154, .07); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .4); }
-.rw-traits > span.good { color: #dbe9c4; background: rgba(79, 129, 96, .22); box-shadow: inset 0 0 0 1px rgba(150, 190, 140, .45); }
-.rw-traits > span.bad { color: #f4c8b8; background: rgba(163, 40, 27, .22); box-shadow: inset 0 0 0 1px rgba(229, 143, 120, .45); }
+.rw-traits > span.pos, .rw-traits > span.good { color: #dbe9c4; background: rgba(79, 129, 96, .22); box-shadow: inset 0 0 0 1px rgba(150, 190, 140, .45); }
+.rw-traits > span.neg, .rw-traits > span.bad { color: #f4c8b8; background: rgba(163, 40, 27, .22); box-shadow: inset 0 0 0 1px rgba(229, 143, 120, .45); }
 .rw-traits:empty { display: none; }
 
 /* 才具八项：一条金丝栏，一格一项，字在圆章里，数在下；每格底边一线金，长短即数之高低，八项高低一眼看出 */
@@ -187,8 +191,9 @@
 .rw-who:hover { color: var(--gold-hi); text-decoration: underline dotted; text-underline-offset: .25rem; }
 .rw-who.plain { cursor: default; }
 
-.rw-career { margin: 0; padding: 0 0 0 .5rem; list-style: none; border-left: 1px solid rgba(201, 164, 92, .35); }
-.rw-career > li { position: relative; display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: .625rem; font-size: var(--fs-2); padding: .25rem 0 .5rem .875rem; }
+/* 履历：年月那一栏按最长的那条定宽（年号长短各朝不一，「太和九年十一月」七个字），上下对齐 */
+.rw-career { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: .75rem; margin: 0; padding: 0 0 0 .5rem; list-style: none; border-left: 1px solid rgba(201, 164, 92, .35); font-size: var(--fs-2); }
+.rw-career > li { position: relative; grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; padding: .25rem 0 .5rem .875rem; }
 .rw-career > li::before { content: ''; position: absolute; left: -.3125rem; top: .6875rem; width: .5625rem; height: .5625rem; transform: rotate(45deg); background: #2a170c; box-shadow: inset 0 0 0 1px var(--gold); }
 .rw-career > li.key::before { background: var(--verm); box-shadow: inset 0 0 0 1px var(--gold-hi); }
 .rw-career time { font: var(--fs-2) var(--f-kai); white-space: nowrap; color: rgba(236, 210, 154, .75); }
@@ -315,3 +320,30 @@ body:has(.xr.on) .scr-map .mm-panel { visibility: hidden; }
 @keyframes rw-drop { from { transform: translateY(-1.25rem); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes rw-ripple { from { opacity: .9; transform: scale(.4); } to { opacity: 0; transform: scale(1.8); } }
 [data-motion='less'] .rw-where.land::after, [data-motion='less'] .rw-where.land > .rw-where-face { animation: none; }
+
+/* ================= 展像：点立像，卷首铺满这一扇看全像 ================= */
+.rw-hero { transition: height var(--t-3) var(--ease-paper); }
+.rw-pic { cursor: zoom-in; }
+.rw-pic:has(> i) { cursor: default; }
+.rw.gaze .rw-pic { cursor: zoom-out; }
+.rw-pic > .fg { object-fit: contain; transition: height var(--t-3) var(--ease-paper); }
+.rw.gaze .rw-pic > .fg { height: 100%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent); mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent); }
+.rw.gaze .rw-kin { opacity: 0; pointer-events: none; }
+.rw.gaze .rw-hero::after { background: linear-gradient(180deg, rgba(19, 10, 5, .3) 0, rgba(19, 10, 5, 0) 8%, rgba(19, 10, 5, 0) calc(100% - var(--rw-band) * 1.5), rgba(19, 10, 5, .84) calc(100% - var(--rw-band) * .92), #160c06 100%); }
+
+/* ================= 卷底：人物窗、志窗、势力窗同一条漆底，动作是描金漆牌 =================
+   象牙牙牌压在纸上才好看，压在漆上发白发飘；这里换成漆牌。第一件事用朱漆（召见、召对），选中的（钉选、对参）填金 */
+.rw .rw-foot, .zw .zw-foot { margin: 0; padding: .5625rem 1.125rem .625rem; border-top: 0; background: var(--lac-grain), linear-gradient(180deg, #27170d, #170d07);
+  box-shadow: inset 0 1px 0 rgba(201, 164, 92, .42), 0 -.5rem .875rem -.5rem rgba(8, 4, 2, .7); }
+.rw .rw-foot .q-yapai, .zw .zw-foot .q-yapai { padding: .3125rem .8125rem; border-radius: 2px; letter-spacing: .16em; color: #f3e2b8; background: linear-gradient(180deg, #3e2717, #27160b);
+  box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .58), inset 0 1px 0 rgba(255, 235, 190, .14), 0 .125rem .3125rem rgba(0, 0, 0, .45); transition: color var(--t-2), background var(--t-2), box-shadow var(--t-2), transform var(--t-2) var(--ease-out); }
+.rw .rw-foot .q-yapai::before, .zw .zw-foot .q-yapai::before { display: none; }
+.rw .rw-foot .q-yapai:not(.off):hover, .zw .zw-foot .q-yapai:not(.off):hover { color: #fff3d6; background: linear-gradient(180deg, #59361d, #33200f); transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px var(--gold-hi), inset 0 1px 0 rgba(255, 235, 190, .2), 0 .25rem .5rem rgba(0, 0, 0, .5); }
+.rw .rw-foot .q-yapai.off, .zw .zw-foot .q-yapai.off { opacity: .5; filter: none; color: rgba(243, 226, 184, .7); }
+.rw .rw-acts > .q-yapai:first-child:not(.off):not(.on) { color: #fbefcf; background: linear-gradient(180deg, #a13323, #6c1b10); box-shadow: inset 0 0 0 1px rgba(236, 210, 154, .72), inset 0 1px 0 rgba(255, 220, 190, .22), 0 .125rem .3125rem rgba(0, 0, 0, .45); }
+.rw .rw-acts > .q-yapai:first-child:not(.off):not(.on):hover { color: #fff; background: linear-gradient(180deg, #b93c2a, #7d2013); }
+.rw .rw-acts > .q-yapai.on { color: #2a1608; background: linear-gradient(180deg, var(--gold-hi), var(--gold)); box-shadow: inset 0 0 0 1px rgba(255, 245, 215, .55), 0 .125rem .3125rem rgba(0, 0, 0, .45); }
+.rw .rw-acts > .q-yapai.on:hover { color: #1c0e04; background: linear-gradient(180deg, #f6e2b6, #d7b56e); }
+/* 详传、寻人是翻书，不是对人做事：退一档 */
+.rw .rw-more .q-yapai { background: none; box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .34); }

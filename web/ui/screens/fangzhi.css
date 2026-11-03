@@ -13,7 +13,7 @@
 .zw-pic.ready { opacity: 1; }
 .zw-pic > canvas { display: block; width: 100%; height: 100%; object-fit: cover; filter: sepia(.08) saturate(.96) contrast(1.05) brightness(1.04); }
 .zw-hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(19, 10, 5, .32) 0, rgba(19, 10, 5, 0) 18%, rgba(19, 10, 5, 0) 38%, rgba(19, 10, 5, .84) 72%, #1c110a 100%),
+  background: linear-gradient(180deg, rgba(19, 10, 5, .32) 0, rgba(19, 10, 5, 0) 18%, rgba(19, 10, 5, 0) calc(100% - var(--zw-band) * 1.6), rgba(19, 10, 5, .84) calc(100% - var(--zw-band) * .96), #1c110a 100%),
     radial-gradient(ellipse at 50% 30%, transparent 62%, rgba(19, 10, 5, .32)); }
 .zw-ctls { position: absolute; right: 1rem; top: .625rem; z-index: 4; display: flex; gap: .375rem; }
 .zw-ctl { width: 2rem; height: 2rem; padding: 0; border: 0; cursor: pointer; font: 400 1.125rem/2rem var(--f-kai); color: #f3e2b8; background: rgba(19, 10, 5, .62);
@@ -70,16 +70,11 @@ a.fz-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rg
 .fz-stat span em { font-style: normal; margin-left: .25rem; color: #8a5a12; }
 .fz-stat.warn { box-shadow: inset 0 -.1875rem 0 #a3301f, inset 0 0 0 1px rgba(163, 48, 31, .35); }
 .fz-stat.warn b { color: #a3301f; }
-.fz-rank { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; font-size: var(--fs-2); color: var(--ink-soft); }
-.fz-rank b { font-weight: 400; font-family: var(--f-title); color: #6a1f12; }
-.fz-rank span.low { color: #a3301f; }
 .fz-slips { display: flex; gap: .375rem; flex-wrap: wrap; }
 .fz-slip { flex: none; display: flex; align-items: center; gap: .3125rem; padding: .1875rem .5rem .1875rem .1875rem; border: 0; cursor: pointer; font-family: var(--f-kai); color: var(--ink);
   background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
-.fz-slip i { font-style: normal; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; font: 400 var(--fs-2)/1 var(--f-title); color: #f9ead2; background: #6b4a2a; }
 .fz-slip b { font-weight: 400; font-size: var(--fs-2); letter-spacing: .06em; white-space: nowrap; }
 .fz-slip.on { background: rgba(255, 246, 226, .95); box-shadow: inset 0 -.1875rem 0 #a3301f, inset 0 0 0 1px rgba(120, 90, 50, .35); }
-.fz-slip.on i { background: #a3301f; }
 .fz-acts { display: flex; flex-wrap: wrap; gap: .375rem; margin-top: auto; padding-top: .5rem; border-top: 1px solid rgba(163, 40, 27, .2); }
 
 .fz-vhead { display: flex; align-items: center; gap: .625rem; padding-bottom: .5rem; border-bottom: 1px solid rgba(163, 40, 27, .25); }
@@ -97,10 +92,6 @@ a.fz-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rg
 .fz-rows dt.wide { grid-column-start: 1; }
 .fz-rows dd.wide { grid-column: 2 / -1; }
 .fz-vsub { margin: 0; font-size: var(--fs-1); letter-spacing: .2em; color: var(--ink-faint); }
-.fz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); gap: .375rem; }
-.fz-grid > div { padding: .375rem .5rem; background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .2); }
-.fz-grid small { display: block; font-size: var(--fs-1); color: var(--ink-faint); }
-.fz-grid b { font-weight: 400; font-size: var(--fs-3); }
 .fz-armies { display: flex; flex-direction: column; gap: .25rem; }
 .fz-army { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: .75rem; align-items: baseline; padding: .375rem .625rem; font-size: var(--fs-2);
   background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #6b4a2a; }
@@ -130,13 +121,6 @@ a.fz-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rg
 .scr-map .card { cursor: pointer; }
 .scr-map .card .fz-cardhint { position: absolute; bottom: -1.5rem; left: 0; right: 0; text-align: center; font-size: var(--fs-1); color: rgba(243, 230, 200, .8); white-space: nowrap; }
 /* 通志 */
-.fz-rank a.fz-circ, .fz-crumbs a { cursor: pointer; text-decoration: underline dotted; text-underline-offset: .2em; }
-.fz-rank a.fz-circ { font-family: var(--f-title); color: #6a1f12; }
-.fz-official { padding: .5rem .75rem; background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #6b2e2a, inset 0 0 0 1px rgba(120, 90, 50, .2); }
-.fz-official p { margin: 0 0 .25rem; font-size: var(--fs-3); }
-.fz-official p small { font-size: var(--fs-2); color: var(--ink-faint); }
-.fz-gov { display: flex; flex-wrap: wrap; gap: .25rem .75rem; font-size: var(--fs-2) !important; color: var(--ink-soft); }
-.fz-gov-eff { font-size: var(--fs-2) !important; color: #6a1f12; }
 .fz-common { margin: 0; font-size: var(--fs-3); line-height: 1.8; }
 .fz-common b { font-weight: 400; color: #a3301f; }
 .fz-table { width: 100%; border-collapse: collapse; font-size: var(--fs-2); }
@@ -228,11 +212,11 @@ a.fz-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rg
 .sw-seal { color: #fbf3e0; text-shadow: 0 1px 2px rgba(0, 0, 0, .55); background: #8a6a3a; box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .55), inset 0 0 0 2px rgba(249, 234, 210, .45), inset 0 0 1rem rgba(0, 0, 0, .25); }
 .sw-seal.hostile { box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .55), inset 0 0 0 2px rgba(229, 143, 120, .8), inset 0 0 1rem rgba(0, 0, 0, .25); }
 .sw-ruler { display: grid; grid-template-columns: 3.75rem 1fr; gap: .75rem; align-items: center; padding: .5rem .625rem; background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
-.sw-face { display: grid; place-items: center; width: 3.75rem; height: 4.625rem; padding: 0; border: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 35%, #cdb88e, #8d7651);
+.sw-face { position: relative; display: block; flex: none; width: 3.75rem; height: 4.625rem; padding: 0; border: 0; overflow: hidden; background: var(--face-blank);
   box-shadow: 0 .1875rem .5rem rgba(0, 0, 0, .3), 0 0 0 1px rgba(120, 90, 50, .5); }
 button.sw-face { cursor: pointer; }
 .sw-face > img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
-.sw-face > i { font: 400 1.75rem var(--f-title); font-style: normal; color: rgba(40, 24, 14, .6); }
+.sw-face > i { position: absolute; left: 0; right: 0; top: 36%; transform: translateY(-50%); text-align: center; font: 400 1.0625rem/1 var(--f-title); font-style: normal; color: var(--face-ink); }
 .sw-ruler small { display: block; font-size: var(--fs-1); letter-spacing: .25em; color: var(--ink-faint); }
 .sw-ruler b, .sw-name { display: block; padding: 0; border: 0; background: none; text-align: left; font: 400 var(--fs-5)/1.3 var(--f-title); letter-spacing: .12em; color: #2a1608; }
 .sw-name { cursor: pointer; text-decoration: underline dotted rgba(120, 90, 50, .5); text-underline-offset: .25rem; }
@@ -252,8 +236,8 @@ button.sw-face { cursor: pointer; }
 .zw .fz-pills { overflow: hidden; margin-left: -.625rem; }
 .zw .fz-desc { max-height: none; overflow: visible; }
 .zw .zw-tabs { gap: .1875rem; }
-.zw .zw-tabs.tight .fz-slip { padding: .1875rem .5rem; }
-.zw .zw-tabs.tight .fz-slip i { display: none; }
+.zw .zw-tabs.tight .fz-slip { padding-left: .125rem; padding-right: .125rem; }
+.zw .zw-tabs.tight .fz-slip > b { letter-spacing: .04em; }
 .zw .fz-slip { gap: .25rem; padding-right: .375rem; }
 /* 通志辖境：一州一条 */
 .fz-xj { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
@@ -265,3 +249,76 @@ button.sw-face { cursor: pointer; }
 .fz-xj-h i { margin-left: .25rem; font-style: normal; font-size: var(--fs-1); color: var(--ink-faint); }
 .fz-xj > li > p { display: flex; flex-wrap: wrap; gap: 0 .875rem; margin: .125rem 0 0; font-size: var(--fs-2); color: var(--ink-soft); }
 .fz-xj > li > p.why { color: #6a1f12; }
+
+/* ---------- 第二轮：一叶纸上一张朱丝栏的表（主官、读数、账目同一路数），不打小方盒 ---------- */
+.zw .fz-desc { font-size: var(--fs-3); line-height: 1.75; color: #4a3322; }
+/* 志名旁的小字里可点的（通志的治所） */
+.zw-name small a { cursor: pointer; color: #f3e2b8; text-decoration: underline dotted; text-underline-offset: .2em; }
+.zw-name small a:hover { color: #fff3d6; }
+
+/* 主官、上官：一人一格，与读数带连成一张表 */
+.fz-offs { display: flex; overflow: hidden; border-top: 1px solid rgba(163, 40, 27, .5); }
+.fz-offs + .fz-band { margin-top: -.625rem; border-top-color: rgba(163, 40, 27, .22) !important; }
+.fz-off { flex: 1 1 0; min-width: 0; display: grid; grid-template-columns: 2.875rem minmax(0, 1fr); gap: .625rem; align-items: center; padding: .4375rem .625rem; box-shadow: -1px 0 0 rgba(163, 40, 27, .22); }
+.fz-off .sw-face { width: 2.875rem; height: 3.5rem; box-shadow: 0 .125rem .375rem rgba(0, 0, 0, .28), 0 0 0 1px rgba(120, 90, 50, .5); transition: box-shadow var(--t-2); }
+.fz-off button.sw-face:hover { box-shadow: 0 .125rem .5rem rgba(0, 0, 0, .35), 0 0 0 1px #a3301f; }
+.fz-off .sw-face > i { font-size: .9375rem; }
+.fz-off > div { min-width: 0; display: flex; flex-direction: column; gap: .0625rem; }
+.fz-off small { font-size: var(--fs-1); letter-spacing: .08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-faint); }
+.fz-off b { font: 400 var(--fs-4)/1.25 var(--f-title); letter-spacing: .08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2a1608; }
+.fz-off.bad b { color: #a3301f; }
+.fz-off > div > span { font-size: var(--fs-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-soft); }
+/* 通志：长官一格，旁边写本道之效 */
+.fz-off-notes { flex: 1.25 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: .1875rem; padding: .4375rem .625rem; box-shadow: -1px 0 0 rgba(163, 40, 27, .22); }
+.fz-off-notes p { margin: 0; font-size: var(--fs-2); line-height: 1.55; color: var(--ink-soft); }
+.fz-off-notes b { font-weight: 400; color: #6a1f12; }
+
+/* 读数格角上：道内第几 */
+.zw .fz-stat small { display: flex; align-items: baseline; gap: .25rem; }
+.fz-nth { margin-left: auto; font-style: normal; font-size: var(--fs-1); white-space: nowrap; color: var(--ink-faint); }
+.fz-nth.low { color: #a3301f; }
+
+/* 检签：等分整行，只写卷名（同人物窗的页签）；选中的压朱线 */
+.zw .zw-tabs { gap: 0; margin-top: .75rem; padding: 0 .375rem; background: linear-gradient(180deg, #ece2ca, #e6d8b6); border-bottom: 1px solid rgba(163, 40, 27, .4); }
+.zw .fz-slip { flex: 1 1 0; min-width: max-content; justify-content: center; padding: .4375rem .375rem .375rem; color: var(--ink-soft); background: none; box-shadow: none; transition: color var(--t-2), background var(--t-2); }
+.zw .fz-slip > b { font: 400 var(--fs-3)/1.3 var(--f-kai); letter-spacing: .22em; }
+.zw .fz-slip + .fz-slip { box-shadow: -1px 0 0 rgba(163, 40, 27, .14); }
+.zw .fz-slip:hover { color: #3a1a10; background: rgba(255, 250, 238, .45); }
+.zw .fz-slip.on { color: #7d1d12; background: linear-gradient(180deg, rgba(255, 250, 238, 0), rgba(255, 250, 238, .72)); box-shadow: inset 0 -.1875rem 0 #a3301f; }
+.zw .fz-slip.on + .fz-slip { box-shadow: none; }
+.zw .fz-slip.lock { opacity: .6; }
+
+/* 卷题：一行小字，后面拖一线朱丝 */
+.zw .fz-vsub { display: flex; align-items: center; gap: .625rem; font: var(--fs-2) var(--f-kai); letter-spacing: .24em; color: #6a1f12; }
+.zw .fz-vsub::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(163, 40, 27, .35), rgba(163, 40, 27, 0)); }
+.zw .zw-body { padding-top: .625rem; }
+.zw .fz-vbody { padding-top: .5rem; }
+
+/* 账目：朱丝栏两栏，一格一对；字长的一对占满一行。两栏左右之间、上下之间都是细朱线 */
+.fz-lines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: dense; margin: 0; overflow: hidden; border-top: 1px solid rgba(163, 40, 27, .4); border-bottom: 1px solid rgba(163, 40, 27, .4); }
+.fz-lines > div { display: grid; grid-template-columns: 4.625em minmax(0, 1fr); gap: .5rem; align-items: baseline; padding: .3125rem .625rem .375rem; font-size: var(--fs-2); box-shadow: -1px 0 0 rgba(163, 40, 27, .18), 0 -1px 0 rgba(163, 40, 27, .18); }
+.fz-lines > div.wide { grid-column: 1 / -1; }
+.fz-lines dt { font-size: var(--fs-2); letter-spacing: .06em; color: var(--ink-soft); }
+.fz-lines dt em { display: block; font-style: normal; font-size: var(--fs-1); letter-spacing: 0; color: #8a5a12; }
+.fz-lines dd { margin: 0; font-size: var(--fs-3); line-height: 1.55; color: var(--ink); }
+.fz-lines dd.bad { color: #a3301f; }
+.fz-lines dd.gold { color: #8a5a12; }
+.fz-lines dd.good { color: #3f6e5e; }
+.fz-lines dd small { display: block; font-size: var(--fs-1); color: var(--ink-faint); }
+.fz-lines > div.nil dd { color: var(--ink-faint); }
+
+/* 风物格：读数带同款，字小一号 */
+.zw .fz-gridband .fz-stat b { font: 400 var(--fs-4)/1.3 var(--f-kai); white-space: normal; }
+
+/* 换卷：字轻轻浮上来 */
+.zw-body.turn > * { animation: zw-turn var(--t-3) var(--ease-out); }
+@keyframes zw-turn { from { opacity: 0; transform: translateY(.3125rem); } to { opacity: 1; transform: none; } }
+[data-motion='less'] .zw-body.turn > * { animation: none; }
+
+/* 势力窗：君主一格连着读数带，不打框；各卷的账目也压朱丝 */
+.zw.sw .sw-ruler { padding: .4375rem .625rem; background: none; box-shadow: none; border-top: 1px solid rgba(163, 40, 27, .5); }
+.zw.sw .zw-top > .fz-pills { margin-top: -.125rem; }
+.zw.sw .rm-rows { gap: 0; border-top: 1px solid rgba(163, 40, 27, .4); border-bottom: 1px solid rgba(163, 40, 27, .4); }
+.zw.sw .rm-rows p { padding: .3125rem .5rem .375rem; line-height: 1.65; border-bottom: 1px solid rgba(163, 40, 27, .16); }
+.zw.sw .rm-rows p:last-child { border-bottom: 0; }
+.zw.sw .rm-rows span { font-family: var(--f-kai); color: var(--ink-soft); line-height: 1.7; }

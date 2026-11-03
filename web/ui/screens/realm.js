@@ -195,7 +195,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   }
   const BODY_KEYS = ['dao', 'people', 'rows', 'chips', 'places', 'breakdown', 'relations', 'strengths', 'weaknesses', 'texts', 'links', 'lines', 'bars', 'chain', 'sealed'];
   function hasBody(b) { return BODY_KEYS.some((k) => Array.isArray(b[k]) ? b[k].length : !!b[k]); }
-  const rowsEl = (list) => (list && list.length ? h('div.rm-rows', list.map((r) => h('p' + (r.tone === 'zhu' ? '.zhu' : ''), h('span', r.k), h('b', r.v)))) : null);
+  const rowsEl = (list) => (list && list.length ? h('div.rm-rows', list.map((r) => h('p' + (r.tone === 'zhu' ? '.zhu' : ''), h('span', r.k), h('b', typeof r.v === 'string' ? digits(r.v) : r.v)))) : null);
   const chipGroups = (groups) => (groups || []).map((g) => h('div.rm-chips', h('span', g.title), h('div', g.items.map((c) => h('em' + (c.warn ? '.warn' : ''), c.label, c.value != null && c.value !== '' ? h('b', c.value) : null)))));
   function juanBody(b) {
     const parts = [];
@@ -415,7 +415,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
       d.desc ? h('p.fz-desc', d.desc) : null,
       d.stats.length ? h('div.fz-band', d.stats.map(([k, v]) => h('div.fz-stat', h('small', k), h('b', statText(v))))) : null);
     replaceChildren(dTabs, juans.map(([t, sub]) => h('button.fz-slip' + (t === dJuan ? '.on' : ''), { type: 'button', title: sub, onclick: () => { dJuan = t; dScroll.scrollTop = Math.min(dScroll.scrollTop, dTop.offsetTop + dTop.offsetHeight - parseFloat(getComputedStyle(dTabs).top)); renderDock(); } },
-      h('i', JUAN_MARK[t] || t.charAt(0)), h('b', t))));
+      h('b', t))));
     const cur = juans.find(([t]) => t === dJuan);
     // 君主已在卷首那张小像卡上，君臣卷从第二位列起
     const body = cur && cur[0] === '君臣' && ruler ? { ...cur[2], people: cur[2].people.filter((p) => p !== ruler) } : cur && cur[2];

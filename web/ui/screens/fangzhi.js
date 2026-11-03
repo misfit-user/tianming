@@ -1,7 +1,7 @@
 // 方志、通志：一府一州（一道）的志书。照 CK3、EU5 的地块页靠左展开、舆图露着（同志 10-11：原先摊成整本册页盖住舆图，不如老界面的方志）：
 //   卷首一幅此地小景（从活舆图斜看此地，本块描金，scenery 回调给图），其上压志名、路径、名目；右上是图上、退回、收起；
-//   其下纸面一叶接着往下读：状态小签、隶属主官上官地形税级诸签、描述、读数带、本道排名；一排检签（户役、财赋……）点哪卷读哪卷；
-//   卷底是动作（照身份）；上隶的势力、省道就是志名上头那行路径，点了展开。舆图开着时点别的府州，志窗就换成那一处；与人物窗同占左边一扇，开一扇收一扇。
+//   其下纸面一叶接着往下读：状态小签、描述；主官、上官（小像可点）与读数带连成一张朱丝栏的表，本道排名落在各格的角上；一排检签（户役、财赋……）点哪卷读哪卷；
+//   卷底是动作（照身份）；上隶的势力、省道就是志名上头那行路径，点了展开，志名旁边小字写政区、地形、税级。舆图开着时点别的府州，志窗就换成那一处；与人物窗同占左边一扇，开一扇收一扇。
 //   整卷一处滚动（同人物窗）：往下读时小景收成一条压着志名的窄带，检签吸在窄带之下。
 // 所检之卷——户役（并役政一节）、财赋、军备（在驻之师）、职官、风物（物产格）、营造（工役卡）、账本（赋税核算、公库、实绩、灾异）。
 // 据奏之数标「据奏」或「据报」。入口：入图后点府州小签。数据与动作经 game.fangzhi（adapter/fangzhi.js）。
@@ -61,6 +61,15 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
   const scroller = h('div.zw-scroll.q-scroll', hero, sheet);
   const ov = h('aside.zw', { role: 'dialog', 'aria-label': '方志' }, scroller, h('div.zw-ctls', flyBtn, backBtn, shutBtn), foot);
   root.append(ov);
+  // 换卷时新一卷的字轻轻浮上来（只在真换卷时；过回合重画不动）
+  let shownVol = '';
+  const turnIn = (key) => {
+    if (key === shownVol) return;
+    shownVol = key;
+    right.classList.remove('turn');
+    void right.offsetWidth;
+    right.classList.add('turn');
+  };
   // 翻检签：已经往下读了的，新一卷从检签底下开始
   const keepTabs = () => { scroller.scrollTop = Math.min(scroller.scrollTop, left.offsetTop + left.offsetHeight - parseFloat(getComputedStyle(tabs).top)); };
   // 卷首小景：开窗即先铺素绢，图渲好了换上（同一处只渲一回）
@@ -80,30 +89,47 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
   }
 
   const who = (name, isChar) => (name && isChar && onPerson ? h('a.fz-who', { onclick: () => onPerson(name) }, name) : h('span', name || ''));
+  // 主官、上官一人一格：左一张小像（可点开人物窗），右官名、人名、一行小字。没有此人（空缺、未详）只留一幅粉本
+  let peopleCache = null;
+  const portraitOf = (name) => {
+    if (!peopleCache) { try { peopleCache = new Map(game.select.people({ dead: true }).map((x) => [x.name, x])); } catch (_e) { peopleCache = new Map(); } }
+    const row = peopleCache.get(name);
+    return row && row.portrait ? row.portrait : '';
+  };
+  function officer({ label, name, isChar, note, bad }) {
+    const src = isChar ? portraitOf(name) : '';
+    const initial = () => (isChar && name ? h('i', [...name][0]) : null);
+    const pic = src ? h('img', { src, alt: '', decoding: 'async', onerror: (e) => e.target.replaceWith(initial() || '') }) : initial();
+    const go = isChar && name && onPerson ? () => onPerson(name) : null;
+    return h('div.fz-off' + (bad ? '.bad' : ''),
+      h(go ? 'button.sw-face' : 'span.sw-face', go ? { type: 'button', title: name, onclick: go } : {}, pic),
+      h('div', h('small', label), h('b', who(name, isChar)), note ? h('span', note) : null));
+  }
+  // 读数格角上的小字：本道排第几（越靠前越好；民心、吏治落到后三分之一的标红）
+  const nthMark = (rank, k) => {
+    const it = rank && rank.items.find((x) => x.label === k);
+    return it ? h('i.fz-nth' + (it.low ? '.low' : ''), { title: `${rank.circuit.label}${num(rank.of)}州中第${num(it.rank)}` }, `道内第${num(it.rank)}`) : null;
+  };
 
   function renderLeft() {
+    peopleCache = null;
     const d = cur;
     const hd = d.head;
     const crumbs = h('p.fz-crumbs',
       hd.owner ? (onFaction ? h('a', { title: '展势力', onclick: () => onFaction(hd.ownerKey || hd.owner) }, hd.owner) : h('span', hd.owner)) : null,
-      hd.circuit ? [h('i', '›'), h('a', { title: '展通志', onclick: () => showCircuit(hd.circuit.key) }, hd.circuit.label)] : null, h('i', '›'), h('b', hd.name));
-    const pills = [
-      hd.owner ? h('span.fz-pill', '隶　', h('b', hd.owner)) : null,
-      hd.governor ? h('span.fz-pill' + (hd.governor.vacant ? '.bad' : ''), `${hd.governor.office}　`, who(hd.governor.name, hd.governor.isChar), hd.governor.adm != null ? h('small', `政${num(hd.governor.adm)}`) : null) : null,
-      hd.superior ? h('span.fz-pill', '上官　', h('b', hd.superior.role), '　', who(hd.superior.who, hd.superior.isChar), hd.superior.tail ? h('small', hd.superior.tail) : null) : null,
-      hd.terrain ? h('span.fz-pill', hd.terrain) : null,
-      hd.tax ? h('span.fz-pill', '税　', h('b', hd.tax)) : null
+      hd.circuit ? [h('i', '›'), h('a', { title: '展通志', onclick: () => showCircuit(hd.circuit.key) }, hd.circuit.label)] : null);
+    const offs = [
+      hd.governor ? officer({ label: hd.governor.office, name: hd.governor.name, isChar: hd.governor.isChar, bad: hd.governor.vacant, note: hd.governor.adm != null ? `政务${num(hd.governor.adm)}` : '' }) : null,
+      hd.superior ? officer({ label: `上官　${hd.superior.role}`, name: hd.superior.who, isChar: hd.superior.isChar, note: hd.superior.tail }) : null
     ].filter(Boolean);
     const status = hd.status.length ? h('div.fz-status', hd.status.map((s) => h('span.fz-zt.' + (s.tone || 'mid'), { title: [s.name, s.desc, s.effects.join('，')].filter(Boolean).join(' · ') },
       h('i', s.seal), s.name, h('em', s.left == null ? '永续' : `余${num(s.left)}回合`)))) : null;
     const rough = knows({ region: d.id }) === 'rough';
     const band = h('div.fz-band', d.band.map((x) => rough && !opens(BAND_VOL[x.k]) ? roughStat(x) : h('div.fz-stat' + (x.warn ? '.warn' : ''),
-      h('small', x.k, x.reported ? h('em', '据奏') : null), h('b', isOffice(x) ? x.sub : typeof x.v === 'number' && Math.abs(x.v) >= 1e4 ? num(roundSig(x.v, 3)) : fmt(x.v)),   // 读数带只看个大数：三位有效
+      h('small', x.k, x.reported ? h('em', '据奏') : null, rough ? null : nthMark(d.rank, x.k)), h('b', isOffice(x) ? x.sub : typeof x.v === 'number' && Math.abs(x.v) >= 1e4 ? num(roundSig(x.v, 3)) : fmt(x.v)),   // 读数带只看个大数：三位有效
       isOffice(x) ? h('span', `浊度${fmt(x.v)}`) : x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`, x.subTag ? h('em', x.subTag) : null) : x.sub ? h('span', digits(x.sub)) : null)));
-    const rank = d.rank && !rough ? h('p.fz-rank', h('a.fz-circ', { title: '展其通志', onclick: () => showCircuit(d.rank.circuit.key) }, d.rank.circuit.label), h('small', `本方${num(d.rank.of)}州中`),
-      d.rank.items.map((it) => h('span' + (it.low ? '.low' : ''), `${it.label}第${num(it.rank)}`))) : null;
     const slips = d.vols.map((v) => h('button.fz-slip' + (v.key === vol ? '.on' : '') + (rough && !PUBLIC_VOLS.has(v.key) && !opens(v.key) ? '.lock' : ''), { type: 'button', title: v.sub, onclick: () => { vol = v.key; keepTabs(); renderLeft(); renderRight(); } },
-      h('i', v.seal), h('b', v.name.replace(/志$/, ''))));
+      h('b', v.name.replace(/志$/, ''))));
     const R = role();
     let acts = null;
     if (R.sovereign && (d.acts.length || d.canReassign)) {
@@ -114,8 +140,10 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       const tour = R.acts.tour;
       acts = h('div.fz-acts', (R.acts.own || []).map(([label, note]) => yapaiOff(label, R.off, { note })), tour ? yapaiOff(tour[0], R.off, { note: tour[1] }) : null);
     }
-    nameplate('方志', crumbs, hd.name, hd.level);
-    replaceChildren(left, status, pills.length ? h('div.fz-pills', pills) : null, hd.desc ? h('p.fz-desc', hd.desc) : null, band, rank);
+    // 志名旁的小字：政区（内核字串尾巴上的势力名路径里有了，不再写）、地形、税级
+    const levelHead = String(hd.level || '').split(' · ')[0];
+    nameplate('方志', crumbs, hd.name, [levelHead, hd.terrain, hd.tax ? `税${hd.tax}` : ''].filter(Boolean).join(' · '));
+    replaceChildren(left, status, hd.desc ? h('p.fz-desc', hd.desc) : null, offs.length ? h('div.fz-offs', offs) : null, band);
     replaceChildren(tabs, slips);
     fitTabs();
     replaceChildren(foot, acts);
@@ -123,12 +151,15 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
 
   // rough：所掌之外只知大略，数取一位有效冠「约」
   const val = (v, unit, rough) => (rough && typeof v === 'number' ? `${roughOf(v)}${unit || ''}` : fmt(v, unit));
+  const isNil = (v) => v === 0 || v === '0';
   function rowsEl(rows, rough = false) {
-    // 一行两对；字长的一对占满一行（承载上限、保甲之类）
-    return h('dl.fz-rows', rows.map((r) => {
+    // 朱丝栏：两栏一格一对，字长的一对占满一行（承载上限、保甲之类）；「零」不是警示，不标红，淡着写
+    return h('dl.fz-lines', rows.map((r) => {
       const v = val(r.v, r.unit, rough);
-      const wide = String(v).length > 11 || (r.note && !rough && String(r.note).length > 14) ? '.wide' : '';
-      return [h('dt' + wide, r.k, r.tag ? h('em', r.tag) : null), h('dd.' + (r.tone || 'plain') + wide, v, r.note && !rough ? h('small', digits(r.note)) : null)];
+      const wide = String(v).length > 8 || (r.note && !rough && String(r.note).length > 14);   // 过八字在窄窗一格放不下，折半个字最难看，索性占满
+      const nil = isNil(r.v) && !rough;
+      return h('div' + (wide ? '.wide' : '') + (nil ? '.nil' : ''), h('dt', r.k, r.tag ? h('em', r.tag) : null),
+        h('dd.' + (nil ? 'plain' : r.tone || 'plain'), v, r.note && !rough ? h('small', digits(r.note)) : null));
     }));
   }
   function renderRight() {
@@ -143,7 +174,12 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     if (v.armies && v.armies.length) body.push(h('div.fz-armies', v.armies.map((a) => h('div.fz-army', h('b', a.name), h('span', fmt(a.soldiers), a.reported ? h('em', '据奏') : null),
       a.commander ? who(a.commander, true) : null, a.morale != null ? h('small' + (a.morale < 45 ? '.low' : ''), `气${num(a.morale)}`) : null))));
     const rough = knows({ region: cur.id }) === 'rough' && !opens(v.key);
-    if (v.grid && v.grid.length) body.push(h('div.fz-grid', v.grid.map((g) => h('div', h('small', g.k), h('b', val(g.v, g.unit, rough))))));
+    if (v.grid && v.grid.length) {
+      const liveGrid = v.grid.filter((g) => !isNil(g.v));
+      const nilGrid = v.grid.filter((g) => isNil(g.v));
+      if (liveGrid.length) body.push(h('div.fz-band.fz-gridband', liveGrid.map((g) => h('div.fz-stat', h('small', g.k), h('b', val(g.v, g.unit, rough))))));
+      if (nilGrid.length) body.push(h('p.fz-note', `此地无：${nilGrid.map((g) => g.k).join('、')}`));
+    }
     if (v.rows && v.rows.length) body.push(rowsEl(v.rows, rough));
     if (v.note) body.push(h('p.fz-note', digits(v.note)));
     if (v.sub2) body.push(h('section.fz-sub', h('h4', v.sub2.title, h('small', v.sub2.note)), rowsEl(v.sub2.rows, rough)));
@@ -161,6 +197,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     }
     if (v.ledger) body.push(...ledgerEls());
     replaceChildren(right, head, h('div.fz-vbody', body));
+    turnIn(`r${cur.id}${v.key}`);
   }
   function ledgerEls() {
     let L = null;
@@ -169,9 +206,10 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     const out = [];
     const sec = (title, note, ...kids) => h('section.fz-sub', h('h4', title, note ? h('small', note) : null), ...kids);
     const fs = (v, unit) => (v ? `${num(Math.abs(v) >= 1e4 ? roundSig(v, 3) : Math.round(v))}${unit || ''}` : '—');   // 表里取三位有效，零记「—」
+    const hasBase = L.taxes && L.taxes.rows.some((x) => x.base != null);   // 税基整列都没有就不列
     if (L.taxes) out.push(sec('赋税核算', '按现行税则与征收损耗预计一年；钱、粮、布分计',
-      h('table.fz-table.fz-ledger', h('thead', h('tr', ['税目', '税基', '名义', '上解', '留用'].map((t) => h('th', t)))),
-        h('tbody', L.taxes.rows.map((x) => h('tr', h('td', x.name), h('td', x.base == null ? '—' : [fs(x.base, x.baseUnit), h('i', x.baseKind)]),
+      h('table.fz-table.fz-ledger', h('thead', h('tr', [...(hasBase ? ['税目', '税基'] : ['税目']), '名义', '上解', '留用'].map((t) => h('th', t)))),
+        h('tbody', L.taxes.rows.map((x) => h('tr', h('td', x.name), hasBase ? h('td', x.base == null ? '—' : [fs(x.base, x.baseUnit), h('i', x.baseKind)]) : null,
           h('td', fs(x.nominal, x.unit)), h('td', fs(x.central, x.unit)), h('td', fs(x.local, x.unit)))))),
       L.taxes.total.length ? h('p.fz-note', `合计上解　${L.taxes.total.map((t) => fmt(t.central, t.unit)).join('　')}`) : null));
     if (L.treasury) {
@@ -307,31 +345,30 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
   // ---------- 通志 ----------
   const CVOLS = [['xiajing', '境', '辖境', '按问题轻重 · 点州展方志'], ['xingshi', '势', '形势', '战略边警 · 士绅书院'], ['caiji', '财', '财计', '实征起运 · 公帑'], ['yingzao', '营', '营造', '本道建筑 · 只作汇览']];
   function renderCircuitLeft() {
+    peopleCache = null;
     const c = curC;
+    // 实控写「全」就不用列；他方的道才标一下
     const pills = [
-      c.owner ? h('span.fz-pill', '隶　', h('b', c.owner)) : null,
-      h('span.fz-pill', '实控　', h('b', `${num(c.held)}／${num(c.of)}`), '州'),
-      c.capital ? h('span.fz-pill', '治所　', h('a.fz-who', { onclick: () => show(c.capital.id) }, c.capital.name)) : null,
+      c.held !== c.of ? h('span.fz-pill', '实控　', h('b', `${num(c.held)}／${num(c.of)}`), '州') : null,
       c.player ? null : h('span.fz-pill.bad', '他方所辖')
     ].filter(Boolean);
     const o = c.official;
-    const official = o ? h('div.fz-official',
-      h('p', h('small', o.role), '　', who(o.who, o.isChar)),
-      o.ability != null ? h('p.fz-gov', h('span', `能力${num(o.ability)}`), o.band ? h('span', `履职${o.band}`) : null, h('span', o.state), o.seat ? h('span', `驻${o.seat}`) : null) : null,
-      o.effect ? h('p.fz-gov-eff', '本道之效：', digits(o.effect)) : null, h('p.fz-note', o.count != null ? `统辖本道${num(o.count)}府州；${o.line}` : o.line)) : null;
+    const official = o ? h('div.fz-offs.single',
+      officer({ label: o.role, name: o.who, isChar: o.isChar, note: o.ability != null ? [`能力${num(o.ability)}`, o.band ? `履职${o.band}` : '', o.state, o.seat ? `驻${o.seat}` : ''].filter(Boolean).join(' · ') : '' }),
+      h('div.fz-off-notes', o.effect ? h('p', h('b', '本道之效　'), digits(o.effect)) : null, h('p', o.count != null ? `统辖本道${num(o.count)}府州；${o.line}` : o.line))) : null;
     const rough = knows({ circuit: c.key }) === 'rough';
     const band = h('div.fz-band', c.band.map((x) => rough ? roughStat(x) : h('div.fz-stat' + (x.warn ? '.warn' : ''), h('small', x.k),
       h('b', isOffice(x) ? x.sub : typeof x.v === 'number' && Math.abs(x.v) >= 1e4 ? num(roundSig(x.v, 3)) : fmt(x.v)),
       isOffice(x) ? h('span', `浊度${fmt(x.v)}`) : x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`) : x.sub ? h('span', digits(x.sub)) : null)));
     const live = CVOLS.filter(([k]) => (k === 'xingshi') || (c[k] && (Array.isArray(c[k]) ? c[k].length : true)));
     if (!live.some(([k]) => k === cvol)) cvol = live[0] ? live[0][0] : 'xingshi';
-    const slips = live.map(([k, seal, label]) => h('button.fz-slip' + (k === cvol ? '.on' : '') + (rough && (k === 'xiajing' || k === 'caiji') ? '.lock' : ''), { type: 'button', onclick: () => { cvol = k; keepTabs(); renderCircuitLeft(); renderCircuitRight(); } }, h('i', seal), h('b', label)));
+    const slips = live.map(([k, , label]) => h('button.fz-slip' + (k === cvol ? '.on' : '') + (rough && (k === 'xiajing' || k === 'caiji') ? '.lock' : ''), { type: 'button', onclick: () => { cvol = k; keepTabs(); renderCircuitLeft(); renderCircuitRight(); } }, h('b', label)));
     const R = role();
     const acts = !R.sovereign || !(c.acts.length || c.canReassign) ? null : R.ro ? h('div.fz-acts', [...c.acts, ...(c.canReassign ? ['调整辖区'] : [])].map((a) => yapaiOff(a, R.ro)))
       : h('div.fz-acts', c.acts.map((a) => h('button.q-yapai', { type: 'button', title: '录入议事清册，候诏颁行', onclick: () => doCircuitAct(a) }, a)),
         c.canReassign ? h('button.q-yapai', { type: 'button', title: '州县划出划入（入议事清册，回合末落地）', onclick: () => circuitReassign() }, '调整辖区') : null);
-    nameplate('通志', h('p.fz-crumbs', c.owner ? (onFaction ? h('a', { title: '展势力', onclick: () => onFaction(c.ownerKey || c.owner) }, c.owner) : h('span', c.owner)) : null, h('i', '›'), h('b', c.name)),
-      c.name, `省道 · 辖${num(c.members)}府州`);
+    nameplate('通志', h('p.fz-crumbs', c.owner ? (onFaction ? h('a', { title: '展势力', onclick: () => onFaction(c.ownerKey || c.owner) }, c.owner) : h('span', c.owner)) : null),
+      c.name, [`省道 · 辖${num(c.members)}府州`, c.capital ? ' · 治所 ' : '', c.capital ? h('a', { title: '展其方志', onclick: () => show(c.capital.id) }, c.capital.name) : null]);
     replaceChildren(left, pills.length ? h('div.fz-pills', pills) : null, c.desc ? h('p.fz-desc', c.desc) : null, official, band);
     replaceChildren(tabs, slips);
     fitTabs();
@@ -372,6 +409,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       }
     }
     replaceChildren(right, head, h('div.fz-vbody', body));
+    turnIn(`c${c.key}${cvol}`);
   }
   function circuitReassign() {
     let o;

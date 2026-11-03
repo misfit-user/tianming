@@ -66,6 +66,14 @@ function baojiaText(x) {
   return parts.join('，');
 }
 const keep = (rows) => rows.filter((x) => x && x.v !== '' && x.v != null);
+// 百分之数配一条刻度（方志的账目里，长短一眼看）
+const m100 = (v) => { const x = Number(v); return v !== '' && v != null && Number.isFinite(x) && x >= 0 && x <= 100 ? { meter: x } : {}; };
+const mRate = (v) => { const x = Number(v); return v !== '' && v != null && Number.isFinite(x) ? { meter: Math.max(0, Math.min(100, x <= 1 ? x * 100 : x)) } : {}; };
+// 钱粮去向：应征之数，起运多少、留用多少、多少没征到
+const flowOf = (claimed, actual, remit, retain, labels) => {
+  const [c, a, r, k] = [claimed, actual, remit, retain].map(Number);
+  return a > 0 && (r > 0 || k > 0) ? { claimed: c > 0 ? c : a, actual: a, remit: r > 0 ? r : 0, retain: k > 0 ? k : 0, labels } : null;
+};
 
 const ZT_SEAL = { wonder: '观', disaster: '灾', player: '裁', event: '云', building: '营' };
 const REGION_ACTS = ['安民', '巡按', '调粮', '拟诏'];
@@ -157,12 +165,12 @@ function build(p, r) {
     row(mouthsUnit ? '隐匿人口（估）' : '隐户', b.pop.hiddenCount, 'bad'),
     b.pop.actualMouths != null ? row('居民估数', b.pop.actualMouths, '', { unit: '口' }) : null,
     b.pop.taxableHouseholds != null ? row('当前应税户', b.pop.taxableHouseholds) : null,
-    row('承载上限', capacityText(d.carryingCapacity)), row('保甲', baojiaText(d.baojia)), row('繁荣', prosperity),
-    has(d.wealth) && String(d.wealth) !== String(prosperity) ? row('财富', d.wealth) : null,
-    has(d.development) && String(d.development) !== String(prosperity) ? row('发展', d.development) : null,
-    row('不稳', d.unrest, 'bad'),
+    ((load) => row('承载上限', capacityText(d.carryingCapacity), '', load > 0 ? { meter: Math.min(100, load * 100), meterBad: load >= .9 } : {}))(Number((d.carryingCapacity || {}).currentLoad)), row('保甲', baojiaText(d.baojia)), row('繁荣', prosperity, '', m100(prosperity)),
+    has(d.wealth) && String(d.wealth) !== String(prosperity) ? row('财富', d.wealth, '', m100(d.wealth)) : null,
+    has(d.development) && String(d.development) !== String(prosperity) ? row('发展', d.development, '', m100(d.development)) : null,
+    row('不稳', d.unrest, 'bad', m100(d.unrest)),
     // 阶层压力由各阶层真满意推出：失真层开着且本地未揭时不列（阶层满意据奏见朝野册）
-    !veiled('minxin', r) && cp && (cp.count > 0 || Number(cp.score) > 0) ? row('阶层压力', has(cp.score) ? Math.round(Number(cp.score)) : '', Number(cp.score) >= 50 ? 'bad' : '', { note: '满分一百' }) : null,
+    !veiled('minxin', r) && cp && (cp.count > 0 || Number(cp.score) > 0) ? row('阶层压力', has(cp.score) ? Math.round(Number(cp.score)) : '', Number(cp.score) >= 50 ? 'bad' : '', m100(has(cp.score) ? Math.round(Number(cp.score)) : '')) : null,
     !veiled('minxin', r) && cp && (cp.count > 0 || Number(cp.score) > 0) ? row('牵动阶层', (cp.classNames || []).join('、')) : null,
     !veiled('minxin', r) && cp && (cp.count > 0 || Number(cp.score) > 0) ? row('地方处境', cp.reason) : null
   ]);
@@ -175,9 +183,9 @@ function build(p, r) {
     row(fc.isForecast ? '岁计留用钱' : '留用地方', fc.retainedBudget),
     fc.resources && fc.resources.grain ? row('岁计可入粮', fc.resources.grain.actualRevenue, '', { unit: '石' }) : null,
     fc.resources && fc.resources.cloth ? row('岁计可入帛', fc.resources.cloth.actualRevenue, '', { unit: '匹' }) : null,
-    has(fc.compliance) ? row('征到比例', pct(fc.compliance)) : null,
-    has(fc.skimmingRate) ? row('截留率', pct(fc.skimmingRate), 'bad') : null,
-    has(first(fc.autonomyLevel, fc.autonomy)) ? row('财政自主', pct(first(fc.autonomyLevel, fc.autonomy))) : null,
+    has(fc.compliance) ? row('征到比例', pct(fc.compliance), '', mRate(fc.compliance)) : null,
+    has(fc.skimmingRate) ? row('截留率', pct(fc.skimmingRate), 'bad', mRate(fc.skimmingRate)) : null,
+    has(first(fc.autonomyLevel, fc.autonomy)) ? row('财政自主', pct(first(fc.autonomyLevel, fc.autonomy)), '', mRate(first(fc.autonomyLevel, fc.autonomy))) : null,
     row('税负', first(fc.taxBurden, d.taxBurden)), row('税级', d.taxLevel),
     row('库钱', b.treasury.money), row('掌藏记', d.custodyNote), row('库藏粮', b.treasury.grain), row('库帛', b.treasury.cloth),
     row('本回合银产', fc.moneyOutput, 'gold'), row('本回合粮产', fc.grainOutput, 'gold'),
@@ -202,7 +210,7 @@ function build(p, r) {
   const zhiguan = keep([
     row('主官', d.governorVacant ? '空缺·待补' : first(d.governor, d.official) && !d.governorUnrecorded ? first(d.governor, d.official) : (holderByTitle(p.regionTitle(r)) || {}).name || (d.governorUnrecorded ? '任官未详' : ''), d.governorVacant ? 'bad' : ''),
     row('官职', d.officialPosition), row('官缺', first(d.officeVacancy, d.vacancy)),
-    has(corr) ? row('贪腐', typeof corrShown === 'number' ? Math.round(corrShown) : corrShown, 'bad', veiled('corruption', r) ? { tag: '据奏' } : {}) : null,
+    has(corr) ? row('贪腐', typeof corrShown === 'number' ? Math.round(corrShown) : corrShown, 'bad', { ...(veiled('corruption', r) ? { tag: '据奏' } : {}), ...m100(corrShown) }) : null,
     row('政令执行', first(d.policyExecution, d.execution)), row('地方派系', first(d.localFaction, d.party)),
     row('士绅', d.leadingGentry), row('书院', d.academies), row('科举解额', econ.kejuQuota), row('官府资产', econ.imperialAssets),
     row('备注', first(d.note, r.note))
@@ -227,7 +235,7 @@ function build(p, r) {
   const vols = [
     { key: 'huyi', seal: '户', name: '户役志', sub: yizheng.length ? '户口簿籍 · 徭役丁田' : '户口簿籍', rows: huyi, sub2: yizheng.length ? { title: '役政', note: '徭役农政 · 丁田', rows: yizheng } : null,
       note: fullBasis ? '所列口数已含逃隐，实居之众尚未尽详。细分簿籍未备。' : '' },
-    { key: 'caifu', seal: '赋', name: '财赋志', sub: '岁入库藏', rows: caifu },
+    { key: 'caifu', seal: '赋', name: '财赋志', sub: '岁入库藏', rows: caifu, flow: flowOf(fc.claimedRevenue, fc.actualRevenue, fc.remittedToCenter, fc.retainedBudget, fc.isForecast ? ['解送', '留用', '未入'] : ['起运', '留用', '未征到']) },
     { key: 'junbei', seal: '军', name: '军备志', sub: '戎政边防', rows: junbei, armies },
     { key: 'zhiguan', seal: '官', name: '职官志', sub: '官守治理', rows: zhiguan },
     { key: 'fengwu', seal: '物', name: '风物志', sub: '物产设施', rows: fengwu, grid: fengwuGrid },
@@ -559,6 +567,7 @@ function buildCircuit(p, MC, c, clicked) {
       sum.office != null ? { k: '吏治', v: n(sum.office), sub: offG.mark || '', warn: !!p.gradeIsWarn('office', offG) } : null
     ].filter((x) => x && x.v != null),
     xiajing, xingshi, caiji, yingzao,
+    caijiFlow: own.length ? flowOf(first(sum.claimedRevenue, sum.compliance ? Number(sum.actualRevenue) / Number(sum.compliance) : null), sum.actualRevenue, sum.remittedToCenter, sum.retainedBudget, ['起运', '留用', '未征到']) : null,
     acts: viewer.player ? CIRCUIT_ACTS : [],
     canReassign: viewer.player && !!(w.TM && w.TM.DivisionReassign)
   };

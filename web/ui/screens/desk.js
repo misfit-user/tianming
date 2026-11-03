@@ -1192,7 +1192,15 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     viewer: () => ({ name: per.name, player: !per.previewing, sovereign: per.tier === 'sovereign', lord: (prof.bio && prof.bio.lord) || '主上' }),
     can: (name) => personCan(name),
     onAudience: (name) => audiencePage.summon(name), onLetter: (name) => openLetters(name), onOffice: (name) => bioPage.show(name, 'office'),
-    onBio: (name) => bioPage.show(name), onFind: (name) => xunren.show(name), locate: (text) => locatePlace(text), compare: xunren.compare });
+    onBio: (name) => bioPage.show(name), onFind: (name) => xunren.show(name), locate: (text) => locatePlace(text), compare: xunren.compare,
+    onFaction: (key) => realmPage.showDock(key),
+    sealOf: (name) => {
+      let s = null;
+      try { s = game.realm.factionSeal(name); } catch (_e) { return null; }
+      if (!s) return null;
+      const c = map.realmColorOf(facIdOf(s.key));
+      return { ...s, color: Array.isArray(c) ? `rgb(${c.map((v) => Math.round(v <= 1 ? v * 255 : v)).join(',')})` : c || '' };
+    } });
   // 列传：召对、传书、官制、追赠（开撰写）、寻人
   const bioPage = createBio({ root, game, profile: () => prof, onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onLetter: (name) => openLetters(name),
     onOffices: () => officesPage.show(), onEdict: () => { if (!readOnly() && per.tier === 'sovereign') openEdict(); }, onAtlas: (name) => xunren.show(name),
@@ -1237,7 +1245,14 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 朝野册：人名开人物窗；召党魁、召代表转召对；付廷议即开廷议、带上议题
   // 方志：入图后点府州小签展开；人名翻列传、势力翻朝野谱牒
   const fangzhiPage = createFangzhi({ root, game, profile: () => prof, role, knows: knowsBook, opens: opensBook, scenery: sceneryOf, locate: locateZhi,
-    onPerson: (name) => renwu.show(name), onFaction: (key) => realmPage.showDock(key) });
+    onPerson: (name) => renwu.show(name), onFaction: (key) => realmPage.showDock(key),
+    // 窗里的列表指到哪一州，图上亮哪一州；窗换了一处，图上的描金跟过去
+    peek: (id) => { if (dive.mode === 'map') map.peek(id == null ? null : zhiRegions('region', id)[0] ?? null); },
+    follow: (kind, id, label) => {
+      if (dive.mode !== 'map' || dive.busy) return;
+      const i = zhiRegions(kind, id, label)[0];
+      if (i != null) map.select(i, kind === 'circuit' ? 'circuit' : 'pref');
+    } });
   // 人物窗、志窗、势力窗同占左边一扇：开一扇收另两扇
   bus.on('zhi:shown', () => { renwu.hide(); realmPage.hideDock(); });
   bus.on('renwu:shown', () => { fangzhiPage.hide(); realmPage.hideDock(); });

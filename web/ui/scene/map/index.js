@@ -796,6 +796,15 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       if (g && hoverKey === pickKey) lines.setHover([]);
       return g;
     },
+    // 只描一下：窗里的列表指到哪一州，图上亮哪一州，不动镜头、不算选中；给 null 撤
+    peek(index, at = 'pref') {
+      // 指针刚从图上挪到窗里那一下，帧循环还记着图上的悬停，下一帧会把这里描的清掉：先把它了结
+      if (hoverKey) { hoverKey = ''; hoverCb?.(null); }
+      const g = index == null ? null : groupOf(index, at);
+      lines.setHover(g && MODE[g.tier] + ':' + g.key !== pickKey ? g.regions : []);
+      uniforms.uHover.value = g ? g.key : -1;
+      uniforms.uHoverMode.value = g ? MODE[g.tier] : 0;
+    },
     // 层级：当前档、跨档通知、飞到某档、某府州所在的那一级
     get tier() { return tier; },
     onTier(fn) { tierHooks.add(fn); return () => tierHooks.delete(fn); },

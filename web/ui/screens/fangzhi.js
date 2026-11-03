@@ -30,7 +30,8 @@ const fmt = (v, unit) => (typeof v === 'number' ? `${v < 0 ? '−' : ''}${num(Ma
 //   本道排名不列，户役财赋军备职官诸志与账本不得而见，风物、营造是人所共见；通志的辖境、财计也只写大略
 // opens(志键)：京官本衙门所司的那一门册籍天下各地都见（户部户役财赋账本、兵部军备、吏部职官），读数带里对应那格也写确数
 // scenery({ kind: 'region'|'circuit', id, name }) → Promise<canvas|null>：卷首小景；locate(kind, id) 舆图镜头飞去
-export function createFangzhi({ root, game, profile, onPerson, onFaction, role = () => ({ sovereign: true, ro: '' }), knows = () => 'full', opens = () => false, scenery = null, locate = null }) {
+// peek(府州id|null) 列表指到哪一州，图上亮哪一州；follow(kind, id, 名) 窗换了一处，图上的描金跟过去
+export function createFangzhi({ root, game, profile, onPerson, onFaction, role = () => ({ sovereign: true, ro: '' }), knows = () => 'full', opens = () => false, scenery = null, locate = null, peek = null, follow = null }) {
   const F = game.fangzhi;
   const Y = game.yingzao;
   const suggestBook = () => { const p = typeof profile === 'function' ? profile() : profile; return (p && p.ling && p.ling.suggest) || '议事清册'; };
@@ -105,6 +106,19 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       h(go ? 'button.sw-face' : 'span.sw-face', go ? { type: 'button', title: name, onclick: go } : {}, pic),
       h('div', h('small', label), h('b', who(name, isChar)), note ? h('span', note) : null));
   }
+  // 读数格底边一线：民心、吏治本是百分之数，长短一眼看（同人物窗的才具）
+  const statBar = (x) => ((x.k === '民心' || x.k === '吏治') && typeof x.v === 'number' ? h('i.fz-stat-bar', { '--v': `${Math.max(0, Math.min(100, x.v))}%` }) : null);
+  // 钱粮去向：一条图，起运、留用、没征到，各占多少
+  function flowEl(f) {
+    const used = f.remit + f.retain;
+    const base = Math.max(f.claimed, f.actual, used) || 1;
+    const lost = Math.max(0, f.claimed - Math.max(f.actual, used));
+    const [lRemit, lRetain, lLost] = f.labels;
+    const seg = (cls, v, label) => (v > 0 ? h('i.' + cls, { style: { width: `${(v / base) * 100}%` }, title: `${label} ${fmt(v)}` }) : null);
+    const key = (cls, v, label) => (v > 0 ? h('span', h('i.' + cls), label, h('b', fmt(roundSig(v, 3)))) : null);
+    return h('div.fz-flow', h('div.fz-flow-bar', seg('remit', f.remit, lRemit), seg('retain', f.retain, lRetain), seg('lost', lost, lLost)),
+      h('p.fz-flow-keys', key('remit', f.remit, lRemit), key('retain', f.retain, lRetain), key('lost', lost, lLost)));
+  }
   // 读数格角上的小字：本道排第几（越靠前越好；民心、吏治落到后三分之一的标红）
   const nthMark = (rank, k) => {
     const it = rank && rank.items.find((x) => x.label === k);
@@ -127,7 +141,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     const rough = knows({ region: d.id }) === 'rough';
     const band = h('div.fz-band', d.band.map((x) => rough && !opens(BAND_VOL[x.k]) ? roughStat(x) : h('div.fz-stat' + (x.warn ? '.warn' : ''),
       h('small', x.k, x.reported ? h('em', '据奏') : null, rough ? null : nthMark(d.rank, x.k)), h('b', isOffice(x) ? x.sub : typeof x.v === 'number' && Math.abs(x.v) >= 1e4 ? num(roundSig(x.v, 3)) : fmt(x.v)),   // 读数带只看个大数：三位有效
-      isOffice(x) ? h('span', `浊度${fmt(x.v)}`) : x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`, x.subTag ? h('em', x.subTag) : null) : x.sub ? h('span', digits(x.sub)) : null)));
+      isOffice(x) ? h('span', `浊度${fmt(x.v)}`) : x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`, x.subTag ? h('em', x.subTag) : null) : x.sub ? h('span', digits(x.sub)) : null, statBar(x))));
     const slips = d.vols.map((v) => h('button.fz-slip' + (v.key === vol ? '.on' : '') + (rough && !PUBLIC_VOLS.has(v.key) && !opens(v.key) ? '.lock' : ''), { type: 'button', title: v.sub, onclick: () => { vol = v.key; keepTabs(); renderLeft(); renderRight(); } },
       h('b', v.name.replace(/志$/, ''))));
     const R = role();
@@ -159,7 +173,8 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       const wide = String(v).length > 8 || (r.note && !rough && String(r.note).length > 14);   // 过八字在窄窗一格放不下，折半个字最难看，索性占满
       const nil = isNil(r.v) && !rough;
       return h('div' + (wide ? '.wide' : '') + (nil ? '.nil' : ''), h('dt', r.k, r.tag ? h('em', r.tag) : null),
-        h('dd.' + (nil ? 'plain' : r.tone || 'plain'), v, r.note && !rough ? h('small', digits(r.note)) : null));
+        h('dd.' + (nil ? 'plain' : r.tone || 'plain'), v, r.note && !rough ? h('small', digits(r.note)) : null,
+          r.meter != null && !rough && !nil ? h('i.fz-meter' + (r.tone === 'bad' || r.meterBad ? '.bad' : ''), { '--v': `${r.meter}%` }) : null));
     }));
   }
   function renderRight() {
@@ -174,6 +189,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     if (v.armies && v.armies.length) body.push(h('div.fz-armies', v.armies.map((a) => h('div.fz-army', h('b', a.name), h('span', fmt(a.soldiers), a.reported ? h('em', '据奏') : null),
       a.commander ? who(a.commander, true) : null, a.morale != null ? h('small' + (a.morale < 45 ? '.low' : ''), `气${num(a.morale)}`) : null))));
     const rough = knows({ region: cur.id }) === 'rough' && !opens(v.key);
+    if (v.flow && !rough) body.push(flowEl(v.flow));
     if (v.grid && v.grid.length) {
       const liveGrid = v.grid.filter((g) => !isNil(g.v));
       const nilGrid = v.grid.filter((g) => isNil(g.v));
@@ -359,7 +375,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     const rough = knows({ circuit: c.key }) === 'rough';
     const band = h('div.fz-band', c.band.map((x) => rough ? roughStat(x) : h('div.fz-stat' + (x.warn ? '.warn' : ''), h('small', x.k),
       h('b', isOffice(x) ? x.sub : typeof x.v === 'number' && Math.abs(x.v) >= 1e4 ? num(roundSig(x.v, 3)) : fmt(x.v)),
-      isOffice(x) ? h('span', `浊度${fmt(x.v)}`) : x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`) : x.sub ? h('span', digits(x.sub)) : null)));
+      isOffice(x) ? h('span', `浊度${fmt(x.v)}`) : x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`) : x.sub ? h('span', digits(x.sub)) : null, statBar(x))));
     const live = CVOLS.filter(([k]) => (k === 'xingshi') || (c[k] && (Array.isArray(c[k]) ? c[k].length : true)));
     if (!live.some(([k]) => k === cvol)) cvol = live[0] ? live[0][0] : 'xingshi';
     const slips = live.map(([k, , label]) => h('button.fz-slip' + (k === cvol ? '.on' : '') + (rough && (k === 'xiajing' || k === 'caiji') ? '.lock' : ''), { type: 'button', onclick: () => { cvol = k; keepTabs(); renderCircuitLeft(); renderCircuitRight(); } }, h('b', label)));
@@ -389,7 +405,8 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       if (xj.common) body.push(h('p.fz-common', `全道共性（${num(xj.common.count)}／${num(xj.common.of)}州）：`, h('b', xj.common.items.join(' · ')), '。下列各州只标独有的问题。'));
       // 一州一条（窗窄，汉字记数七栏的表排不下）：州名与民心、吏治一行，户口、实征、驻军一行，主因一行
       const big = (v) => (typeof v === 'number' && Math.abs(v) >= 1e4 ? num(roundSig(v, 3)) : fmt(v));
-      body.push(h('ol.fz-xj', xj.rows.map((x) => h('li' + (x.warn ? '.warn' : ''),
+      // 一条都可点；指到哪一州，图上亮哪一州
+      body.push(h('ol.fz-xj', xj.rows.map((x) => h('li' + (x.warn ? '.warn' : ''), { onclick: (e) => { if (!e.target.closest('a')) show(x.id); }, onmouseenter: () => peek && peek(x.id), onmouseleave: () => peek && peek(null) },
         h('div.fz-xj-h', reg(x),
           x.mood == null ? null : h('span', '民心 ', h('b', fmt(x.mood)), h('i', x.moodMark)),
           x.office == null ? null : h('span', '吏治 ', h('b', x.officeMark || fmt(x.office)), x.officeMark ? h('i', fmt(x.office)) : null)),
@@ -399,6 +416,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     } else if (cvol === 'xingshi') {
       body.push(rowsEl(c.xingshi));
     } else if (cvol === 'caiji') {
+      if (c.caijiFlow) body.push(flowEl(c.caijiFlow));
       body.push(rowsEl(c.caiji), h('p.fz-note', '本道只汇总展示，不单独记账。'));
     } else if (cvol === 'yingzao' && c.yingzao) {
       const y = c.yingzao;
@@ -472,6 +490,8 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
   function open(kind, key, label) {
     backBtn.hidden = !history.length;
     flyBtn.hidden = !locate;
+    if (peek) peek(null);
+    if (follow) follow(kind, key, label);
     scroller.scrollTop = 0;
     paintScene(kind, key, label);
     ov.classList.add('on');
@@ -490,6 +510,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     ov.classList.remove('on');
     opened = false;
     history = [];
+    if (peek) peek(null);
     bus.emit('zhi:hidden', {});
   }
   window.addEventListener('keydown', (e) => {

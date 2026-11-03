@@ -295,9 +295,10 @@ button.sw-face { cursor: pointer; }
 .zw .fz-vbody { padding-top: .5rem; }
 
 /* 账目：朱丝栏两栏，一格一对；字长的一对占满一行。两栏左右之间、上下之间都是细朱线 */
-.fz-lines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: dense; margin: 0; overflow: hidden; border-top: 1px solid rgba(163, 40, 27, .4); border-bottom: 1px solid rgba(163, 40, 27, .4); }
-.fz-lines > div { display: grid; grid-template-columns: 4.625em minmax(0, 1fr); gap: .5rem; align-items: baseline; padding: .3125rem .625rem .375rem; font-size: var(--fs-2); box-shadow: -1px 0 0 rgba(163, 40, 27, .18), 0 -1px 0 rgba(163, 40, 27, .18); }
+.fz-lines { display: grid; grid-template-columns: fit-content(6.5em) minmax(0, 1fr) fit-content(6.5em) minmax(0, 1fr); grid-auto-flow: dense; margin: 0; overflow: hidden; font-size: var(--fs-2); border-top: 1px solid rgba(163, 40, 27, .4); border-bottom: 1px solid rgba(163, 40, 27, .4); }
+.fz-lines > div { grid-column: span 2; display: grid; grid-template-columns: subgrid; column-gap: .5rem; align-items: baseline; padding: .3125rem .625rem .375rem; box-shadow: -1px 0 0 rgba(163, 40, 27, .18), 0 -1px 0 rgba(163, 40, 27, .18); }
 .fz-lines > div.wide { grid-column: 1 / -1; }
+.fz-lines > div.wide > dd { grid-column: 2 / -1; }
 .fz-lines dt { font-size: var(--fs-2); letter-spacing: .06em; color: var(--ink-soft); }
 .fz-lines dt em { display: block; font-style: normal; font-size: var(--fs-1); letter-spacing: 0; color: #8a5a12; }
 .fz-lines dd { margin: 0; font-size: var(--fs-3); line-height: 1.55; color: var(--ink); }
@@ -308,7 +309,7 @@ button.sw-face { cursor: pointer; }
 .fz-lines > div.nil dd { color: var(--ink-faint); }
 
 /* 风物格：读数带同款，字小一号 */
-.zw .fz-gridband .fz-stat b { font: 400 var(--fs-4)/1.3 var(--f-kai); white-space: normal; }
+.zw .fz-gridband .fz-stat b { font: 400 var(--fs-3)/1.4 var(--f-kai); white-space: normal; }
 
 /* 换卷：字轻轻浮上来 */
 .zw-body.turn > * { animation: zw-turn var(--t-3) var(--ease-out); }
@@ -322,3 +323,44 @@ button.sw-face { cursor: pointer; }
 .zw.sw .rm-rows p { padding: .3125rem .5rem .375rem; line-height: 1.65; border-bottom: 1px solid rgba(163, 40, 27, .16); }
 .zw.sw .rm-rows p:last-child { border-bottom: 0; }
 .zw.sw .rm-rows span { font-family: var(--f-kai); color: var(--ink-soft); line-height: 1.7; }
+
+/* 读数格底边一线、账目里的刻度 */
+.zw .fz-stat { position: relative; }
+.fz-stat-bar { position: absolute; left: 0; bottom: 0; width: var(--v, 0); height: 2px; background: linear-gradient(90deg, #a8833a, #6b4a2a); }
+.fz-stat.warn .fz-stat-bar { background: linear-gradient(90deg, #c0503c, #a3301f); }
+.fz-meter { position: relative; display: block; height: .1875rem; margin-top: .25rem; background: rgba(120, 90, 50, .16); }
+.fz-meter::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: var(--v, 0); background: linear-gradient(90deg, #a8833a, #6b4a2a); }
+.fz-meter.bad::after { background: linear-gradient(90deg, #c0503c, #a3301f); }
+
+/* 钱粮去向：一条图 */
+.fz-flow { display: flex; flex-direction: column; gap: .375rem; }
+.fz-flow-bar { display: flex; height: .6875rem; background: rgba(120, 90, 50, .1); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.fz-flow-bar > i { display: block; height: 100%; transition: filter var(--t-2); }
+.fz-flow-bar > i:hover { filter: brightness(1.2); }
+.fz-flow i.remit { background: linear-gradient(180deg, #8f2a1b, #611b10); }
+.fz-flow i.retain { background: linear-gradient(180deg, #bb9a55, #8a6a2a); }
+.fz-flow i.lost { background: repeating-linear-gradient(135deg, rgba(163, 40, 27, .42) 0 2px, rgba(163, 40, 27, 0) 2px 5px); }
+.fz-flow-keys { display: flex; flex-wrap: wrap; gap: .125rem 1.125rem; margin: 0; font-size: var(--fs-2); letter-spacing: .06em; color: var(--ink-soft); }
+.fz-flow-keys i { display: inline-block; width: .625rem; height: .625rem; margin-right: .3125rem; box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.fz-flow-keys b { margin-left: .375rem; font-weight: 400; color: var(--ink); }
+
+/* 辖境一条都可点，指到的那条亮一下 */
+.fz-xj > li { cursor: pointer; transition: background var(--t-2); }
+.fz-xj > li:hover { background: linear-gradient(90deg, rgba(255, 250, 238, .78), rgba(255, 250, 238, .18)); }
+.fz-xj > li:hover .fz-xj-h > a { color: #7d1d12; }
+
+/* 军备的师、营造的工、公库的账：也不打白方框，留左边一道色、上下一线朱丝 */
+.zw .fz-army, .zw .fz-work, .zw .fz-book { background: none; border-bottom: 1px solid rgba(163, 40, 27, .18); }
+.zw .fz-army { box-shadow: inset .1875rem 0 0 #6b4a2a; }
+.zw .fz-work { box-shadow: inset .1875rem 0 0 #3f6e5e; }
+.zw .fz-work.bad, .zw .fz-book.bad { box-shadow: inset .1875rem 0 0 #a3301f; }
+.zw .fz-work.doing { box-shadow: inset .1875rem 0 0 #a8833a; }
+.zw .fz-book { box-shadow: inset .1875rem 0 0 #8a6a2a; }
+.zw .fz-works, .zw .fz-armies { gap: 0; }
+
+/* 纸面窄（窗口小）时账目改一栏：两栏里数字放不下要折半个字，不如一行一条 */
+.zw-sheet { container: zw-sheet / inline-size; }
+@container zw-sheet (max-width: 410px) {
+  .fz-lines { grid-template-columns: fit-content(6.5em) minmax(0, 1fr); }
+  .fz-lines > div.wide > dd { grid-column: 2; }
+}

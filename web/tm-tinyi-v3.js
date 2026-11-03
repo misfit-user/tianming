@@ -1379,7 +1379,8 @@ function _ty3_partyStanceOnTopic(partyName, topicText, topicType) {
   var p = _ty3_getPartyObj(partyName);
   if (!p) return 'neutral';
   var t = (topicText || '').toLowerCase();
-  var stances = (p.policyStance || []).map(function(s){return (s||'').toLowerCase();});
+  // 有的剧本（晚唐）把 policyStance 写成一句话：当一条读，别让 .map 抛错（起议站班整场起不来）
+  var stances = (Array.isArray(p.policyStance) ? p.policyStance : (p.policyStance ? [p.policyStance] : [])).map(function(s){return String(s||'').toLowerCase();});
   // focal_disputes[].topic hit means the party has a stance.
   var disputes = (p.focal_disputes || []);
   for (var i = 0; i < disputes.length; i++) {

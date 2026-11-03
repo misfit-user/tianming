@@ -642,7 +642,8 @@ async function _ty2_genOneSpeech(name, roundNum, prevSpeeches) {
     var _partyObj = (typeof GM !== 'undefined' && Array.isArray(GM.parties))
       ? GM.parties.find(function(p){return p && p.name === ch.party;}) : null;
     if (_partyObj) {
-      var _ps = (_partyObj.policyStance || []).slice(0, 5).join('·');
+      // 有的剧本（晚唐）把 policyStance 写成一句话，字符串没有 join
+      var _ps = Array.isArray(_partyObj.policyStance) ? _partyObj.policyStance.slice(0, 5).join('·') : String(_partyObj.policyStance || '');
       if (_ps) prompt += '  本党(' + ch.party + ')立场：' + _ps + '\n';
       var _partyAgendaText = function(v) {
         if (!v) return '';

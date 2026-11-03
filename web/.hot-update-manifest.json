@@ -4681,8 +4681,8 @@
     },
     {
       "path": "tm-chaoyi-tinyi.js",
-      "sha256": "4f39201b056dbd181929dc4f225ea46de6cfef2fe39fbee0e695d2483879ba77",
-      "size": 89005
+      "sha256": "4627268cc9b064e3b1ac15e8deae7e563690e9a7d33ffac52d69630a2f333ab0",
+      "size": 89165
     },
     {
       "path": "tm-chaoyi-yuqian.js",
@@ -6596,7 +6596,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "ecad1cb3f8a3d00c9fd39dd02456e3bb2709aba6ec3c3f8a9b853147223f3f2a",
+      "sha256": "60758bf55c4b8ff2aa76bcc1ca634d898504943e294294c6d381e58d2c98ea30",
       "size": 139151
     },
     {
@@ -6711,8 +6711,8 @@
     },
     {
       "path": "tm-tinyi-v3.js",
-      "sha256": "705ca767eb7ae90a954ea19e84b7209eae03c1b76799af78d8ff642a5aed5af7",
-      "size": 150566
+      "sha256": "d0c151249ac0d13adc7b3a2394fdbbc8bef4cda7a9a78bd5ae848e9f89aa2d0d",
+      "size": 150772
     },
     {
       "path": "tm-topbar-vars.js",

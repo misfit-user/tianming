@@ -1,5 +1,5 @@
 // 记事的器物：账目、九品刻度、人物小立轴、邸报刻本、朱丝栏小笺。
-import { h } from '../../core/dom.js';
+import { h, replaceChildren } from '../../core/dom.js';
 import { num, delta, grade, gradeIndex } from '../../core/numerals.js';
 import { tiao } from './tiao.js';
 
@@ -21,6 +21,21 @@ export function pin(label, value, { text, note } = {}) {
   return tiao(h('div.q-pin',
     h('div', h('span', label), h('b.q-gold', text ?? grade(value))),
     h('ol', Array.from({ length: 9 }, (_, i) => h('li' + (i < gi ? '.f' : i === gi ? '.n' : ''))))), { title: label, text: note || `${text ?? grade(value)}　${num(value)}` });
+}
+
+// 小圆像：先放姓的首字，立绘载到了才换上（缺图不露破图标；已在缓存里的当场换，免得每次重绘闪一下首字）。
+// 给了 onPerson 就能点开人物窗、悬停出小签、右键出可为单
+export function faceDot(cls, c, onPerson) {
+  const attrs = onPerson ? { dataset: { person: c.name }, onclick: (e) => { e.stopPropagation(); onPerson(c.name); } } : {};
+  const box = h('span.' + cls, attrs, [...(c.name || '？')][0]);
+  if (c.portrait) {
+    const img = new Image();
+    img.alt = '';
+    img.onload = () => replaceChildren(box, img);
+    img.src = c.portrait;
+    if (img.complete && img.naturalWidth) replaceChildren(box, img);
+  }
+  return box;
 }
 
 // 人物小立轴：zhou({ name, src, dead, onclick })；没有立像时以名字首字作像

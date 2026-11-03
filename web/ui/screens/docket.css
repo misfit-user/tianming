@@ -27,7 +27,7 @@
 .dk-fold .pizhu { position: relative; flex: none; width: 300px; height: 100%; display: flex; flex-direction: row-reverse; gap: 14px; }
 .dk-fold .pizhu .lab { flex: none; align-self: flex-start; width: 30px; padding: 8px 0; writing-mode: vertical-rl; text-align: center; background: var(--verm); color: #f9ead2;
   font: 14px var(--f-kai); letter-spacing: .3em; }
-.dk-fold .pizhu .ink { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; resize: none; overflow: hidden; background: transparent; pointer-events: auto;
+.dk-fold .pizhu .ink { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; resize: none; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; background: transparent; pointer-events: auto;
   writing-mode: vertical-rl; font: 34px/56px var(--f-xing); letter-spacing: .02em; color: #a8261a; caret-color: #a8261a; }
 .dk-fold .pizhu .ink::placeholder { color: rgba(168, 38, 26, .3); }
 .dk-fold .pizhu.want .lab { animation: dk-want .5s var(--ease-out); }
@@ -48,22 +48,45 @@
 .scr-docket .crumb small { font-size: var(--fs-1); letter-spacing: .2em; color: var(--ivory-soft); }
 .scr-docket .back { position: fixed; right: 1.875rem; top: 1.625rem; padding: .5rem 1.125rem .4375rem; }
 /* 折目：右列，按急、常、留中、已批分组 */
-.scr-docket .mbox { position: fixed; right: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: max(15rem, 192px); padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }
+.scr-docket { --dk-list-w: max(17.75rem, 225px); }
+.scr-docket .mbox { position: fixed; right: 1.25rem; top: 6.5rem; max-height: calc(100vh - 7.75rem); box-sizing: border-box; width: var(--dk-list-w); padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }   /* 高随内容 */
+/* 奏者小牌：左上，决断时看一眼是谁上的折 */
+.dk-who { position: fixed; left: 1.25rem; top: 6.5rem; box-sizing: border-box; width: max(18rem, 230px); padding: .625rem .75rem; display: grid; grid-template-columns: 3.25rem minmax(0, 1fr); gap: .625rem; align-items: center; color: var(--ivory); font-family: var(--f-kai); }
+.dk-who[hidden] { display: none; }
+.dk-who .av { width: 3.25rem; height: 3.25rem; overflow: hidden; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #4a3020, #1d120a);
+  box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .55); font: var(--fs-6) var(--f-title); color: var(--gold-hi); }
+.dk-who .av[data-person] { cursor: pointer; }
+.dk-who .av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+.dk-who div { display: flex; flex-direction: column; min-width: 0; }
+.dk-who b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .15em; color: var(--gold-hi); }
+.dk-who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: var(--ivory-soft); }
+.dk-who small.loyal { color: #e8c982; }
+.dk-who small.loyal.low { color: #f0a080; }
 .scr-docket .mlist { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .875rem; }
 .scr-docket .mlist h4 { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 .375rem; padding-bottom: .25rem; border-bottom: 1px solid var(--gold-line);
   font: 400 var(--fs-3) var(--f-title); letter-spacing: .3em; color: var(--gold-hi); }
 .scr-docket .mlist h4 small { font: var(--fs-1) var(--f-kai); letter-spacing: .1em; color: var(--ivory-soft); }
 .scr-docket .mnone { margin: .5rem .25rem; font: var(--fs-2) var(--f-kai); letter-spacing: .3em; color: var(--ivory-soft); }
-.scr-docket .mi { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: .5rem; width: 100%; padding: .375rem .5rem; border: 0; border-left: 2px solid transparent;
+/* 折目一行：第一行谁、什么类、批了什么；第二行奏的什么事（原先只写「人事」，看不出奏的是什么） */
+.scr-docket .mi { display: grid; box-sizing: border-box; grid-template-columns: 2.125rem minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; column-gap: .5rem; width: 100%; padding: .3125rem .375rem; border: 0; border-left: 2px solid transparent;
   background: transparent; color: var(--ivory); text-align: left; cursor: pointer; font-family: var(--f-kai); transition: background var(--t-1); }
+.scr-docket .mi .av { grid-row: 1 / 3; width: 2.125rem; height: 2.125rem; overflow: hidden; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #4a3020, #1d120a);
+  box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .45); font: var(--fs-4) var(--f-title); color: var(--gold-hi); }
+.scr-docket .mi .av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+.scr-docket .mi .who { display: flex; align-items: baseline; gap: .375rem; min-width: 0; }
 .scr-docket .mi b { font-weight: 400; font-size: var(--fs-3); letter-spacing: .08em; white-space: nowrap; }
 .scr-docket .mi small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: var(--ivory-soft); }
-.scr-docket .mi em { font: normal var(--fs-2)/1.2 var(--f-title); color: #e88a6c; padding: 0 .25rem; border: 1px solid rgba(232, 138, 108, .55); }
+.scr-docket .mi .ex { grid-column: 2 / 4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: rgba(236, 222, 196, .68); }
+.scr-docket .mi em { grid-column: 3; grid-row: 1; font: normal var(--fs-2)/1.2 var(--f-title); color: #e88a6c; padding: 0 .25rem; border: 1px solid rgba(232, 138, 108, .55); }
 .scr-docket .mi.urgent b { color: #f0a080; }
 .scr-docket .mi:hover { background: rgba(255, 230, 190, .06); }
 .scr-docket .mi.on { background: rgba(255, 230, 190, .11); border-left-color: var(--gold); }
 /* 签：案底一排竖写牙签，首枝朱红 */
-.scr-docket .slips { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); display: flex; align-items: flex-end; gap: .875rem; }
+/* 签上一行与签同在一个容器里：永远贴在签上方；漆底小条，压在纸沿上也读得清 */
+.dk-foot { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: .4375rem; }
+.dk-line { min-height: 1.5em; padding: .125rem .75rem; font: var(--fs-2)/1.5 var(--f-kai); letter-spacing: .12em; white-space: nowrap; color: #fff3dc; background: rgba(24, 12, 5, .78); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .3); pointer-events: none !important; }
+.dk-line:empty { visibility: hidden; }
+.scr-docket .slips { display: flex; align-items: flex-end; gap: .875rem; }
 .scr-docket .slips[hidden] { display: none; }
 .scr-docket .slip { position: relative; width: 3rem; min-height: 5.75rem; padding: 1rem 0 .75rem; border: 0; border-radius: 0 0 .3125rem .3125rem; cursor: pointer; writing-mode: vertical-rl;
   font: 400 var(--fs-6)/3rem var(--f-title); letter-spacing: .18em; color: var(--ink);
@@ -75,14 +98,23 @@
 .scr-docket .slip:hover:not(:disabled) { transform: translateY(-.25rem); }
 .scr-docket .slip.on { transform: translateY(-.75rem); box-shadow: 0 .75rem 1.5rem rgba(10, 5, 2, .6), 0 0 0 2px rgba(236, 210, 154, .75); }
 .scr-docket .slip:disabled { opacity: .45; cursor: default; }
-/* 翻折：纸两侧各一枚漆钮；版心下一行小字记第几折 */
+/* 翻折：纸两侧各一枚漆钮；第几折记在签上一行 */
 .scr-docket .turn { position: fixed; top: 50%; width: 2.75rem; height: 2.75rem; margin-top: -1.375rem; border: 1px solid var(--gold-line); border-radius: 50%; cursor: pointer;
   background: radial-gradient(circle at 35% 30%, #3a2418, #160c07); color: var(--gold-hi); font: 400 1.75rem/1 var(--f-title); box-shadow: var(--sh-lift); }
 .scr-docket .turn.next { left: 15.5rem; }
-.scr-docket .turn.prev { right: 18.25rem; }
+.scr-docket .turn.prev { right: calc(var(--dk-list-w) + 1.5rem); }
 .scr-docket .turn:disabled { opacity: .3; cursor: default; }
-.scr-docket .pagenote { position: fixed; left: 50%; top: 2.25rem; transform: translateX(-50%); font: var(--fs-2) var(--f-kai); letter-spacing: .3em; color: #fff3dc;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, .9); pointer-events: none !important; }
+/* 窄窗：折目让开案底；奏者小牌的事悬停人像也看得到，让给纸面 */
+@media (max-width: 1240px) {
+  .scr-docket { --dk-list-w: 205px; }
+}
+@media (max-width: 1000px) {
+  .scr-docket { --dk-list-w: 190px; }
+  .scr-docket .mbox { max-height: calc(100vh - 16rem); }
+}
+@media (max-width: 1100px), (max-height: 560px) {
+  .dk-who { display: none; }
+}
 /* 摘入：划选正文后浮出一枚牙牌 */
 .scr-docket .excerpt { position: fixed; left: 0; top: 0; opacity: 0; pointer-events: none !important; transition: opacity var(--t-1); cursor: pointer; }
 .scr-docket .excerpt.on { opacity: 1; pointer-events: auto !important; }

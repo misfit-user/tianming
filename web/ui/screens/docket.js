@@ -2,18 +2,19 @@
 // 一件一件批：右列折目（分急、常、留中、已批）；案底几枝签（按身份档：准、驳、批、留中、交部议、付廷议、召对）；
 // 批语写在折子左幅；长折按折翻页（← 下一折、→ 上一折，PageUp/PageDown 换一件）；划选正文可摘入建议库。
 // 批过的折子钤一方小印，随后自动翻到下一件未批的。名目一律取身份档（ui/model/identity.js）的 docket。
+// 左上一张奏者小牌（人像、职衔、所在、党派、忠诚）；签上一行：悬停时说这枝签做什么，否则说这件的状态与第几折。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num } from '../core/numerals.js';
+import { num, grade } from '../core/numerals.js';
 import { homography } from '../core/homography.js';
-import { juan, zhou, yapai, loadFonts } from '../kit/index.js';
+import { juan, zhou, yapai, faceDot, loadFonts } from '../kit/index.js';
 
 const FOLD_W = 1180, FOLD_H = 780;                       // 字层的版面（像素），贴到纸面四角
 const PAPER = { w: 760, h: 500, x: 0, z: 0, rot: 0.02, panels: 6 };   // 摊开的折子（毫米）
 const COL = 44;                                          // 正文一竖行的宽（像素）
 const ORDER = ['urgent', 'pending', 'held', 'done'];
 
-export function createDocket({ root, study, game, profile, onClose, onSummon }) {
+export function createDocket({ root, study, game, profile, onClose, onSummon, onPerson }) {
   let items = [];
   let cur = 0;
   let page = 0, pages = 1;
@@ -35,6 +36,12 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
   const mark = h('span.mark');
   const pizhu = h('div.pizhu', replyLabel, reply, mark);
   const emptyNote = h('div.empty');
+  // 批语长了往左卷（竖写）：滚轮下拨即往左
+  reply.addEventListener('wheel', (e) => {
+    if (reply.scrollWidth <= reply.clientWidth) return;
+    e.preventDefault();
+    reply.scrollLeft -= e.deltaY || e.deltaX;
+  }, { passive: false });
   const fold = h('article.dk-fold', hdr, subject, bodyBox, h('div.rule'), pizhu, emptyNote);
 
   // ---------- 屏上：题头、折目、签、翻折、摘入 ----------
@@ -47,10 +54,12 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
   const slips = h('div.slips');
   const prev = h('button.turn.prev', { type: 'button', title: '上一折', onclick: () => turnPage(-1) }, '›');
   const next = h('button.turn.next', { type: 'button', title: '下一折', onclick: () => turnPage(1) }, '‹');
-  const pageNote = h('div.pagenote');
+  const line = h('div.dk-line');
+  const foot = h('div.dk-foot', line, slips);
+  const whoBox = h('aside.dk-who.q-qi');
   const pick = yapai('', { onclick: () => doExcerpt() });
   pick.classList.add('excerpt');
-  const el = h('section.scr.scr-docket', crumb, back, listBox, slips, prev, next, pageNote, pick);
+  const el = h('section.scr.scr-docket', crumb, back, whoBox, listBox, foot, prev, next, pick);
   root.append(fold, el);           // 字层直接挂根节点下，与舞台同一合成组，正片叠底才叠得到纸上
 
   // 字层每帧贴到纸面四角
@@ -101,10 +110,39 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
       mark.textContent = v && m.status !== 'pending' ? v[1] : '';
       mark.hidden = !mark.textContent;
     }
+    renderWho(m);
     layoutPages();
     renderList();
     renderSlips();
     renderCrumb();
+  }
+  // 奏者小牌：决断时要看的是谁上的折——职衔、人在哪、哪一党、忠不忠
+  function renderWho(m) {
+    whoBox.hidden = !m;
+    if (!m) return;
+    const low = m.loyalty != null && m.loyalty < 34;
+    replaceChildren(whoBox,
+      faceDot('av', { name: m.from, portrait: m.portrait }, m.system ? null : onPerson),
+      h('div', h('b', m.from), m.fromTitle ? h('small', m.fromTitle) : null,
+        m.location || m.party ? h('small', [m.location, m.party].filter(Boolean).join(' · ')) : null,
+        prof.tier === 'sovereign' && m.loyalty != null ? h('small.loyal' + (low ? '.low' : ''), `忠诚 ${grade(m.loyalty)}`) : null));
+  }
+  // 签上一行：悬停时说这枝签做什么；否则说这件的状态与第几折
+  let slipHint = '';
+  function paintLine() {
+    if (slipHint) { line.textContent = slipHint; return; }
+    const m = items[cur];
+    if (!m) { line.textContent = ''; return; }
+    const d = prof.docket;
+    const v = d.verdicts.find(([k]) => k === m.status);
+    const staged = ['approved', 'rejected', 'annotated'].includes(m.status);
+    line.textContent = [
+      m.group === 'held' ? `${d.groups.held}未发` : v && m.status !== 'pending' ? `已${v[1]}` : '',
+      m.referredTo ? `交${m.referredTo}议处` : '',
+      m.remoteFrom && m.replySent ? (m.replyArrived ? `${d.reply}已送达` : `${d.reply}回传中`) : '',
+      staged ? '推演前可改' : '',
+      pages > 1 ? `第${num(page + 1)}折 · 共${num(pages)}折` : ''
+    ].filter(Boolean).join('　·　');
   }
 
   // 长折分折：正文区宽取整到整行，按版心宽翻
@@ -120,7 +158,7 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
     prev.hidden = next.hidden = !many;
     prev.disabled = page <= 0;
     next.disabled = page >= pages - 1;
-    pageNote.textContent = many ? `第${num(page + 1)}折 · 共${num(pages)}折` : '';
+    paintLine();
   }
   function turnPage(dir) {
     const to = page + dir;
@@ -146,19 +184,26 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
       xs.map(([m, i]) => {
         const v = d.verdicts.find(([k]) => k === m.status);
         return h('button.mi' + (i === cur ? '.on' : '') + (m.urgent ? '.urgent' : ''), { type: 'button', onclick: () => go(i), title: m.title || m.body.slice(0, 40) },
-          h('b', m.from), h('small', m.type || m.title.slice(0, 8) || ''), v && m.status !== 'pending' ? h('em', v[1]) : null);
+          faceDot('av', { name: m.from, portrait: m.portrait }, m.system ? null : onPerson),
+          h('span.who', h('b', m.from), m.type ? h('small', m.type) : null),
+          v && m.status !== 'pending' ? h('em', v[1]) : null,
+          h('span.ex', m.title || m.body.replace(/\s+/g, '').slice(0, 30)));
       }))));
     list.querySelector('.mi.on')?.scrollIntoView({ block: 'nearest' });
   }
 
+  function hintOf(text) {
+    slipHint = text;
+    paintLine();
+  }
   function renderSlips() {
     const m = items[cur];
     slips.hidden = !m;            // 无折可批：一排灰签不挂
     replaceChildren(slips, prof.docket.verdicts.map(([key, label, note], i) =>
       h('button.slip' + (i === 0 ? '.go' : '') + (m && m.status === key ? '.on' : ''), {
-        type: 'button', title: note, disabled: !m, onclick: () => decide(key, label)
+        type: 'button', disabled: !m, onclick: () => decide(key, label), onpointerenter: () => hintOf(note), onpointerleave: () => hintOf('')
       }, label)),
-    m && m.qiaozhi ? h('button.slip.qz', { type: 'button', title: '失地之后，其建置撤销、存名或侨置于他处', onclick: () => qiaozhi(m) }, '侨置') : null);
+    m && m.qiaozhi ? h('button.slip.qz', { type: 'button', onclick: () => qiaozhi(m), onpointerenter: () => hintOf('失地之后，其建置撤销、存名或侨置于他处'), onpointerleave: () => hintOf('') }, '侨置') : null);
   }
 
   // ---------- 侨置（失地急奏） ----------

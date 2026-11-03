@@ -7,7 +7,7 @@ import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
 import { homography } from '../core/homography.js';
-import { qianzi, loadFonts } from '../kit/index.js';
+import { qianzi, faceDot as avatar, loadFonts } from '../kit/index.js';
 
 const FOLD_W = 1180, FOLD_H = 780;
 const PAD_X = 84, PAD_Y = 72, COL = 46;                   // 版心边距与行距：朱丝栏每 46px 一道，版心正好 22 行
@@ -15,19 +15,6 @@ const SHEET = { w: 680, h: 450, x: 0, z: -14, rot: -0.012, surface: 'letter', fr
 const toast = (text) => bus.emit('kernel:toast', { text });
 const MULTI = '\u0000群发';                               // 群发稿的存稿键（不会与人名相撞）
 const WAITING_MAX = 12;                                   // 待复只列最近几封：放着不回的旧信不该把列表撑满
-
-// 头像：先放姓的首字，立绘在后台载到了才换上（缺图不露破图标）。给了 onPerson 就能点开人物窗、悬停出小签、右键出可为单
-function avatar(cls, c, onPerson) {
-  const attrs = onPerson ? { dataset: { person: c.name }, onclick: (e) => { e.stopPropagation(); onPerson(c.name); } } : {};
-  const box = h('span.' + cls, attrs, [...c.name][0]);
-  if (c.portrait) {
-    const img = new Image();
-    img.alt = '';
-    img.onload = () => replaceChildren(box, img);
-    img.src = c.portrait;
-  }
-  return box;
-}
 
 // 卷动后对齐到整行：字与朱丝栏不错位
 function snapColumns(el) {
@@ -68,12 +55,15 @@ export function createLetters({ root, study, game, profile, onClose, onPerson })
   const ta = h('textarea.lt-ta', { spellcheck: false, 'aria-label': '书札正文', oninput: () => L.setDraft(draftKey(), ta.value) });
   ta._refBtnAttached = true;
   const signCol = h('div.lt-sign');
-  const compose = h('div.lt-compose', toCol, ta, signCol);
+  const quote = h('div.lt-quote');                        // 回书时原信留在笺右，边看边回
+  const compose = h('div.lt-compose', toCol, quote, ta, signCol);
   const flow = h('div.lt-flow');
   const idle = h('div.lt-idle');
   const moreCue = h('div.lt-more', h('i'), '卷未尽');     // 长信往左还有，笺面上得看得出来
-  const fold = h('article.lt-fold', compose, flow, idle, moreCue);
+  const sentSeal = h('div.lt-seal');                      // 遣使时落一方印
+  const fold = h('article.lt-fold', compose, flow, idle, moreCue, sentSeal);
   snapColumns(ta);
+  snapColumns(quote);
   snapColumns(flow);
   const paintMore = () => moreCue.classList.toggle('on', fold.dataset.mode === 'read' && flow.scrollWidth - flow.clientWidth - Math.abs(flow.scrollLeft) > 6);
   flow.addEventListener('scroll', paintMore, { passive: true });
@@ -152,6 +142,8 @@ export function createLetters({ root, study, game, profile, onClose, onPerson })
     if (box.waiting.length) {
       secs.push(section('待复', h('small', `${num(box.waiting.length)}封`), box.waiting.slice(0, WAITING_MAX).map((v) => letterRow(v, { tag: '待复', tagCls: '' }))));
     }
+    if (box.starred.length) secs.push(section('标记', h('small', `${num(box.starred.length)}封`), box.starred.map((v) => letterRow(v, { tag: '★', tagCls: '.star' }))));
+    if (box.recent.length) secs.push(section('近函', h('small', '已阅'), box.recent.map((v) => letterRow(v, { cls: '.old' }))));
     replaceChildren(list, secs.length ? secs : h('p.lt-none', '案头暂无新札。要写信，到名册里择人。'));
   }
   function renderTransit(box) {
@@ -322,6 +314,10 @@ export function createLetters({ root, study, game, profile, onClose, onPerson })
       const names = multi ? [...picked] : person ? [person.name] : [];
       toCol.textContent = !names.length ? t.to('……') : names.length > 3 ? t.to(`群发${num(names.length)}人`) : t.to(names.join('、'));
       if (replyTo) toCol.textContent = `${t.reply}　${names[0] || ''}`;
+      const orig = replyTo ? L.letter(replyTo) : null;
+      compose.classList.toggle('replying', !!orig);
+      replaceChildren(quote, orig ? [col('qh', `来函　${orig.from}`), ...paragraphs(orig.content, 'q')] : []);
+      quote.scrollLeft = 0;
       signCol.textContent = t.mine;
       ta.placeholder = plan ? '附言（可略）……' : t.hint;
       const key = draftKey();
@@ -345,7 +341,7 @@ export function createLetters({ root, study, game, profile, onClose, onPerson })
     if (v.out) {
       blocks.push(col('head', t.to(v.to)), ...paragraphs(v.content, 'body mine'), col('sign mine', `${v.date}　${t.mine}`));
     } else {
-      blocks.push(col('head', `${v.type}　${v.from}`), ...(v.inFlight ? [col('veiled', '〔信使在途　尚未送抵〕')] : paragraphs(v.content)), col('sign', `${t.theirs(v.from, foreign)}　${v.date}`));
+      blocks.push(h('p.head', v.hot ? h('i.urg', '急') : null, `${v.type}　${v.from}`), ...(v.inFlight ? [col('veiled', '〔信使在途　尚未送抵〕')] : paragraphs(v.content)), col('sign', `${t.theirs(v.from, foreign)}　${v.date}`));
     }
     if (v.reply) {
       blocks.push(h('p.gap'), h('p.lab', h('span', t.reply)), ...paragraphs(v.reply), col('sign', `${t.theirs(v.to, foreign)}　${v.replyDate}`));
@@ -385,7 +381,8 @@ export function createLetters({ root, study, game, profile, onClose, onPerson })
   function buildPickers() {
     const types = L.types(prof.letters.types);
     typePick = qianzi(types.map((x) => ({ value: x.key, label: x.label, title: x.token ? `须${x.tokenLabel}` : '' })), { value: prof.letters.dflt, onchange: () => renderBar() });
-    urgPick = qianzi(L.URGENCY.map(([value, label, title]) => ({ value, label, title })), { value: 'normal', onchange: () => renderMeta() });
+    // 八百里加急写成「八百里」：五个字的签比别的长一截，一排高低不齐；全名在悬停里
+    urgPick = qianzi(L.URGENCY.map(([value, label, title]) => ({ value, label: label.length > 3 ? label.replace('加急', '') : label, title: `${label}：${title}` })), { value: 'normal', onchange: () => renderMeta() });
     cipherPick = qianzi(L.ciphers().map((c) => ({ value: c.key, label: c.label, title: c.note })), { value: 'none', onchange: () => renderMeta() });
     modePick = qianzi(L.SEND_MODES.map(([value, label, title]) => ({ value, label, title })), { value: 'multi_courier', onchange: () => { renderBar(); renderMeta(); } });
   }
@@ -426,6 +423,15 @@ export function createLetters({ root, study, game, profile, onClose, onPerson })
   }
 
   // ---------- 遣使 ----------
+  let sealTimer = 0;
+  function stampSent() {
+    sentSeal.textContent = prof.letters.send;
+    fold.classList.remove('sent');
+    void fold.offsetWidth;
+    fold.classList.add('sent');
+    clearTimeout(sealTimer);
+    sealTimer = setTimeout(() => fold.classList.remove('sent'), 1500);
+  }
   function send() {
     const names = multi ? [...picked] : person ? [person.name] : [];
     if (!names.length) { toast('请先在左列择定收信人'); return; }
@@ -439,6 +445,7 @@ export function createLetters({ root, study, game, profile, onClose, onPerson })
     let r;
     try { r = L.send(opts); } catch (e) { toast(e.message); return; }
     if (!r.ok) return;                                    // 内核已以 toast 说明缘故
+    stampSent();
     L.setDraft(draftKey(), '');
     ta.value = '';
     replyTo = null;

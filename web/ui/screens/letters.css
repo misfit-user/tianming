@@ -17,6 +17,14 @@
   writing-mode: vertical-rl; font: 24px/46px var(--f-xing); letter-spacing: .06em; color: #1f140b; caret-color: #8a1a10;
   background: var(--lt-rule); background-attachment: local; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
 .lt-ta::-webkit-scrollbar { display: none; }
+/* 回书：原信留在笺右六行，淡墨，可卷；其左才是回书 */
+.lt-quote { display: none; flex: none; width: 276px; height: 100%; box-sizing: border-box; writing-mode: vertical-rl; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; pointer-events: auto; user-select: text;
+  background: var(--lt-rule); background-attachment: local; font: 20px/46px var(--f-kai); letter-spacing: .06em; color: rgba(50, 32, 16, .68); box-shadow: -1px 0 0 rgba(168, 38, 26, .55); }
+.lt-quote::-webkit-scrollbar { display: none; }
+.lt-quote p { margin: 0; }
+.lt-quote .qh { font: 20px/46px var(--f-title); letter-spacing: .2em; color: rgba(138, 26, 16, .85); }
+.lt-compose.replying .lt-quote { display: block; }
+.lt-compose.replying .lt-ta { width: 644px; }
 .lt-ta::placeholder { color: rgba(90, 60, 20, .32); }
 
 /* 读信：一道竖写长卷，往左读；可划选摘入 */
@@ -25,6 +33,7 @@
 .lt-flow::-webkit-scrollbar { display: none; }
 .lt-flow p { margin: 0; }
 .lt-flow .head { font: 28px/46px var(--f-title); letter-spacing: .2em; color: #2a1608; }
+.lt-flow .head .urg { display: inline-block; width: 34px; height: 34px; margin-block-end: 12px; writing-mode: horizontal-tb; box-sizing: border-box; border: 2px solid var(--verm); font: 22px/30px var(--f-kai); letter-spacing: 0; text-align: center; color: var(--verm); vertical-align: middle; }
 .lt-flow .mine { font: 24px/46px var(--f-xing); letter-spacing: .06em; color: #1f140b; }
 .lt-flow .sign { text-align: end; font: 19px/46px var(--f-kai); letter-spacing: .14em; color: #4a3220; }
 .lt-flow .sign.mine { font: 23px/46px var(--f-xing); color: #a8261a; }
@@ -36,6 +45,10 @@
 .lt-fold > .lt-more { position: absolute; left: 34px; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; font: 18px/1 var(--f-kai); letter-spacing: .3em; color: #8a1a10; }
 .lt-fold > .lt-more.on { display: block; }
 .lt-more i { display: block; width: 0; height: 0; margin: 0 auto 8px; border: 7px solid transparent; border-right-color: #8a1a10; transform: translateX(-4px); }
+/* 遣使落印：朱文一方，落下来，一会儿淡去 */
+.lt-fold > .lt-seal { position: absolute; left: 112px; bottom: 96px; padding: 8px 10px 7px; border: 3px solid #a8261a; border-radius: 3px; color: #a8261a; font: 36px/1.05 var(--f-seal); letter-spacing: .04em; writing-mode: vertical-rl; transform: rotate(-5deg); opacity: 0; }
+.lt-fold.sent > .lt-seal { display: block; animation: lt-seal 1.5s var(--ease-out) both; }
+@keyframes lt-seal { 0% { opacity: 0; transform: rotate(-5deg) scale(1.6); } 16% { opacity: .9; transform: rotate(-5deg) scale(.94); } 24% { transform: rotate(-5deg) scale(1); } 76% { opacity: .9; } 100% { opacity: 0; transform: rotate(-5deg) scale(1); } }
 .lt-idle { height: 100%; justify-content: center; align-items: center; }
 .lt-idle > span { writing-mode: vertical-rl; font: 26px/46px var(--f-kai); letter-spacing: .5em; color: rgba(60, 40, 20, .55); }
 
@@ -96,6 +109,8 @@
 .lt-li.new { box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .22); background: rgba(255, 230, 190, .05); }
 .lt-li.read { opacity: .62; }
 .lt-li.read:hover, .lt-li.read.on { opacity: 1; }
+.lt-li.old .who b { color: rgba(240, 228, 204, .85); }
+.lt-li em.star { color: var(--gold-hi); border-color: transparent; padding: 0; }
 .lt-li.bare { grid-template-columns: minmax(0, 1fr); }
 .lt-li.bare .ex { grid-column: 1; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.5; }
 .lt-pi em, .lt-mi em, .lt-li em { font: normal var(--fs-1)/1.3 var(--f-kai); padding: 0 .25rem; white-space: nowrap; color: #e8c982; border: 1px solid rgba(232, 201, 130, .5); }
@@ -156,6 +171,7 @@
 .lt-bar { display: flex; align-items: flex-start; gap: 1.125rem; }
 .lt-bar > :not(.lt-grp) { align-self: flex-end; }
 .lt-grp { display: flex; flex-direction: column; align-items: center; gap: .3125rem; }
+.lt-grp .q-qianzi > button { min-height: 6.75rem; box-sizing: border-box; }   /* 几组签一样长，案底才齐 */
 .lt-grp > .lab { padding-left: .4em; font: 400 var(--fs-3) var(--f-title); letter-spacing: .4em; color: #f3dcb0; text-shadow: 0 1px 2px #000, 0 0 8px rgba(0, 0, 0, .9); }
 .lt-token { max-width: 9rem; font: var(--fs-1) var(--f-kai); color: #ffb08f; text-align: center; text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
 .lt-agent { max-width: 10rem; padding: .1875rem .375rem; border: 0; outline: 0; font: var(--fs-2) var(--f-kai); color: var(--ink);
@@ -173,8 +189,8 @@
 .scr-letters .slip.next em { position: absolute; right: -.5rem; top: -.5rem; min-width: 1.375rem; height: 1.375rem; writing-mode: horizontal-tb; border-radius: .6875rem; font: normal max(.75rem, 11px)/1.375rem var(--f-kai); letter-spacing: 0; text-align: center; color: #f9ead2; background: #a3301f; box-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
 /* 窄窗案底会撞到两列：两列让回去 */
 @media (max-width: 1000px) {
-  .lt-left { bottom: 9.5rem; }
-  .lt-right { max-height: calc(100vh - 16rem); }
+  .lt-left { bottom: 9.5rem; width: 190px; }
+  .lt-right { max-height: calc(100vh - 16rem); width: calc(190px + 1.5rem); }
 }
 @media (max-width: 900px) {
   .lt-left { bottom: 15.5rem; }

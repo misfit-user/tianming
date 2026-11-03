@@ -805,12 +805,16 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const badge = (btn, n) => { const old = btn && btn.querySelector('.hm-n'); if (old) old.remove(); if (btn && n) btn.append(h('span.hm-n', num(n))); };
     badge(ringBtns.pi, docket);
     badge(ringBtns.shu, fresh);
+    // 待批的菱章悬停说急奏几件、谁奏的
+    const pendRows = docket ? game.select.docket().filter((m) => m.group === 'urgent' || m.group === 'pending') : [];
+    const urgentRows = pendRows.filter((m) => m.urgent);
+    const docketTip = pendRows.length ? `${urgentRows.length ? `${prof.docket.groups.urgent}${num(urgentRows.length)}件：${[...new Set(urgentRows.map((m) => m.from))].slice(0, 3).join('、')}\n` : ''}待批${num(pendRows.length)}件，点开即办` : '';
     // 来函的菱章悬停直接列出是谁写来的，不必点开才知道
     const freshNames = fresh ? game.letters.freshFrom() : [];
     const freshTip = freshNames.length ? `${freshNames.slice(0, 4).join('、')}${freshNames.length > 4 ? `等${num(freshNames.length)}人` : ''}来函\n点开即读` : '';
     // 每枚：[字, 题, 件数, 点了做什么, 色, 说明, 签条]；说明给了就不记件数（科举待定、所掌警讯是一件事不是几件）
     const items = [
-      ['批', `${prof.docket.name}待批`, docket, () => readOnly() || openDocket(), 'zhu'],
+      ['批', `${prof.docket.name}待批`, docket, () => readOnly() || openDocket(), 'zhu', '', docketTip],
       ['政', prof.issues.title, open.length, () => readOnly() || issues.open(), 'qing'],
       ['函', '新到来函', fresh, () => openLetters(), 'lv', '', freshTip],
       ['科', game.keju.STAGES_NEED[due] || '科举待定夺', due ? 1 : 0, () => readOnly() || kejuPage.show(), 'jin', '点开科举册定夺']
@@ -1131,10 +1135,11 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
   // 朝议、科议开着：殿上还在议事，看人可以，召对、传书、入图这些要换场面的事得等散了
   const inHall = () => !!(courtPage.opened || keyiPage.opened || mizhaoPage.opened);
+  const onPaper = () => !!(lettersPage.opened || docket.opened);
   // 对一个人能做什么（右键可为单与人物窗左缘圆钮同一份）：见、书照身份取叫法；任官只元首一档有，余者不列；做不了的写缘由
   function personCan(name) {
-    // 书札开着：看人、换个收信人都行，召对、任官这些要换场面的事先收卷
-    const ro = per.previewing ? '借视角时只读' : inHall() ? '殿上议事，散了再说' : lettersPage.opened ? '先收起书札' : '';
+    // 书札、奏疏开着：看人可以（书札还能换个收信人），召对、任官这些要换场面的事先收卷
+    const ro = per.previewing ? '借视角时只读' : inHall() ? '殿上议事，散了再说' : onPaper() ? '先收卷' : '';
     const near = (() => { try { return game.audience.canAudience(name); } catch (_e) { return false; } })();
     const far = (() => { try { return game.letters.contacts().some((p) => p.name === name); } catch (_e) { return false; } })();
     return {
@@ -1147,7 +1152,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 地名 → 舆图镜头飞去（在书房就先俯身入图）；认不出返回 false
   function locatePlace(text) {
     if (inHall()) { bus.emit('kernel:toast', { text: '殿上议事，散了再看舆图' }); return true; }
-    if (lettersPage.opened) { bus.emit('kernel:toast', { text: '先收起书札，再看舆图' }); return true; }
+    if (onPaper()) { bus.emit('kernel:toast', { text: '先收卷，再看舆图' }); return true; }
     const [i] = byPlace(text);
     const r = i == null ? null : mapRegionList[i];
     if (!r || !r.center) return false;
@@ -1208,7 +1213,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
   // 批阅：书案让位，镜头俯到摊开的折子上；收折回来再亮书案
   // 召对、廷议两页建在后头；这里的回调用到时才取
-  const docket = createDocket({ root, study, game, profile: () => sceneProfile(), onClose: () => { el.classList.add('on'); refresh(); backHome(); },
+  const docket = createDocket({ root, study, game, profile: () => sceneProfile(), onPerson: (name) => renwu.show(name), onClose: () => { el.classList.add('on'); refresh(); backHome(); },
     onSummon: (name) => { el.classList.add('on'); audiencePage.summon(name); } });
   const issues = createIssues({ game, profile: () => prof, onConvene: (id) => { if (!readOnly()) courtPage.convene(id); }, onSecret: (id) => { if (!readOnly()) mizhaoPage.pick(id); } });
   // 人物：照 CK3——点人像左边展开人物窗，书目「人」右边展开寻人；舆图在中间露着（同志 10-11：人物图志不必另做册页）
@@ -1218,7 +1223,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     can: (name) => personCan(name),
     onAudience: (name) => audiencePage.summon(name), onLetter: (name) => openLetters(name), onOffice: (name) => bioPage.show(name, 'office'),
     onBio: (name) => bioPage.show(name), onFind: (name) => xunren.show(name), locate: (text) => locatePlace(text), compare: xunren.compare,
-    onFaction: (key) => { if (inHall()) bus.emit('kernel:toast', { text: '殿上议事，散了再看' }); else if (lettersPage.opened) bus.emit('kernel:toast', { text: '先收起书札，再看' }); else realmPage.showDock(key); },
+    onFaction: (key) => { if (inHall()) bus.emit('kernel:toast', { text: '殿上议事，散了再看' }); else if (onPaper()) bus.emit('kernel:toast', { text: '先收卷，再看' }); else realmPage.showDock(key); },
     sealOf: (name) => {
       let s = null;
       try { s = game.realm.factionSeal(name); } catch (_e) { return null; }

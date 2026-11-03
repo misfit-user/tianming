@@ -3,7 +3,7 @@ export { installOrnaments } from './ornaments.js';
 export { loadFonts, sealCanvas, fitGlyph } from './brush.js';
 export { qiPanel, zhiPanel, panelTitle, gold, rule } from './components/panels.js';
 export { pai, yapai, yapaiOff, tag, btn, qianzi, wadang, sealButton, kaiguan, chi, shu, qian } from './components/controls.js';
-export { zhang, pin, zhou, keben, jian } from './components/records.js';
+export { zhang, pin, zhou, faceDot, keben, jian } from './components/records.js';
 export { juan, openScrolls, closeScrolls, closeSideScrolls } from './components/juan.js';
 export { tiao, installTiao } from './components/tiao.js';
 export { clock } from './components/clock.js';

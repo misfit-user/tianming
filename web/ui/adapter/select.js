@@ -345,6 +345,7 @@ export function docket() {
     return {
       id: m.id, from: m.from || '有司', system,
       fromTitle: ch ? ch.officialTitle || ch.title || '' : '', portrait: (ch && ch.portrait) || '',
+      location: (ch && ch.location) || '', party: (ch && ch.party) || '', loyalty: ch && typeof ch.loyalty === 'number' ? ch.loyalty : null,
       title: m.title || m.subjectLine || '', body: String(m.content || m.body || ''),
       type: type + (m.subtype ? '·' + (memType(m.subtype) || m.subtype) : ''),
       urgent: m.priority === 'urgent', reliability: yanyi ? m.reliability || '' : '',

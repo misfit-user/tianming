@@ -33,6 +33,10 @@ function holds(token) {
 // ---------- 名册 ----------
 const capital = () => G()._capital || '京城';
 const same = (a, b) => { const f = fn('_isSameLocation'); return f ? !!f(a, b) : a === b; };
+// 近在身边：在京，或与玩家同城。三部官方剧本开局 GM._capital 都是空的，内核退回默认的「京城」，只有别名表认得的京师才算在京；
+// 晚唐长安与玩家同城的臣子因此全成了「远方」。这里再看玩家所在（内核 _getPlayerLocation，选人的册子也用它）
+const herePlace = () => { const f = fn('_getPlayerLocation'); return (f && f()) || capital(); };
+const isNear = (c, cap = capital(), here = herePlace()) => !c.location || same(c.location, cap) || same(c.location, here);
 function player(g) {
   const pc = w.TM && w.TM.Player && typeof w.TM.Player.getCharacter === 'function' ? w.TM.Player.getCharacter(g) : null;
   return pc || (g.chars || []).find((c) => c && c.isPlayer) || null;
@@ -95,6 +99,7 @@ export function contacts() {
   const me = player(g);
   const myFaction = me ? me.faction : '';
   const cap = capital();
+  const here = herePlace();
   const late = lateTurns();
   const cnt = {};
   const bump = (name) => cnt[name] || (cnt[name] = { unread: 0, fresh: 0, transit: 0, lost: 0 });
@@ -111,8 +116,7 @@ export function contacts() {
   const out = [];
   for (const c of g.chars || []) {
     if (!c || c.alive === false || c.isPlayer || !c.name) continue;
-    const atCap = !c.location || same(c.location, cap);
-    if (atCap && !c._travelTo) continue;
+    if (isNear(c, cap, here) && !c._travelTo) continue;
     const foreign = !!(myFaction && c.faction && c.faction !== myFaction);
     const region = foreign ? c.faction : placeOf(c);
     const travel = c._travelTo ? (typeof c._travelTo === 'string' ? c._travelTo : c._travelTo.toLocation || '') : '';
@@ -127,7 +131,8 @@ export function contacts() {
 // 密使人选：在京、在世、非玩家
 export function agents() {
   const cap = capital();
-  return (G().chars || []).filter((c) => c && c.alive !== false && !c.isPlayer && (!c.location || same(c.location, cap)))
+  const here = herePlace();
+  return (G().chars || []).filter((c) => c && c.alive !== false && !c.isPlayer && isNear(c, cap, here))
     .map((c) => ({ name: c.name, title: c.officialTitle || c.title || '' }));
 }
 
@@ -235,23 +240,28 @@ export function freshFrom() {
   return [...new Set(rows.map((v) => (v.out ? v.to : v.from)))];
 }
 const byUrgency = (a, b) => (b.hot - a.hot) || (b.at - a.at);
-// 以信为准的四摞（keep：这一趟进来时新到的，读过了也留在原处，不让列表跳）。每条带写信人的像与职衔
+// 以信为准的几摞（keep：这一趟进来时新到的，读过了也留在原处，不让列表跳）。每条带写信人的像与职衔
+// 标记过的、近来读过的也在：原先读完就只能回名册一个个人去翻
+const RECENT_MAX = 8;
 export function inbox(keep = null) {
-  const box = { fresh: [], waiting: [], transit: [], trouble: [] };
+  const box = { fresh: [], waiting: [], transit: [], trouble: [], starred: [], recent: [] };
+  const rest = [];
   const held = (v) => !!(keep && keep.has(v.id));
   for (const l of G().letters || []) {
     if (!l) continue;
     const v = view(l);
     const c = (G().chars || []).find((x) => x && x.name === (v.out ? v.to : v.from));
     const row = { ...v, who: { name: v.out ? v.to : v.from, title: c ? c.officialTitle || c.title || '' : '', portrait: c ? c.portrait || '' : '' } };
+    let filed = false;
     if (v.out) {
-      if (v.replyNew || (held(v) && v.reply)) box.fresh.push(row);
-      if (v.can.bypass || v.can.resend || v.lost) box.trouble.push(row);
-      else if (l.status === 'traveling' || l.status === 'replying') box.transit.push(row);
-    } else if (v.inFlight) box.transit.push(row);
-    else if (v.unread || held(v)) box.fresh.push(row);
-    else if (v.awaiting) box.waiting.push(row);
+      if (v.replyNew || (held(v) && v.reply)) { box.fresh.push(row); filed = true; }
+      if (v.can.bypass || v.can.resend || v.lost) { box.trouble.push(row); filed = true; } else if (l.status === 'traveling' || l.status === 'replying') { box.transit.push(row); filed = true; }
+    } else if (v.inFlight) { box.transit.push(row); filed = true; } else if (v.unread || held(v)) { box.fresh.push(row); filed = true; } else if (v.awaiting) { box.waiting.push(row); filed = true; }
+    if (v.starred) box.starred.push(row);
+    else if (!filed) rest.push(row);
   }
+  box.starred.sort((a, b) => b.at - a.at);
+  box.recent = rest.sort((a, b) => b.at - a.at).slice(0, RECENT_MAX);
   box.fresh.sort(byUrgency);
   box.waiting.sort((a, b) => b.at - a.at);
   box.trouble.sort((a, b) => b.at - a.at);

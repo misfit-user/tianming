@@ -14,6 +14,10 @@ html { font-size: var(--ui-rem, 16px) !important; }   /* 根字号归 core/viewp
   --gold-lo: #7d5d2a;
   --gold-line: rgba(201, 164, 92, .45);
   --gold-faint: rgba(201, 164, 92, .28);
+  /* 没有立像的人：一幅只勾了轮廓的绢（粉本），脸的位置写名字首字。不画冠帽，哪朝都用得 */
+  --face-sketch: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 92'%3E%3Cg fill='%23ecd29a' fill-opacity='.07' stroke='%23ecd29a' stroke-opacity='.34' stroke-width='.8'%3E%3Cellipse cx='36' cy='33' rx='13' ry='15.5'/%3E%3Cpath d='M30 47.5c0 5-2 7.5-8 9.5C11 60.5 4.5 68 3 92h66c-1.5-24-8-31.5-19-35-6-2-8-4.500-8-9.500' /%3E%3C/g%3E%3C/svg%3E");
+  --face-blank: var(--face-sketch) 50% 100% / 100% auto no-repeat, radial-gradient(ellipse at 50% 28%, #4d3826, #281a10 80%);
+  --face-ink: rgba(243, 226, 184, .78);
   /* 纸：笺纸由新到旧 */
   --paper-hi: #f4ecdb;
   --paper: #ebe0c7;

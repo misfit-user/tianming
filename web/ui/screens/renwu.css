@@ -3,8 +3,8 @@
    层次：在界面（顶栏、提纲、书目）之上，在册页（.ce-ov）、卷轴、可为单之下——点「详传」册页盖上来，合上又见人物窗。 */
 
 /* ================= 人物窗 ================= */
-.rw { --rw-hero: clamp(13rem, 36vh, 23rem); --rw-band: 5.375rem;   /* 卷首的高；往下读时卷首收成的窄带的高（压得下姓名、职衔） */
-  position: fixed; left: 0; top: 0; bottom: 0; z-index: 20; width: min(37.5rem, 44vw); display: flex; flex-direction: column; color: var(--ivory);
+.rw { --rw-hero: clamp(13rem, 36vh, 23rem); --rw-band: 5.375rem; --rw-w: min(37.5rem, 44vw);   /* 卷首的高；往下读时卷首收成的窄带的高（压得下姓名、职衔）；窗宽 */
+  position: fixed; left: 0; top: 0; bottom: 0; z-index: 20; width: var(--rw-w); display: flex; flex-direction: column; color: var(--ivory);
   background: var(--lac-grain), radial-gradient(ellipse at 0% 100%, rgba(120, 70, 30, .16), transparent 55%), linear-gradient(180deg, #23150d, #130a05);
   border-right: .6875rem solid transparent; border-image: var(--huiwen) 14 round; box-shadow: 1rem 0 2.75rem rgba(8, 4, 2, .62);
   transform: translateX(-104%); pointer-events: none; transition: transform var(--t-3) var(--ease-paper); }
@@ -13,16 +13,20 @@
 /* 整卷一处滚动：卷首粘住，只露底下一条窄带；页签粘在窄带之下；卷底在滚动之外 */
 .rw-scroll { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-x: hidden; }
 
-/* 卷首：立像铺满，上下压暗、左缘压暗，名衔压在底下的暗处 */
+/* 卷首：立像按卷首的高铺、顶对齐（剧本立像的脸都在上半截），脸总落在亮处；两侧羽化，化入同一张图放大虚化的底。
+   底下留一条窄带压名衔：亮处到窄带上沿才开始压暗。竖图窄、方图宽，一律不裁脸 */
 .rw-hero { position: sticky; top: calc(var(--rw-band) - var(--rw-hero)); z-index: 3; flex: none; height: var(--rw-hero); overflow: hidden; background: #2a1a12; box-shadow: 0 .375rem .625rem -.25rem rgba(8, 4, 2, .7); }
-.rw-pic { position: absolute; inset: 0; }
-.rw-pic > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; filter: saturate(.94) contrast(1.03); }
-.rw-pic > i { display: grid; place-items: center; height: 100%; font: 400 10rem var(--f-title); font-style: normal; color: rgba(236, 210, 154, .16);
-  background: radial-gradient(ellipse at 50% 40%, rgba(236, 210, 154, .1), transparent 65%), var(--ling-brown); }
+.rw-pic { position: absolute; inset: 0; overflow: hidden; }
+.rw-pic > .bg { position: absolute; left: -10%; top: -10%; width: 120%; height: 120%; object-fit: cover; object-position: 50% 10%; filter: blur(1.625rem) saturate(.86) brightness(.94); }
+.rw-pic > .fg { position: absolute; left: 50%; top: 0; height: 152%; width: auto; max-width: 100%; transform: translateX(-50%); object-fit: cover; object-position: 50% 0; filter: saturate(.94) contrast(1.03);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent); mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent); }
+/* 没有立像：一幅只勾了轮廓的绢（粉本），脸的位置写名字首字 */
+.rw-pic > i { position: absolute; inset: 0; display: block; font-style: normal; background: linear-gradient(rgba(42, 26, 16, .42), rgba(42, 26, 16, .42)), var(--face-sketch) 50% 18% / auto 96% no-repeat, radial-gradient(ellipse at 50% 26%, #553d29, #2a1a10 76%); }
+.rw-pic > i { font: 400 3.625rem/1 var(--f-title); color: var(--face-ink); text-align: center; padding-top: calc(var(--rw-hero) * .39 - .5em); box-sizing: border-box; }
 .rw-hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(19, 10, 5, .4) 0, rgba(19, 10, 5, 0) 16%, rgba(19, 10, 5, 0) 46%, rgba(19, 10, 5, .86) 74%, #160c06 100%),
-    linear-gradient(90deg, rgba(19, 10, 5, .45), rgba(19, 10, 5, 0) 22%); }
-.rw.dead .rw-pic > img { filter: grayscale(.85) sepia(.3) brightness(.8); }
+  background: linear-gradient(180deg, rgba(19, 10, 5, .42) 0, rgba(19, 10, 5, 0) 15%, rgba(19, 10, 5, 0) calc(100% - var(--rw-band) * 1.7), rgba(19, 10, 5, .84) calc(100% - var(--rw-band) * .92), #160c06 100%),
+    linear-gradient(90deg, rgba(19, 10, 5, .62), rgba(19, 10, 5, 0) 30%, rgba(19, 10, 5, 0) 70%, rgba(19, 10, 5, .55)); }
+.rw.dead .rw-pic { filter: grayscale(.85) sepia(.3) brightness(.8); }
 
 /* 处境印（殁、狱、谪、行、谋）：左上一方朱印 */
 .rw-state { position: absolute; left: .875rem; top: .875rem; z-index: 2; }
@@ -38,7 +42,8 @@
 .rw-ctl[hidden] { display: none; }
 
 /* 配偶、子嗣：右下两枚团扇小像，压在名衔之上，卷首收起时随立像一起滑走 */
-.rw-kin { position: absolute; right: 1rem; bottom: calc(var(--rw-band) + .25rem); z-index: 2; display: flex; gap: .625rem; }
+.rw-kin { position: absolute; right: 1rem; bottom: calc(var(--rw-band) + .25rem); z-index: 2; display: flex; gap: .625rem; opacity: clamp(0, calc(1 - var(--rw-roll, 0) * 2.5), 1); }
+.rw.rolled .rw-kin { pointer-events: none; }
 .rw-medal { display: flex; flex-direction: column; align-items: center; gap: .1875rem; padding: 0; border: 0; background: none; cursor: pointer; color: #f3e2b8; }
 .rw-medal:disabled { cursor: default; }
 .rw-medal > .rw-face { width: 3.375rem; height: 3.375rem; border-radius: 50%; box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .65), 0 0 0 2px #2a170c, 0 0 0 3px rgba(201, 164, 92, .75); }
@@ -46,9 +51,12 @@
 .rw-medal:not(:disabled):hover > .rw-face { box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .65), 0 0 0 2px #2a170c, 0 0 0 3px var(--gold-hi); }
 
 /* 人像（通用）：有图用图，无图写名字首字 */
-.rw-face { position: relative; display: grid; place-items: center; overflow: hidden; background: radial-gradient(ellipse at 50% 35%, #cdb88e, #8d7651); }
+.rw-face { position: relative; display: block; overflow: hidden; background: var(--face-blank); }
 .rw-face > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
-.rw-face > i { font: 400 1.5rem var(--f-title); font-style: normal; color: rgba(40, 24, 14, .6); }
+.rw-face > i { position: absolute; left: 0; right: 0; top: 36%; transform: translateY(-50%); text-align: center; font: 400 1.0625rem/1 var(--f-title); font-style: normal; color: var(--face-ink); }
+.rw-medal > .rw-face { background: var(--face-sketch) 50% 100% / 78% auto no-repeat, radial-gradient(ellipse at 50% 28%, #4d3826, #281a10 80%); }
+.rw-medal > .rw-face > i { font-size: .875rem; }
+.rw-relface > .rw-face > i { font-size: .8125rem; }
 
 /* ---------- 名衔：压在卷首的窄带里 ---------- */
 .rw-name { position: absolute; left: 1.375rem; right: 1.25rem; bottom: .5rem; z-index: 2; display: flex; flex-direction: column; gap: .125rem; }
@@ -81,24 +89,32 @@
 .rw-traits > span.bad { color: #f4c8b8; background: rgba(163, 40, 27, .22); box-shadow: inset 0 0 0 1px rgba(229, 143, 120, .45); }
 .rw-traits:empty { display: none; }
 
-/* 才具八项：一格一项，字在圆章里，数在下 */
-.rw-skills { display: grid; grid-template-columns: repeat(8, 1fr); gap: .25rem; margin: 0; padding: 0; list-style: none; }
-.rw-skills > li { display: flex; flex-direction: column; align-items: center; gap: .1875rem; padding: .375rem 0 .3125rem;
-  background: linear-gradient(180deg, rgba(0, 0, 0, .28), rgba(0, 0, 0, .12)); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .2); }
+/* 才具八项：一条金丝栏，一格一项，字在圆章里，数在下；每格底边一线金，长短即数之高低，八项高低一眼看出 */
+.rw-skills { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; overflow: hidden; border-top: 1px solid rgba(201, 164, 92, .4); border-bottom: 1px solid rgba(201, 164, 92, .4); }
+.rw-skills > li { position: relative; display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: .4375rem 0 .5rem; box-shadow: -1px 0 0 rgba(201, 164, 92, .16); }
+.rw-skills > li::after { content: ''; position: absolute; left: 0; bottom: 0; width: var(--v, 0); height: 2px; background: linear-gradient(90deg, #7d5d2a, var(--gold)); }
+.rw-skills > li.hi::after { background: linear-gradient(90deg, var(--gold), var(--gold-hi)); box-shadow: 0 0 .375rem rgba(236, 210, 154, .55); }
+.rw-skills > li.lo::after { background: rgba(201, 164, 92, .35); }
 .rw-skills i { display: grid; place-items: center; width: 1.625rem; height: 1.625rem; border-radius: 50%; font: 400 .9375rem/1 var(--f-title); font-style: normal; color: #f3e2b8;
   background: radial-gradient(circle at 35% 30%, #5a3620, #2a170c 72%); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .6); }
-.rw-skills b { font: 400 var(--fs-4)/1 var(--f-title); color: var(--ivory); }
+.rw-skills b { font: 400 min(var(--fs-4), calc((var(--rw-w) - 2.625rem) / 28))/1 var(--f-title); white-space: nowrap; color: var(--ivory); }
 .rw-skills li.hi b { color: var(--gold-hi); text-shadow: 0 0 .5rem rgba(236, 210, 154, .45); }
 .rw-skills li.hi i { box-shadow: inset 0 0 0 1px var(--gold-hi), 0 0 .375rem rgba(236, 210, 154, .35); }
 .rw-skills li.lo b { color: rgba(201, 184, 150, .55); }
 
-/* 心性声望：四枚九品刻度 */
-.rw-gauges { display: grid; grid-template-columns: repeat(4, 1fr); gap: .875rem; padding: .125rem .125rem 0; }
-.rw-gauges .q-pin { width: auto; }
+/* 心性声望：四枚九品刻度（kit 的刻度是给顶栏的，这里字和刻度都提亮一档） */
+.rw-gauges { display: flex; gap: 1.125rem; padding: .125rem .125rem 0; }
+.rw-gauges .q-pin { flex: 1 1 0; width: auto; min-width: 0; }
+.rw-gauges .q-pin > div { font-size: var(--fs-2); letter-spacing: .1em; color: rgba(236, 210, 154, .78); }
+.rw-gauges .q-pin > div > b { letter-spacing: .06em; }
+.rw-gauges .q-pin li { background: rgba(201, 164, 92, .55); }
+.rw-gauges .q-pin li.f { background: var(--gold-hi); }
+.rw-gauges .q-pin > ol { padding-bottom: 1px; border-bottom: 1px solid rgba(201, 164, 92, .28); }
 
-/* 职掌：所在、所掌各占一行，势力、党派、门第、出身两两一行 */
-.rw-post { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3125rem 1rem; padding: .5rem .75rem .5625rem; background: rgba(0, 0, 0, .22); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .2); }
-.rw-kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: .625em; font-size: var(--fs-3); }
+/* 职掌：不打框，一行一道金线；所在、所掌各占一行，势力、党派、门第、出身两两一行 */
+.rw-post { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1.25rem; }
+.rw-post:empty { display: none; }
+.rw-kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: .625em; padding: .3125rem .125rem .375rem; font-size: var(--fs-3); border-bottom: 1px solid rgba(201, 164, 92, .16); }
 .rw-kv.wide { grid-column: 1 / -1; }
 .rw-kv > span { font-family: var(--f-kai); letter-spacing: .2em; white-space: nowrap; color: rgba(236, 210, 154, .7); }
 .rw-kv > b { font: 400 var(--fs-3) var(--f-kai); letter-spacing: .06em; color: var(--ivory); }
@@ -124,18 +140,34 @@
 .rw-tabs > button > small { letter-spacing: 0; font-size: var(--fs-1); color: var(--ivory-soft); }
 .rw-tabs > button:hover { color: #f3e2b8; }
 .rw-tabs > button.on { color: #fbefcf; background: linear-gradient(180deg, transparent, rgba(236, 210, 154, .08)); box-shadow: inset 0 -2px 0 var(--gold-hi); }
-.rw-page { flex: 1 0 auto; padding: .5rem 1.375rem .875rem 1.5rem; }
+.rw-page { flex: 1 0 auto; padding: .625rem 1.375rem .875rem 1.375rem; }
+.rw-page.turn > * { animation: rw-turn var(--t-3) var(--ease-out); }
+@keyframes rw-turn { from { opacity: 0; transform: translateY(.3125rem); } to { opacity: 1; transform: none; } }
+[data-motion='less'] .rw-page.turn > * { animation: none; }
+/* 换人时立像淡入 */
+.rw-pic > .fg, .rw-pic > .bg { animation: rw-pic var(--t-3) var(--ease-out); }
+@keyframes rw-pic { from { opacity: 0; } to { opacity: 1; } }
+[data-motion='less'] .rw-pic > .fg, [data-motion='less'] .rw-pic > .bg { animation: none; }
 
-.rw-group { margin-bottom: .75rem; }
-.rw-group > h4 { display: flex; align-items: baseline; gap: .5rem; margin: 0 0 .375rem; font: 400 var(--fs-2) var(--f-kai); letter-spacing: .35em; color: rgba(236, 210, 154, .72); }
+.rw-group { margin-bottom: .875rem; }
+.rw-group > h4 { display: flex; align-items: center; gap: .5rem; margin: 0 0 .5rem; font: 400 var(--fs-2) var(--f-kai); letter-spacing: .35em; color: rgba(236, 210, 154, .78); }
+.rw-group > h4::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201, 164, 92, .35), transparent); }
+/* 世系：一条金线从尊长穿到晚辈，每辈的名目竖写在线上；本人描金居中那一辈的头一位 */
+.rw-tree { position: relative; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.125rem; }
+.rw-tree::before { content: ''; position: absolute; left: .6875rem; top: .25rem; bottom: .25rem; width: 1px; background: linear-gradient(180deg, transparent, rgba(201, 164, 92, .55) 2rem, rgba(201, 164, 92, .55) calc(100% - 2rem), transparent); }
+.rw-tier { position: relative; display: grid; grid-template-columns: 1.375rem minmax(0, 1fr); gap: .75rem; align-items: start; }
+.rw-tier > h4 { margin: 0; padding: .3125rem 0; justify-self: center; writing-mode: vertical-rl; font: 400 var(--fs-2)/1.375rem var(--f-kai); letter-spacing: .3em; color: #f3e2b8; background: #1b0f09; }
 .rw-group > h4 > small { letter-spacing: 0; color: var(--ivory-soft); }
-.rw-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr)); gap: .625rem .5rem; }
+.rw-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(4.875rem, 1fr)); gap: .75rem .375rem; }
 .rw-card { display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ivory); }
 .rw-card:disabled { cursor: default; }
-.rw-card > .rw-face { width: 4.5rem; height: 5.75rem; box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .55), 0 0 0 1px rgba(201, 164, 92, .55); transition: transform var(--t-2) var(--ease-out); }
+.rw-card > .rw-face { width: 4.25rem; height: 5.375rem; box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .55), 0 0 0 1px rgba(201, 164, 92, .55); transition: transform var(--t-2) var(--ease-out); }
 .rw-card:not(:disabled):hover > .rw-face { transform: translateY(-.1875rem); box-shadow: 0 .375rem .875rem rgba(0, 0, 0, .6), 0 0 0 1px var(--gold-hi); }
-.rw-card > b { font: 400 var(--fs-3)/1.2 var(--f-kai); letter-spacing: .06em; color: #f3e2b8; }
-.rw-card > small { font-size: var(--fs-1); color: var(--ivory-soft); }
+.rw-card > b { font: 400 var(--fs-3)/1.2 var(--f-kai); letter-spacing: .06em; text-align: center; color: #f3e2b8; }
+.rw-card > small { font-size: var(--fs-1); line-height: 1.35; text-align: center; color: var(--ivory-soft); }
+.rw-card.me { cursor: default; }
+.rw-card.me > .rw-face { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .55), 0 0 0 1px var(--gold-hi), 0 0 .875rem rgba(236, 210, 154, .32); }
+.rw-card.me > b { color: var(--gold-hi); }
 .rw-card.dead > .rw-face { filter: grayscale(.9) brightness(.75); }
 
 .rw-rels { display: flex; flex-direction: column; }
@@ -156,13 +188,17 @@
 .rw-who.plain { cursor: default; }
 
 .rw-career { margin: 0; padding: 0 0 0 .5rem; list-style: none; border-left: 1px solid rgba(201, 164, 92, .35); }
-.rw-career > li { position: relative; display: grid; grid-template-columns: 4.5rem 1fr; gap: .625rem; padding: .25rem 0 .5rem .875rem; }
+.rw-career > li { position: relative; display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: .625rem; font-size: var(--fs-2); padding: .25rem 0 .5rem .875rem; }
 .rw-career > li::before { content: ''; position: absolute; left: -.3125rem; top: .6875rem; width: .5625rem; height: .5625rem; transform: rotate(45deg); background: #2a170c; box-shadow: inset 0 0 0 1px var(--gold); }
 .rw-career > li.key::before { background: var(--verm); box-shadow: inset 0 0 0 1px var(--gold-hi); }
-.rw-career time { font: var(--fs-2) var(--f-kai); color: rgba(236, 210, 154, .75); }
+.rw-career time { font: var(--fs-2) var(--f-kai); white-space: nowrap; color: rgba(236, 210, 154, .75); }
 .rw-career b { font: 400 var(--fs-3) var(--f-kai); color: #f3e2b8; letter-spacing: .06em; }
 .rw-career p { margin: .125rem 0 0; font-size: var(--fs-2); line-height: 1.6; color: var(--ivory-soft); }
 .rw-prose { margin: 0; font: var(--fs-3)/1.85 var(--f-kai); letter-spacing: .05em; color: var(--ivory); text-align: justify; }
+/* 史料：一条一条列，书名压在前头 */
+.rw-cite { display: flex; flex-direction: column; gap: .625rem; margin: 0; padding: 0; list-style: none; }
+.rw-cite > li { padding-left: .75rem; font: var(--fs-2)/1.8 var(--f-kai); letter-spacing: .04em; color: var(--ivory-soft); box-shadow: inset 2px 0 0 rgba(201, 164, 92, .35); }
+.rw-cite cite { display: block; font-style: normal; letter-spacing: .1em; color: rgba(236, 210, 154, .85); }
 .rw-none { margin: .5rem 0; font: var(--fs-3) var(--f-kai); color: var(--ivory-soft); }
 .rw-note { margin: .25rem 0; font-size: var(--fs-2); color: var(--ivory-soft); }
 
@@ -215,9 +251,9 @@
 .xr-row.on { background: linear-gradient(90deg, rgba(236, 210, 154, .2), rgba(236, 210, 154, .04) 85%); box-shadow: inset .1875rem 0 0 var(--verm); }
 .xr-main { position: relative; flex: 1; min-width: 0; display: grid; grid-template-columns: 2.5rem 1fr auto; align-items: center; gap: .75rem; padding: .3125rem .25rem .3125rem 1.125rem;
   border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }
-.xr-face { display: grid; place-items: center; width: 2.5rem; height: 3.125rem; overflow: hidden; background: radial-gradient(ellipse at 50% 35%, #cdb88e, #8d7651); box-shadow: 0 0 0 1px rgba(201, 164, 92, .5); }
+.xr-face { position: relative; display: block; width: 2.5rem; height: 3.125rem; overflow: hidden; background: var(--face-blank); box-shadow: 0 0 0 1px rgba(201, 164, 92, .5); }
 .xr-face > img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
-.xr-face > i { font: 400 1.25rem var(--f-title); font-style: normal; color: rgba(40, 24, 14, .6); }
+.xr-face > i { position: absolute; left: 0; right: 0; top: 36%; transform: translateY(-50%); text-align: center; font: 400 .8125rem/1 var(--f-title); font-style: normal; color: var(--face-ink); }
 .xr-row.dead .xr-face { filter: grayscale(.9) brightness(.7); }
 .xr-row.dead .xr-id > b { color: var(--ivory-soft); }
 .xr-id { min-width: 0; }
@@ -248,10 +284,10 @@ body:has(.xr.on) .scr-map .mm-panel { visibility: hidden; }
 /* ================= 人像悬停小签（kit 签条的 card 款）：左像右字 ================= */
 .q-tiao.card { max-width: 22rem; padding: .5rem .75rem .5rem .5rem; white-space: normal; }
 .q-ptip { display: grid; grid-template-columns: 3.5rem 1fr; gap: .625rem; align-items: start; }
-.q-ptip-face { display: grid; place-items: center; width: 3.5rem; height: 4.375rem; overflow: hidden; background: radial-gradient(ellipse at 50% 35%, #cdb88e, #8d7651);
+.q-ptip-face { position: relative; display: block; width: 3.5rem; height: 4.375rem; overflow: hidden; background: var(--face-blank);
   box-shadow: 0 0 0 1px rgba(120, 90, 50, .5); }
 .q-ptip-face > img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
-.q-ptip-face > i { font: 400 1.5rem var(--f-title); font-style: normal; color: rgba(40, 24, 14, .6); }
+.q-ptip-face > i { position: absolute; left: 0; right: 0; top: 36%; transform: translateY(-50%); text-align: center; font: 400 1rem/1 var(--f-title); font-style: normal; color: var(--face-ink); }
 .q-ptip.dead .q-ptip-face { filter: grayscale(.9); }
 .q-ptip b { display: block; font: 400 var(--fs-4) var(--f-title); letter-spacing: .12em; }
 .q-ptip b > small { margin-left: .5rem; font: var(--fs-1) var(--f-kai); letter-spacing: .04em; color: var(--ink-faint); }
@@ -263,10 +299,10 @@ body:has(.xr.on) .scr-map .mm-panel { visibility: hidden; }
 /* ================= 人物所在：舆图上一枚团扇小像，针尖落在其所在府州的治所，名签在下 ================= */
 .rw-where { position: absolute; left: 0; top: 0; width: 0; height: 0; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; z-index: 2; }
 .rw-where.off { display: none; }
-.rw-where-face { position: absolute; left: -1.5rem; bottom: .875rem; width: 3rem; height: 3rem; border-radius: 50%; overflow: hidden; display: grid; place-items: center;
-  background: radial-gradient(ellipse at 50% 35%, #cdb88e, #8d7651); box-shadow: 0 .3125rem .75rem rgba(20, 10, 4, .6), 0 0 0 2px #2a170c, 0 0 0 3.5px var(--gold-hi); }
+.rw-where-face { position: absolute; left: -1.5rem; bottom: .875rem; width: 3rem; height: 3rem; border-radius: 50%; overflow: hidden; display: block;
+  background: var(--face-sketch) 50% 100% / 78% auto no-repeat, radial-gradient(ellipse at 50% 28%, #4d3826, #281a10 80%); box-shadow: 0 .3125rem .75rem rgba(20, 10, 4, .6), 0 0 0 2px #2a170c, 0 0 0 3.5px var(--gold-hi); }
 .rw-where-face > img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
-.rw-where-face > i { font: 400 1.375rem var(--f-title); font-style: normal; color: rgba(40, 24, 14, .6); }
+.rw-where-face > i { position: absolute; left: 0; right: 0; top: 36%; transform: translateY(-50%); text-align: center; font: 400 .875rem/1 var(--f-title); font-style: normal; color: var(--face-ink); }
 /* 针：金框下一枚朱色尖角 */
 .rw-where::before { content: ''; position: absolute; left: -.375rem; bottom: .125rem; width: .75rem; height: .875rem; background: linear-gradient(180deg, #b9382a, #6e1a10);
   clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .5)); }

@@ -1,21 +1,24 @@
 // 人物窗：照 CK3 的角色窗口，靠左展开，舆图露着（同志 10-11：「人物图志没必要做成专门 UI，可以做成 CK3 那种」）。
 // 点任何一处人像（案前诸人、提纲、寻人、各册里的人名、右键可为单）都开这一扇；再点别人就换人，左上「‹」退回上一位。
 //   一整卷只有一处滚动：往下读时立像收成一条压着姓名职衔的窄带，页签吸在窄带之下，读生平不必在一条缝里翻；卷底的事一直在手边。
-//   卷首：立像铺满（剧本立像本是带景的画），右下配偶与子嗣两枚小像，左上压处境印（殁、狱、谪、行、谋），底下姓名、品级、职衔。
+//   卷首：立像按卷首的高铺、顶对齐，两侧化入同一张图的虚影，脸总落在亮处；右下配偶与子嗣两枚小像，左上压处境印（殁、狱、谪、行、谋），底下姓名、品级、职衔。
 //   年齿与亲疏（此即本人／视我亲疏与好感）一行，性情一行、才具八项、心性声望一行（忠诚、野心、名望、贤能，九品刻度）。
 //   职掌：所在（点了舆图镜头飞去）、所掌之地与兵；势力、党派、门第、出身。
-//   四页：家人（尊长、配偶、子女、同辈，人像可点）、交游（亲疏与好感）、履历、生平。
+//   四页：家人（尊长、同辈、晚辈一条线排成世系，本人居中；门生、同僚、所事之主另列）、交游（亲疏与好感）、履历、生平（史料一条一条列）。
 //   卷底：能对此人做的事（召见、传书、任官、钉选、对参，做不了的灰着写缘由），详传（列传全卷）、寻人。
 // 数据：game.bio.person（列传同源，tm-renwu-tuzhi.js adaptChar）、game.select.people（品秩、处境）、game.standing（所掌）。
 import { h, replaceChildren } from '../core/dom.js';
-import { num } from '../core/numerals.js';
+import { num, numText } from '../core/numerals.js';
 import { bus } from '../core/bus.js';
 import { pinned, togglePin } from '../core/pins.js';
 import { pin, tiao } from '../kit/index.js';
 
 const SKILL_NAMES = { 智: '智略', 武: '武勇', 军: '军略', 政: '政务', 管: '理财', 交: '交际', 魅: '魅力', 仁: '仁德' };
-const KIN_GROUPS = [['elders', '尊长'], ['spouses', '配偶'], ['children', '子女'], ['peers', '同辈']];
 const SPOUSE_RE = /妻|夫$|丈夫|配|妃|嫔|妾|后$|夫人/;
+const isSpouse = (m) => m.generation === 0 && SPOUSE_RE.test(m.relation) && !/嫂|弟妇|弟媳/.test(m.relation);
+// 剧本的亲属栏里也记门生、同僚、部将、所事之主（「所事之汗」「所近那颜」）：这些不是亲属，不排进世系
+const NON_KIN_RE = /^(?:门生|门徒|弟子|徒|师|私淑|法脉|法嗣|道团|教|同(?!母)|上[司官相]|盟|战友|部将|君|臣|所|国师|外戚|辅政|宿将|权臣|党友|本支|护部|统军|掌)|那颜|萨满|别乞|哈敦|长老|勇士|部酋|使者|商首|戍将|占婚|结亲/;
+const isKin = (m) => !NON_KIN_RE.test(m.relation || '');
 // 关系字认辈分（名册血亲自带辈分；剧本所载亲属只有关系字）
 const genOfRel = (rel) => (/祖/.test(rel) ? -2 : /父|母|叔|伯|舅|姑|姨/.test(rel) ? -1 : /孙/.test(rel) ? 2 : /子|女|嗣|儿|侄|甥/.test(rel) ? 1 : 0);
 // 一家人：名册血亲在前，剧本所载亲属补上名册没连上的
@@ -26,6 +29,18 @@ function kinOf(b) {
 }
 const TABS = [['kin', '家人'], ['rel', '交游'], ['career', '履历'], ['life', '生平']];
 const signed = (v) => (v > 0 ? `+${num(v)}` : v < 0 ? `−${num(-v)}` : '〇');
+// 履历的年份：光一个数的按年份写（一六二二年），不念成「一千六百二十二」
+const whenText = (w) => numText(/^\d{3,4}$/.test(String(w)) ? `${w}年` : w);
+// 生平里「【史料记载】」之后是一串引文：拆开，一条一条列，书名单独压出来
+function splitBio(text) {
+  const [main, ...rest] = String(text).split('【史料记载】');
+  const src = rest.join('').trim();
+  const items = !src ? [] : src.split(/(?<=[。！？；」』）])\s*(?=[^。！？；，、《]{0,8}《[^》]+》[：:])/).map((x) => {
+    const m = x.trim().match(/^([^《]{0,8}《[^》]+》)[：:]\s*([\s\S]*)$/);
+    return m ? { book: m[1], text: m[2] } : { book: '', text: x.trim() };
+  }).filter((x) => x.text);
+  return { main: main.trim(), items };
+}
 
 // viewer() → { name, player: 是否玩家本人（非借视角）, sovereign: 是否元首一档（见臣下之心）, lord: 称君上之词 }
 // 人心（所知之律，同列传）：元首见他人的忠诚、野心；余者只见自己的，他人只列名望、贤能这类公论
@@ -56,6 +71,17 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
   const scroller = h('div.rw-scroll.q-scroll', hero, body, tabBar, page);
   const el = h('aside.rw', { role: 'dialog', 'aria-label': '人物' }, scroller, h('div.rw-ctls', backBtn, shutBtn), foot);
   root.append(el);
+  // 往下读时卷首右下的小像先淡去（窄带里放不下，也别压到右上的按钮）
+  let rollTick = 0;
+  scroller.addEventListener('scroll', () => {
+    if (rollTick) return;
+    rollTick = requestAnimationFrame(() => {
+      rollTick = 0;
+      const t = Math.min(1, scroller.scrollTop / Math.max(1, hero.offsetHeight - parseFloat(getComputedStyle(tabBar).top)));
+      el.style.setProperty('--rw-roll', t.toFixed(3));
+      el.classList.toggle('rolled', t > .4);
+    });
+  }, { passive: true });
   // 页签吸住时卷身该滚到的位置：卷身到底，减去窄带的高（页签的 top）
   const tabsStuckAt = () => body.offsetTop + body.offsetHeight - parseFloat(getComputedStyle(tabBar).top);
 
@@ -96,7 +122,14 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     const c = can(b.name) || {};
 
     // 卷首
-    replaceChildren(pic, b.portrait ? h('img', { src: b.portrait, alt: b.name, decoding: 'async', onerror: (e) => e.target.replaceWith(h('i', [...b.name][0])) }) : h('i', [...b.name][0]));
+    // 同一人重画（翻页签、过回合）不换图，免得闪；没有立像写粉本（一幅只勾了轮廓的绢）
+    const picKey = `${b.name}|${b.portrait || ''}`;
+    if (pic.dataset.key !== picKey) {
+      pic.dataset.key = picKey;
+      const blank = () => h('i', [...b.name][0]);
+      replaceChildren(pic, b.portrait ? [h('img.bg', { src: b.portrait, alt: '', 'aria-hidden': 'true', decoding: 'async' }),
+        h('img.fg', { src: b.portrait, alt: b.name, decoding: 'async', onerror: () => replaceChildren(pic, blank()) })] : blank());
+    }
     el.classList.toggle('dead', !b.alive);
     replaceChildren(seal, b.banner ? tiao(h('b', b.banner.glyph), () => ({ title: b.banner.title, text: b.banner.note || '' })) : null);
     const act = (label, note, off, onclick, on) => tiao(h('button.q-yapai' + (off ? '.off' : '') + (on ? '.on' : ''), { type: 'button', 'aria-disabled': off ? 'true' : 'false',
@@ -112,8 +145,8 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     replaceChildren(acts, list);
     // 配偶与子嗣：各取一位在世者（剧本名册里有的），小像压在卷首右下
     const blood = kinOf(b);
-    const spouse = blood.find((m) => !m.dead && m.generation === 0 && SPOUSE_RE.test(m.relation) && !/嫂|弟妇|弟媳/.test(m.relation));
-    const heir = blood.filter((m) => !m.dead && m.generation > 0).sort((x, y) => (/长/.test(y.relation) ? 1 : 0) - (/长/.test(x.relation) ? 1 : 0))[0];
+    const spouse = blood.find((m) => !m.dead && isKin(m) && isSpouse(m));
+    const heir = blood.filter((m) => !m.dead && isKin(m) && m.generation > 0).sort((x, y) => (/长/.test(y.relation) ? 1 : 0) - (/长/.test(x.relation) ? 1 : 0))[0];
     replaceChildren(kin, [spouse, heir].filter(Boolean).map((m) => h('button.rw-medal', { type: 'button', disabled: !m.known, dataset: { person: m.known ? m.name : '' }, title: `${m.relation}　${m.name}`, onclick: () => show(m.name) },
       face(m.name), h('small', m.relation.length > 3 ? m.relation.slice(-2) : m.relation))));
     backBtn.hidden = !back.length;
@@ -132,7 +165,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
 
     // 性情、才具、心性声望
     replaceChildren(traits, (b.traits || []).map((x) => h('span.' + (x.tone || 'plain'), x.name)));   // 没有词条就空着：性情的文字在生平页
-    replaceChildren(skills, (b.eight || []).map(([k, val]) => tiao(h('li' + (val >= 80 ? '.hi' : val > 0 && val <= 30 ? '.lo' : ''), h('i', k), h('b', num(val))), () => ({ title: SKILL_NAMES[k] || k, text: `${num(val)}` }))));
+    replaceChildren(skills, (b.eight || []).map(([k, val]) => tiao(h('li' + (val >= 80 ? '.hi' : val > 0 && val <= 30 ? '.lo' : ''), { '--v': `${Math.max(0, Math.min(100, val))}%` }, h('i', k), h('b', num(val))), () => ({ title: SKILL_NAMES[k] || k, text: `${num(val)}` }))));
     const fame = game.select.fameRank(row.fame);
     const virtue = game.select.virtueRank(row.merit);
     const heart = v.sovereign || self ? Object.fromEntries(b.heart || []) : {};
@@ -142,14 +175,14 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
       pin('名望', fame.meter, { text: fame.text, note: `${fame.full}（${num(fame.value)}）` }),
       pin('贤能', virtue.meter, { text: virtue.text, note: `第${num(virtue.stage)}阶·${virtue.text}（${num(virtue.value)}）` }));
 
-    // 职掌：现职、所在、所掌；势力、党派、家族、出身
+    // 职掌：现职、所在、所掌；势力、党派、家族、出身（内核按品级推定的出身不写：皇帝、太监也会被推成进士）
     let st = null;
     if (b.alive) { try { st = game.standing(b.name); } catch (_e) { st = null; } }
     const charges = st ? st.charges.filter((x) => x.kind !== 'household') : [];
     const KIND = { region: '地', circuit: '省', army: '兵', office: '署' };
     const place = b.location ? h('button.rw-place', { type: 'button', title: '舆图镜头飞往此地', disabled: !locate, onclick: () => locate && !locate(b.location) && bus.emit('kernel:toast', { text: `舆图上认不出「${b.location}」` }) },
       b.location, b.travelTo ? h('small', ` → ${b.travelTo}`) : null) : h('span', '未详');
-    const facts = [['势力', b.faction], ['党派', b.party ? `${b.party}${b.partyRank ? '·' + b.partyRank : ''}` : ''], ['门第', (b.family && b.family.tier) || ''], ['出身', b.origin && b.origin.title && b.origin.title !== '布衣' ? b.origin.title : '']].filter((x) => x[1]);
+    const facts = [['势力', b.faction], ['党派', b.party ? `${b.party}${b.partyRank ? '·' + b.partyRank : ''}` : ''], ['门第', (b.family && b.family.tier) || ''], ['出身', b.origin && !b.origin.inferred && b.origin.title && b.origin.title !== '布衣' ? b.origin.title : '']].filter((x) => x[1]);
     replaceChildren(post,
       h('div.rw-kv.wide', h('span', '所在'), place),
       charges.length ? h('div.rw-kv.wide', h('span', '所掌'), h('div.rw-charges', charges.map((x) => h('button.rw-charge', { type: 'button', disabled: !(locate && (x.kind === 'region' || x.kind === 'circuit' || x.kind === 'army')),
@@ -160,6 +193,14 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     const counts = { kin: blood.length, rel: (b.relations || []).length, career: (b.career || []).length };
     replaceChildren(tabBar, TABS.map(([k, label]) => h('button' + (k === tab ? '.on' : ''), { type: 'button', onclick: () => turnTab(k) }, label, counts[k] ? h('small', num(counts[k])) : null)));
     replaceChildren(page, ...pageOf(b));
+    // 换页、换人时字轻轻浮上来（过回合、钉选重画不动）
+    const pageKey = `${b.name}|${tab}`;
+    if (page.dataset.key !== pageKey) {
+      page.dataset.key = pageKey;
+      page.classList.remove('turn');
+      void page.offsetWidth;
+      page.classList.add('turn');
+    }
 
     // 卷底
     replaceChildren(footMore,
@@ -178,13 +219,20 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
 
   function pageOf(b) {
     if (tab === 'kin') {
-      const blood = kinOf(b);
-      if (!blood.length) return [h('p.rw-none', '名册与剧本里都未见其亲属。'), b.family && b.family.family ? h('p.rw-note', `${b.family.family}${b.family.tier ? ' · ' + b.family.tier : ''}`) : null].filter(Boolean);
-      const groups = { elders: [], spouses: [], children: [], peers: [] };
-      for (const m of blood) groups[m.generation < 0 ? 'elders' : m.generation > 0 ? 'children' : SPOUSE_RE.test(m.relation) && !/嫂|弟妇|弟媳/.test(m.relation) ? 'spouses' : 'peers'].push(m);
-      return KIN_GROUPS.filter(([k]) => groups[k].length).map(([k, label]) => h('section.rw-group', h('h4', label, h('small', num(groups[k].length))),
-        h('div.rw-cards', groups[k].map((m) => h('button.rw-card' + (m.dead ? '.dead' : ''), { type: 'button', disabled: !m.known, dataset: { person: m.known ? m.name : '' }, onclick: () => show(m.name) },
-          face(m.name), h('b', m.name), h('small', { title: m.note || '' }, m.relation + (m.dead ? ' · 殁' : '')))))));
+      const all = kinOf(b);
+      if (!all.length) return [h('p.rw-none', '名册与剧本里都未见其亲属。'), b.family && b.family.family ? h('p.rw-note', `${b.family.family}${b.family.tier ? ' · ' + b.family.tier : ''}`) : null].filter(Boolean);
+      const tiers = { elders: [], peers: [], youngers: [], others: [] };
+      for (const m of all) tiers[!isKin(m) ? 'others' : m.generation < 0 ? 'elders' : m.generation > 0 ? 'youngers' : 'peers'].push(m);
+      tiers.peers.sort((x, y) => (isSpouse(y) ? 1 : 0) - (isSpouse(x) ? 1 : 0));   // 同辈里配偶挨着本人
+      const card = (m) => h('button.rw-card' + (m.dead ? '.dead' : ''), { type: 'button', disabled: !m.known, dataset: { person: m.known ? m.name : '' }, onclick: () => show(m.name) },
+        face(m.name), h('b', m.name), h('small', { title: m.note || '' }, m.relation + (m.dead ? ' · 殁' : '')));
+      const tier = (label, list, ...head) => h('section.rw-tier', h('h4', label), h('div.rw-cards', head, list.map(card)));
+      const me = h('div.rw-card.me', face(b.name, b.portrait), h('b', b.name), h('small', '本人'));
+      const kinCount = tiers.elders.length + tiers.peers.length + tiers.youngers.length;
+      return [
+        kinCount ? h('div.rw-tree', tiers.elders.length ? tier('尊长', tiers.elders) : null, tier('同辈', tiers.peers, me), tiers.youngers.length ? tier('晚辈', tiers.youngers) : null) : null,
+        tiers.others.length ? h('section.rw-group', h('h4', '师友僚属', h('small', num(tiers.others.length))), h('div.rw-cards', tiers.others.map(card))) : null
+      ].filter(Boolean);
     }
     if (tab === 'rel') {
       const rels = (b.relations || []).slice().sort((x, y) => Math.abs(y.strength || 0) - Math.abs(x.strength || 0));
@@ -197,12 +245,16 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     if (tab === 'career') {
       const list = b.career || [];
       if (!list.length) return [h('p.rw-none', '履历未详。')];
-      return [h('ol.rw-career', list.map((x) => h('li' + (x.key ? '.key' : ''), h('time', x.when), h('div', h('b', x.title), x.desc ? h('p', x.desc) : null))))];
+      return [h('ol.rw-career', list.map((x) => h('li' + (x.key ? '.key' : ''), h('time', whenText(x.when)), h('div', h('b', x.title), x.desc ? h('p', x.desc) : null))))];
     }
     const out = [];
     if (b.personality) out.push(h('section.rw-group', h('h4', '性情'), h('p.rw-prose', b.personality)));
     if (b.goal) out.push(h('section.rw-group', h('h4', '所求'), h('p.rw-prose', b.goal)));
-    if (b.bio) out.push(h('section.rw-group', h('h4', '生平'), h('p.rw-prose', b.bio)));
+    if (b.bio) {
+      const { main, items } = splitBio(b.bio);
+      if (main) out.push(h('section.rw-group', h('h4', '生平'), h('p.rw-prose', main)));
+      if (items.length) out.push(h('section.rw-group', h('h4', '史料'), h('ul.rw-cite', items.map((x) => h('li', x.book ? h('cite', x.book) : null, x.text)))));
+    }
     if (b.appearance) out.push(h('section.rw-group', h('h4', '形貌'), h('p.rw-prose', b.appearance)));
     return out.length ? out : [h('p.rw-none', '生平未详。')];
   }

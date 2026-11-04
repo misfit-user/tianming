@@ -647,8 +647,8 @@ function traitsOf(c) {
     const id = typeof t === 'string' ? t : (t && (t.id || t.name)) || '';
     const def = lib[id];
     const sum = def && def.effects ? Object.values(def.effects).reduce((a, v) => a + (Number(v) || 0), 0) : 0;
-    // 特质库里没有的英文 id（剧本写了库里未收的特质）不列
-    return { id, name: (def && def.name) || (/^[a-z][a-z0-9_]*$/.test(id) ? '' : id), tone: sum >= 3 ? 'pos' : sum <= -3 ? 'neg' : 'neu' };
+    // 特质库里没有的英文 id（剧本写了库里未收的特质）不列；「shanzhou_守」这种前头带代号的只留中文
+    return { id, name: (def && def.name) || (/^[A-Za-z][A-Za-z0-9_\-]*$/.test(id) ? '' : id.replace(/^[A-Za-z0-9_\-]+_(?=[\u4e00-\u9fff])/, '')), tone: sum >= 3 ? 'pos' : sum <= -3 ? 'neg' : 'neu' };
   }).filter((t) => t.name);
 }
 function relationsOf(c, limit = 6) {
@@ -691,7 +691,7 @@ export function people({ dead = false } = {}) {
     return {
       id: c.id, name: c.name || '', zi: c.zi || c.courtesy || '', hao: c.haoName || '', age: c.age || null, gender: c.gender || '',
       office: c.officialTitle || c.title || c.role || c.occupation || (isConsort ? '后宫' : '布衣'), rank: rankOf(c, posts),
-      faction: c.faction || '', party: c.party || '', partyRank: c.partyRank || '', family: c.family || '',
+      faction: c.faction || '', party: c.party || '', partyRank: c.partyRank || '', family: typeof c.family === 'string' ? c.family : (c.family && c.family.name) || '',   // 内核有时把 family 升级成对象
       portrait: c.portrait || '', location: c.location || '', travelTo: (typeof c._travelTo === 'string' ? c._travelTo : (c._travelTo && c._travelTo.toLocation)) || '',
       away: !!(c.location && same && !same(c.location, here)), alive: c.alive !== false, dead: c.alive === false,
       deathReason: c.deathReason || '', isPlayer: !!c.isPlayer, consort: isConsort, states,

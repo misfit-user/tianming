@@ -34,6 +34,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const walk = (v, where) => {
         if (v == null) return;
         if (typeof v === 'string') {
+          if (/^assets\//.test(v)) return;   // 资源路径
           const m = v.match(/[A-Za-z_][A-Za-z_0-9]{2,}/g);
           if (m) m.forEach((w) => { if (!hits.has(w)) hits.set(w, `${where} ｜ ${v.slice(0, 70)}`); });
           return;
@@ -42,7 +43,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
         seen.add(v);
         if (Array.isArray(v)) { v.forEach((x) => walk(x, where)); return; }
         for (const k of Object.keys(v)) {
-          if (/^(id|key|ownerKey|portrait|src|icon|tone|kind|type|regionId|seal|cls|class)$/.test(k)) continue;
+          // 机器字段；looseSources、refs、sources 是史料引文，西文书名和网址不算漏
+          if (/^(id|key|ownerKey|portrait|src|icon|tone|kind|type|regionId|seal|cls|class|liupin|qingzhuo|looseSources|refs|sources|officeNote|gender)$/.test(k)) continue;
           walk(v[k], where);
         }
       };
@@ -54,6 +56,16 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
         guard('classes', () => (S.classes ? S.classes() : []).forEach((x) => guard(`阶层 ${x.key}`, () => walk(S.klass ? S.klass(x.key) : S.classOf ? S.classOf(x.key) : x, `阶层 ${x.key}`))));
       }
       guard('families', () => (R.families ? R.families() : []).forEach((x) => guard(`家族 ${x.key}`, () => walk(R.family(x.key), `家族 ${x.key}`))));
+      // 人物：名册一行和整本详传。史料出处（网址、西文书名）是引文，不算漏
+      const SEL = await import('/ui/adapter/select.js');
+      const BIO = await import('/ui/adapter/bio.js');
+      const OFF = await import('/ui/adapter/offices.js').catch(() => null);
+      guard('people', () => SEL.people({ dead: true }).forEach((c) => {
+        const row = { ...c }; delete row.relations; delete row.stats; delete row.wuchang;
+        walk(row, `人物 ${c.name}`);
+        guard(`详传 ${c.name}`, () => { const b = { ...BIO.person(c.name) }; delete b.sources; delete b.historicalSources; walk(b, `详传 ${c.name}`); });
+      }));
+      if (OFF && OFF.tree) guard('offices', () => walk(OFF.tree(), '官制'));
       try { await F.ensureCircuits(); } catch (_e) { /* 无省道照扫方志 */ }
       const regions = (window.GM.mapData || window.GM.map || {}).regions || [];
       const cdone = new Set();

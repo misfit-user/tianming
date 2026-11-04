@@ -23,7 +23,9 @@ const n0 = (v, fb = null) => { const n = Number(v); return v == null || v === ''
 const r0 = (v) => { const n = n0(v); return n == null ? null : Math.round(n); };
 const str = (v) => (v == null ? '' : String(v).trim());
 // 特质库里没有的特质，内核原样吐出英文 id（如天启剧本几位西洋人的 colonial_officer）：不列
-const ASCII_ID = /^[a-z][a-z0-9_]*$/;
+const ASCII_ID = /^[A-Za-z][A-Za-z0-9_\-]*$/;
+// 内核有时把 family 升级成对象（角色经济补默认值时）：只取名字，不然写成 [object Object]
+const familyName = (f) => (typeof f === 'string' ? f : (f && f.name) || '');
 const charOf = (name) => (G().chars || []).find((c) => c && c.name === name) || (G().allCharacters || []).find((c) => c && c.name === name) || null;
 const known = (name) => !!charOf(name);
 const playerName = () => { try { return (w.P && w.P.playerInfo && w.P.playerInfo.characterName) || ''; } catch (_e) { return ''; } };
@@ -102,9 +104,9 @@ export function person(name) {
     eight: [['智', p.intelligence], ['武', p.valor], ['军', p.military], ['政', p.administration], ['管', p.management], ['交', p.diplomacy], ['魅', p.charisma], ['仁', p.benevolence]].map(([k, v]) => [k, r0(v) ?? 0]),
     wuchang: ['仁', '义', '礼', '智', '信'].map((k) => [k, r0(wc[k])]),
     gongming: { merit: p.gongming, tier: str(p.gongmingTier), log: (p.meritLog || []).map((m) => ({ turn: m.turn || 0, delta: n0(m.delta, 0), reason: str(m.reason) })) },
-    goal: str(p.personalGoal), traits: (p.traits || []).map((t) => ({ name: t.n, tone: t.c || '', ...traitInfo(t.n) })).filter((t) => t.name && !ASCII_ID.test(t.name)), personality: str(p.personality),
+    goal: str(p.personalGoal), traits: (p.traits || []).map((t) => ({ name: String(t.n || '').replace(/^[A-Za-z0-9_\-]+_(?=[\u4e00-\u9fff])/, ''), tone: t.c || '', ...traitInfo(t.n) })).filter((t) => t.name && !ASCII_ID.test(t.name)), personality: str(p.personality),
     identity: [['姓名', p.name], ['字号', p.zi], ['性别', [p.age ? `${num(Number(p.age) || 0)}岁` : '', p.gender].filter(Boolean).join('·')], ['籍贯', p.birthplace], ['民族', p.ethnicity], ['信仰', p.faith],
-      ['文化', p.culture], ['学识', p.learning], ['立场', p.stance], ['家族', [p.family, TIER[p.familyTier]].filter(Boolean).join('·')], ['辞令', p.speechStyle], ['当前所在', p.location]]
+      ['文化', p.culture], ['学识', p.learning], ['立场', p.stance], ['家族', [familyName(p.family), TIER[p.familyTier]].filter(Boolean).join('·')], ['辞令', p.speechStyle], ['当前所在', p.location]]
       .map(([k, v]) => [k, str(v)]),
     origin: go ? { title: str(go.title) || '布衣', honors: (go.honors || []).map(str).filter(Boolean), zhengtu: !!go.zhengtu, liupin: go.liupin || 'mid', liupinLabel: str(go.liupinLabel) || '中流',
       ceiling: str(go.ceilingLabel) || '—', youmian: n0(go.youmian, 0), inferred: go.source === 'inferred',
@@ -119,14 +121,14 @@ export function person(name) {
       ...(p.arcs || []).slice().sort((a, b) => (a.turn || 0) - (b.turn || 0)).map((a) => ({ when: turnTag(a.turn), title: arcCN(a.type), desc: str(a.desc), tag: '近事' }))],
     post: [['现职', p.officialTitle || p.title || '未仕'], ['品秩', p.rank || '未记'], ['出身', p.learning || '未记'], ['任所', [str(p.location) || '未记', p._travelTo ? str(p._travelTo.toLocation || p._travelTo) : ''].filter(Boolean).join(' → ')]],
     domains: Object.entries(domains), lifeExp,
-    family: { tier: TIER[p.familyTier] || '', members: blood.length, fame: r0(p.mingwang), family: str(p.family) },
+    family: { tier: TIER[p.familyTier] || '', members: blood.length, fame: r0(p.mingwang), family: str(familyName(p.family)) },
     house: consortHouse && (p.spouse || children.length) ? { spouse: typeof p.spouse === 'string' ? p.spouse : '', spouseRank: SPOUSE[p.spouseRank] || '', children } : null,
     memory, archive: (p.memArchive || []).map((a) => ({ period: str(a.period), summary: str(a.summary) })),
     arcs: (p.arcs || []).map((a) => ({ turn: a.turn, type: arcCN(a.type), desc: str(a.desc) })),
     works: (p.works || []).map((x) => ({ title: str(x.title), genre: str(x.genre), mood: str(x.mood), turn: x.turn || 0, quality: x.quality || 0, preserved: !!x.preserved })),
     pov: { lead: str(p.personalGoal || p.bio), eyes, stance: str(p.stance) || '未明', side: str(p.party || p.faction) || '无', goal: str(p.personalGoal).slice(0, 26) },
     sourceKey: typeof c.historicalSourceRef === 'string' && /^assets\/reference\/[a-zA-Z0-9_-]+\.json$/.test(c.historicalSourceRef) ? c.historicalSourceRef : '',
-    recorded: [['表字', c.zi], ['家族', c.family], ['父', c.father], ['母', c.mother], ['生年', c.birthYear], ['生辰记载', c.birthTime], ['籍贯／出生地', c.birthplace], ['学业', c.learning],
+    recorded: [['表字', c.zi], ['家族', familyName(c.family)], ['父', c.father], ['母', c.mother], ['生年', c.birthYear], ['生辰记载', c.birthTime], ['籍贯／出生地', c.birthplace], ['学业', c.learning],
       ['外貌依据', c.appearance], ['爱好', c.hobbies], ['技能说明', Array.isArray(c.skills) ? c.skills.join('、') : c.skills]].filter(([, v]) => v != null && v !== '').map(([k, v]) => [k, String(v)]),
     kin: (c.familyMembers || []).filter((m) => m && m.name).map((m) => `${m.relation || '亲属'}：${m.name}${m.note ? '；' + m.note : ''}`),
     // 剧本所载亲属（与 blood 互补：名册里没连上血亲的，剧本 familyMembers 常有）；殁与否看名册，名册外看关系字与注里的崩、卒、殁、逝
@@ -137,7 +139,7 @@ export function person(name) {
         dead: ch ? ch.alive === false : /殁|故|亡/.test(rel) || /崩|卒|殁|逝|薨/.test(str(m.note)) };
     }),
     fictional: c.isFictional === true || c.type === 'fictional', fictionalNotes: (c.fictionalSources || []).map(String),
-    looseSources: [...new Set(['sourceNotes', 'sources', 'historicalSources'].flatMap((k) => (Array.isArray(c[k]) ? c[k] : [])).filter((x) => typeof x === 'string' && x.trim()))],
+    looseSources: [...new Set(['sourceNotes', 'sources', 'historicalSources'].flatMap((k) => (Array.isArray(c[k]) ? c[k] : [])).filter((x) => typeof x === 'string' && /[\u4e00-\u9fff]/.test(x)))],   // 「chahar-khorchin」这种是内部标签，不是史料
     officeNote: str(c.officeEvidenceNote)
   };
 }

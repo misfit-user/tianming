@@ -88,7 +88,7 @@ function lizhi() {
   sections.push({ kind: 'depts', title: '部门污浊分布', badge: '监察越强 · 数字越准', items: DEPTS.map(([k, label]) => {
     const d = sd[k] || {};
     const v = showTrue ? n0(d.true) : n0(d.perceived);
-    return { label, dots: inkDots(v), value: LZ_PHASE(v), trend: trendSym(d.trend) };
+    return { label, dots: inkDots(v), value: LZ_PHASE(v), trend: trendSym(d.trend), tone: inkDots(v) >= 3 ? 'bad' : inkDots(v) === 2 ? 'mid' : 'good' };
   }) });
   const insts = (c.supervision || {}).institutions || [];
   sections.push({ kind: 'list', title: '监察机构', badge: `${insts.length} 个`, empty: '未设监察机构——可在制度设计中创设御史台/都察院/巡按等',
@@ -103,7 +103,7 @@ function lizhi() {
   if (g.juanna && g.juanna.active) sections.push({ kind: 'alert', title: '捐纳', lines: [`捐纳（卖官）已开——月入${Math.round(n0(g.juanna.monthlyIncome) / 1000)}千两 · 长期腐败`] });
   const facs = c.entrenchedFactions || [];
   if (facs.length) sections.push({ kind: 'list', title: '腐败集团', badge: `${facs.length} 个`, tone: 'bad',
-    items: facs.map((f) => ({ title: f.name || '某集团', meta: `部门：${DEPT_NAME[f.dept] || f.dept || '—'} · 势力：${n0(f.strength)} · 历时：${n0(f.years)} 年` })) });
+    items: facs.slice().sort((a, b) => n0(b.strength) - n0(a.strength)).map((f) => ({ title: f.name || '某集团', meta: `${DEPT_NAME[f.dept] || f.dept || '—'} · 历时 ${n0(f.years)} 年`, side: `势力 ${n0(f.strength)}`, tone: n0(f.strength) >= 60 ? 'bad' : n0(f.strength) >= 40 ? 'mid' : '' })) });
   sections.push({ kind: 'hints', title: '如何措置', items: [
     ['写诏（派钦差/肃贪/俸禄改革/开罢捐纳/酷吏/特务 皆由诏令发起）', 'edict'], ['看奏疏（御史/监察/科道 的弹劾与建言）', 'docket'],
     ['问对御史大夫/都察院 察朝政风气', 'audience'], ['朝议（设特务机构/肃贪运动 等重大争议）', 'court']
@@ -135,7 +135,7 @@ function minxin() {
     if (g._scholarRecruitmentMult !== undefined) rows.push({ label: '士人投效', value: `×${n0(g._scholarRecruitmentMult).toFixed(2)}` });
   }
   const sections = [];
-  if (!flip && m.sources) sections.push({ kind: 'ledger', title: '十四源 · 民心所由', badge: '累计', items: Object.keys(MX_SRC).filter((k) => m.sources[k] !== undefined).map((k) => ({ label: MX_SRC[k], value: signed(m.sources[k]), tone: m.sources[k] > 0 ? 'good' : m.sources[k] < 0 ? 'bad' : '' })) });
+  if (!flip && m.sources) sections.push({ kind: 'ledger', title: '十四源 · 民心所由', badge: '累计', items: Object.keys(MX_SRC).filter((k) => m.sources[k] !== undefined).map((k) => ({ label: MX_SRC[k], n: n0(m.sources[k]) })) });
   if (!flip && m.byClass && Object.keys(m.byClass).length) {
     const ledger = Array.isArray(g._classMinxinBridgeLedger) ? g._classMinxinBridgeLedger : [];
     const norm = (v) => String(v || '').replace(/[\s　'"`.,;:!?()[\]{}<>/\\|_-]+/g, '').toLowerCase().trim();
@@ -173,7 +173,8 @@ function minxin() {
   if ((HC.rebellion || []).length) sections.push({ kind: 'cases', title: '历代民变 · 鉴古', badge: String(HC.rebellion.length), items: HC.rebellion.slice(0, 15).map((c) => `${c.name}（${caseWhen(c)}）${c.level ? `烈度${'一二三四五'[c.level - 1] || c.level}·` : ''}因${c.cause || '不详'} → ${caseEnd(c.result)}`) });
   return {
     key: 'minxin', title: '民心', sub: flip ? `视 ${r(p)} · ${mxBand(p)}` : `真 ${r(t)} · 视 ${r(p)} · ${MX_PHASE[m.phase] || m.phase || ''}`, rows, sealed: flip, sealedNote: SEALED_NOTE,
-    spectrum: { bands: [['揭竿', 0, 20, 'bad'], ['窃盗', 20, 40, 'warn'], ['忍耐', 40, 60, 'mid'], ['安居', 60, 80, 'good'], ['颂圣', 80, 100, 'gold']], mark: shown },
+    // 封存时只有朝廷所见一枚；真值可见才标出朝廷所见和它的差距
+    spectrum: { bands: [['揭竿', 0, 20, 'bad'], ['窃盗', 20, 40, 'warn'], ['忍耐', 40, 60, 'mid'], ['安居', 60, 80, 'good'], ['颂圣', 80, 100, 'gold']], mark: shown, seen: flip ? null : p },
     sections
   };
 }
@@ -189,15 +190,15 @@ function huangquan() {
   const rows = [{ label: '皇权指数', value: `${r(i)} / 100`, tone, big: true }, { label: '其势', value: `${phase}之局`, tone }];
   if (hq.executionRate) rows.push({ label: '诏令执行率', value: `${(n0(hq.executionRate) * 100).toFixed(0)}%` });
   if (w.AuthorityComplete && typeof w.AuthorityComplete.getAuthorityQuadrant === 'function') {
-    try { const q = w.AuthorityComplete.getAuthorityQuadrant(); if (q) rows.push({ label: '四象限', value: q.name, note: q.description || '', tone: 'good' }); } catch (_e) { /* 未齐 */ }
+    try { const q = w.AuthorityComplete.getAuthorityQuadrant(); if (q) rows.push({ label: '四象限', value: q.name, note: /^[—-]*$/.test(q.description || '') ? '' : q.description, tone: 'good' }); } catch (_e) { /* 未齐 */ }
   }
   if (hq.ministerFreedomToSpeak !== undefined) rows.push({ label: '进谏自由', value: pct100(hq.ministerFreedomToSpeak) });
   if (hq.memorialQuality !== undefined) rows.push({ label: '奏疏质量', value: pct100(hq.memorialQuality) });
   if (hq.reformDifficulty !== undefined) rows.push({ label: '改革难度', value: `×${n0(hq.reformDifficulty).toFixed(2)}` });
   const sections = [];
   if (hq.subDims) sections.push({ kind: 'dims', title: '四维 · 纲权所及', items: [['central', '中央'], ['provincial', '地方'], ['military', '军队'], ['imperial', '内廷']].map(([k, label]) => { const v = n0((hq.subDims[k] || {}).value); return { label, value: r(v), tone: toneOf(v, 70, 50) }; }) });
-  if (hq.sources) sections.push({ kind: 'ledger', title: '八源 · 权所由立', badge: '累计', items: Object.keys(HQ_SRC).map((k) => ({ label: HQ_SRC[k], value: `+${n0(hq.sources[k]).toFixed(1)}`, tone: n0(hq.sources[k]) > 1 ? 'good' : '' })) });
-  if (hq.drains) sections.push({ kind: 'ledger', title: '八降 · 权所由夺', badge: '累计', items: Object.keys(HQ_DRN).map((k) => ({ label: HQ_DRN[k], value: `-${n0(hq.drains[k]).toFixed(1)}`, tone: n0(hq.drains[k]) > 1 ? 'bad' : '' })) });
+  if (hq.sources) sections.push({ kind: 'ledger', title: '八源 · 权所由立', badge: '累计', items: Object.keys(HQ_SRC).map((k) => ({ label: HQ_SRC[k], n: n0(hq.sources[k]) })) });
+  if (hq.drains) sections.push({ kind: 'ledger', title: '八降 · 权所由夺', badge: '累计', items: Object.keys(HQ_DRN).map((k) => ({ label: HQ_DRN[k], n: -Math.abs(n0(hq.drains[k])) })) });
   if (hq.powerMinister) {
     const pm = hq.powerMinister;
     sections.push({ kind: 'alert', title: '权臣坐大', lead: pm.name, lines: [`控制度 ${Math.round(n0(pm.controlLevel) * 100)}% · 党羽 ${(pm.faction || []).length} · 拦截 ${n0(pm.interceptions)} · 自拟 ${n0(pm.counterEdicts)}`,
@@ -254,8 +255,8 @@ function huangwei() {
   if (g.dynasty && w.PhaseG1 && w.PhaseG1.DYNASTY_AUTHORITY_PRESETS && w.PhaseG1.DYNASTY_AUTHORITY_PRESETS[g.dynasty]) rows.push({ label: '朝代', value: `${g.dynasty}（参朝代预设表）` });
   const sections = [];
   if (hw.subDims) sections.push({ kind: 'dims', title: '四维分项 · 天威所及', items: [['court', '朝廷'], ['provincial', '藩屏'], ['military', '军中'], ['foreign', '外邦']].map(([k, label]) => { const d = hw.subDims[k] || {}; const v = n0(d.value); return { label, value: r(v), trend: trendSym(d.trend), tone: v >= 70 ? 'good' : v >= 50 ? 'mid' : v >= 30 ? 'warn' : 'bad' }; }) });
-  if (hw.sources) sections.push({ kind: 'ledger', title: '十四源 · 威所由生', badge: '累计', items: Object.keys(HW_SRC).map((k) => ({ label: HW_SRC[k], value: `+${n0(hw.sources[k]).toFixed(1)}`, tone: n0(hw.sources[k]) > 1 ? 'good' : '' })) });
-  if (hw.drains) sections.push({ kind: 'ledger', title: '十四降 · 威所由损', badge: '累计', items: Object.keys(HW_DRN).map((k) => ({ label: HW_DRN[k], value: `-${n0(hw.drains[k]).toFixed(1)}`, tone: n0(hw.drains[k]) > 1 ? 'bad' : '' })) });
+  if (hw.sources) sections.push({ kind: 'ledger', title: '十四源 · 威所由生', badge: '累计', items: Object.keys(HW_SRC).map((k) => ({ label: HW_SRC[k], n: n0(hw.sources[k]) })) });
+  if (hw.drains) sections.push({ kind: 'ledger', title: '十四降 · 威所由损', badge: '累计', items: Object.keys(HW_DRN).map((k) => ({ label: HW_DRN[k], n: -Math.abs(n0(hw.drains[k])) })) });
   const ts = hw.tyrantSyndrome;
   if (ts && ts.active) {
     const hd = ts.hiddenDamage || {};
@@ -279,7 +280,7 @@ function huangwei() {
     hum.length ? { title: `耻辱史 ${hum.length} 件`, meta: hum.slice(-5).map((x) => x.name || x.id || '耻辱').join('、'), tone: 'bad' } : null
   ].filter(Boolean) });
   return { key: 'huangwei', title: '皇威', sub: `真 ${r(i)} · 视 ${r(p)} · ${HW_PHASE[phase] || phase}`, rows, sealed: false,
-    spectrum: { bands: [['失威', 0, 30, 'bad'], ['衰微', 30, 50, 'warn'], ['常望', 50, 70, 'mid'], ['威严', 70, 90, 'good'], ['暴君', 90, 100, 'bad']], mark: i }, sections };
+    spectrum: { bands: [['失威', 0, 30, 'bad'], ['衰微', 30, 50, 'warn'], ['常望', 50, 70, 'mid'], ['威严', 70, 90, 'good'], ['暴君', 90, 100, 'bad']], mark: i, seen: p }, sections };
 }
 
 export function detail(key) {
@@ -342,6 +343,6 @@ export function shiyun() {
     { kind: 'list', title: '典章 · 祖制', badge: statutes.length ? `予正统 +${bonus}` : '', lead: '制度熬过考验，著为成宪：累世成宪予正统，然祖制既立则难轻改，渐失变通。',
       items: statutes.map((s) => ({ title: String(s.name || ''), meta: DZ_KIND[s.kind] || '', side: `历${Math.max(0, turn - n0(s.maturedTurn))}回合` })), empty: '尚无著为祖制之典。' }
   ].filter(Boolean);
-  return { key: 'shiyun', title: '时运', sub: phase ? `世运 · ${phase}` : '世运', rows, sealed: false, sections, card: { phase: phase || '—', warns: om.warns.length, veiled: om.veiled, statutes: statutes.length } };
+  return { key: 'shiyun', title: '时运', sub: phase ? `世运 · ${phase}` : '世运', rows, sealed: false, sections, card: { phase, warns: om.warns.length, veiled: om.veiled, statutes: statutes.length } };
 }
 

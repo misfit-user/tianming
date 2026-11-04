@@ -1,4 +1,4 @@
-/* 财：度支册。册页骨架沿用人物图志（.ce-*）；左叶三本账卡，右叶名目条、欠项、借贷、条陈、各省户口 */
+/* 财：度支册。册页骨架沿用人物图志（.ce-*）；左叶三本账卡，右叶本期总览、名目条、欠项、借贷、条陈、各省户口 */
 .fi-ov .ce-book { grid-template-columns: minmax(0, 22rem) 1.5rem minmax(0, 1fr); }
 .fi-left { gap: .625rem; }
 .fi-left .ce-head { flex-direction: column; align-items: flex-start; gap: .125rem; margin-bottom: .25rem; }
@@ -8,9 +8,11 @@
 .fi-note { margin: 0; font-size: var(--fs-1); line-height: 1.7; color: var(--ink-faint); letter-spacing: .04em; }
 .fi-card { padding: .625rem .75rem .5rem; cursor: pointer; background: rgba(255, 250, 238, .45); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); transition: box-shadow var(--t-1); }
 .fi-card.on { background: rgba(255, 246, 226, .85); box-shadow: inset 0 0 0 1px rgba(140, 40, 28, .5), inset .1875rem 0 0 #a3301f; }
+.fi-card.flat { cursor: default; }
 .fi-card header { display: flex; justify-content: space-between; align-items: baseline; }
 .fi-card header b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .3em; }
 .fi-card header small { font-size: var(--fs-1); color: var(--ink-faint); }
+.fi-card header small.bad { color: #8a2a1c; }
 .fi-card .stock { margin: .125rem 0; font: 400 1.875rem/1.2 var(--f-title); letter-spacing: .06em; color: #2a1608; }
 .fi-card .stock small { margin-left: .25rem; font: var(--fs-2) var(--f-kai); color: var(--ink-faint); }
 .fi-card .flow { display: flex; flex-wrap: wrap; gap: .125rem .875rem; font-size: var(--fs-2); }
@@ -22,21 +24,44 @@
 .fi-card .last { font-size: var(--fs-1); color: var(--ink-faint); }
 .fi-card .deficit { margin-top: .25rem; font-size: var(--fs-2); color: #8a2a1c; }
 .fi-cen { display: grid; grid-template-columns: 1fr; gap: .25rem; margin-top: .375rem; }
-.fi-cen p { margin: 0; display: flex; justify-content: space-between; font-size: var(--fs-3); }
-.fi-cen span { color: var(--ink-faint); }
-.fi-cen b { font: 400 var(--fs-4) var(--f-title); }
+.fi-cen p { margin: 0; display: flex; align-items: baseline; gap: .5rem; font-size: var(--fs-3); }
+.fi-cen span { color: var(--ink-faint); white-space: nowrap; }
+.fi-cen em { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-style: normal; font-size: var(--fs-2); }
+.fi-cen b { margin-left: auto; font: 400 var(--fs-4) var(--f-title); white-space: nowrap; }
+.fi-cen em + b { margin-left: 0; }
+.fi-cen b.bad { color: #8a2a1c; }
 
 .fi-right { gap: .75rem; }
 .fi-title { display: flex; align-items: baseline; gap: 1rem; border-bottom: 1px solid rgba(120, 90, 50, .35); padding-bottom: .375rem; }
 .fi-title h3 { margin: 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .3em; }
 .fi-title small { font-size: var(--fs-2); color: var(--ink-faint); }
+
+/* 本期总览：收、支、净三个大数，同一把尺子的两条长条，一句结论 */
+.fi-sum { padding: .625rem .75rem; background: rgba(255, 250, 238, .45); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.fi-sum-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
+.fi-sum-nums p { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .25rem; min-width: 0; margin: 0; }
+.fi-sum-nums span { flex: 0 0 100%; font: var(--fs-1) var(--f-title); letter-spacing: .2em; color: var(--ink-faint); }
+.fi-sum-nums b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .04em; white-space: nowrap; }
+.fi-sum-nums small { font-size: var(--fs-1); color: var(--ink-faint); }
+.fi-sum-nums .in b, .fi-sum-nums .pos b { color: #2f6b55; }
+.fi-sum-nums .out b { color: #8a5a12; }
+.fi-sum-nums .neg b { color: #8a2a1c; }
+.fi-sum-bars { display: grid; gap: .1875rem; margin: .5rem 0 .375rem; }
+.fi-sum-bars i { display: block; height: .375rem; background: rgba(120, 90, 50, .12); }
+.fi-sum-bars u { display: block; height: 100%; text-decoration: none; }
+.fi-sum-bars .in u { background: linear-gradient(90deg, #3a7d67, #6fae8f); }
+.fi-sum-bars .out u { background: linear-gradient(90deg, #a8822e, #d8b05a); }
+.fi-sum-note { margin: 0; font-size: var(--fs-2); color: var(--ink-soft); }
+.fi-sum-note.bad { color: #8a2a1c; }
+
 .fi-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 /* 右叶窄（1366 上下）时岁入、支用两栏改一栏：半栏除去名目与数目，条已细得看不见 */
 .fi-right { container-type: inline-size; }
-@container (max-width: 560px) { .fi-cols { grid-template-columns: minmax(0, 1fr); gap: .5rem; } }
+@container (max-width: 760px) { .fi-cols { grid-template-columns: minmax(0, 1fr); gap: .5rem; } }
 .fi-sec h4 { margin: .25rem 0 .5rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .25em; color: #5a2a12; }
 /* 数目一栏按字宽（em）给：小屏字号有下限，按 rem 给的 6rem 装不下「三十九万六千」，折出一个「千」 */
 .fi-bar { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 7em 3.5em; align-items: center; gap: .5rem; padding: .1875rem 0; font-size: var(--fs-2); }
+.fi-bar.fi-two { grid-template-columns: 3em minmax(0, 1fr) 7em; }
 .fi-bar .k { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fi-bar .v { height: .5rem; background: rgba(120, 90, 50, .12); }
 .fi-bar .v i { display: block; height: 100%; }
@@ -44,11 +69,19 @@
 .fi-bar.out .v i { background: linear-gradient(90deg, #a8822e, #d8b05a); }
 .fi-bar .n { text-align: right; white-space: nowrap; font-family: var(--f-title); }
 .fi-bar small { text-align: right; white-space: nowrap; color: var(--ink-faint); font-size: var(--fs-1); }
+/* 名目有细目的可展开 */
+.fi-item > summary { list-style: none; cursor: pointer; }
+.fi-item > summary::-webkit-details-marker { display: none; }
+.fi-item > summary .k::after { content: ' ›'; color: var(--ink-faint); }
+.fi-item[open] > summary .k { color: #7d1d12; }
 .fi-debts { display: grid; grid-template-columns: 1fr 1fr; gap: .125rem 1.5rem; }
 .fi-debts p { margin: 0; display: flex; justify-content: space-between; gap: .5rem; font-size: var(--fs-2); border-bottom: 1px dotted rgba(120, 90, 50, .25); }
 .fi-debts p span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fi-debts p b { flex: none; white-space: nowrap; font-weight: 400; color: #8a2a1c; }
-.fi-more { margin: .25rem 0 0; font-size: var(--fs-1); color: var(--ink-faint); }
+.fi-debts.sub { margin: .125rem 0 .375rem 1rem; grid-template-columns: minmax(0, 1fr); }
+.fi-debts.sub p b { color: var(--ink-soft); }
+.fi-more { margin: .375rem 0 0; padding: 0; border: 0; cursor: pointer; background: none; font: var(--fs-1) var(--f-kai); color: #6a1f12; border-bottom: 1px dotted rgba(138, 42, 28, .5); }
+.fi-more:hover { color: #a3301f; }
 .fi-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .fi-loan { margin: 0 0 .25rem; font-size: var(--fs-2); line-height: 1.7; color: var(--ink-soft); }
 .fi-loan b { margin-right: .5rem; font-weight: 400; color: var(--ink); }
@@ -61,16 +94,44 @@
 .fi-form .q-qianzi { flex-direction: row; }
 .fi-form .q-qianzi button { color: var(--ink); }
 .au-pick-row.done { opacity: .6; cursor: default; }
-.fi-prov { display: flex; flex-direction: column; }
-.fi-prov p { margin: 0; display: grid; grid-template-columns: 7rem minmax(0, 1fr) 5.5rem 5.5rem 4.5rem 3rem 3rem; align-items: center; gap: .625rem; padding: .25rem 0; font-size: var(--fs-2); border-bottom: 1px dotted rgba(120, 90, 50, .22); }
-.fi-prov p.hd { font: var(--fs-1) var(--f-title); letter-spacing: .2em; color: var(--ink-faint); }
-.fi-prov .n { font: 400 var(--fs-3) var(--f-title); letter-spacing: .08em; }
-.fi-prov .bar { position: relative; height: 1.125rem; background: rgba(120, 90, 50, .1); }
+/* 宫中条陈：一事一行，事名、约费、动作 */
+.fi-rows { display: flex; flex-direction: column; margin-top: .375rem; }
+.fi-row { display: grid; grid-template-columns: 8.5em minmax(0, 1fr) auto; align-items: center; gap: .625rem; padding: .375rem 0; border-bottom: 1px dotted rgba(120, 90, 50, .25); }
+.fi-row b { font: 400 var(--fs-3) var(--f-title); letter-spacing: .08em; white-space: nowrap; }
+.fi-row small { font-size: var(--fs-1); color: var(--ink-faint); }
+.fi-row small.bad { color: #8a2a1c; }
+.fi-row.xfer { grid-template-columns: 8.5em auto minmax(0, 1fr); }
+.fi-row .btns { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .375rem; }
+.fi-row .q-qianzi { flex-direction: row; }
+.fi-row .q-qianzi button { color: var(--ink); }
+
+/* 各省户口：字宽定列，省名去官署后缀，数字不折行；窄了先让丁、再让户（都在全国卡上有总数） */
+.fi-prov { display: flex; flex-direction: column; font-size: var(--fs-2); }
+.fi-prov .hd, .fi-prov .row { display: grid; grid-template-columns: 6em minmax(5.5em, 1fr) 5em 5em 4em 3em 3em; align-items: center; column-gap: .5rem; }
+.fi-prov .row { padding: .25rem 0; border-bottom: 1px dotted rgba(120, 90, 50, .22); }
+.fi-prov .hd button { padding: .125rem 0; border: 0; cursor: pointer; background: none; text-align: right; white-space: nowrap; font: var(--fs-1) var(--f-title); letter-spacing: .15em; color: var(--ink-faint); }
+.fi-prov .hd button.k-name, .fi-prov .hd button.k-mouths { text-align: left; }
+.fi-prov .hd button:hover { color: var(--ink); }
+.fi-prov .hd button.on { color: #7d1d12; }
+.fi-prov .hd i { margin-left: .125rem; font-style: normal; }
+.fi-prov .n { padding: 0; border: 0; cursor: pointer; background: none; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 400 var(--fs-3) var(--f-title); letter-spacing: .04em; color: var(--ink); }
+.fi-prov .n:hover { color: #7d1d12; }
+.fi-prov .row > span { text-align: right; white-space: nowrap; }
+.fi-prov .row > span.bar { position: relative; height: 1.125rem; min-width: 0; text-align: left; background: rgba(120, 90, 50, .1); }
 .fi-prov .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, rgba(168, 130, 46, .55), rgba(216, 176, 90, .55)); }
 .fi-prov .bar b { position: relative; padding-left: .375rem; font-weight: 400; line-height: 1.125rem; }
-.fi-prov span { text-align: right; }
-.fi-prov .n, .fi-prov .bar { text-align: left; }
-.fi-prov span.bad { color: #8a2a1c; }
+.fi-prov .row > span.chip { justify-self: end; min-width: 2.5em; padding: 0 .1875rem; text-align: center; }
+.fi-prov .chip.bad { color: #f9ead2; background: #a3301f; }
+.fi-prov .chip.mid { color: #6b4a12; background: rgba(184, 154, 83, .28); }
+.fi-prov .chip.good { color: #2f6b55; }
+@container (max-width: 470px) {
+  .fi-prov .hd, .fi-prov .row { grid-template-columns: 6em minmax(5.5em, 1fr) 5em 4em 3em 3em; }
+  .fi-prov .k-ding { display: none; }
+}
+@container (max-width: 400px) {
+  .fi-prov .hd, .fi-prov .row { grid-template-columns: 6em minmax(5.5em, 1fr) 4em 3em 3em; }
+  .fi-prov .k-households { display: none; }
+}
 
 /* 顶栏账簿可点开度支册 */
 .topbar .q-zhang.link { cursor: pointer; }

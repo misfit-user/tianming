@@ -1275,7 +1275,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const mizhaoPage = createMizhao({ root, study, game, profile: () => prof, onOpen: () => { el.classList.remove('on'); toStudyIfHome(); }, onClose: () => { el.classList.add('on'); refresh(); backHome(); }, onPerson: (name) => renwu.show(name) });
   game.on('audience:open', () => { el.classList.remove('on'); toStudyIfHome(); });
   // 职官志：册页浮在书案上；点任职者名字开人物窗
-  const fiscalPage = createFiscal({ root, game });
+  const fiscalPage = createFiscal({ root, game, onCircuit: (id) => fangzhiPage.showCircuit(id) });
   // 军籍册：付廷议即开廷议、带上议题；核饷（失真层未开时）转去度支册
   // 国势册：名目里的去处（批阅、撰写、召对、朝议）交书案去开
   const guoshiPage = createGuoshi({ root, game, onGo: (k) => {

@@ -22,8 +22,19 @@ function labels() {
   const FS = w.FiscalStatement;
   try { return FS && FS.labels ? { inn: FS.labels('central', 'in') || {}, out: FS.labels('central', 'out') || {} } : { inn: {}, out: {} }; } catch (_e) { return { inn: {}, out: {} }; }
 }
-function rows(map, names) {
-  return Object.entries(map || {}).map(([k, v]) => ({ key: k, label: names[k] || k, amount: num(v) })).filter((r) => r.amount).sort((a, b) => b.amount - a.amount);
+// 名目下的细目（结账后才有）。开局那条「尚待具分目」是占位，不算细目
+function detailRows(list) {
+  return (Array.isArray(list) ? list : []).filter((d) => d && d.id !== 'unitemized').map((d) => ({ name: String(d.name || d.label || ''), amount: num(d.amount) })).filter((d) => d.name && d.amount).sort((a, b) => b.amount - a.amount);
+}
+// 支出账 sinks 按中文名记（军饷），细目却按键记（junxiang）：两边都认
+function detailsOf(details, names, k) {
+  if (!details) return [];
+  if (details[k]) return detailRows(details[k]);
+  const key = Object.keys(names).find((x) => names[x] === k);
+  return key ? detailRows(details[key]) : [];
+}
+function rows(map, names, details) {
+  return Object.entries(map || {}).map(([k, v]) => ({ key: k, label: names[k] || k, amount: num(v), details: detailsOf(details, names, k) })).filter((r) => r.amount).sort((a, b) => b.amount - a.amount);
 }
 function ledgerView(l, L) {
   l = l || {};
@@ -32,7 +43,7 @@ function ledgerView(l, L) {
   deficits.sort((a, b) => b.amount - a.amount);
   return {
     stock: num(l.stock, num(l.available)), inn: num(l.thisTurnIn), out: num(l.thisTurnOut), lastIn: num(l.lastTurnIn), lastOut: num(l.lastTurnOut), quota: num(l.quota) || null,
-    sources: rows(l.sources, L.inn), sinks: rows(l.sinks, L.out), deficit: num(l.deficit), deficits
+    sources: rows(l.sources, L.inn, l.sourceDetails), sinks: rows(l.sinks, L.out, l.sinkDetails), deficit: num(l.deficit), deficits
   };
 }
 function reported(key, val, dir, domain) {
@@ -41,7 +52,8 @@ function reported(key, val, dir, domain) {
   try { const r = f(key, val, dir, domain); return { shown: num(Number(r && r.shown), val), distorted: !!(r && r.distorted) }; } catch (_e) { return { shown: val, distorted: false }; }
 }
 const flipped = (domain) => { const f = fn('_barFlipToPerceived'); try { return !!(f && f(domain, 'index')); } catch (_e) { return false; } };
-function scaleRows(list, k) { return k === 1 ? list : list.map((x) => ({ ...x, amount: x.amount * k })); }
+// 细目一起缩放：分项之和、细目之和都不许露出真数
+function scaleRows(list, k) { return k === 1 ? list : list.map((x) => ({ ...x, amount: x.amount * k, details: x.details.map((d) => ({ ...d, amount: d.amount * k })) })); }
 // 帑廪据奏：库存三项；银的本期收支与名目、上期收支同比例
 function reportGuoku(res) {
   let distorted = false;
@@ -69,7 +81,17 @@ export function account(kind) {
   unit = unit || acc.unit || { money: '两', grain: '石', cloth: '匹' };
   const led = acc.ledgers || {};
   const res = RES.map(([k, label]) => ({ key: k, label, unit: unit[k] || '', ...ledgerView(led[k], L) }));
-  if (kind !== 'guoku') return { kind, forecast, unit, res, distorted: false };
+  if (kind !== 'guoku') {
+    // 内帑的账本结账才有本期收支；没结账时读预估，和顶栏（tm-topbar-vars）同一份数，不然顶栏说亏这里说零
+    for (const r of res) {
+      if (r.inn || r.out) continue;
+      const s = r.key === 'money' ? '' : r.key === 'grain' ? 'Grain' : 'Cloth';
+      const inn = num(acc[`turn${s}Income`]) || num(acc[`monthly${s}Income`]);
+      const out = num(acc[`turn${s}Expense`]) || num(acc[`monthly${s}Expense`]);
+      if (inn || out) { r.inn = inn; r.out = out; forecast = true; }
+    }
+    return { kind, forecast, unit, res, distorted: false };
+  }
   const rv = reportGuoku(res);
   return { kind, forecast, unit, res: rv.res, distorted: rv.distorted };
 }
@@ -141,7 +163,9 @@ export function census() {
       minxin: a.mxW ? Math.round(a.mx / a.mxW) : null, lizhi: a.coW ? Math.round(100 - a.co / a.coW) : null });
   }
   provinces.sort((a, b) => b.mouths - a.mouths);
-  const raw = { households: num(n.households), mouths: num(n.mouths), ding: num(n.ding), fugitives: num(n.fugitives), hidden: num(n.hiddenCount) };
+  // 逃户、隐户全国账上常是零而各州有数：全国没数就按各省合计，不然全国卡上没有逃户、下面各省却一片
+  const sumOf = (key) => provinces.reduce((t, p) => t + p[key], 0);
+  const raw = { households: num(n.households), mouths: num(n.mouths), ding: num(n.ding), fugitives: num(n.fugitives) || sumOf('fugitives'), hidden: num(n.hiddenCount) || sumOf('hidden') };
   const shown = {}, k = {};
   let distorted = false;
   for (const key of Object.keys(raw)) {
@@ -157,6 +181,23 @@ export function census() {
     ...shown, distorted, sealedMood: mxHide || coHide,
     accuracy: !distorted && meta.registrationAccuracy != null ? num(meta.registrationAccuracy) : null, provinces: provs
   };
+}
+
+// 一省落到地图上的哪一块（点省名翻通志用）：顺着下辖府州找第一个认得出的；认不出给 null
+export function provinceRegion(name) {
+  const L = w.TMMapLocations;
+  const ah = G().adminHierarchy && G().adminHierarchy.player;
+  const top = ((ah && ah.divisions) || []).find((d) => d && d.name === name);
+  if (!L || !L.placeRegionIds || !top) return null;
+  const walk = (d) => {
+    for (const k of d.children || d.divisions || []) {
+      const hit = k && walk(k);
+      if (hit) return hit;
+    }
+    const ids = d.name ? L.placeRegionIds(d.name, G()) : [];
+    return ids.length === 1 ? ids[0] : null;
+  };
+  return walk(top);
 }
 
 // ---------- 条陈 ----------
@@ -198,7 +239,8 @@ export function enactReform(id) {
 
 // 宫中条陈：两库互拨、大典（老内帑面板已改为写诏，这里拟入议事清册）
 export const TRANSFER_AMOUNTS = [50000, 100000, 300000, 500000];
-export const CEREMONIES = [['minor', '郊祀常礼'], ['middle', '千叟宴·大飨'], ['major', '封禅·万寿']];
+// 第三项是约费，照 tm-neitang-engine 的 holdCeremony
+export const CEREMONIES = [['minor', '郊祀常礼', 50000], ['middle', '千叟宴·大飨', 150000], ['major', '封禅·万寿', 500000]];
 const wan = (n) => `${n >= 10000 ? n / 10000 + '万' : n}两`;
 export function transferDraft(direction, amount) {
   draftEdict(direction === 'toPalace'

@@ -1,24 +1,41 @@
-// 财：度支册。左叶择帑廪、内帑、户口：两库各列银粮布——库存、本期收支与净数、上期、欠项总数；户口列全国户、口、丁、逃户、隐户。
-// 右叶：帑廪为收支名目（择银粮布）、欠项、借贷、户部条陈（加派、开仓赈济拟入清册；减重改铸、财政改革当场办）；
-// 内帑为收支名目与宫中条陈（两库互拨、大典，拟入清册）；户口为各省（汇总叶子）户口、民心、吏治。经 game.fiscal。
+// 财：度支册。左叶择帑廪、内帑、户口：两库各列银粮布——库存、本期收支与净数、上期、欠项总数；户口列全国户、口、丁、逃户、隐户，另点出告急之省。
+// 右叶：两库先是本期总览（收、支、净，亏空时算尚可支几期），再是收支名目（结账后可展开细目）、欠项；
+// 帑廪另有收支史、借贷、户部条陈（加派、开仓赈济拟入清册；减重改铸、财政改革当场办）；
+// 内帑另有两库对照与宫中条陈（两库互拨、大典，拟入清册）；户口为各省（汇总叶子）户口、民心、吏治，可排序，点省名翻通志。经 game.fiscal。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, roundSig, yearNum } from '../core/numerals.js';
+import { provinceShort } from '../core/places.js';
 import { qianzi, juan } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
+const amt2 = (v) => num(roundSig(Math.abs(v || 0), 2));
 const signed = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + amt(v);
-const pct = (v) => `${num(Math.round((v || 0) * 1000) / 10)}%`;
+// 记数只写整数：不足半成的说不足一，写成「零%」像没有
+const pct = (v) => { const p = (v || 0) * 100; return p > 0 && p < 0.5 ? '不足一%' : `${num(p)}%`; };
 const TABS = [['guoku', '帑廪'], ['neitang', '内帑'], ['census', '户口']];
+const ACCOUNT_NAME = { guoku: '帑廪', neitang: '内帑' };
+const CENSUS_COLS = [['name', '省'], ['mouths', '口'], ['households', '户'], ['ding', '丁'], ['fugitives', '逃'], ['minxin', '民心'], ['lizhi', '吏治']];
+// 按亏空算：库存够再支几期；不亏或库已空的另说
+const runwayOf = (r) => {
+  const net = r.inn - r.out;
+  return net < 0 && r.stock > 0 ? Math.floor(r.stock / -net) : null;
+};
+// 只有一条「其他」等于没分目：开局账目就是这样，画一条百分之百的长条是假装有细目
+const itemized = (list) => list.length > 1 || (list.length === 1 && !/^(其他|qita|other)$/.test(list[0].label));
+const moodTone = (v) => (v == null ? '' : v < 40 ? '.bad' : v < 60 ? '.mid' : '.good');
 
-export function createFiscal({ root, game }) {
+export function createFiscal({ root, game, onCircuit }) {
   const F = game.fiscal;
   let tab = 'guoku';
   let res = 'money';
   let opened = false;
+  let debtsOpen = false;
+  let sortKey = 'mouths';
+  let sortDir = -1;
 
-  const tabs = qianzi(TABS.map(([value, label]) => ({ value, label })), { value: tab, onchange: (v) => { tab = v; render(); } });
+  const tabs = qianzi(TABS.map(([value, label]) => ({ value, label })), { value: tab, onchange: (v) => { tab = v; render(); right.scrollTop = 0; } });
   const leftBody = h('div.fi-lbody');
   const left = h('section.ce-leaf.left.fi-left', h('header.ce-head', h('h2', '度支'), h('small', '量入为出')), h('div.fi-tabs', tabs), leftBody);
   const right = h('section.ce-leaf.right.fi-right');
@@ -28,6 +45,16 @@ export function createFiscal({ root, game }) {
   ov.addEventListener('pointerdown', (e) => { if (e.target === ov) hide(); });
   root.append(ov);
 
+  function card(r) {
+    const runway = runwayOf(r);
+    return h('article.fi-card' + (r.key === res ? '.on' : ''), { onclick: () => { res = r.key; render(); } },
+      h('header', h('b', r.label), runway != null ? h('small' + (runway <= 3 ? '.bad' : ''), runway ? `可支${num(runway)}期` : '不足一期') : null),
+      h('div.stock', amt(r.stock), h('small', r.unit)),
+      h('div.flow', h('span.in', `收 ${amt(r.inn)}`), h('span.out', `支 ${amt(r.out)}`), h('span.net' + (r.inn - r.out < 0 ? '.neg' : ''), `净 ${signed(r.inn - r.out)}`)),
+      r.lastIn || r.lastOut ? h('div.last', `上期 收${amt(r.lastIn)} 支${amt(r.lastOut)}`) : null,
+      r.deficit ? h('div.deficit', `欠 ${amt(r.deficit)}${r.unit}`) : null);
+  }
+
   function render() {
     if (tab === 'census') return renderCensus();
     const a = F.account(tab);
@@ -35,21 +62,49 @@ export function createFiscal({ root, game }) {
     replaceChildren(leftBody,
       a.forecast ? h('p.fi-note', '本期尚未结账，所列为预估') : null,
       a.distorted ? h('p.fi-note', '库存与银之收支皆据有司所奏，未经核实') : null,
-      a.res.map((r) => h('article.fi-card' + (r.key === res ? '.on' : ''), { onclick: () => { res = r.key; render(); } },
-        h('header', h('b', r.label), h('small', r.unit)),
-        h('div.stock', amt(r.stock), h('small', r.unit)),
-        h('div.flow', h('span.in', `收 ${amt(r.inn)}`), h('span.out', `支 ${amt(r.out)}`), h('span.net' + (r.inn - r.out < 0 ? '.neg' : ''), `净 ${signed(r.inn - r.out)}`)),
-        r.lastIn || r.lastOut ? h('div.last', `上期 收${amt(r.lastIn)} 支${amt(r.lastOut)}`) : null,
-        r.deficit ? h('div.deficit', `欠 ${amt(r.deficit)}${r.unit}`) : null)));
+      a.res.map(card));
     const r = a.res.find((x) => x.key === res) || a.res[0];
     replaceChildren(right,
-      h('header.fi-title', h('h3', `${tab === 'guoku' ? '帑廪' : '内帑'}·${r.label}`), h('small', `本期收${amt(r.inn)} · 支${amt(r.out)}${r.unit}`)),
-      h('div.fi-cols', bars('岁入名目', r.sources, r.inn, r.unit, 'in'), bars('支用科目', r.sinks, r.out, r.unit, 'out')),
-      r.deficits.length ? h('section.fi-sec', h('h4', `欠项 · ${amt(r.deficit)}${r.unit}`), h('div.fi-debts', r.deficits.slice(0, 12).map((d) => h('p', h('span', d.name || d.kind), h('b', `${amt(d.amount)}`)))),
-        r.deficits.length > 12 ? h('p.fi-more', `余${num(r.deficits.length - 12)}项`) : null) : null,
+      h('header.fi-title', h('h3', `${ACCOUNT_NAME[tab]}·${r.label}`), a.forecast ? h('small', '本期预估') : null),
+      summaryEl(r),
+      namesEl(r, a.forecast),
+      debtsEl(r),
       tab === 'guoku' && r.key === 'money' ? historyEl(r.unit) : null,
-      tab === 'guoku' ? guokuActions() : palaceActions());
+      tab === 'guoku' ? guokuActions() : [compareEl(r), palaceActions(a)]);
   }
+
+  // 本期总览：收、支、净三个大数，下面两条同一把尺子的长条，亏空时点明还撑得了多久
+  function summaryEl(r) {
+    if (!r.inn && !r.out) return null;
+    const net = r.inn - r.out;
+    const max = Math.max(1, r.inn, r.out);
+    const runway = runwayOf(r);
+    const verdict = net >= 0 ? (net > 0 ? `本期盈余，库中之数渐增` : '收支相抵')
+      : r.stock <= 0 ? '库已空竭，又入不敷出'
+      : runway ? `入不敷出，按此收支，库中之数尚可支${num(runway)}期` : '入不敷出，库中之数已不足支一期';
+    const stat = (label, text, cls) => h('p.' + cls, h('span', label), h('b', text), h('small', r.unit));
+    return h('section.fi-sum',
+      h('div.fi-sum-nums', stat('本期收', amt(r.inn), 'in'), stat('本期支', amt(r.out), 'out'), stat('净', signed(net), net < 0 ? 'neg' : 'pos')),
+      h('div.fi-sum-bars',
+        h('i.in', h('u', { style: { width: `${(r.inn / max) * 100}%` } })),
+        h('i.out', h('u', { style: { width: `${(r.out / max) * 100}%` } }))),
+      h('p.fi-sum-note' + (net < 0 && (r.stock <= 0 || (runway != null && runway <= 3)) ? '.bad' : ''), verdict));
+  }
+
+  function namesEl(r, forecast) {
+    if (!r.inn && !r.out) return h('p.fi-note', '本期无出入。');
+    if (!itemized(r.sources) && !itemized(r.sinks)) return h('p.fi-note', forecast ? '账目尚未分目，结账后列出岁入名目与支用科目。' : '本期账目未分细目。');
+    return h('div.fi-cols', bars('岁入名目', r.sources, r.inn, 'in'), bars('支用科目', r.sinks, r.out, 'out'));
+  }
+
+  function debtsEl(r) {
+    if (!r.deficits.length) return null;
+    const list = debtsOpen ? r.deficits : r.deficits.slice(0, 12);
+    return h('section.fi-sec', h('h4', `欠项 · ${amt(r.deficit)}${r.unit}`),
+      h('div.fi-debts', list.map((d) => h('p', { title: d.kind || '' }, h('span', d.name || d.kind), h('b', amt(d.amount))))),
+      r.deficits.length > 12 ? h('button.fi-more', { type: 'button', onclick: () => { debtsOpen = !debtsOpen; render(); } }, debtsOpen ? '收起' : `还有${num(r.deficits.length - 12)}项，展开`) : null);
+  }
+
   // 帑廪·银：近十二期收支（收支对柱、期末库银）与近五年决算
   function historyEl(unit) {
     let H = null;
@@ -67,10 +122,15 @@ export function createFiscal({ root, game }) {
         h('p', `年终库银${amt(y.balance)}${unit}`),
         y.regions.length ? h('div.fi-debts', y.regions.map((x) => h('p', h('span', x.name), h('b', `${signed(x.net)}`)))) : null))] : null);
   }
-  function bars(title, list, total, unit, cls) {
+
+  function bars(title, list, total, cls) {
     const max = Math.max(1, ...list.map((x) => x.amount));
-    return h('section.fi-sec', h('h4', title), list.length ? list.slice(0, 10).map((x) => h('div.fi-bar.' + cls,
-      h('span.k', x.label), h('span.v', h('i', { style: { width: `${(x.amount / max) * 100}%` } })), h('span.n', amt(x.amount)), h('small', total ? pct(x.amount / total) : '')))
+    const row = (x, tag) => h(tag + '.fi-bar.' + cls,
+      h('span.k', x.label), h('span.v', h('i', { style: { width: `${(x.amount / max) * 100}%` } })), h('span.n', amt(x.amount)), h('small', total ? pct(x.amount / total) : ''));
+    return h('section.fi-sec', h('h4', title), list.length ? list.slice(0, 10).map((x) => (x.details.length > 1
+      ? h('details.fi-item', row(x, 'summary'), h('div.fi-debts.sub', x.details.slice(0, 16).map((d) => h('p', h('span', d.name), h('b', amt(d.amount))))),
+        x.details.length > 16 ? h('p.fi-note', `余${num(x.details.length - 16)}目`) : null)
+      : row(x, 'div')))
       : h('p.ce-unk', '本期无'));
   }
 
@@ -141,36 +201,87 @@ export function createFiscal({ root, game }) {
     });
   }
 
-  // ---------- 内帑：宫中条陈 ----------
-  function palaceActions() {
+  // ---------- 内帑：两库对照与宫中条陈 ----------
+  // 互拨之前先看两边各有多少；帑廪在失真层下是据奏之数，和左叶、顶栏同一口径
+  function compareEl(r) {
+    const g = F.account('guoku');
+    const other = g && g.res.find((x) => x.key === r.key);
+    if (!other) return null;
+    const max = Math.max(1, other.stock, r.stock);
+    const row = (label, v, cls) => h('div.fi-bar.fi-two.' + cls, h('span.k', label), h('span.v', h('i', { style: { width: `${(v / max) * 100}%` } })), h('span.n', amt(v)));
+    return h('section.fi-sec', h('h4', `两库对照 · ${r.label}（${r.unit}）`), row('帑廪', other.stock, 'out'), row('内帑', r.stock, 'in'));
+  }
+  function palaceActions(a) {
     const amount = qianzi(F.TRANSFER_AMOUNTS.map((v) => ({ value: v, label: amt(v) })), { value: F.TRANSFER_AMOUNTS[1] });
-    const draft = (f) => () => { try { f(); } catch (e) { toast(e.message); } };
+    const draft = (f) => () => { try { f(); toast('已拟入议事清册'); } catch (e) { toast(e.message); } };
+    const silver = (a.res.find((x) => x.key === 'money') || {}).stock || 0;
     return h('section.fi-sec', h('h4', '宫中条陈'), h('p.fi-note', '两库互拨、举行大典，拟入议事清册，下旨方行。'),
-      h('div.fi-form', h('div', h('span', '银数'), amount)),
-      h('div.fi-btns',
-        h('button.q-yapai', { type: 'button', onclick: draft(() => F.transferDraft('toPalace', Number(amount.getValue()))) }, '帑廪拨入内帑'),
-        h('button.q-yapai', { type: 'button', onclick: draft(() => F.transferDraft('toState', Number(amount.getValue()))) }, '发内帑济国用')),
-      h('div.fi-btns', F.CEREMONIES.map(([k, label]) => h('button.q-yapai', { type: 'button', onclick: draft(() => F.ceremonyDraft(k)) }, `举${label}`))));
+      h('div.fi-rows',
+        h('div.fi-row.xfer', h('b', '两库互拨'), amount,
+          h('span.btns',
+            h('button.q-yapai', { type: 'button', onclick: draft(() => F.transferDraft('toPalace', Number(amount.getValue()))) }, '帑廪拨入内帑'),
+            h('button.q-yapai', { type: 'button', onclick: draft(() => F.transferDraft('toState', Number(amount.getValue()))) }, '发内帑济国用'))),
+        F.CEREMONIES.map(([k, label, cost]) => h('div.fi-row', h('b', label),
+          h('small' + (cost > silver ? '.bad' : ''), `约费${amt(cost)}两${cost > silver ? '，内帑不足' : ''}`),
+          h('button.q-yapai', { type: 'button', onclick: draft(() => F.ceremonyDraft(k)) }, '拟举')))));
   }
 
   // ---------- 户口 ----------
+  function sorted(list) {
+    return list.slice().sort((a, b) => {
+      if (sortKey === 'name') return sortDir * String(a.name).localeCompare(String(b.name), 'zh');
+      const x = a[sortKey], y = b[sortKey];
+      if (x == null && y == null) return 0;
+      if (x == null) return 1;
+      if (y == null) return -1;
+      return sortDir * (x - y);
+    });
+  }
+  function worstOf(list, key, dir) {
+    const rows = list.filter((p) => p[key] != null && (dir < 0 || p[key] > 0));
+    if (rows.length < 2 || rows.every((p) => p[key] === rows[0][key])) return null;   // 各省一样就没有谁最坏
+    return rows.reduce((m, p) => (dir * p[key] > dir * m[key] ? p : m));
+  }
   function renderCensus() {
     const c = F.census();
+    const low = worstOf(c.provinces, 'minxin', -1), dirty = worstOf(c.provinces, 'lizhi', -1), fled = worstOf(c.provinces, 'fugitives', 1);
+    const alert = [
+      low && low.minxin < 60 ? ['民心最低', low, num(low.minxin)] : null,
+      dirty && dirty.lizhi < 60 ? ['吏治最浊', dirty, num(dirty.lizhi)] : null,
+      fled ? ['逃户最多', fled, amt2(fled.fugitives)] : null
+    ].filter(Boolean);
     replaceChildren(leftBody,
-      h('article.fi-card.on', h('header', h('b', '全国'), h('small', c.accuracy != null ? `黄册准确${pct(c.accuracy)}` : '')),
-        h('div.fi-cen', [['户', c.households], ['口', c.mouths], ['丁', c.ding], ['逃户', c.fugitives], ['隐户', c.hidden]].filter(([, v]) => v).map(([k, v]) => h('p', h('span', k), h('b', amt(v)))))));
+      h('article.fi-card.on.flat', h('header', h('b', '全国'), h('small', c.accuracy != null ? `黄册准确${pct(c.accuracy)}` : '')),
+        h('div.fi-cen', [['户', c.households], ['口', c.mouths], ['丁', c.ding], ['逃户', c.fugitives], ['隐户', c.hidden]].filter(([, v]) => v).map(([k, v]) => h('p', h('span', k), h('b', amt(v))))),
+        c.households && c.mouths ? h('div.last', `户均${num(Math.round((c.mouths / c.households) * 10) / 10)}口`) : null),
+      alert.length ? h('article.fi-card.flat', h('header', h('b', '告急之省')),
+        h('div.fi-cen', alert.map(([k, p, v]) => h('p', h('span', k), h('em', provinceShort(p.name)), h('b.bad', v))))) : null);
     const max = Math.max(1, ...c.provinces.map((p) => p.mouths));
-    replaceChildren(right, h('header.fi-title', h('h3', '各省户口'), h('small', `${num(c.provinces.length)}省 · 合下辖府州之数`)),
+    const th = ([key, label]) => h('button.k-' + key + (sortKey === key ? '.on' : ''), { type: 'button', onclick: () => {
+      if (sortKey === key) sortDir = -sortDir;
+      else { sortKey = key; sortDir = key === 'name' ? 1 : (key === 'minxin' || key === 'lizhi') ? 1 : -1; }
+      render();
+    } }, label, sortKey === key ? h('i', sortDir < 0 ? '▾' : '▴') : null);
+    const go = (p) => {
+      const id = F.provinceRegion ? F.provinceRegion(p.name) : null;
+      if (!id || !onCircuit) { toast('此省未隶舆图省道'); return; }
+      hide();
+      onCircuit(id);
+    };
+    replaceChildren(right, h('header.fi-title', h('h3', '各省户口'), h('small', `${num(c.provinces.length)}省 · 合下辖府州之数 · 点表头排序`)),
       c.distorted || c.sealedMood ? h('p.fi-note', [c.distorted ? '全国与各省户口皆据有司所奏，未经核实' : '', c.sealedMood ? '各省民心、吏治未经核实，不列（据奏之数见舆图分州）' : ''].filter(Boolean).join('；')) : null,
-      h('div.fi-prov', h('p.hd', h('span', '省'), h('span', '口'), h('span', '户'), h('span', '丁'), h('span', '逃'), h('span', '民心'), h('span', '吏治')),
-        c.provinces.map((p) => h('p', h('span.n', p.name), h('span.bar', h('i', { style: { width: `${(p.mouths / max) * 100}%` } }), h('b', amt(p.mouths))),
-          h('span', amt(p.households)), h('span', amt(p.ding)), h('span', p.fugitives ? amt(p.fugitives) : '—'),
-          h('span' + (p.minxin != null && p.minxin < 40 ? '.bad' : ''), p.minxin != null ? num(p.minxin) : '—'), h('span' + (p.lizhi != null && p.lizhi < 40 ? '.bad' : ''), p.lizhi != null ? num(p.lizhi) : '—')))));
+      h('div.fi-prov', h('div.hd', CENSUS_COLS.map(th)),
+        sorted(c.provinces).map((p) => h('div.row',
+          h('button.n', { type: 'button', title: `${p.name}　翻通志`, onclick: () => go(p) }, provinceShort(p.name)),
+          h('span.bar', h('i', { style: { width: `${(p.mouths / max) * 100}%` } }), h('b', amt(p.mouths))),
+          h('span.k-households', amt2(p.households)), h('span.k-ding', amt2(p.ding)), h('span', p.fugitives ? amt2(p.fugitives) : '无'),
+          h('span.chip' + moodTone(p.minxin), p.minxin != null ? num(p.minxin) : '未核'), h('span.chip' + moodTone(p.lizhi), p.lizhi != null ? num(p.lizhi) : '未核')))));
   }
 
   function show(which) {
     if (which) { tab = which; tabs.setValue(which); }
     render();
+    right.scrollTop = 0;
     ov.classList.add('on');
     opened = true;
   }

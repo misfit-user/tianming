@@ -33,10 +33,9 @@ function holds(token) {
 // ---------- 名册 ----------
 const capital = () => G()._capital || '京城';
 const same = (a, b) => { const f = fn('_isSameLocation'); return f ? !!f(a, b) : a === b; };
-// 近在身边：在京，或与玩家同城。三部官方剧本开局 GM._capital 都是空的，内核退回默认的「京城」，只有别名表认得的京师才算在京；
-// 晚唐长安与玩家同城的臣子因此全成了「远方」。这里再看玩家所在（内核 _getPlayerLocation，选人的册子也用它）
-const herePlace = () => { const f = fn('_getPlayerLocation'); return (f && f()) || capital(); };
-const isNear = (c, cap = capital(), here = herePlace()) => !c.location || same(c.location, cap) || same(c.location, here);
+// 近在身边：与玩家同地，不是在京。绍宋开局玩家在亳州，行在的臣子正该写信（内核 sendLetter 同样按它剔人）
+const herePlace = () => { const f = fn('_ltHerePlace'); return (f && f()) || capital(); };
+const isNear = (c, here = herePlace()) => !c.location || same(c.location, here);
 function player(g) {
   const pc = w.TM && w.TM.Player && typeof w.TM.Player.getCharacter === 'function' ? w.TM.Player.getCharacter(g) : null;
   return pc || (g.chars || []).find((c) => c && c.isPlayer) || null;
@@ -90,7 +89,7 @@ function placeOf(c) {
 export function routeAlerts() {
   return (G()._routeDisruptions || []).filter((d) => d && !d.resolved).map((d) => ({ route: d.route || [d.from, d.to].filter(Boolean).join('—'), reason: d.reason || '' }));
 }
-const routeBlocked = (loc) => { const f = fn('_ltIsRouteBlocked'); return f ? !!f(capital(), loc) : false; };
+const routeBlocked = (loc) => { const f = fn('_ltIsRouteBlocked'); return f ? !!f(herePlace(), loc) : false; };
 const lateTurns = () => { const f = fn('_hyTurnsForMonths'); return f ? f(1) : 1; };
 
 // 远方人物：在世、非玩家、不在京（在京者内核会剔除，宜召对面陈）；附各人的未读、来函、在途、失踪之数
@@ -98,7 +97,6 @@ export function contacts() {
   const g = G();
   const me = player(g);
   const myFaction = me ? me.faction : '';
-  const cap = capital();
   const here = herePlace();
   const late = lateTurns();
   const cnt = {};
@@ -116,7 +114,7 @@ export function contacts() {
   const out = [];
   for (const c of g.chars || []) {
     if (!c || c.alive === false || c.isPlayer || !c.name) continue;
-    if (isNear(c, cap, here) && !c._travelTo) continue;
+    if (isNear(c, here) && !c._travelTo) continue;
     const foreign = !!(myFaction && c.faction && c.faction !== myFaction);
     const region = foreign ? c.faction : placeOf(c);
     const travel = c._travelTo ? (typeof c._travelTo === 'string' ? c._travelTo : c._travelTo.toLocation || '') : '';
@@ -130,9 +128,8 @@ export function contacts() {
 }
 // 密使人选：在京、在世、非玩家
 export function agents() {
-  const cap = capital();
   const here = herePlace();
-  return (G().chars || []).filter((c) => c && c.alive !== false && !c.isPlayer && isNear(c, cap, here))
+  return (G().chars || []).filter((c) => c && c.alive !== false && !c.isPlayer && isNear(c, here))
     .map((c) => ({ name: c.name, title: c.officialTitle || c.title || '' }));
 }
 
@@ -282,7 +279,8 @@ export function reach(name, urgency, sendMode) {
   const f = fn('calcLetterDays');
   const c = (G().chars || []).find((x) => x && x.name === name);
   if (!f || !c) return null;
-  const base = f(capital(), c.location || capital(), urgency);
+  const here = herePlace();
+  const base = f(here, c.location || here, urgency);
   const days = sendMode === 'secret_agent' ? Math.ceil(base * 1.5) : base;
   return { days, back: days * 2 + 3 };
 }

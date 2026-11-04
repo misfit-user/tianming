@@ -433,7 +433,7 @@
               // NPC 出逃/告老/游历——移动位置
               if (act.new_location) {
                 var _flCh = findCharByName(act.name);
-                if (_flCh) { _flCh.location = act.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(_flCh, 'character', undefined, act.new_location); _flCh._locationExplicit = false; }
+                if (_flCh) { if (typeof _tmMoveCharToward === 'function') _tmMoveCharToward(_flCh, act.new_location, act.description || act.behaviorType || ''); else { _flCh.location = act.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(_flCh, 'character', undefined, act.new_location); } _flCh._locationExplicit = false; }
               }
               if (act.behaviorType === 'flee') {
                 var _flCh2 = findCharByName(act.name);
@@ -553,7 +553,7 @@
             if (act.new_location && !mechanicallyExecuted) {
               var _nlCh = findCharByName(act.name);
               if (_nlCh && !_isSameLocation(_nlCh.location, act.new_location)) {
-                _nlCh.location = act.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(_nlCh, 'character', undefined, act.new_location);
+                if (typeof _tmMoveCharToward === 'function') _tmMoveCharToward(_nlCh, act.new_location, act.description || act.behaviorType || ''); else { _nlCh.location = act.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(_nlCh, 'character', undefined, act.new_location); }
                 _nlCh._locationExplicit = false;
               }
             }
@@ -1116,7 +1116,7 @@
             // 所在地变更（如被外派、流放、召回京城等）
             if (cu.new_location && typeof cu.new_location === 'string') {
               var _oldLoc = ch.location || GM._capital || '京城';
-              ch.location = cu.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(ch, 'character', undefined, cu.new_location);
+              if (typeof _tmMoveCharToward === 'function') _tmMoveCharToward(ch, cu.new_location, cu.reason || ''); else { ch.location = cu.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(ch, 'character', undefined, cu.new_location); }
               ch._locationExplicit = false; // AI设置的非编辑器显式
               if (_oldLoc !== cu.new_location) {
                 recordChange('characters', cu.name, 'location', _oldLoc, cu.new_location, cu.reason || 'AI推演');

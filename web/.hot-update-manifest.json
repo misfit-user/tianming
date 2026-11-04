@@ -3196,8 +3196,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "556edc97650375e463d990cc15569410cfda48936b64f10d275b1068f6112dcc",
-      "size": 371180
+      "sha256": "49e797b2e447311353f4d48c6a43bdf8d0c7582815acd9fc0d96553a28c1d84a",
+      "size": 375310
     },
     {
       "path": "icon.png",
@@ -3661,8 +3661,8 @@
     },
     {
       "path": "modules/ai-change-applier/core.js",
-      "sha256": "b6d0b85a1db02d952f181349d71d85ada6955f83b359dfbb41086b42c920bb80",
-      "size": 185653
+      "sha256": "14fd6865e631f0942f461b5d42c34d3fac45c6f87b34147fedef514a7bca0d70",
+      "size": 190445
     },
     {
       "path": "modules/ai-change-applier/fiscal-posting.js",
@@ -4481,8 +4481,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "0857b86b2665a8ee09f7a057839d35936243bfd6e7f34bad41856110c3e28b99",
-      "size": 390946
+      "sha256": "2076cc94a0300e8e985ab25ca2597364efb54ec391ce784c68e45d83f174ddb6",
+      "size": 390895
     },
     {
       "path": "styles.css",
@@ -5146,8 +5146,8 @@
     },
     {
       "path": "tm-endturn-agent-write-tools.js",
-      "sha256": "aac1c6fd5359df4872d4bfcb449efabed4dd109527902d6cc814c97e3075d269",
-      "size": 72776
+      "sha256": "5c8104d5c3c25114ff38f789c69d73881955d4dbc5d991005d995895693e7e7e",
+      "size": 73123
     },
     {
       "path": "tm-endturn-ai-context.js",
@@ -5181,8 +5181,8 @@
     },
     {
       "path": "tm-endturn-apply.js",
-      "sha256": "6c8331089d8b18ca47ace33df695dcc70f8ebf7c6808eca87317427f54cb0c1a",
-      "size": 349843
+      "sha256": "cb952698f21f09060382e8b4bb406d66e0d30604078be53bf763298b1a40328e",
+      "size": 350236
     },
     {
       "path": "tm-endturn-core.js",
@@ -5591,8 +5591,8 @@
     },
     {
       "path": "tm-hongyan-office.js",
-      "sha256": "a2cfaf24250933ba89c3054a8e6dda595087a22e473a0d0a00d226aefb66d4d2",
-      "size": 116712
+      "sha256": "7c061db65fd41c9e747855273d88857fc8018e8401aeb2aca2bad7585f79cd68",
+      "size": 115027
     },
     {
       "path": "tm-hooks-tracker.js",
@@ -5916,8 +5916,8 @@
     },
     {
       "path": "tm-map-locations.js",
-      "sha256": "d31d241d8ce3e1df99481f7f6ece280f88dfeadcafe1bbea9be7f2283d1db7db",
-      "size": 10523
+      "sha256": "992a964ce998b6aa44acaf167a567098daa2de86dfe90a1773d7689e4b5ffca8",
+      "size": 13727
     },
     {
       "path": "tm-map-realm-layout.js",
@@ -6571,8 +6571,8 @@
     },
     {
       "path": "tm-save-lifecycle.js",
-      "sha256": "23721f18166042a56eeb38b4309a7be0e50c5b160f666ac0319aae527330c2a9",
-      "size": 170041
+      "sha256": "2bf19da1de5a1a9ce4f9b5aeb23bcc958f080145a7754b6eb438ef3b190aa51c",
+      "size": 170323
     },
     {
       "path": "tm-save-manager.js",
@@ -6671,7 +6671,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "618bf1a5bed43e2a90763abf7c7f2d27a26153ef733342b56a5bcdc441872438",
+      "sha256": "b9361a54786590fe5fcf9f3b6ae32315e207f2870690038bf55024139dc7a988",
       "size": 140397
     },
     {
@@ -6821,8 +6821,8 @@
     },
     {
       "path": "tm-utils.js",
-      "sha256": "ae7784353468e533d693cb8e56f63fb12c84b83e5270eb4c1e1c78420b7d1b1a",
-      "size": 108032
+      "sha256": "76ff2df87897cb9823f2a7012e31924dab1146f0a6e365416fe1e3085f7544c8",
+      "size": 109643
     },
     {
       "path": "tm-var-drawers.js",

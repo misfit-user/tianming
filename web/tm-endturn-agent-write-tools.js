@@ -547,8 +547,12 @@
     if (!ch) { _recordFail(gm, 'move_char', nm, '未找到人物'); return { ok: false, reason: '未找到人物:' + nm }; }
     var old = ch.location || '';
     loc = String(loc).slice(0, 60);
-    if (input.traveling) { ch._travelTo = loc; }                 // 在途:现居不变·正往 loc
-    else { ch.location = loc; ch._travelTo = ''; }
+    // 两头都在地图上就真走这段路；对不上地图的：说在途就算在途，说已抵就到
+    var _moved = typeof root._tmMoveCharToward === 'function' ? root._tmMoveCharToward(ch, loc, input.reason || '', { traveling: !!input.traveling }) : '';
+    if (!_moved) {
+      if (input.traveling) { ch._travelTo = loc; }               // 在途:现居不变·正往 loc
+      else { ch.location = loc; ch._travelTo = ''; }
+    } else if (_moved === 'arrived') { ch._travelTo = ''; }
     if (root.TMMapLocations) root.TMMapLocations.sync(ch, 'character', gm);               // 已抵:现居 loc
     ch._changed = true;
     _report(gm, { type: 'change', path: 'chars/' + nm + '/location', old: old, new: (input.traveling ? ('(正往)' + loc) : loc), reason: (input.reason || '') + (input.traveling ? '·启程' : '·移驻'), turn: gm.turn || 0, _agent: true, _op: 'move_character' });

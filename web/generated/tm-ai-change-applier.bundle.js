@@ -1712,6 +1712,11 @@
               applied.failed.push({ char_update: cu, reason: "officialTitle sink failed: " + (_offAddE && _offAddE.message || _offAddE) });
             }
           }
+          if (typeof cu.updates.location === "string" && cu.updates.location && typeof global._tmMoveCharToward === "function") {
+            var _updTo = cu.updates.location;
+            delete cu.updates.location;
+            if (global._tmMoveCharToward(ch, _updTo, cu.reason || "")) charUpdCount++;
+          }
           charUpdCount += _mergeUpdatesToEntity(ch, cu.updates, "char_update", ch.name, cu.reason || "", applied.failed, aiOutput);
         }
         if (cu.careerEvent) {
@@ -1739,7 +1744,7 @@
             ]);
             return;
           }
-          var days = cu.travelTo.estimatedDays || _estimateTravelDays(ch.location, cu.travelTo.toLocation);
+          var days = _routeTravelDays(ch.location, cu.travelTo.toLocation) || cu.travelTo.estimatedDays || _estimateTravelDays(ch.location, cu.travelTo.toLocation);
           ch._travelTo = cu.travelTo.toLocation;
           ch._travelFrom = ch.location || "";
           ch._travelStartTurn = G.turn || 0;
@@ -2664,7 +2669,22 @@
     function _estimateTravelDays(from, to) {
       if (!from || !to) return 20;
       if (from === to) return 0;
+      try {
+        if (typeof global.calcLetterDays === "function") {
+          var days = global.calcLetterDays(from, to, "normal");
+          if (days > 0) return days;
+        }
+      } catch (_) {
+      }
       return 20;
+    }
+    function _routeTravelDays(from, to) {
+      try {
+        if (!from || !to || typeof global._ltRouteKm !== "function") return 0;
+        return global._ltRouteKm(from, to) > 0 ? _estimateTravelDays(from, to) : 0;
+      } catch (_) {
+        return 0;
+      }
     }
     function generateTurnReport(turn) {
       var G = global.GM;
@@ -3183,11 +3203,13 @@
         if (!_forceArrive && typeof ch._travelRemainingDays === "number") {
           ch._travelRemainingDays -= daysPassed;
           if (ch._travelRemainingDays > 0) {
+            _advanceTravelAlongRoute(G, ch, daysPassed, ch._travelRemainingDays);
             inflight++;
             return;
           }
         } else if (!_forceArrive && typeof ch._travelArrival === "number") {
           if ((G.turn || 0) < ch._travelArrival) {
+            _advanceTravelAlongRoute(G, ch, daysPassed, (ch._travelArrival - (G.turn || 0)) * daysPassed);
             inflight++;
             return;
           }
@@ -3195,8 +3217,61 @@
         _arriveCharNow(G, ch, dateText);
         arrived++;
       });
+      try {
+        if (global.TMMapLocations && global.TMMapLocations.syncCharacters) global.TMMapLocations.syncCharacters(G);
+      } catch (_syncE) {
+        window.TM && TM.errors && TM.errors.captureSilent && TM.errors.captureSilent(_syncE, "travelTick] syncCharacters");
+      }
       if (arrived > 0) _refreshCharacterLocationUiAfterTravel();
       return { arrived, inflight };
+    }
+    function _travelRegionOf(G, map, route, text, from) {
+      var ids = global.TMMapLocations.placeRegionIds(text, G);
+      if (ids.length === 1) return ids[0];
+      if (!ids.length || !from) return "";
+      var row = route.routeDays(map, from), best = "", bestKm = Infinity;
+      ids.forEach(function(id) {
+        var r = row.get(String(id));
+        if (r && r.km < bestKm) {
+          best = id;
+          bestKm = r.km;
+        }
+      });
+      return best;
+    }
+    function _advanceTravelAlongRoute(G, ch, daysPassed, daysLeft) {
+      try {
+        var locs = global.TMMapLocations, route = global.TM && global.TM.MapRouteDays, map = G.mapData || G.map;
+        if (!locs || !locs.placeRegionIds || !route || !route.planRoute || !map) return;
+        if (!ch._travelFrom) ch._travelFrom = ch.location || "";
+        var ids = locs.placeRegionIds(ch._travelFrom, G);
+        var from = ids.length === 1 ? ids[0] : "";
+        if (!from) return;
+        var to = _travelRegionOf(G, map, route, ch._travelTo, from);
+        if (!to || to === from) return;
+        var plan = route.planRoute(map, from, to, { mode: "land" });
+        if (!plan || plan.status !== "reachable" || !Array.isArray(plan.segments) || !plan.segments.length) return;
+        var sig = from + "|" + to + "|" + (ch._travelStartTurn == null ? "" : ch._travelStartTurn);
+        var leg = ch._travelLeg && ch._travelLeg.sig === sig ? ch._travelLeg : { sig, doneDays: 0, km: 0 };
+        leg.doneDays += daysPassed;
+        leg.km = Math.max(leg.km, plan.km * leg.doneDays / (leg.doneDays + Math.max(0, daysLeft)));
+        ch._travelLeg = leg;
+        var walked = 0, at = from;
+        for (var i = 0; i < plan.segments.length - 1; i++) {
+          walked += Number(plan.segments[i].km) || 0;
+          if (walked > leg.km) break;
+          at = plan.segments[i].toRegionId;
+        }
+        var here = locs.placeRegionIds(ch.location, G);
+        if (here.length === 1 && String(here[0]) === String(at)) return;
+        var row = route.resolveRegion(map, at);
+        if (!row || row.status !== "resolved") return;
+        ch.location = row.region.name || String(at);
+        locs.sync(ch, "character", G);
+        _syncCharacterLocationMirrors(G, ch, { location: ch.location, regionId: ch.regionId, mapRegionId: ch.mapRegionId }, []);
+      } catch (e) {
+        window.TM && TM.errors && TM.errors.captureSilent && TM.errors.captureSilent(e, "travelTick] along route");
+      }
     }
     function _arriveCharNow(G, ch, dateText) {
       if (!G || !ch || !ch._travelTo) return;
@@ -3207,7 +3282,12 @@
       var reason = ch._travelReason || "";
       var assignConcurrent = !!ch._travelAssignConcurrent || /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(reason + " " + assignPost);
       ch.location = toLoc;
-      _syncCharacterLocationMirrors(G, ch, { location: toLoc }, []);
+      try {
+        if (global.TMMapLocations) global.TMMapLocations.sync(ch, "character", G);
+      } catch (_bindE) {
+        window.TM && TM.errors && TM.errors.captureSilent && TM.errors.captureSilent(_bindE, "travelTick] arrival binding");
+      }
+      _syncCharacterLocationMirrors(G, ch, { location: toLoc, regionId: ch.regionId, mapRegionId: ch.mapRegionId }, []);
       if (assignPost) {
         var dept = "", post = assignPost;
         if (assignPost.indexOf("/") >= 0) {
@@ -3270,6 +3350,7 @@
       delete ch._travelAssignConcurrent;
       delete ch._travelElapsedDays;
       delete ch._travelExpectedDays;
+      delete ch._travelLeg;
       _syncCharacterLocationMirrors(G, ch, { location: toLoc }, [
         "_travelTo",
         "_travelFrom",

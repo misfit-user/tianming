@@ -1887,6 +1887,10 @@ async function _fullLoadGameApplyImpl(data, loadOptions, _loadTxn){
     // 确保所有字段有默认值
     _ensureGMDefaults();
     _ensurePDefaults();
+    // 老档可能没绑过地块（晚唐原先不绑），读进来绑一次；绑不上不碍事，同地判断会退回比文字
+    _tmRunDegradableLoadStep('map location binding', function() {
+      if (window.TMMapLocations) window.TMMapLocations.syncWorld(GM);
+    });
     _tmRunCriticalLoadStep('army structure migration', function() {
       if (typeof TMArmyUnits !== 'undefined') TMArmyUnits.ensureAllArmies(GM);
     });   // 御驾亲征接入 Phase0:army.composition→units[] 编制地基(载入一次性·幂等·不改 composition)

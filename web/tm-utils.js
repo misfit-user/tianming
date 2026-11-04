@@ -1408,9 +1408,44 @@ function _normalizeLocation(loc) {
  * 判定两地是否"视为同地"——同城/同宫室都算。
  * 规则：规范化后首段相等；或一方包含另一方的主键（如两者都含"紫禁城"或"京师"）。
  */
+/** 通称换成实地：京师、宫中是当朝京城，行在、随驾是天子此刻所在；本来就是实地的原样返回 */
+function _locRealPlaceText(text) {
+  var parts = String(text).split(/[·・\/\,，、\s]+/);
+  for (var i = 0; i < parts.length; i++) {
+    var p = (parts[i] || '').trim();
+    if (!p) continue;
+    if (_LOC_COURT_WORDS[p]) {
+      // 「行在·福建」：行在后面写了实地，以实地为准
+      if (p !== '随驾' && parts.slice(i + 1).some(function(x) { return x && x.trim(); })) continue;
+      return _locCourtPlace() || text;
+    }
+    if (_locIsCapitalWord(p) && typeof GM !== 'undefined' && GM) return (GM._capital || GM.capital || text);
+    return text;
+  }
+  return text;
+}
+
+/** 两段地名是否同一地块：两边都落到唯一地块才答得上，否则返回 null 交给文字比。出错也只返回 null */
+function _locSameRegion(a, b) {
+  try {
+    var locs = (typeof window !== 'undefined' && window.TMMapLocations) || (typeof TMMapLocations !== 'undefined' ? TMMapLocations : null);
+    if (!locs || !locs.placeRegionIds || typeof GM === 'undefined' || !GM) return null;
+    var ra = locs.placeRegionIds(a, GM);
+    if (ra.length !== 1) return null;
+    var rb = locs.placeRegionIds(b, GM);
+    return rb.length === 1 ? ra[0] === rb[0] : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 function _isSameLocation(a, b) {
   if (!a && !b) return true;
   if (!a || !b) return false;
+  if (a === b) return true;
+  // 同一最小地块才算同地；粗区、对不上地图的、没有地图的剧本，退回比文字
+  var sameRegion = _locSameRegion(a, b);
+  if (sameRegion !== null) return sameRegion;
   var na = _normalizeLocation(a);
   var nb = _normalizeLocation(b);
   if (na === nb) return true;

@@ -122,93 +122,8 @@ var _ltRouteCaches = new WeakMap();
 
 function _ltRouteCache(map) {
   var c = _ltRouteCaches.get(map);
-  if (!c) { c = { places: new Map(), km: new Map(), sources: new Set(), names: null }; _ltRouteCaches.set(map, c); }
+  if (!c) { c = { km: new Map(), sources: new Set() }; _ltRouteCaches.set(map, c); }
   return c;
-}
-
-/** 通称换成实地：京师、宫中是当朝京城，行在、随驾是天子此刻所在；本来就是实地的原样返回 */
-function _ltRealPlaceText(text) {
-  var parts = String(text).split(/[·・\/\,，、\s]+/);
-  for (var i = 0; i < parts.length; i++) {
-    var p = (parts[i] || '').trim();
-    if (!p) continue;
-    if (_LOC_COURT_WORDS[p]) {
-      // 「行在·福建」：行在后面写了实地，以实地为准（解析时自会取福建）
-      if (p !== '随驾' && parts.slice(i + 1).some(function(x) { return x && x.trim(); })) continue;
-      return _locCourtPlace() || text;
-    }
-    if (_locIsCapitalWord(p)) return (GM._capital || GM.capital || text);
-    return text;
-  }
-  return text;
-}
-
-/** 剧本没写地名契约（晚唐）时的索引：地块的名、别名，和「京兆府·长安」拆开的每一段 */
-function _ltPlaceNames(map, cache) {
-  if (cache.names) return cache.names;
-  var names = new Map();
-  var add = function(key, id) {
-    key = String(key || '').trim();
-    if (!key) return;
-    var row = names.get(key);
-    if (!row) names.set(key, [id]);
-    else if (row.indexOf(id) < 0) row.push(id);
-  };
-  (map.regions || []).forEach(function(r) {
-    if (!r || r.id == null) return;
-    var id = String(r.id);
-    [r.id, r.name, r.title].concat(Array.isArray(r.aliases) ? r.aliases : []).forEach(function(n) {
-      add(n, id);
-      String(n || '').split(/[·・]/).forEach(function(part) { add(part, id); });
-    });
-  });
-  cache.names = names;
-  return names;
-}
-
-function _ltLookupPlaceName(map, cache, text) {
-  var names = _ltPlaceNames(map, cache);
-  var head = String(text).split(/[（(]/)[0].trim();
-  if (names.has(head)) return names.get(head);
-  var tokens = head.split(/[·・\/／、，,；;\s]+/).filter(Boolean);
-  for (var i = 0; i < tokens.length; i++) if (names.has(tokens[i])) return names.get(tokens[i]);
-  var best = '';
-  names.forEach(function(_, key) { if (key.length >= 2 && key.length > best.length && head.indexOf(key) >= 0) best = key; });
-  return best ? names.get(best) : [];
-}
-
-function _ltReadPlace(map, cache, text) {
-  var locs = (typeof window !== 'undefined' && window.TMMapLocations) || (typeof TMMapLocations !== 'undefined' ? TMMapLocations : null);
-  if (!locs || !locs.enabled(map)) return _ltLookupPlaceName(map, cache, text);
-  var idsOf = function(hit) { return hit.regionId ? [hit.regionId] : (hit.candidateRegionIds || []); };
-  var ids = idsOf(locs.resolveText(text, map, null, 'character', GM, true));
-  if (ids.length) return ids;
-  // 势力专属的别名（日本的「京」）要带上人才认得：找一个写着这个地名的人
-  var who = (GM.chars || []).find(function(c) { return c && c.location === text; });
-  return who ? idsOf(locs.resolveText(text, map, who, 'character', GM, true)) : [];
-}
-
-function _ltPlaceIdsOf(map, text) {
-  var cache = _ltRouteCache(map);
-  if (cache.places.has(text)) return cache.places.get(text);
-  var ids = _ltReadPlace(map, cache, text);
-  if (!ids.length) {
-    // 同一处的别称挨个认：京城写「北京」，地图上这块叫顺天府
-    var group = _locAliasOf(String(text).split(/[·・]/)[0].trim());
-    var names = group ? Object.keys(_LOC_ALIASES) : [];
-    for (var i = 0; i < names.length && !ids.length; i++) {
-      if (_LOC_ALIASES[names[i]] === group) ids = _ltReadPlace(map, cache, names[i]);
-    }
-  }
-  cache.places.set(text, ids);
-  return ids;
-}
-
-/** 一段地名可能落在哪些地块。粗区（「河北」）和两可（「徐州／邳州」）都给候选，由算路的挑最近的 */
-function _ltPlaceRegionIds(map, text) {
-  var real = _ltRealPlaceText(text);
-  var ids = _ltPlaceIdsOf(map, real);
-  return (ids.length || real === text) ? ids : _ltPlaceIdsOf(map, text);
 }
 
 /** 两个地块之间的公里数：连着的沿邻接走，走不通的按直线加绕行；坐标都没有返回 null */
@@ -243,9 +158,10 @@ function _ltRouteKm(fromLoc, toLoc) {
   try {
     var map = GM.mapData || GM.map;
     var route = TM.MapRouteDays;
-    if (!route || !map || !Array.isArray(map.regions) || !map.regions.length) return null;
-    var from = _ltPlaceRegionIds(map, fromLoc);
-    var to = _ltPlaceRegionIds(map, toLoc);
+    var locs = (typeof window !== 'undefined' && window.TMMapLocations) || (typeof TMMapLocations !== 'undefined' ? TMMapLocations : null);
+    if (!route || !locs || !map) return null;
+    var from = locs.placeRegionIds(fromLoc, GM);
+    var to = locs.placeRegionIds(toLoc, GM);
     if (!from.length || !to.length) return null;
     var cache = _ltRouteCache(map);
     var best = null;
@@ -260,6 +176,47 @@ function _ltRouteKm(fromLoc, toLoc) {
     try { if (TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, '_ltRouteKm'); } catch (_) {}
     return null;
   }
+}
+
+/** 绑定地块是附带动作，出错不许打断移动 */
+function _ltBindQuietly(run) {
+  try { if (window.TMMapLocations) run(window.TMMapLocations); }
+  catch (e) { try { if (TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, '_tmMoveCharToward'); } catch (_) {} }
+}
+
+/**
+ * 让某人去某地（AI 下令移动都走这里）：两头都在地图上就真走这段路，路上一块块过去；
+ * 同一地块、对不上地图的、玩家定了即刻抵达的直接到。已在赴同一处的不重启行程。返回 'arrived' 或 'traveling'
+ */
+function _tmMoveCharToward(ch, toLoc, reason, opts) {
+  var to = String(toLoc == null ? '' : toLoc).trim();
+  if (!ch || !to) return '';
+  if (ch._travelTo && _isSameLocation(ch._travelTo, to)) return 'traveling';
+  var here = ch.location || '';
+  var instant = typeof _hasInstantArrivalRule === 'function' && _hasInstantArrivalRule(GM);
+  var km = (here && !instant && !ch._travelAssignPost) ? _ltRouteKm(here, to) : null;
+  var mustWalk = !!(opts && opts.traveling) && here && !_isSameLocation(here, to);
+  if (km > 0 || mustWalk) {
+    ch._travelTo = to;
+    ch._travelFrom = here;
+    ch._travelStartTurn = GM.turn || 0;
+    ch._travelRemainingDays = calcLetterDays(here, to, 'normal');
+    ch._travelReason = reason || '';
+    delete ch._travelArrival;
+    delete ch._travelElapsedDays;
+    delete ch._travelExpectedDays;
+    delete ch._travelLeg;
+    (GM.allCharacters || []).forEach(function(row) {
+      if (!row || row === ch || (ch.id ? row.id !== ch.id : row.name !== ch.name)) return;
+      row._travelTo = ch._travelTo; row._travelFrom = ch._travelFrom; row._travelStartTurn = ch._travelStartTurn;
+      row._travelRemainingDays = ch._travelRemainingDays; row._travelReason = ch._travelReason;
+    });
+    _ltBindQuietly(function(locs) { locs.syncDestination(ch, 'character', GM); });
+    return 'traveling';
+  }
+  ch.location = to;
+  _ltBindQuietly(function(locs) { locs.sync(ch, 'character', undefined, to); });
+  return 'arrived';
 }
 
 /** 两地信件传递天数：先按地图真实路程；地图缺或地名对不上，退回按行政层级粗估 */

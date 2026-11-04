@@ -2,7 +2,8 @@
 //
 // 病根：只有原生开局写 _capital，官方剧本开局它是空的，四十多个内核文件都退回「京城」。
 // 后果：晚唐长安同城的臣子被当远方；绍宋金国燕京、日本的「京」被当在京，写不了信。
-// 修法：开局、读档都补真实京城（读本势力写的都城）；京师、宫中、行在这些通称跟着当朝京城走；
+// 修法：开局、读档都补真实京城（读本势力写的都城）；京师、宫中这些通称跟着当朝京城走；
+// 行在、随驾跟着天子走（剧本 locationBindingContract 同此口径）；
 // 书信、朱批、求见看玩家本人所在，因为绍宋开局玩家在亳州，京城却是应天府。
 'use strict';
 const fs = require('fs');
@@ -59,6 +60,7 @@ assert(derive({ capital: '(已无)', capitalName: '' }, [{ name: '君主', locat
 assert(derive({}, [{ name: '君主', alive: false, location: '洛阳' }]) === '', '君主已死又没写都城：空着，内核退回默认');
 assert(sandbox._tmCapitalFromWorld(world({ capital: '错的' }, [], { playerInfo: { capital: '对的' } }), {}) === '对的', '玩家身份写的都城优先');
 assert(derive({ capital: '无' }) === '', '「无」不当都城');
+assert(derive({ capital: '行在' }) === '', '行在不当都城，它跟着人走');
 
 console.log('二、开局与读档补值');
 const ensure = (g) => { sandbox._tmEnsureCapital(g, {}); return g; };
@@ -66,6 +68,10 @@ assert(ensure(world({ capital: '应天府' }))._capital === '应天府', '空值
 assert(ensure(Object.assign(world({ capital: '应天府' }), { _capital: '原生开局地' }))._capital === '原生开局地', '已有值不动（原生开局）');
 assert(ensure(Object.assign(world({ capital: '应天府' }), { _capital: null, capital: '扬州' }))._capital === '扬州', '老档 AI 迁都只写过 GM.capital：以它为准');
 assert(ensure(Object.assign(world({ capital: '应天府' }), { _capital: '应天府', capital: '扬州' }))._capital === '扬州', '老档 _capital 落后于 GM.capital：追上');
+const hostile = { get facs() { throw new Error('坏档'); }, chars: [] };
+let threw = false;
+try { sandbox._tmEnsureCapital(hostile, {}); } catch (_) { threw = true; }
+assert(!threw, '推京城出错不外抛，不拖垮存读档');
 const twice = ensure(ensure(world({ capital: '应天府' })));
 assert(twice._capital === '应天府' && twice.capital === undefined, '可重复调用，不多写字段');
 assert(ensure(world({}))._capital === undefined, '什么都推不出：不写');
@@ -92,9 +98,25 @@ assert(!same('河南府·洛阳', '京兆府·长安') && !same('魏州', '京�
 assert(!same('紫禁城', '京兆府·长安') && !same('燕京', '京兆府·长安'), '别朝的实地不算');
 
 console.log('六、绍宋：京城是应天府，玩家在亳州');
-sandbox.GM = { _capital: '应天府' };
-assert(same('行在', '应天府') && same('行在·应天府(南京)', '应天府') && same('应天府', '应天府'), '行在的臣子在京');
+const courtChars = () => [
+  { id: 'c1', name: '赵构', isPlayer: true, alive: true, location: '亳州·明道宫·九龙井侧' },
+  { id: 'c2', name: '韩世忠', alive: true, location: '亳州·随驾' },
+];
+sandbox.GM = { _capital: '应天府', chars: courtChars(), mapData: { locationBindingContract: { courtCharacterId: 'c1' } } };
+const atCourt = '亳州·明道宫·九龙井侧';
+assert(same('行在', atCourt) && same('随驾', atCourt) && same('行在·随驾', atCourt) && same('亳州·随驾', atCourt), '行在、随驾跟着天子在亳州');
+assert(!same('行在', '应天府') && !same('随驾', '应天府'), '行在不是京城');
+assert(same('行在·应天府(南京)', '应天府') && same('应天府', '应天府'), '写明在应天府的在京');
+assert(!same('行在·应天府(南京)', atCourt), '写明在应天府的不随驾');
 assert(same('应天府（即将随南行扬州）', '应天府'), '括注不碍事');
+sandbox.GM.chars[0].location = '扬州';
+assert(same('行在', '扬州') && !same('行在', atCourt), '天子到扬州，行在跟到扬州');
+sandbox.GM.chars[0].location = atCourt;
+sandbox.GM = { _capital: '应天府', chars: courtChars() };
+assert(same('行在', atCourt), '剧本没写契约：退到玩家所在');
+sandbox.GM = { _capital: '应天府' };
+assert(same('行在', '行在') && !same('行在', '应天府'), '世上没有天子可认：行在就是行在，不崩');
+sandbox.GM = { _capital: '应天府', chars: courtChars(), mapData: { locationBindingContract: { courtCharacterId: 'c1' } } };
 assert(!same('行在·福建', '应天府'), '行在后面写了实地，以实地为准');
 assert(!same('燕京', '应天府') && !same('金国·燕京（北狩中）', '应天府'), '金国燕京不在京');
 assert(!same('京', '应天府') && !same('京·内里', '应天府'), '日本的「京」不在京');
@@ -104,11 +126,13 @@ assert(!same('亳州·随驾', '应天府'), '随驾亳州不在京');
 console.log('七、书信看玩家本人所在');
 const shaosong = () => ({
   turn: 3, _capital: '应天府', letters: [], items: [],
+  mapData: { locationBindingContract: { courtCharacterId: 'c1' } },
   chars: [
-    { name: '赵构', isPlayer: true, alive: true, location: '亳州·明道宫·九龙井侧' },
+    { id: 'c1', name: '赵构', isPlayer: true, alive: true, location: '亳州·明道宫·九龙井侧' },
     { name: '韩世忠', alive: true, location: '亳州·随驾' },
     { name: '朱胜非', alive: true, location: '行在' },
     { name: '陈东', alive: true, location: '行在·应天府(南京)' },
+    { name: '孟皇后', alive: true, location: '应天府（即将随南行扬州）' },
     { name: '鳥羽上皇', alive: true, location: '京' },
     { name: '时立爱', alive: true, location: '燕京' },
   ],
@@ -116,10 +140,10 @@ const shaosong = () => ({
 sandbox.P = { playerInfo: { characterName: '赵构' } };
 sandbox.GM = shaosong();
 assert(sandbox._ltHerePlace() === '亳州·明道宫·九龙井侧', '玩家不在京：写实地');
-sandbox.sendLetter({ content: '卿等听旨', targets: ['韩世忠', '朱胜非', '陈东', '鳥羽上皇', '时立爱'] });
+sandbox.sendLetter({ content: '卿等听旨', targets: ['韩世忠', '朱胜非', '陈东', '孟皇后', '鳥羽上皇', '时立爱'] });
 const to = sandbox.GM.letters.map((l) => l.to);
-assert(!to.includes('韩世忠'), '随驾同地：剔除，宜召对');
-assert(to.includes('朱胜非') && to.includes('陈东'), '玩家在亳州：行在的臣子能写信');
+assert(!to.includes('韩世忠') && !to.includes('朱胜非'), '随驾、行在与天子同地：剔除，宜召对');
+assert(to.includes('陈东') && to.includes('孟皇后'), '玩家在亳州：应天府的臣子能写信');
 assert(to.includes('鳥羽上皇') && to.includes('时立爱'), '日本的京、金国燕京能写信');
 assert(sandbox.GM.letters.every((l) => l.fromLocation === '亳州·明道宫·九龙井侧'), '信从亳州发出');
 

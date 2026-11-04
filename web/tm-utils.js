@@ -1325,7 +1325,7 @@ function finiteNumberOr(value, fallback){
  */
 var _LOC_ALIASES = {
   '京城': '京城', '京师': '京城', '北京': '京城', '燕京': '京城', '顺天府': '京城',
-  '紫禁城': '京城', '皇城': '京城', '宫中': '京城', '内廷': '京城', '禁中': '京城', '行在': '京城',
+  '紫禁城': '京城', '皇城': '京城', '宫中': '京城', '内廷': '京城', '禁中': '京城',
   // 建康不进此组：绍宋的南京应天府在商丘，建康府是另一座城
   '南京': '南京', '应天府': '南京', '金陵': '南京', '陪都': '南京',
   '盛京': '盛京', '沈阳': '盛京', '赫图阿拉': '盛京', '辽阳': '盛京',
@@ -1337,7 +1337,22 @@ var _LOC_ALIASES = {
   '汉城': '汉城', '汉阳': '汉城', '首尔': '汉城'
 };
 // 通称，不是实地：哪一朝都指当朝京城，跟着 GM._capital 走。北京、燕京、顺天府、紫禁城是实地，不在此列
-var _LOC_CAPITAL_WORDS = ['京城', '京师', '皇城', '宫中', '内廷', '禁中', '行在'];
+var _LOC_CAPITAL_WORDS = ['京城', '京师', '皇城', '宫中', '内廷', '禁中'];
+// 行在、随驾也不是实地，但指天子此刻所在，跟着人走不跟京城（剧本 locationBindingContract 同此口径）
+var _LOC_COURT_WORDS = { '行在': 1, '行在所': 1, '随驾': 1 };
+
+function _locCourtPlace() {
+  if (typeof GM === 'undefined' || !GM) return '';
+  var chars = GM.chars || [];
+  var live = function(test) { return chars.find(function(c) { return c && c.alive !== false && test(c); }); };
+  var map = GM.mapData || GM.map;
+  var courtId = map && map.locationBindingContract && map.locationBindingContract.courtCharacterId;
+  var leader = GM.playerInfo && GM.playerInfo.factionLeader;
+  var court = (courtId && live(function(c) { return c.id === courtId; }))
+    || (leader && live(function(c) { return c.name === leader; }))
+    || live(function(c) { return c.isPlayer; });
+  return (court && court.location) || '';
+}
 
 function _locAliasOf(part) {
   if (_LOC_ALIASES[part]) return _LOC_ALIASES[part];
@@ -1359,8 +1374,12 @@ function _locKey(text, literal) {
   for (var i = 0; i < parts.length; i++) {
     var p = (parts[i] || '').trim();
     if (!p) continue;
-    // 「行在·福建」：行在后面写了实地，以实地为准
-    if (p === '行在' && parts.slice(i + 1).some(function(x) { return x && x.trim(); })) continue;
+    if (_LOC_COURT_WORDS[p]) {
+      // 「行在·福建」：行在后面写了实地，以实地为准
+      if (p !== '随驾' && parts.slice(i + 1).some(function(x) { return x && x.trim(); })) continue;
+      var court = literal ? '' : _locCourtPlace();
+      return court ? _locKey(String(court).trim(), true) : p;
+    }
     var key = _locAliasOf(p);
     if (!key) return p; // 首段未匹配即返回
     if (key === '京城' && !literal && _locIsCapitalWord(p)) {
@@ -1377,7 +1396,7 @@ function _locKey(text, literal) {
  *     "京师·文渊阁" → "京师" → "京城"
  *     "南京·户部衙门" → "南京" → "南京"
  *     "陕西·西安" → "陕西"（未在表中，返回自身）
- *     "京师"、"宫中"、"行在" 是通称，取当朝京城的主地点（晚唐即京兆府）
+ *     "京师"、"宫中" 是通称，取当朝京城的主地点（晚唐即京兆府）；"行在"、"随驾" 取天子此刻所在
  */
 function _normalizeLocation(loc) {
   if (!loc || typeof loc !== 'string') return '';
@@ -1403,7 +1422,7 @@ function _isSameLocation(a, b) {
 /** 势力写的都城 → 运行时的京城名。去括注与占位；「北京·紫禁城」两段是一处留首段，「京兆府·长安」是府与城全留 */
 function _tmCleanCapitalName(raw) {
   var s = String(raw == null ? '' : raw).replace(/[（(][^（）()]*[）)]/g, '').trim();
-  if (!s || /^(无|已无|未知|不详|流动|游牧)/.test(s)) return '';
+  if (!s || /^(无|已无|未知|不详|流动|游牧|行在|随驾)/.test(s)) return '';
   var parts = s.split(/[·・]/).map(function(x) { return x.trim(); }).filter(Boolean);
   if (parts.length > 1) {
     var first = _locKey(parts[0], true);
@@ -1429,17 +1448,21 @@ function _tmCapitalFromWorld(g, p) {
   return (ruler && _tmCleanCapitalName(ruler.location)) || '';
 }
 
-/** 开局、读档、存档前都走这里：_capital 是全内核读的京城，这里保证它有值且是最新的 */
+/** 开局、读档、存档前都走这里：_capital 是全内核读的京城，这里保证它有值且是最新的。只是兜底，出错不许拖垮存读档 */
 function _tmEnsureCapital(g, p) {
   if (!g) return;
-  // 老档的 AI 迁都只写过 GM.capital，它比 _capital 新
-  if (typeof g.capital === 'string' && g.capital && g.capital !== g._capital) {
-    g._capital = g.capital;
-    return;
+  try {
+    // 老档的 AI 迁都只写过 GM.capital，它比 _capital 新
+    if (typeof g.capital === 'string' && g.capital && g.capital !== g._capital) {
+      g._capital = g.capital;
+      return;
+    }
+    if (g._capital) return;
+    var name = _tmCapitalFromWorld(g, p);
+    if (name) g._capital = name;
+  } catch (e) {
+    try { if (typeof TM !== 'undefined' && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, '_tmEnsureCapital'); } catch (_) {}
   }
-  if (g._capital) return;
-  var name = _tmCapitalFromWorld(g, p);
-  if (name) g._capital = name;
 }
 
 function _tmCleanIdentityName(value) {

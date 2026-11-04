@@ -2906,13 +2906,13 @@
     },
     {
       "path": "bundled-scenarios/绍宋·建炎元年八月（官方）.json",
-      "sha256": "02b3a900caaa60176c6a64e641bd74c66456e13986fb9feec58cd5e7baa698d8",
-      "size": 91000658
+      "sha256": "b78a61ded95122f628e4701adf5f386b7f9dd743e789234e531cc4964bab90d9",
+      "size": 90999591
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
-      "sha256": "09506bba5d086818e36c5f22b8f36d453ae2ce10408566e62457cddf6a42b1ab",
-      "size": 16389672
+      "sha256": "bb1232b7cdcd797ad8d9c9de4f87ba06d8bce4f9996486b335e0b21ab4cb4f37",
+      "size": 16389472
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
@@ -2921,12 +2921,12 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "f85af5a3e80ae0e60f2129405b5e0a9fe9d14a1c1cc2c6cab7f23e30f06f96c9",
+      "sha256": "39e3dcba6bfdfa5417eb4be74032033a9867d6ff9c5c4494bf898d672f3a962a",
       "size": 6008
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "aa416b361c1a5d433a176cbd109d43434a867c6eaa79d8bf767fc6b37f5583ec",
+      "sha256": "74cb0000dacc38d06fb6cad153a42dbc247087efe8a0532b392a3ab0f2ffa84f",
       "size": 6387
     },
     {
@@ -3196,8 +3196,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "49e797b2e447311353f4d48c6a43bdf8d0c7582815acd9fc0d96553a28c1d84a",
-      "size": 375310
+      "sha256": "2c4b73e6db022606288f32d50c8fae5649c5002ad8cb0b81f51666be4c9605d5",
+      "size": 376486
     },
     {
       "path": "icon.png",
@@ -3661,8 +3661,8 @@
     },
     {
       "path": "modules/ai-change-applier/core.js",
-      "sha256": "14fd6865e631f0942f461b5d42c34d3fac45c6f87b34147fedef514a7bca0d70",
-      "size": 190445
+      "sha256": "97c7555d1e8d9b8e632c06ac2aa06fa955fdb9cc86a0234d7be1d57245b787fa",
+      "size": 188346
     },
     {
       "path": "modules/ai-change-applier/fiscal-posting.js",
@@ -3693,6 +3693,11 @@
       "path": "modules/ai-change-applier/reconcile.js",
       "sha256": "4792354139d7aaf185e7c6da4881c23087018385523c967db572692df39889d8",
       "size": 99201
+    },
+    {
+      "path": "modules/ai-change-applier/travel-route.js",
+      "sha256": "550dc4774431a534d8ad4d14f17f6206602d7f75fb1c665544b46797a0536d33",
+      "size": 3669
     },
     {
       "path": "modules/ai-change-applier/validators.js",
@@ -4241,8 +4246,8 @@
     },
     {
       "path": "preview/official-scenarios-bundle.js",
-      "sha256": "77abe8a6e2c692ba40a07a5983363fce89a421fe016a08ff83c0ae91aa698a7d",
-      "size": 92832742
+      "sha256": "39fcd12e9330c9e11d5458958c29fe899a0d9dfd2424837a19132eb84033e814",
+      "size": 92830427
     },
     {
       "path": "preview/opening-redesign-preview.html",
@@ -4336,8 +4341,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
-      "sha256": "0ca132c07a5da8a7b68c7d23622d28cb32ceb19ab9d0fabe8c1bc49be85e6eaf",
-      "size": 16406927
+      "sha256": "493e204863b05fe57a3f4f46ce4b86945d54b22f6348f281eb94257a7c86194c",
+      "size": 16406727
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
@@ -4441,8 +4446,8 @@
     },
     {
       "path": "scenarios/shaosong-jianyan-1127.js",
-      "sha256": "569d2c908983f88f6d3522ec415ced30e626c5ab07406c37ee09af48c30ed80d",
-      "size": 50893934
+      "sha256": "9332e28a4d36e41ec6b3dd662415f94df08f861b5ca01f1ca696429affff81dd",
+      "size": 50892049
     },
     {
       "path": "scenarios/tang840-840.js",
@@ -4451,8 +4456,8 @@
     },
     {
       "path": "scenarios/tianqi7-1627.js",
-      "sha256": "b922c65db5321aa1698252922cd880e939010cc342d629f2e892e6d4c3d652a7",
-      "size": 10026186
+      "sha256": "85688308c575b52352d41ec9a4023940bef8f79b11ef284315e3786cd0972feb",
+      "size": 10025756
     },
     {
       "path": "schemas/sc1.schema.json",
@@ -4481,8 +4486,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "2076cc94a0300e8e985ab25ca2597364efb54ec391ce784c68e45d83f174ddb6",
-      "size": 390895
+      "sha256": "271c5ff89b21078df24d70201664739960d2975f0c982ad4ad55d8391bc5ac68",
+      "size": 391047
     },
     {
       "path": "styles.css",
@@ -5146,8 +5151,8 @@
     },
     {
       "path": "tm-endturn-agent-write-tools.js",
-      "sha256": "5c8104d5c3c25114ff38f789c69d73881955d4dbc5d991005d995895693e7e7e",
-      "size": 73123
+      "sha256": "3a15c2163282dbab8c70eb34f4cc9bc477035e70b10e9f41bd164559ac797f08",
+      "size": 73190
     },
     {
       "path": "tm-endturn-ai-context.js",
@@ -5246,8 +5251,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "a0a3a3ab4e30ee983ea438915b392fc8e849484e64015ec841dacc27825d1280",
-      "size": 364318
+      "sha256": "28773e79c582bbb85e41e06e466492c7508d0bbead3f4fa29ca8dd5d8c2fa91c",
+      "size": 364528
     },
     {
       "path": "tm-endturn-province.js",
@@ -5591,8 +5596,8 @@
     },
     {
       "path": "tm-hongyan-office.js",
-      "sha256": "7c061db65fd41c9e747855273d88857fc8018e8401aeb2aca2bad7585f79cd68",
-      "size": 115027
+      "sha256": "c70fde338b6fd02a648b13d8cef8556884a8d6f39d6993549f5183493c49ae9f",
+      "size": 117910
     },
     {
       "path": "tm-hooks-tracker.js",
@@ -5916,8 +5921,8 @@
     },
     {
       "path": "tm-map-locations.js",
-      "sha256": "992a964ce998b6aa44acaf167a567098daa2de86dfe90a1773d7689e4b5ffca8",
-      "size": 13727
+      "sha256": "c8f2fffc683619de7ba9fad75e977d36fff56e3a341bb99fcf07afcc7f56589c",
+      "size": 14552
     },
     {
       "path": "tm-map-realm-layout.js",
@@ -6321,8 +6326,8 @@
     },
     {
       "path": "tm-official-scenario-bundle.js",
-      "sha256": "99e7df3ee186c933f8ad64a82c8a1924e0dcb73ddef5800bb1e1b9dc9859a40b",
-      "size": 92833071
+      "sha256": "be1be2aeae2fecf1a8eb4d3e1ab86a1568cd3f2f9e22a1c67dfb04d95f212e61",
+      "size": 92830756
     },
     {
       "path": "tm-official-scenario-loader.js",
@@ -6671,7 +6676,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "b1476ee92d09b13a4ab64cd4ff8b7e291b4b0db06d6a26caeb79b2954f5bb8b4",
+      "sha256": "2943b727e77ab6163d0af8a23779b736e723e1ee123df1801551675940f6a5b5",
       "size": 140397
     },
     {

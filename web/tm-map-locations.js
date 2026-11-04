@@ -3,6 +3,8 @@
   'use strict';
   var cache = new WeakMap();
   var SCHEMA = 'source-text-location-v2';
+  // 写的是去向，不是人在哪
+  var GOING = /待赴任|路上|途中|往来/;
   function norm(value) { return typeof value === 'string' ? value.trim().replace(/（/g, '(').replace(/）/g, ')') : ''; }
   // 有地块的地图都绑定。写了契约的（天启、绍宋）另有别名、粗区和行在口径；没写的（晚唐、工坊剧本）只认地块的名
   function enabled(map) { return !!(map && Array.isArray(map.regions) && map.regions.length); }
@@ -44,14 +46,27 @@
     function idsFor(key) { return (idx.names.get(key) || []).filter(function (r) { return !r.factionId || r.factionId === factionId; }).map(function (r) { return r.id; }); }
     if (!raw) return result('unresolved', [], 'no-location-text');
     if (idx.ids.has(raw)) return result('resolved', [raw], 'explicit-region-id');
-    // A destination, future biography or extinct character is not a present location.
-    if (kind === 'character' && /已殁|已故|已卒|已死|\d{4}.*(?:归后|年后)|待赴任|北上路上|北行途中|往来/.test(raw)) return result('unresolved', [], 'not-a-current-point');
-    var direct = idsFor(raw);
+    // A future biography or extinct character is not a present location.
+    if (kind === 'character' && /已殁|已故|已卒|已死|\d{4}.*(?:归后|年后)/.test(raw)) return result('unresolved', [], 'not-a-current-point');
+    // 「札布让·往来玛域道」：去向之前的才是人在哪；整段都是去向（「北上路上」「往来大理」）就没有落点
+    var place = raw;
+    if (kind === 'character' && GOING.test(raw)) {
+      var clauses = [];
+      raw.split(/[·・]/).some(function (part) { if (GOING.test(part)) return true; clauses.push(part); return false; });
+      place = clauses.join('·');
+      if (!place) return result('unresolved', [], 'not-a-current-point');
+    }
+    var direct = idsFor(place);
+    // 地块本名压过别块的别名：「庆州」是宋的庆州，不和别名叫庆州的契丹庆州两可
+    if (unique(direct).length > 1) {
+      var named = unique(direct).filter(function (id) { return idx.ids.get(id).name === place; });
+      if (named.length === 1) direct = named;
+    }
     if (direct.length) return result(unique(direct).length === 1 ? 'resolved' : 'ambiguous', direct, 'exact-name-or-alias');
-    var exactArea = idx.areaNames.get(raw);
+    var exactArea = idx.areaNames.get(place);
     if ((map.locationBindingContract || {}).exactAreaPriority && exactArea) return result('area', exactArea, 'explicit-area-not-exact-point');
     // Parentheses describe alternatives or plans; do not let a longer future place win.
-    var head = raw.split('(')[0].trim();
+    var head = place.split('(')[0].trim();
     var tokens = head.split(/[·／/、，,；;\s]+/).filter(Boolean), hits = [];
     tokens.forEach(function (token) { hits = hits.concat(idsFor(token)); });
     if (!hits.length) {

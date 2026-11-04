@@ -3,10 +3,14 @@ import { _aiPolicyText, _aiPolicyAmount, _aiPolicyRegion, _aiPolicyRatioLabel, _
 /// <reference path="../../types.d.ts" />
 // Behavior-preserving core migrated from the former origin classic script.
 import { createFiscalPosting } from './fiscal-posting.js';
+import { createTravelRoute } from './travel-route.js';
 export function createCore(deps) {
   if (!deps || !deps.global) throw new Error('[AIChangeApplier] core dependencies missing');
   var global = deps.global;
   var _FiscalPosting = createFiscalPosting(global);
+  var _advanceTravelAlongRoute = createTravelRoute(global, function(G, ch) {
+    _syncCharacterLocationMirrors(G, ch, { location: ch.location, regionId: ch.regionId, mapRegionId: ch.mapRegionId }, []);
+  }).advance;
   var _modules = { validators: null, reconcile: null };
 
   'use strict';
@@ -1422,7 +1426,7 @@ export function createCore(deps) {
           return;
         }
         // 启动走位·到达后再就任（由 travel tick 完成）
-        var days = oa.estimatedDays || _estimateTravelDays(ch.location, oa.toLocation);
+        var days = _routeTravelDays(ch.location, oa.toLocation) || oa.estimatedDays || _estimateTravelDays(ch.location, oa.toLocation);
         ch._travelTo = oa.toLocation;
         ch._travelFrom = ch.location;
         ch._travelStartTurn = G.turn || 0;
@@ -2242,18 +2246,23 @@ export function createCore(deps) {
     // 沿地图走的真实路程；地图缺或地名对不上，calcLetterDays 自己退回粗估
     try {
       if (typeof global.calcLetterDays === 'function') {
-        var days = global.calcLetterDays(from, to, 'normal');
+        var days = global.calcLetterDays(from, _travelTargetOf(from, to), 'normal');
         if (days > 0) return days;
       }
     } catch(_) {}
     return 20;  // 保底
   }
 
+  // 目的地是粗区时，路程算到要落脚的那一块
+  function _travelTargetOf(from, to) {
+    return typeof global._tmRouteTarget === 'function' ? global._tmRouteTarget(from, to) : to;
+  }
+
   // 两头都在地图上的真实路程天数，否则 0。AI 不知道路有多远，有地图时不听它估的
   function _routeTravelDays(from, to) {
     try {
       if (!from || !to || typeof global._ltRouteKm !== 'function') return 0;
-      return global._ltRouteKm(from, to) > 0 ? _estimateTravelDays(from, to) : 0;
+      return global._ltRouteKm(from, _travelTargetOf(from, to)) > 0 ? _estimateTravelDays(from, to) : 0;
     } catch(_) { return 0; }
   }
 
@@ -2771,54 +2780,6 @@ export function createCore(deps) {
     return { arrived: arrived, inflight: inflight };
   }
 
-  // 粗区（「陕西」）取路程最近的一块，只为有个方向；到了还写原文
-  function _travelRegionOf(G, map, route, text, from) {
-    var ids = global.TMMapLocations.placeRegionIds(text, G);
-    if (ids.length === 1) return ids[0];
-    if (!ids.length || !from) return '';
-    var row = route.routeDays(map, from), best = '', bestKm = Infinity;
-    ids.forEach(function(id) { var r = row.get(String(id)); if (r && r.km < bestKm) { best = id; bestKm = r.km; } });
-    return best;
-  }
-
-  // 走在路上：按走过的比例落到路上那一块，人物在最小地块之间一块块过去。
-  // 只动所在地，抵达和就任照旧在到期那一回合。两头落不到地块、或地图上走不通（隔海）的不走这一步，到期直接抵达。
-  function _advanceTravelAlongRoute(G, ch, daysPassed, daysLeft) {
-    try {
-      var locs = global.TMMapLocations, route = global.TM && global.TM.MapRouteDays, map = G.mapData || G.map;
-      if (!locs || !locs.placeRegionIds || !route || !route.planRoute || !map) return;
-      if (!ch._travelFrom) ch._travelFrom = ch.location || '';
-      var ids = locs.placeRegionIds(ch._travelFrom, G);
-      var from = ids.length === 1 ? ids[0] : '';
-      if (!from) return;
-      var to = _travelRegionOf(G, map, route, ch._travelTo, from);
-      if (!to || to === from) return;
-      var plan = route.planRoute(map, from, to, { mode: 'land' });
-      if (!plan || plan.status !== 'reachable' || !Array.isArray(plan.segments) || !plan.segments.length) return;
-      var sig = from + '|' + to + '|' + (ch._travelStartTurn == null ? '' : ch._travelStartTurn);
-      var leg = (ch._travelLeg && ch._travelLeg.sig === sig) ? ch._travelLeg : { sig: sig, doneDays: 0, km: 0 };
-      leg.doneDays += daysPassed;
-      // 走过的路不退回去：别的逻辑把剩余天数改大时，人不往回走
-      leg.km = Math.max(leg.km, plan.km * leg.doneDays / (leg.doneDays + Math.max(0, daysLeft)));
-      ch._travelLeg = leg;
-      var walked = 0, at = from;
-      for (var i = 0; i < plan.segments.length - 1; i++) {   // 终点要等到期才到
-        walked += Number(plan.segments[i].km) || 0;
-        if (walked > leg.km) break;
-        at = plan.segments[i].toRegionId;
-      }
-      var here = locs.placeRegionIds(ch.location, G);
-      if (here.length === 1 && String(here[0]) === String(at)) return;   // 还在这一块：留着原来细到宫室的写法
-      var row = route.resolveRegion(map, at);
-      if (!row || row.status !== 'resolved') return;
-      ch.location = row.region.name || String(at);
-      locs.sync(ch, 'character', G);
-      _syncCharacterLocationMirrors(G, ch, { location: ch.location, regionId: ch.regionId, mapRegionId: ch.mapRegionId }, []);
-    } catch (e) {
-      (window.TM && TM.errors && TM.errors.captureSilent) && TM.errors.captureSilent(e, 'travelTick] along route');
-    }
-  }
-
   // 到达落地（天数到期 / 即时抵达对账 两处复用·移动对账层 S3 抽出 2026-05-28）
   // 调用前 ch._travelTo 等走位字段须已就位；本函数落 location + 自动就任 + 三处播报 + 清字段。
   function _arriveCharNow(G, ch, dateText) {
@@ -2831,11 +2792,13 @@ export function createCore(deps) {
       var reason = ch._travelReason || '';
       var assignConcurrent = !!ch._travelAssignConcurrent || /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(reason + ' ' + assignPost);
 
-      ch.location = toLoc;
+      // 人落到最小地块：目的地写粗区的落在最近的一块，播报仍用原文
+      var landing = typeof global._tmLandingPlace === 'function' ? global._tmLandingPlace(fromLoc || ch.location, toLoc) : toLoc;
+      ch.location = landing;
       // 绑定地块是附带动作，出错不许打断后面的就任和播报
       try { if (global.TMMapLocations) global.TMMapLocations.sync(ch, 'character', G); }
       catch(_bindE) { (window.TM && TM.errors && TM.errors.captureSilent) && TM.errors.captureSilent(_bindE, 'travelTick] arrival binding'); }
-      _syncCharacterLocationMirrors(G, ch, { location: toLoc, regionId: ch.regionId, mapRegionId: ch.mapRegionId }, []);
+      _syncCharacterLocationMirrors(G, ch, { location: landing, regionId: ch.regionId, mapRegionId: ch.mapRegionId }, []);
 
       // 自动就任·仅当 _travelAssignPost 存在
       if (assignPost) {
@@ -2904,7 +2867,7 @@ export function createCore(deps) {
       delete ch._travelElapsedDays;
       delete ch._travelExpectedDays;
       delete ch._travelLeg;
-      _syncCharacterLocationMirrors(G, ch, { location: toLoc }, [
+      _syncCharacterLocationMirrors(G, ch, { location: landing }, [
         '_travelTo',
         '_travelFrom',
         '_travelStartTurn',

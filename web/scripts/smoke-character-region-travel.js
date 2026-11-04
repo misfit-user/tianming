@@ -4,6 +4,7 @@
 // 先前赴任、召回是人留在原地等天数到期，然后直接到目的地；AI 写 new_location 更是瞬移。
 // 现在：路上按走过的比例落到那一块，到期才抵达，抵达和就任的老链不动；
 // AI 下令移动，两头都在地图上就走真实路程；对不上地图的、同一地块的、玩家定了即刻抵达的直接到。
+// 目的地写粗区的，路程算到区内最近的一块，到了也落在这一块；「军中」这类不是地方的字眼，人留在原来那块，字接在后面。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -153,12 +154,53 @@ sandbox.GM = world();
 y = who('袁崇焕');
 sandbox._tmMoveCharToward(y, '东南', '');
 assert(y._travelTo === '东南', '目的地是粗区也上路');
+assert(y._travelRemainingDays === sandbox.calcLetterDays('蓟州·三屯营', '应天府', 'normal'), '路程算到要落脚的那一块');
 tick(10);
 tick(10);
 assert(y.location === '开封府', '朝粗区里最近的一块走');
 y._travelRemainingDays = 1;
 tick(10);
-assert(y.location === '东南' && !y.regionId, '到了还写原文，不绑唯一一块');
+assert(y.location === '应天府' && y.regionId === 'r-nj', '到了落到最小地块，不留粗区');
+assert(!y._travelTo, '行程清干净了');
+
+sandbox.GM = world();
+y = who('袁崇焕');
+y.location = '应天府';
+assert(sandbox._tmMoveCharToward(y, '东南', '') === 'arrived' && y.location === '应天府' && !y._travelTo, '已在粗区里：不动');
+
+sandbox.GM = world();
+y = who('袁崇焕');
+y.location = '东南';
+assert(sandbox._tmMoveCharToward(y, '顺天府', '') === 'traveling', '从粗区动身也上路');
+tick(10);
+assert(sandbox.TMMapLocations.placeRegionIds(y.location, sandbox.GM).length === 1, '从粗区动身，路上就落到具体地块了');
+y._travelRemainingDays = 1;
+tick(10);
+assert(y.location === '顺天府' && y.regionId === 'r-bj', '从粗区动身也到得了');
+
+sandbox.GM = world();
+y = who('袁崇焕');
+y.location = '保定府';
+assert(sandbox._tmMoveCharToward(y, '军中', '') === 'arrived' && y.location === '保定府·军中', '「军中」不是地方：人还在原来那块，字接在后面');
+sandbox.TMMapLocations.syncCharacters(sandbox.GM);
+assert(y.regionId === 'r-bd', '写「军中」的还绑着那一块');
+assert(sandbox._tmMoveCharToward(y, '北上路上', '') === 'arrived' && y.location === '保定府·北上路上', '「路上」也一样，换字不叠字');
+sandbox.TMMapLocations.syncCharacters(sandbox.GM);
+assert(y.regionId === 'r-bd', '写「路上」的也绑着那一块');
+assert(sandbox.calcLetterDays('顺天府', y.location, 'normal') === sandbox.calcLetterDays('顺天府', '保定府', 'normal'), '给他写信按那一块算路程');
+
+sandbox.GM = world();
+y = who('袁崇焕');
+y.location = '保定府';
+sandbox.applyAITurnChanges({ char_updates: [{ name: '袁崇焕', travelTo: { toLocation: '军前', estimatedDays: 3, reason: '' } }] });
+assert(y._travelRemainingDays === 3, 'AI 让他去「军前」：地图上算不出，听 AI 估的');
+tick(10);
+assert(y.location === '保定府·军前' && y.regionId === 'r-bd', '到了也落在动身那一块');
+
+sandbox.GM = world();
+y = who('袁崇焕');
+y.location = '保定府';
+assert(sandbox._tmMoveCharToward(y, '太行山·忠义寨', '') === 'arrived' && y.location === '太行山·忠义寨', '真地名对不上地图的照写，不冒充还在原地');
 
 sandbox.GM = world({ _playerDirectives: [{ type: 'rule', content: '人事调动即刻抵达' }] });
 y = who('袁崇焕');
@@ -182,6 +224,10 @@ sandbox.GM = world();
 y = who('袁崇焕');
 sandbox.applyAITurnChanges({ char_updates: [{ name: '袁崇焕', travelTo: { toLocation: '广州府', estimatedDays: 2, reason: '急召' } }] });
 assert(y._travelRemainingDays === total, 'AI 说两日：地图上要走多久就走多久');
+sandbox.GM = world();
+y = who('袁崇焕');
+sandbox.applyAITurnChanges({ office_assignments: [{ name: '袁崇焕', post: '巡抚', dept: '', action: 'appoint', toLocation: '广州府', estimatedDays: 2, reason: '' }] });
+assert(y._travelTo === '广州府' && y._travelRemainingDays === total, '赴任也一样：AI 说两日，地图上要走多久就走多久');
 sandbox.GM = world();
 y = who('袁崇焕');
 sandbox.applyAITurnChanges({ char_updates: [{ name: '袁崇焕', travelTo: { toLocation: '太行山', estimatedDays: 7, reason: '' } }] });

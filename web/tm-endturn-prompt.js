@@ -1368,7 +1368,7 @@
     tp += '  ※ 玩家诏令含赴某地/调某地/外放/召还/出使/迁徙/巡幸 → AI 必须在【本回合】char_updates.travelTo 或 office_assignments.toLocation 中输出·不可仅在 zhengwen/events 中叙事。\n';
     tp += '    · 错：仅写"令袁崇焕赴宁远"·不返 travelTo → 走位不会启动·下回合 AI 才补返·导致玩家感觉"诏令晚一回合才生效"\n';
     tp += '    · 对：本回合 char_updates:[{name:"袁崇焕",travelTo:{toLocation:"宁远",estimatedDays:5,reason:"督师辽东"}}] + zhengwen 叙事"领命启程"\n';
-    tp += '  ※ estimatedDays = 从下旨当日起算的【总】天数（参考剧本驿路·急递 400 里/日·常驿 200 里/日）。系统会在本回合 endTurn 自动扣 ' + (typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30) + ' 天·不要 AI 自己扣·照实写总天数。\n';
+    tp += '  ※ estimatedDays = 从下旨当日起算的【总】天数（参考剧本驿路·急递 400 里/日·常驿 200 里/日）。两头都在地图上时系统按真实路程重算，这个数只在地名对不上地图时才用。系统会在本回合 endTurn 自动扣 ' + (typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30) + ' 天·不要 AI 自己扣·照实写总天数。\n';
     tp += '  ※ 已在【旅程在途】列出的角色·不得再次输出 travelTo（会被 applier 幂等保护拒绝并记"复诏催程"）·若需改目的地·先写 reason 说明并直接给新 travelTo·applier 会按新终点重启。\n';
     tp += '  ※ 在途角色不得在 zhengwen/events/npc_actions 中被叙事为"在京视事/出席朝议/参与议政"——他人在路上。可叙事其旅途见闻、地方迎送、信使追及。\n';
     // 移动对账层·本回合玩家明确下达的移动令（确定性捕获·逐条必须输出 travelTo·否则引擎自动兜底落地）
@@ -3297,7 +3297,7 @@
     sysP += '\n\n每条npc_action必须包含：';
     sysP += '\n  name: 行动者  action: 做了什么(具体30字)  target: 对谁  result: 结果';
     sysP += '\n  behaviorType: 上述类型之一  publicReason: 对外说辞  privateMotiv: 真实动机（可能与说辞不同）';
-    sysP += '\n  new_location: 如果行动导致角色移动（如出巡/流放/赴任/出逃），填写新所在地';
+    sysP += '\n  new_location: 如果行动导致角色移动（如出巡/流放/赴任/出逃），填写新所在地。写地图上的州府地名；「军中」「路上」「闲居」不是地方，人在路上用 travelTo';
     sysP += '\n\n生成原则：';
     sysP += '\n- 忠臣：进谏(petition)、弹劾奸佞(investigate)、操练军队(train_troops)——正确但令人烦';
     sysP += '\n- 权臣：拉拢朋党(request_loyalty)、排挤异己(dismiss/slander)、把持朝政(obstruct)';

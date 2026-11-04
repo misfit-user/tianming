@@ -20,10 +20,10 @@
         "factions": 22,
         "regions": 307
       },
-      "bytes": 10026186,
-      "sha256": "b922c65db5321aa1698252922cd880e939010cc342d629f2e892e6d4c3d652a7",
-      "sourceBytes": 16389672,
-      "sourceSha256": "09506bba5d086818e36c5f22b8f36d453ae2ce10408566e62457cddf6a42b1ab"
+      "bytes": 10025756,
+      "sha256": "85688308c575b52352d41ec9a4023940bef8f79b11ef284315e3786cd0972feb",
+      "sourceBytes": 16389472,
+      "sourceSha256": "bb1232b7cdcd797ad8d9c9de4f87ba06d8bce4f9996486b335e0b21ab4cb4f37"
     },
     {
       "key": "shaosong",
@@ -43,10 +43,10 @@
         "factions": 39,
         "regions": 566
       },
-      "bytes": 50893934,
-      "sha256": "569d2c908983f88f6d3522ec415ced30e626c5ab07406c37ee09af48c30ed80d",
-      "sourceBytes": 91000658,
-      "sourceSha256": "02b3a900caaa60176c6a64e641bd74c66456e13986fb9feec58cd5e7baa698d8"
+      "bytes": 50892049,
+      "sha256": "9332e28a4d36e41ec6b3dd662415f94df08f861b5ca01f1ca696429affff81dd",
+      "sourceBytes": 90999591,
+      "sourceSha256": "b78a61ded95122f628e4701adf5f386b7f9dd743e789234e531cc4964bab90d9"
     },
     {
       "key": "tang840",

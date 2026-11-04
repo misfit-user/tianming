@@ -153,25 +153,36 @@ function _ltGreatCircleKm(a, b) {
   return 6371 * 2 * Math.asin(Math.sqrt(Math.min(1, h)));
 }
 
-/** 两段地名之间的路程（公里）。地图缺或地名对不上返回 null，出错也只返回 null，不许拖垮写信和过回合 */
+function _ltMapTools() {
+  var map = GM.mapData || GM.map;
+  var route = TM.MapRouteDays;
+  var locs = (typeof window !== 'undefined' && window.TMMapLocations) || (typeof TMMapLocations !== 'undefined' ? TMMapLocations : null);
+  return (map && route && locs) ? { map: map, route: route, locs: locs } : null;
+}
+
+/**
+ * 两段地名之间的路程（公里）。粗区（「江淮」）说不准人在哪一块，取各种可能的中位数：
+ * 取最近的一块的话，江淮三十几块里总有一块贴着应天，信一日就到了。
+ * 地图缺或地名对不上返回 null，出错也只返回 null，不许拖垮写信和过回合
+ */
 function _ltRouteKm(fromLoc, toLoc) {
   try {
-    var map = GM.mapData || GM.map;
-    var route = TM.MapRouteDays;
-    var locs = (typeof window !== 'undefined' && window.TMMapLocations) || (typeof TMMapLocations !== 'undefined' ? TMMapLocations : null);
-    if (!route || !locs || !map) return null;
-    var from = locs.placeRegionIds(fromLoc, GM);
-    var to = locs.placeRegionIds(toLoc, GM);
+    var tools = _ltMapTools();
+    if (!tools) return null;
+    var from = tools.locs.placeRegionIds(fromLoc, GM);
+    var to = tools.locs.placeRegionIds(toLoc, GM);
     if (!from.length || !to.length) return null;
-    var cache = _ltRouteCache(map);
-    var best = null;
+    var cache = _ltRouteCache(tools.map);
+    var all = [];
     from.forEach(function(a) {
       to.forEach(function(b) {
-        var km = _ltRegionKm(map, cache, route, a, b);
-        if (km != null && (best == null || km < best)) best = km;
+        var km = _ltRegionKm(tools.map, cache, tools.route, a, b);
+        if (km != null) all.push(km);
       });
     });
-    return best;
+    if (!all.length) return null;
+    all.sort(function(x, y) { return x - y; });
+    return (all[(all.length - 1) >> 1] + all[all.length >> 1]) / 2;
   } catch (e) {
     try { if (TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, '_ltRouteKm'); } catch (_) {}
     return null;
@@ -184,6 +195,59 @@ function _ltBindQuietly(run) {
   catch (e) { try { if (TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, '_tmMoveCharToward'); } catch (_) {} }
 }
 
+// 不是地方的字眼：写这些的人还在原来那块。真地名对不上地图的（某个小县）不算，照写，按对不上地图的规矩走
+var LT_NOT_A_PLACE = /军中|军前|行伍|行营|营中|路上|途中|往来|罢闲|闲居|赋闲|致仕|归隐|隐居|在野|乡里|故里|家居|狱中|在押|流亡|逃亡/;
+
+function _ltRegionName(tools, id) {
+  var row = tools.route.resolveRegion(tools.map, id);
+  return (row && row.region && row.region.name) || '';
+}
+
+function _ltQuietError(e, where) {
+  try { if (TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, where); } catch (_) {}
+}
+
+/** 路程算到哪：粗区只能落在其中一块，取离出发地最近的；已经在区内就是原地。其余照写 */
+function _tmRouteTarget(fromLoc, toLoc) {
+  var to = String(toLoc == null ? '' : toLoc).trim();
+  try {
+    var tools = _ltMapTools();
+    if (!tools || !to || !fromLoc) return to;
+    var toIds = tools.locs.placeRegionIds(to, GM);
+    if (toIds.length < 2) return to;
+    var fromIds = tools.locs.placeRegionIds(fromLoc, GM);
+    if (!fromIds.length) return to;
+    if (fromIds.length === 1 && toIds.indexOf(fromIds[0]) >= 0) return String(fromLoc);
+    var cache = _ltRouteCache(tools.map), best = '', bestKm = Infinity;
+    fromIds.forEach(function(a) {
+      toIds.forEach(function(b) {
+        var km = _ltRegionKm(tools.map, cache, tools.route, a, b);
+        if (km != null && km < bestKm) { best = b; bestKm = km; }
+      });
+    });
+    return (best && _ltRegionName(tools, best)) || to;
+  } catch (e) {
+    _ltQuietError(e, '_tmRouteTarget');
+    return to;
+  }
+}
+
+/** 人到了该写成什么：落到最小地块。粗区落在最近的一块；「军中」这类不是地方的字眼，人还在原来那块，字接在后面 */
+function _tmLandingPlace(fromLoc, toLoc) {
+  var target = _tmRouteTarget(fromLoc, toLoc);
+  try {
+    var tools = _ltMapTools();
+    if (!tools || !target || !fromLoc || !LT_NOT_A_PLACE.test(target)) return target;
+    if (tools.locs.placeRegionIds(target, GM).length) return target;
+    var fromIds = tools.locs.placeRegionIds(fromLoc, GM);
+    var base = fromIds.length === 1 ? _ltRegionName(tools, fromIds[0]) : '';
+    return base ? base + '·' + target : target;
+  } catch (e) {
+    _ltQuietError(e, '_tmLandingPlace');
+    return target;
+  }
+}
+
 /**
  * 让某人去某地（AI 下令移动都走这里）：两头都在地图上就真走这段路，路上一块块过去；
  * 同一地块、对不上地图的、玩家定了即刻抵达的直接到。已在赴同一处的不重启行程。返回 'arrived' 或 'traveling'
@@ -194,13 +258,14 @@ function _tmMoveCharToward(ch, toLoc, reason, opts) {
   if (ch._travelTo && _isSameLocation(ch._travelTo, to)) return 'traveling';
   var here = ch.location || '';
   var instant = typeof _hasInstantArrivalRule === 'function' && _hasInstantArrivalRule(GM);
-  var km = (here && !instant && !ch._travelAssignPost) ? _ltRouteKm(here, to) : null;
+  var target = _tmRouteTarget(here, to);
+  var km = (here && !instant && !ch._travelAssignPost) ? _ltRouteKm(here, target) : null;
   var mustWalk = !!(opts && opts.traveling) && here && !_isSameLocation(here, to);
   if (km > 0 || mustWalk) {
     ch._travelTo = to;
     ch._travelFrom = here;
     ch._travelStartTurn = GM.turn || 0;
-    ch._travelRemainingDays = calcLetterDays(here, to, 'normal');
+    ch._travelRemainingDays = calcLetterDays(here, target, 'normal');
     ch._travelReason = reason || '';
     delete ch._travelArrival;
     delete ch._travelElapsedDays;
@@ -214,8 +279,9 @@ function _tmMoveCharToward(ch, toLoc, reason, opts) {
     _ltBindQuietly(function(locs) { locs.syncDestination(ch, 'character', GM); });
     return 'traveling';
   }
-  ch.location = to;
-  _ltBindQuietly(function(locs) { locs.sync(ch, 'character', undefined, to); });
+  var landing = _tmLandingPlace(here, to);
+  ch.location = landing;
+  _ltBindQuietly(function(locs) { locs.sync(ch, 'character', undefined, landing); });
   return 'arrived';
 }
 

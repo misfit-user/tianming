@@ -93,6 +93,11 @@ assert(ids('江淮').length === 2, '粗区有多个候选');
 assert(!same('江淮', '应天府'), '粗区不算同地，哪怕范围里含这一块');
 assert(same('江淮', '江淮'), '写法一字不差的还算同地');
 assert(ids('太行山·忠义寨').length === 0, '地图上没有的地方');
+assert(ids('应天府·往来开封府').join() === 'r-nj', '「应天府·往来开封府」：去向之前的才是人在哪');
+assert(same('应天府·往来开封府', '南京') && !same('应天府·往来开封府', '开封府'), '往来的人按他那一头算同地');
+assert(ids('往来开封府').length === 0 && ids('北上路上·投开封府').length === 0, '整段都是去向：没有落点，不把目的地当所在');
+assert(ids('赴开封府途中').length === 0, '路上的不算到了目的地');
+assert(ids('开封府·已殁').length === 0, '已殁的整段不算');
 assert(same('太行山·忠义寨', '太行山·忠义寨'), '对不上地图：写法相同算同地');
 assert(same('太行山', '太行山·忠义寨'), '对不上地图：退回文字比');
 assert(!same('太行山·忠义寨', '顺天府'), '对不上地图的不会和地图上的地方算同地');
@@ -171,6 +176,12 @@ L.syncWorld(sandbox.GM);
 assert(sandbox.GM.chars[0].regionId === 'r-bj', '写「京师」的绑到京城那一块');
 assert(sandbox.GM.chars[1].regionId === 'r-kf', '势力专属别名绑到它那一块');
 assert(!Object.keys(before).some((k) => /places|cache/i.test(k)), '不往地图上写东西');
+
+console.log('六之二、地块本名压过别块的别名');
+sandbox.GM = ming();
+sandbox.GM.mapData.regions.push({ id: 'r-q1', name: '庆州' }, { id: 'r-q2', name: '契丹庆州', aliases: ['庆州'] });
+assert(ids('庆州').join() === 'r-q1', '「庆州」是叫庆州的那一块');
+assert(ids('契丹庆州').join() === 'r-q2', '写全了的还是契丹庆州');
 
 console.log('七、老档读进来绑一次');
 assert(/'map location binding'[\s\S]{0,120}TMMapLocations\.syncWorld\(GM\)/.test(read('tm-save-lifecycle.js')), '读档绑定且出错不拖垮读档');

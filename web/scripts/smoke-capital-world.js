@@ -124,6 +124,14 @@ assert(!same('建康府', '应天府'), '建康府不是应天府');
 assert(!same('亳州·随驾', '应天府'), '随驾亳州不在京');
 
 console.log('七、书信看玩家本人所在');
+// 走老面板的入口：新前端的传参接缝只在新前端分支上有，这条路两边都有
+const send = (content, targets) => {
+  sandbox.GM._ltMultiMode = true;
+  sandbox.GM._ltMultiTargets = targets.slice();
+  sandbox._$ = (id) => (id === 'letter-textarea' ? { value: content } : null);
+  sandbox.sendLetter();
+  sandbox._$ = () => null;
+};
 const shaosong = () => ({
   turn: 3, _capital: '应天府', letters: [], items: [],
   mapData: { locationBindingContract: { courtCharacterId: 'c1' } },
@@ -140,7 +148,7 @@ const shaosong = () => ({
 sandbox.P = { playerInfo: { characterName: '赵构' } };
 sandbox.GM = shaosong();
 assert(sandbox._ltHerePlace() === '亳州·明道宫·九龙井侧', '玩家不在京：写实地');
-sandbox.sendLetter({ content: '卿等听旨', targets: ['韩世忠', '朱胜非', '陈东', '孟皇后', '鳥羽上皇', '时立爱'] });
+send('卿等听旨', ['韩世忠', '朱胜非', '陈东', '孟皇后', '鳥羽上皇', '时立爱']);
 const to = sandbox.GM.letters.map((l) => l.to);
 assert(!to.includes('韩世忠') && !to.includes('朱胜非'), '随驾、行在与天子同地：剔除，宜召对');
 assert(to.includes('陈东') && to.includes('孟皇后'), '玩家在亳州：应天府的臣子能写信');
@@ -154,7 +162,7 @@ sandbox.GM = { turn: 3, _capital: '京兆府·长安', letters: [], items: [], c
 ] };
 sandbox.P = { playerInfo: { characterName: '李瀍' } };
 assert(sandbox._ltHerePlace() === '京兆府·长安', '玩家在京：写京城名');
-sandbox.sendLetter({ content: '卿听旨', targets: ['李德裕', '何重顺'] });
+send('卿听旨', ['李德裕', '何重顺']);
 assert(sandbox.GM.letters.map((l) => l.to).join() === '何重顺', '晚唐：长安同城剔除，魏州能写');
 assert(sandbox.GM.letters[0].fromLocation === '京兆府·长安', '信从长安发出');
 

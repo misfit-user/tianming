@@ -657,7 +657,7 @@
             if (!nl.from || !nl.content) { _nlSkipMissing++; return; }
             // 验证from是远方NPC
             var _nlCh = findCharByName(nl.from);
-            var _cap = GM._capital || '京城';
+            var _cap = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城'));
             if (!_nlCh) { _nlSkipNoChar++; _dbg('[npc_letters] 找不到角色: ' + nl.from + '·跳过'); return; }
             if (_nlCh.isPlayer) { _nlSkipMissing++; return; }
             if (_nlCh.alive === false || _nlCh.dead) { _nlSkipMissing++; return; }
@@ -4559,7 +4559,7 @@
             //    fromLocation·导致 Section 3 不接管·UI 不显示「回书/摘入」按钮·日期渲染异常
             if (!GM.letters) GM.letters = [];
             var _actorCh = (typeof findCharByName === 'function') ? findCharByName(actor) : null;
-            var _capital = GM._capital || '京城';
+            var _capital = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城'));
             var _fromLoc = (_actorCh && _actorCh.location) || '远方';
             var _dpv1 = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
             var _nowD1 = (typeof getCurrentGameDay === 'function') ? getCurrentGameDay() : (turn-1)*_dpv1;
@@ -4587,7 +4587,7 @@
           } else if (it.type === 'condole' || it.type === 'celebrate_birthday' || it.type === 'farewell_feast' || it.type === 'welcome_feast') {
             // 批辛·吊唁/贺寿/饯行/接风 → 在京者阶下求见·在外者鸿雁附书（按在京与否路由）
             if (_actorChDp && typeof _tmIsForeignCourtChar === 'function' && _tmIsForeignCourtChar(_actorChDp)) return;
-            var _feCap = GM._capital || '京城', _feLoc = _actorChDp && _actorChDp.location;
+            var _feCap = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城')), _feLoc = _actorChDp && _actorChDp.location;
             if (!_feLoc || (typeof _isSameLocation === 'function' ? _isSameLocation(_feLoc, _feCap) : String(_feLoc) === String(_feCap))) {
               (GM._pendingAudiences = GM._pendingAudiences || []).push({ name: actor, reason: desc, turn: turn });   // arch-ok·dispatch 既有玩家求见队列写口(镜像 private_visit 分支)
             } else {
@@ -4703,7 +4703,7 @@
           if (diplomaticTypes.indexOf(it.type) >= 0) {
             if (!GM.letters) GM.letters = [];
             // R: 旧版缺 _npcInitiated/sentTurn/deliveryTurn·to 用"朝廷"与其它路径不一致·补齐
-            var _capital2 = GM._capital || '京城';
+            var _capital2 = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城'));
             var _dpv2 = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
             var _nowD2 = (typeof getCurrentGameDay === 'function') ? getCurrentGameDay() : (turn-1)*_dpv2;
             GM.letters.push({

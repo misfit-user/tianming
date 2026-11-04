@@ -628,7 +628,7 @@ async function genMemorialsAI(count){
     if (_good.length < Math.min(count, 2)) { _memRaw.forEach(function(m) { if (m && !_memIsIllegalPresenterName(m.from) && _good.indexOf(m) < 0) _good.push(m); }); }
     var parsed = _good;
     if (Array.isArray(parsed)) {
-      var capital = GM._capital || '京城';
+      var capital = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城'));
       var localMems = [];
       parsed.slice(0, count).forEach(function(m) {
         if (!m || _memIsIllegalPresenterName(m.from)) {
@@ -914,8 +914,8 @@ function _memorialSendReply(m, actionLabel) {
   if (_memMarkIllegalPresenter(m, 'reply')) return;
   var ch = findCharByName(m.from);
   if (!ch || !ch.location) return;
-  var capital = GM._capital || '京城';
-  if (_isSameLocation(ch.location, capital)) return; // 在京无需传书
+  var capital = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城'));
+  if (_isSameLocation(ch.location, capital)) return; // 同地无需传书
   var days = (typeof calcLetterDays === 'function') ? calcLetterDays(capital, ch.location, 'urgent') : 3;
   var dpv = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 15;
   var deliveryTurns = Math.max(1, Math.ceil(days / dpv));
@@ -1164,7 +1164,7 @@ function _summonForMemorial(memIdx){
   if (_memMarkIllegalPresenter(m, 'summon')) { renderMemorials(); return; }
   var ch=findCharByName(m.from);
   if(!ch){toast('找不到此人');return;}
-  var capital = GM._capital || '京城';
+  var capital = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城'));
   if (ch.location && !_isSameLocation(ch.location, capital)) {
     // 远方NPC——无法面询，提供三个选项
     var bg = document.createElement('div');
@@ -1186,7 +1186,7 @@ function _summonForMemorial(memIdx){
 function _summonRecall(name) {
   var ch = findCharByName(name);
   if (!ch) return;
-  var capital = GM._capital || '京城';
+  var capital = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城'));
   var days = (typeof calcLetterDays === 'function') ? calcLetterDays(capital, ch.location, 'urgent') : 5;
   var dpv = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 15;
   var travelTurns = Math.max(1, Math.ceil(days * 2 / dpv)); // 来回=信使到+人赶路

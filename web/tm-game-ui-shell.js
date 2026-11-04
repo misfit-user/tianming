@@ -322,7 +322,7 @@ function renderGameState(options){
       if (agRow) agRow.style.display = 'flex';
       var agSel = _$('letter-agent');
       if (agSel) {
-        var _cap2 = GM._capital || '京城';
+        var _cap2 = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城'));
         var _inKy = (GM.chars||[]).filter(function(c){ return c.alive !== false && (!c.location || _isSameLocation(c.location, _cap2)) && !c.isPlayer; });
         agSel.innerHTML = _inKy.map(function(c){ return '<option value="' + escHtml(c.name) + '">' + escHtml(c.name) + '（' + escHtml(c.title||'') + '）</option>'; }).join('');
       }

@@ -430,7 +430,7 @@ function _endTurn_collectInput() {
   });
 
   // 1.2: 诏令分流——检测涉及远方NPC的诏令，自动转为信件传递
-  var _capital = GM._capital || '京城';
+  var _capital = (typeof _ltHerePlace === 'function' ? _ltHerePlace() : (GM._capital || '京城'));
   GM._edictTracker.forEach(function(et) {
     if (et.turn !== GM.turn || et._deliveryChecked) return;
     et._deliveryChecked = true;

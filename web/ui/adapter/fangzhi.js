@@ -78,11 +78,61 @@ const flowOf = (claimed, actual, remit, retain, labels) => {
 const ZT_SEAL = { wonder: '观', disaster: '灾', player: '裁', event: '云', building: '营' };
 const REGION_ACTS = ['安民', '巡按', '调粮', '拟诏'];
 
+// 此地有谁。人物绑在最小地块上：在此的；正赶路、此刻走到这一块的（过境）；正往这里来的；
+// 写粗区（「江淮」）而范围含这一块的，只能说或在此。出逃、失踪的人不写，谁也不知道他在哪
+const travelTextOf = (c) => (typeof c._travelTo === 'string' ? c._travelTo : (c._travelTo && c._travelTo.toLocation) || '');
+const daysLeftOf = (c) => { const d = Number(c._travelRemainingDays); return d > 0 ? Math.ceil(d) : null; };
+function folkOf(regionIds) {
+  const g = G();
+  const L = w.TMMapLocations;
+  const out = { here: [], passing: [], coming: [], maybe: [] };
+  if (!L || !L.placeRegionIds) return out;
+  const want = new Set(regionIds.map(String));
+  for (const c of g.chars || []) {
+    if (!c || !c.name || c.alive === false || c._fled || c._missing) continue;
+    const at = L.placeRegionIds(c.location, g).map(String);
+    const to = travelTextOf(c);
+    if (at.length === 1 && want.has(at[0])) {
+      if (to) out.passing.push({ name: c.name, regionId: at[0], to, days: daysLeftOf(c) });
+      else out.here.push({ name: c.name, regionId: at[0], location: c.location });
+      continue;
+    }
+    if (to) {
+      const dest = L.placeRegionIds(to, g).map(String);
+      if (dest.length === 1 && want.has(dest[0])) out.coming.push({ name: c.name, regionId: dest[0], from: c.location || '', days: daysLeftOf(c) });
+      continue;
+    }
+    if (at.length > 1 && at.some((x) => want.has(x))) out.maybe.push({ name: c.name, location: c.location });
+  }
+  return out;
+}
+
 // 舆图拾取所得只是精简副本：按 id 换回地图原地块
 function regionOf(id) {
   const p = P8();
   if (!p || typeof p.findRegion !== 'function') return null;
   return p.findRegion(id) || null;
+}
+// 一段所在落到哪一块（人物窗点「方志」用）；粗区、对不上的没有答案
+export function regionIdOf(text) {
+  const L = w.TMMapLocations;
+  if (!L || !L.placeRegionIds || !text) return null;
+  const ids = L.placeRegionIds(text, G());
+  return ids.length === 1 ? ids[0] : null;
+}
+// 此地几人（舆图小签用）
+export function folkCount(id) {
+  const r = regionOf(id);
+  return r ? folkOf([r.id]).here.length : 0;
+}
+// 四邻：相邻的地块，各有几人；隶别家的写明
+function neighborsOf(p, r) {
+  const rows = (Array.isArray(r.neighbors) ? r.neighbors : []).map(regionOf).filter(Boolean);
+  const count = new Map();
+  folkOf(rows.map((x) => x.id)).here.forEach((x) => count.set(x.regionId, (count.get(x.regionId) || 0) + 1));
+  const owner = (x) => (typeof p.ownerName === 'function' ? String(p.ownerName(x) || '') : '');
+  const mine = owner(r);
+  return rows.map((x) => ({ id: x.id, name: p.regionTitle(x), count: count.get(String(x.id)) || 0, foreign: owner(x) && owner(x) !== mine ? owner(x) : '' }));
 }
 
 export function region(id) {
@@ -233,6 +283,7 @@ function build(p, r) {
     row('下辖子区', children.length ? children.map((x) => String(val(x && (x.name || x.title)) || val(x))).join('、') : '')
   ]);
   const vols = [
+    { key: 'renwu', seal: '人', name: '人物', sub: '此地有谁', folk: folkOf([r.id]), neighbors: neighborsOf(p, r) },
     { key: 'huyi', seal: '户', name: '户役志', sub: yizheng.length ? '户口簿籍 · 徭役丁田' : '户口簿籍', rows: huyi, sub2: yizheng.length ? { title: '役政', note: '徭役农政 · 丁田', rows: yizheng } : null,
       note: fullBasis ? '所列口数已含逃隐，实居之众尚未尽详。细分簿籍未备。' : '' },
     { key: 'caifu', seal: '赋', name: '财赋志', sub: '岁入库藏', rows: caifu, flow: flowOf(fc.claimedRevenue, fc.actualRevenue, fc.remittedToCenter, fc.retainedBudget, fc.isForecast ? ['解送', '留用', '未入'] : ['起运', '留用', '未征到']) },
@@ -241,7 +292,7 @@ function build(p, r) {
     { key: 'fengwu', seal: '物', name: '风物志', sub: '物产设施', rows: fengwu, grid: fengwuGrid },
     { key: 'yingzao', seal: '营', name: '营造志', sub: '已建之业 · 工役', works: worksOf(r, b) },
     b.liveDivision ? { key: 'zhang', seal: '账', name: '账本', sub: '赋税核算 · 公库 · 实绩 · 灾异', ledger: true } : null   // 点开才算（ledger）
-  ].filter((v) => v && ((v.rows && v.rows.length) || (v.grid && v.grid.length) || (v.works && v.works.length) || v.key === 'yingzao' || v.ledger));
+  ].filter((v) => v && ((v.rows && v.rows.length) || (v.grid && v.grid.length) || (v.works && v.works.length) || v.key === 'yingzao' || v.key === 'renwu' || v.ledger));
 
   return {
     id: r.id, head, band, rank: rankOf(p, r, b, circuit), vols, mine,
@@ -566,11 +617,21 @@ function buildCircuit(p, MC, c, clicked) {
       sum.mood != null ? { k: '民心', v: n(sum.mood), sub: moodG.mark || '', warn: !!p.gradeIsWarn('mood', moodG) } : null,
       sum.office != null ? { k: '吏治', v: n(sum.office), sub: offG.mark || '', warn: !!p.gradeIsWarn('office', offG) } : null
     ].filter((x) => x && x.v != null),
-    xiajing, xingshi, caiji, yingzao,
+    xiajing, xingshi, caiji, yingzao, renwu: circuitFolk(p, c),
     caijiFlow: own.length ? flowOf(first(sum.claimedRevenue, sum.compliance ? Number(sum.actualRevenue) / Number(sum.compliance) : null), sum.actualRevenue, sum.remittedToCenter, sum.retainedBudget, ['起运', '留用', '未征到']) : null,
     acts: viewer.player ? CIRCUIT_ACTS : [],
     canReassign: viewer.player && !!(w.TM && w.TM.DivisionReassign)
   };
+}
+// 此道有谁：按州分，人多的州在前
+function circuitFolk(p, c) {
+  const rows = c.members.map((m) => m.region).filter(Boolean);
+  const folk = folkOf(rows.map((r) => r.id));
+  const groups = new Map(rows.map((r) => [String(r.id), { id: r.id, name: p.regionTitle(r), here: [], passing: [] }]));
+  folk.here.forEach((x) => { const g = groups.get(x.regionId); if (g) g.here.push(x.name); });
+  folk.passing.forEach((x) => { const g = groups.get(x.regionId); if (g) g.passing.push(x.name); });
+  const list = [...groups.values()].filter((g) => g.here.length || g.passing.length).sort((a, b) => b.here.length - a.here.length || b.passing.length - a.passing.length);
+  return { total: folk.here.length, passing: folk.passing.length, coming: folk.coming.length, groups: list };
 }
 function officialOf(p, profile, own, sum, c, viewer) {
   const g = G();

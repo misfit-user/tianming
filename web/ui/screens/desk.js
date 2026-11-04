@@ -379,7 +379,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (g && g.tier !== 'pref') {
       const sub = g.tier === 'circuit' ? (fac && fac.name) || '' : (factionInfo(g.faction) || {}).type || '';
       replaceChildren(tip, h('b', g.name), h('small', realmChip(r.faction), sub), h('small', groupRows(g).map(([k, v]) => `${k} ${v}`).join('　')));
-    } else replaceChildren(tip, h('b', r.name), h('small', realmChip(r.faction), [r.circuit, fac && fac.name].filter(Boolean).join(' · ') || '无主之地'), layerLine(r));
+    } else replaceChildren(tip, h('b', r.name), h('small', realmChip(r.faction), [r.circuit, fac && fac.name].filter(Boolean).join(' · ') || '无主之地'), layerLine(r), folkLine(r));
     tip.classList.remove('hide');
     placeTip();
   }
@@ -437,6 +437,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     }
     kewei({ title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), x, y, groups });
   }
+  // 此地几人：悬停小签、府州小签都写一笔，一眼看得出哪块地上有人
+  const folkCountOf = (r) => { try { return game.fangzhi.folkCount(r.id); } catch (_e) { return 0; } };
+  const folkLine = (r) => { const n = folkCountOf(r); return n ? h('small.tip-folk', `此地${num(n)}人`) : null; };
   // 府州小签：点选与检府州共用
   // 府州小签（点选、检府州共用）：题名、所属与归属、上隶或地形、看法读数；方志、通志两枚牙牌，右键另有可为
   // 势力、省道小签（天下、省道两档点选）：题名、读数；势力翻朝野势力册，省道展通志；「推近」镜头推到下一档、移到其中
@@ -467,7 +470,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const open = (fn) => (e) => { e.stopPropagation(); card.classList.add('hide'); fn(); };
     replaceChildren(card,
       h('header', h('b', r.name), h('small', realmChip(r.faction), [r.circuit, fac && fac.name].filter(Boolean).join(' · ') || '无主之地')),
-      h('dl', r.parent ? [h('dt', '上隶'), h('dd', r.parent)] : null, r.terrain ? [h('dt', '地形'), h('dd', r.terrain)] : null),
+      h('dl', r.parent ? [h('dt', '上隶'), h('dd', r.parent)] : null, r.terrain ? [h('dt', '地形'), h('dd', r.terrain)] : null,
+        folkCountOf(r) ? [h('dt', '人物'), h('dd', h('a.card-folk', { title: '翻到此地人物', onclick: open(() => fangzhiPage.showPeople(r.id)) }, `此地${num(folkCountOf(r))}人`))] : null),
       layerLine(r),
       h('footer',
         h('button.q-yapai', { type: 'button', onclick: open(() => fangzhiPage.show(r.id)) }, '方志'),
@@ -1223,6 +1227,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     can: (name) => personCan(name),
     onAudience: (name) => audiencePage.summon(name), onLetter: (name) => openLetters(name), onOffice: (name) => bioPage.show(name, 'office'),
     onBio: (name) => bioPage.show(name), onFind: (name) => xunren.show(name), locate: (text) => locatePlace(text), compare: xunren.compare,
+    onRegion: (id) => { if (inHall()) bus.emit('kernel:toast', { text: '殿上议事，散了再看' }); else if (onPaper()) bus.emit('kernel:toast', { text: '先收卷，再看' }); else fangzhiPage.showPeople(id); },
     onFaction: (key) => { if (inHall()) bus.emit('kernel:toast', { text: '殿上议事，散了再看' }); else if (onPaper()) bus.emit('kernel:toast', { text: '先收卷，再看' }); else realmPage.showDock(key); },
     sealOf: (name) => {
       let s = null;

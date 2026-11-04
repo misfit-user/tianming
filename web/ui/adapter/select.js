@@ -682,7 +682,7 @@ export function people({ dead = false } = {}) {
     if (c._mourning) states.push('丁忧');
     if (c._retired) states.push('致仕');
     if ((c.stress || 0) > 70) states.push('重压');
-    if (c._travelTo) states.push('赴任');
+    if (c._travelTo) states.push(c._travelAssignPost || /赴任/.test(String(c._travelReason || '')) ? '赴任' : '在途');
     if (c._scheming) states.push('密谋');
     if (c.joinTurn && turn - c.joinTurn < newJoin) states.push('新晋');
     else if (c.age >= 60) states.push('老成');
@@ -692,7 +692,7 @@ export function people({ dead = false } = {}) {
       id: c.id, name: c.name || '', zi: c.zi || c.courtesy || '', hao: c.haoName || '', age: c.age || null, gender: c.gender || '',
       office: c.officialTitle || c.title || c.role || c.occupation || (isConsort ? '后宫' : '布衣'), rank: rankOf(c, posts),
       faction: c.faction || '', party: c.party || '', partyRank: c.partyRank || '', family: c.family || '',
-      portrait: c.portrait || '', location: c.location || '', travelTo: (c._travelTo && c._travelTo.toLocation) || '',
+      portrait: c.portrait || '', location: c.location || '', travelTo: (typeof c._travelTo === 'string' ? c._travelTo : (c._travelTo && c._travelTo.toLocation)) || '',
       away: !!(c.location && same && !same(c.location, here)), alive: c.alive !== false, dead: c.alive === false,
       deathReason: c.deathReason || '', isPlayer: !!c.isPlayer, consort: isConsort, states,
       loyalty: Math.round(num(c.loyalty, 50)), ambition: Math.round(num(c.ambition, 50)),

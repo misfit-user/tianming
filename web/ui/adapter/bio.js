@@ -42,7 +42,7 @@ function banner(p) {
   if (p.alive === false) return { glyph: '殁', title: '已殁', note: [str(p.deathReason), turnTag(p.deathTurn)].filter(Boolean).join(' · ') };
   if (p._imprisoned) return { glyph: '狱', title: `下诏狱${p._imprisonedTurn != null ? `·已系${num(Math.max(0, turn - n0(p._imprisonedTurn, 0)))}回合` : ''}`, note: str(p._imprisonReason) || '系于狴犴' };
   if (p._exiled) return { glyph: '谪', title: '流放在外', note: str(p._exileReason) || '谪戍边方' };
-  if (p._travelTo) return { glyph: '行', title: '赴任途中', note: `${str(p.location)} → ${str(p._travelTo.toLocation || p._travelTo)}` };
+  if (p._travelTo) return { glyph: '行', title: p._travelAssignPost || /赴任/.test(String(p._travelReason || '')) ? '赴任途中' : '在途中', note: `${str(p.location)} → ${str(p._travelTo.toLocation || p._travelTo)}` };
   if (p._scheming) return { glyph: '谋', title: '密谋异动', note: '察其交结，谨防其变' };
   return null;
 }

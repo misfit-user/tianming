@@ -16,7 +16,7 @@ const toast = (text) => bus.emit('kernel:toast', { text });
 // 内核写好的说明文字里夹着阿拉伯数字（「民心 37 忧」「3.6万」「1627年」），按记数设置改写（core/numerals numText）
 const digits = numText;
 // 数：大数取四位有效，按记数设置写；负数前加「−」；字里夹的整数也按记数设置改写
-const PUBLIC_VOLS = new Set(['fengwu', 'yingzao']);
+const PUBLIC_VOLS = new Set(['fengwu', 'yingzao', 'renwu']);
 const BAND_VOL = { 户口: 'huyi', 实征: 'caifu', 驻军: 'junbei', 吏治: 'zhiguan' };
 const roughOf = (v) => (typeof v === 'number' ? (Math.abs(v) < 10 ? '寥寥' : `约${num(roundSig(Math.abs(v), 1))}`) : v);
 // 吏治那个数是浊度，越高越差（内核 GRADE_BANDS.office：清中浊蠹）：大字写等第，数落到小字并写明是浊度，不然「吏治九十二」读着像好事
@@ -92,11 +92,66 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
   const who = (name, isChar) => (name && isChar && onPerson ? h('a.fz-who', { onclick: () => onPerson(name) }, name) : h('span', name || ''));
   // 主官、上官一人一格：左一张小像（可点开人物窗），右官名、人名、一行小字。没有此人（空缺、未详）只留一幅粉本
   let peopleCache = null;
-  const portraitOf = (name) => {
+  const personOf = (name) => {
     if (!peopleCache) { try { peopleCache = new Map(game.select.people({ dead: true }).map((x) => [x.name, x])); } catch (_e) { peopleCache = new Map(); } }
-    const row = peopleCache.get(name);
-    return row && row.portrait ? row.portrait : '';
+    return peopleCache.get(name) || null;
   };
+  const portraitOf = (name) => { const row = personOf(name); return row && row.portrait ? row.portrait : ''; };
+  // ---------- 此地人物 ----------
+  // 按品秩由高到低，玩家本人在最前（内核 rank.level 越小品秩越高）
+  const byRank = (a, b) => (b.isPlayer ? 1 : 0) - (a.isPlayer ? 1 : 0) || (a.rank ? a.rank.level : 99) - (b.rank ? b.rank.level : 99);
+  const folkRows = (list) => list.map((x) => { const row = personOf(x.name); return row ? { ...x, row } : null; }).filter(Boolean).sort((a, b) => byRank(a.row, b.row));
+  const faceEl = (row) => {
+    const initial = () => h('i', [...row.name][0]);
+    return row.portrait ? h('img', { src: row.portrait, alt: '', decoding: 'async', loading: 'lazy', onerror: (e) => e.target.replaceWith(initial()) }) : initial();
+  };
+  const goPerson = (name) => (onPerson ? () => onPerson(name) : null);
+  // 主官之下一排小像：一开窗就看见谁在此地；排不下的行藏起来，不留半张脸，点「全部」翻到人物卷
+  function folkStrip(d, skip) {
+    const v = d.vols.find((x) => x.key === 'renwu');
+    if (!v) return null;
+    const rows = folkRows(v.folk.here);
+    const shown = rows.filter((x) => !skip.has(x.name));
+    const tail = [v.folk.passing.length ? `过境${num(v.folk.passing.length)}人` : '', v.folk.coming.length ? `赶来${num(v.folk.coming.length)}人` : ''].filter(Boolean).join('、');
+    if (!shown.length && !tail) return null;
+    const all = () => { vol = 'renwu'; renderLeft(); renderRight(); keepTabs(); };
+    return h('section.fz-folkbar',
+      h('button.fz-folkhead', { type: 'button', title: '翻到人物卷', onclick: all },
+        h('small', '此地人物'), h('b', `${num(rows.length)}人`), tail ? h('span', `另有${tail}`) : null, h('em', '全部 ›')),
+      shown.length ? h('div.fz-faces', shown.map((x) => h('button.fz-face' + (x.row.isPlayer ? '.me' : ''), { type: 'button', 'data-person': x.row.name, onclick: goPerson(x.row.name) },
+        h('span.sw-face', faceEl(x.row)), h('small', x.row.name)))) : null);
+  }
+  // 人物卷里一个人：小像、名、职衔，右边一句他此刻的情形
+  function folkRow(x, note, tone, days) {
+    const r = x.row;
+    return h('button.fz-fk' + (r.isPlayer ? '.me' : ''), { type: 'button', 'data-person': r.name, onclick: goPerson(r.name) },
+      h('span.sw-face', faceEl(r)),
+      h('span.fz-fk-main', h('b', r.name), h('small', r.office || '布衣')),
+      note || days ? h('em' + (tone ? '.' + tone : ''), note ? h('span', { title: note }, note) : null, days ? h('b', `余${num(days)}日`) : null) : null);
+  }
+  const PUBLIC_STATES = /诏狱|流放|丁忧|致仕/;
+  function folkEls(folk) {
+    const me = personOf((folkRows(folk.here).find((x) => x.row.isPlayer) || {}).name) || [...(peopleCache ? peopleCache.values() : [])].find((x) => x.isPlayer);
+    const noteOf = (x) => {
+      const st = x.row.states.filter((s) => PUBLIC_STATES.test(s)).join('、');
+      if (st) return st;
+      return me && x.row.faction && me.faction && x.row.faction !== me.faction ? x.row.faction : '';
+    };
+    const sec = (title, note, rows) => (rows.length ? h('section.fz-sub', h('h4', title, h('small', note)), h('div.fz-fks', rows)) : null);
+    const place = (t) => String(t || '').split(/[（(]/)[0].trim();   // 括注里是打算和来历，这一行只写地名
+    const here = folkRows(folk.here);
+    const parts = [
+      sec('在此', `${num(here.length)}人`, here.map((x) => folkRow(x, noteOf(x), x.row.states.some((s) => /诏狱|流放/.test(s)) ? 'bad' : ''))),
+      sec('过境', `${num(folk.passing.length)}人 · 正走到这一块`, folkRows(folk.passing).map((x) => folkRow(x, '往' + place(x.to), '', x.days))),
+      sec('正赶来', `${num(folk.coming.length)}人`, folkRows(folk.coming).map((x) => folkRow(x, '自' + place(x.from), '', x.days))),
+      sec('或在此', `${num(folk.maybe.length)}人 · 只写了大地名，说不准在哪一块`, folkRows(folk.maybe).map((x) => folkRow(x, x.location)))
+    ].filter(Boolean);
+    return parts.length ? parts : [h('p.fz-note', '此地未见有名之人。')];
+  }
+  // 四邻：换一处看。指到哪一块，图上亮哪一块
+  const neighborsEl = (list) => (list && list.length ? h('section.fz-sub', h('h4', '四邻', h('small', '点地名换一处')),
+    h('div.fz-nbs', list.map((x) => h('button.fz-nb', { type: 'button', onclick: () => show(x.id), onmouseenter: () => peek && peek(x.id), onmouseleave: () => peek && peek(null) },
+      x.name, x.count ? h('small', `${num(x.count)}人`) : null, x.foreign ? h('em', x.foreign) : null)))) : null);
   function officer({ label, name, isChar, note, bad }) {
     const src = isChar ? portraitOf(name) : '';
     const initial = () => (isChar && name ? h('i', [...name][0]) : null);
@@ -157,7 +212,8 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     // 志名旁的小字：政区（内核字串尾巴上的势力名路径里有了，不再写）、地形、税级
     const levelHead = String(hd.level || '').split(' · ')[0];
     nameplate('方志', crumbs, hd.name, [levelHead, hd.terrain, hd.tax ? `税${hd.tax}` : ''].filter(Boolean).join(' · '));
-    replaceChildren(left, status, hd.desc ? h('p.fz-desc', hd.desc) : null, offs.length ? h('div.fz-offs', offs) : null, band);
+    const named = new Set([hd.governor && hd.governor.name, hd.superior && hd.superior.who].filter(Boolean));
+    replaceChildren(left, status, hd.desc ? h('p.fz-desc', hd.desc) : null, offs.length ? h('div.fz-offs', offs) : null, folkStrip(d, named), band);
     replaceChildren(tabs, slips);
     fitTabs();
     replaceChildren(foot, acts);
@@ -186,6 +242,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       replaceChildren(right, head, h('div.fz-vbody', h('p.fz-lock', h('b', '册籍不得而见'), '此地非所掌，户口、钱粮、兵备、官守诸册都在有司手里；所知者，邸报所载与风物而已。')));
       return;
     }
+    if (v.folk) body.push(...folkEls(v.folk), neighborsEl(v.neighbors));
     if (v.armies && v.armies.length) body.push(h('div.fz-armies', v.armies.map((a) => h('div.fz-army', h('b', a.name), h('span', fmt(a.soldiers), a.reported ? h('em', '据奏') : null),
       a.commander ? who(a.commander, true) : null, a.morale != null ? h('small' + (a.morale < 45 ? '.low' : ''), `气${num(a.morale)}`) : null))));
     const rough = knows({ region: cur.id }) === 'rough' && !opens(v.key);
@@ -359,7 +416,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
   }
 
   // ---------- 通志 ----------
-  const CVOLS = [['xiajing', '境', '辖境', '按问题轻重 · 点州展方志'], ['xingshi', '势', '形势', '战略边警 · 士绅书院'], ['caiji', '财', '财计', '实征起运 · 公帑'], ['yingzao', '营', '营造', '本道建筑 · 只作汇览']];
+  const CVOLS = [['renwu', '人', '人物', '此道有谁 · 点州展方志'], ['xiajing', '境', '辖境', '按问题轻重 · 点州展方志'], ['xingshi', '势', '形势', '战略边警 · 士绅书院'], ['caiji', '财', '财计', '实征起运 · 公帑'], ['yingzao', '营', '营造', '本道建筑 · 只作汇览']];
   function renderCircuitLeft() {
     peopleCache = null;
     const c = curC;
@@ -377,6 +434,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       h('b', isOffice(x) ? x.sub : typeof x.v === 'number' && Math.abs(x.v) >= 1e4 ? num(roundSig(x.v, 3)) : fmt(x.v)),
       isOffice(x) ? h('span', `浊度${fmt(x.v)}`) : x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`) : x.sub ? h('span', digits(x.sub)) : null, statBar(x))));
     const live = CVOLS.filter(([k]) => (k === 'xingshi') || (c[k] && (Array.isArray(c[k]) ? c[k].length : true)));
+    if (cvol === 'renwu' && !live.some(([k]) => k === 'renwu')) cvol = 'xiajing';
     if (!live.some(([k]) => k === cvol)) cvol = live[0] ? live[0][0] : 'xingshi';
     const slips = live.map(([k, , label]) => h('button.fz-slip' + (k === cvol ? '.on' : '') + (rough && (k === 'xiajing' || k === 'caiji') ? '.lock' : ''), { type: 'button', onclick: () => { cvol = k; keepTabs(); renderCircuitLeft(); renderCircuitRight(); } }, h('b', label)));
     const R = role();
@@ -413,6 +471,17 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
         h('p', x.pop == null ? null : h('span', '户口 ', big(x.pop)), x.tax == null ? null : h('span', '实征 ', big(x.tax)), x.troops == null ? null : h('span', '驻军 ', big(x.troops))),
         x.reasons.length ? h('p.why', digits(x.reasons.join('；'))) : null))));
       xj.others.forEach((o) => body.push(h('p.fz-note', `隶${o.owner}：`, o.regions.map((x, i) => [i ? '、' : '', reg(x)]))));
+    } else if (cvol === 'renwu' && c.renwu) {
+      const f = c.renwu;
+      const tail = [f.passing ? `过境${num(f.passing)}人` : '', f.coming ? `赶来${num(f.coming)}人` : ''].filter(Boolean).join('、');
+      body.push(h('p.fz-common', `本道${num(f.total)}人`, tail ? `，另有${tail}` : '', '。写粗区的不计。'));
+      if (!f.groups.length) body.push(h('p.fz-note', '此道未见有名之人。'));
+      else body.push(h('div.fz-cfolk', f.groups.map((x) => {
+        const rows = folkRows([...x.here, ...x.passing].map((name) => ({ name })));
+        return h('section', h('p.fz-cfolk-h', reg(x), h('small', `${num(x.here.length)}人${x.passing.length ? ` · 过境${num(x.passing.length)}` : ''}`)),
+          h('div.fz-faces', rows.map((y) => h('button.fz-face' + (y.row.isPlayer ? '.me' : ''), { type: 'button', 'data-person': y.row.name, onclick: goPerson(y.row.name) },
+            h('span.sw-face', faceEl(y.row)), h('small', y.row.name)))));
+      })));
     } else if (cvol === 'xingshi') {
       body.push(rowsEl(c.xingshi));
     } else if (cvol === 'caiji') {
@@ -524,5 +593,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       else if (cur) { const d = F.region(cur.id); if (d) { cur = d; renderLeft(); renderRight(); } }
     } catch (_e) { /* 照旧 */ }
   });
-  return { show, showCircuit, hide, get opened() { return opened; }, get mode() { return opened ? mode : ''; } };
+  // 直接翻到人物卷（舆图小签上「此地几人」）
+  const showPeople = (id) => { vol = 'renwu'; return show(id); };
+  return { show, showPeople, showCircuit, hide, get opened() { return opened; }, get mode() { return opened ? mode : ''; } };
 }

@@ -179,7 +179,9 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
       h('p.rm-dao-sum', `据有${num(d.count)}州，分隶${num(d.groups.length)}道`, d.none.length ? `，未设省道${num(d.none.length)}块` : '', '。'),
       al && (al.common.length || al.rows.length) ? h('section.rm-alerts', h('h5', '区划预警', h('small', '民心吏治据奏 · 按问题轻重')),
         al.common.length ? h('p.rm-common', '通国皆然：', h('b', digits(al.common.join(' · '))), '。下列只标各州独有之患。') : null,
-        al.rows.map((x) => h('p', regionBtn(x), x.circuit ? h('small', x.circuit) : null, h('span', digits(x.reasons.join('；'))))),
+        // 一州一条：地名、所隶，其下一项项分开写，要紧的标红
+        al.rows.map((x) => h('p', regionBtn(x), x.circuit ? h('small', x.circuit) : null,
+          h('span.rm-reasons', x.reasons.map((why) => h('em' + (/危|急|蠹|激/.test(why) ? '.bad' : ''), digits(why)))))),
         al.more ? h('small.rm-more', `另有${num(al.more)}州次之`) : null) : null,
       d.groups.length ? h('div.rm-daolist',
         h('p.rm-daohead', ['省道', '府州', '户口', '民心', '吏治'].map((t) => h('span', t))),
@@ -193,7 +195,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
           h('div.rm-daoregs', g.regions.map(regionBtn))))) : null,
       d.none.length ? h('div.rm-chips.links', h('span', '未设省道'), h('div', d.none.map(regionBtn))) : null);
   }
-  const BODY_KEYS = ['dao', 'people', 'rows', 'chips', 'places', 'breakdown', 'relations', 'strengths', 'weaknesses', 'texts', 'links', 'lines', 'bars', 'chain', 'sealed'];
+  const BODY_KEYS = ['dao', 'people', 'members', 'rows', 'chips', 'places', 'breakdown', 'relations', 'strengths', 'weaknesses', 'texts', 'links', 'lines', 'bars', 'chain', 'sealed'];
   function hasBody(b) { return BODY_KEYS.some((k) => Array.isArray(b[k]) ? b[k].length : !!b[k]); }
   const rowsEl = (list) => (list && list.length ? h('div.rm-rows', list.map((r) => h('p' + (r.tone === 'zhu' ? '.zhu' : ''), h('span', r.k), h('b', typeof r.v === 'string' ? digits(r.v) : r.v)))) : null);
   const chipGroups = (groups) => (groups || []).map((g) => h('div.rm-chips', h('span', g.title), h('div', g.items.map((c) => h('em' + (c.warn ? '.warn' : ''), c.label, c.value != null && c.value !== '' ? h('b', c.value) : null)))));
@@ -201,7 +203,8 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     const parts = [];
     if (b.sealed) parts.push(h('p.rm-sealed', b.sealed));
     if (b.people && b.people.length) parts.push(h('div.rm-people', b.people.map((p) => h('div' + (p.main ? '.main' : ''),
-      h('i', String(p.name).replace(/[\s（）()]/g, '').charAt(0)), h('div', h('b', `${p.title} · ${p.name}`), p.meta ? h('span', p.meta) : null, p.bio ? h('p', p.bio) : null)))));
+      leadFace(p), h('div', h('b', `${p.title} · `, leadNames(p.name)), p.meta ? h('span', p.meta) : null, p.bio ? h('p', p.bio) : null)))));
+    if (b.members && b.members.length) { const m = membersEl(b.members); if (m) parts.push(m); }
     if (b.breakdown && b.breakdown.length) {
       const total = b.breakdown.reduce((s, x) => s + x.value, 0) || 1;
       parts.push(h('div.rm-break', h('div.bar', b.breakdown.map((x, i) => h('i.c' + i, { style: { flexGrow: String(x.value) }, title: `${x.label} ${amt(x.value)}` }))),
@@ -225,6 +228,41 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
       s.onclick ? h('button', { type: 'button', onclick: s.onclick }, s.v) : h('b', s.v)))));
     if (b.texts && b.texts.length) parts.push(h('div.rm-texts', b.texts.map(([k, t]) => h('p', h('b', `【${k}】`), t))));
     return parts.filter(Boolean);
+  }
+
+  // 重臣一格：名字里可能并着几个人（「王之臣/袁崇焕(候)」），认得的出小像、可点
+  const peopleIndex = () => { try { return new Map(game.select.people().map((x) => [x.name, x])); } catch (_e) { return new Map(); } };
+  const namesIn = (text) => String(text || '').split(/[\/／、，,]/).map((s) => s.replace(/[（(].*$/, '').trim()).filter(Boolean);
+  function leadFace(p) {
+    const row = namesIn(p.name).map((n) => peopleIndex().get(n)).find(Boolean);
+    const fallback = () => h('i.rm-glyph', String(p.name).replace(/[\s（）()]/g, '').charAt(0));
+    if (!row || !onPerson) return fallback();
+    const initial = () => h('i', row.name.charAt(0));
+    return h('button.sw-face.rm-face', { type: 'button', 'data-person': row.name, onclick: () => onPerson(row.name) },
+      row.portrait ? h('img', { src: row.portrait, alt: '', decoding: 'async', loading: 'lazy', onerror: (e) => e.target.replaceWith(initial()) }) : initial());
+  }
+  function leadNames(text) {
+    const index = peopleIndex();
+    return String(text || '').split(/([\/／、，,])/).map((part) => {
+      const name = part.replace(/[（(].*$/, '').trim();
+      return index.has(name) && onPerson ? h('a.rm-who', { 'data-person': name, onclick: () => onPerson(name) }, part) : part;
+    });
+  }
+  // 在册人物：按品秩排一面小像；人多先排三十个，其余点开。人物窗的悬停小签、右键可为都照常
+  function membersEl(names) {
+    const index = peopleIndex();
+    const rows = names.map((n) => index.get(n)).filter(Boolean).sort((a, b) => (b.isPlayer ? 1 : 0) - (a.isPlayer ? 1 : 0) || (a.rank ? a.rank.level : 99) - (b.rank ? b.rank.level : 99));
+    if (!rows.length) return null;
+    const LIMIT = 30;
+    const faceOf = (r) => {
+      const initial = () => h('i', r.name.charAt(0));
+      return h('button.fz-face' + (r.isPlayer ? '.me' : ''), { type: 'button', 'data-person': r.name, title: r.office || '', onclick: () => onPerson && onPerson(r.name) },
+        h('span.sw-face', r.portrait ? h('img', { src: r.portrait, alt: '', decoding: 'async', loading: 'lazy', onerror: (e) => e.target.replaceWith(initial()) }) : initial()),
+        h('small', r.name));
+    };
+    const grid = h('div.fz-faces.rm-members-grid', rows.slice(0, LIMIT).map(faceOf));
+    const more = rows.length > LIMIT ? h('button.rm-members-more', { type: 'button', onclick: () => { replaceChildren(grid, rows.map(faceOf)); more.remove(); } }, `展开其余${num(rows.length - LIMIT)}人`) : null;
+    return h('section.rm-members', h('h5', '在册人物', h('small', `在世${num(rows.length)}人`)), grid, more);
   }
 
   // 人、党、阶层：点即跳

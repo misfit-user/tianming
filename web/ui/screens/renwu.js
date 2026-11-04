@@ -46,7 +46,7 @@ function splitBio(text) {
 // 人心（所知之律，同列传）：元首见他人的忠诚、野心；余者只见自己的，他人只列名望、贤能这类公论
 // can(name) → { audience: 缘由或空, letter: 缘由或空, office: 缘由或空（空即可行）, readOnly }
 // sealOf(势力名) → { key, name, short, hostile, color } 名衔旁那枚势力印；onFaction(key) 点印开势力窗
-export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onOffice, onBio, onFind, locate, compare, sealOf = null, onFaction = null }) {
+export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onOffice, onBio, onFind, locate, compare, sealOf = null, onFaction = null, onRegion = null }) {
   let cur = null;               // 当前之人的名
   let back = [];                // 看过的人，「‹」退回
   let tab = 'kin';
@@ -197,6 +197,13 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
       pin('名望', fame.meter, { text: fame.text, note: `${fame.full}（${num(fame.value)}）` }),
       pin('贤能', virtue.meter, { text: virtue.text, note: `第${num(virtue.stage)}阶·${virtue.text}（${num(virtue.value)}）` }));
 
+    // 所在之后一枚「方志」：看此地还有谁，人物和地块互相通得到（粗区、对不上地图的没有）
+    function placeRow(el, row) {
+      if (!onRegion || !row.location || !row.alive) return el;
+      let id = null;
+      try { id = game.fangzhi.regionIdOf(row.location); } catch (_e) { id = null; }
+      return id == null ? el : h('span.rw-placerow', el, h('button.rw-placego', { type: 'button', title: '展此地方志，看此地还有谁', onclick: () => onRegion(id) }, '方志'));
+    }
     // 职掌：现职、所在、所掌；势力、党派、家族、出身（内核按品级推定的出身不写：皇帝、太监也会被推成进士）
     let st = null;
     if (b.alive) { try { st = game.standing(b.name); } catch (_e) { st = null; } }
@@ -208,7 +215,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     // 所在、所掌短就并一行；所掌有几处或名字长才各占一行
     const longCharge = charges.length > 1 || (charges[0] && charges[0].name.length > 10);
     replaceChildren(post,
-      h('div.rw-kv' + (longCharge ? '.wide' : ''), h('span', '所在'), place),
+      h('div.rw-kv' + (longCharge ? '.wide' : ''), h('span', '所在'), placeRow(place, b)),
       charges.length ? h('div.rw-kv' + (longCharge ? '.wide' : ''), h('span', '所掌'), h('div.rw-charges', charges.map((x) => h('button.rw-charge', { type: 'button', disabled: !(locate && (x.kind === 'region' || x.kind === 'circuit' || x.kind === 'army')),
         onclick: () => locate && locate(x.kind === 'army' ? x.location : x.name) }, h('i', KIND[x.kind] || '掌'), x.name.replace(/布政使司$/, ''), x.kind === 'army' ? h('small', `${num(x.soldiers)}人`) : null)))) : null,
       facts.map(([k, x]) => h('div.rw-kv', h('span', k), h('b', x))));

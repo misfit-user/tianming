@@ -154,8 +154,7 @@ export function faction(key) {
   const people = [person(pp(first(f.leaderTitle, '首领')), first(f.leaderInfo, f.leader, f.leaderName, f.ruler), true), person('继嗣', first(f.heirInfo, f.heir))];
   if (f.leadership && typeof f.leadership === 'object') Object.keys(f.leadership).slice(0, 6).forEach((k) => { if (k !== 'ruler') people.push(person(LEAD_LABEL[k] || label(k), f.leadership[k])); });
   const memberNames = ix && Array.isArray(ix.chars) ? ix.chars.map((c) => (typeof c === 'object' ? c && c.name : c)).filter(Boolean) : [];
-  const junchen = { people: people.filter(Boolean), rows: [
-    memberNames.length ? { k: '在册人物', v: `共 ${memberNames.length} 人：${memberNames.slice(0, 40).join('、')}${memberNames.length > 40 ? '……' : ''}` } : null,
+  const junchen = { people: people.filter(Boolean), members: memberNames, rows: [
     row('政体', first(f.government, f.type)), row('战略目标', first(f.goal, f.strategy)), row('意识形态', first(f.ideology, f.mainstream)), row('文化', f.culture),
     row('开局问题', f.openingProblems)
   ].filter(Boolean), chips: chips(f.cohesion, 50) ? [{ title: '凝聚', items: chips(f.cohesion, 50) }] : [] };

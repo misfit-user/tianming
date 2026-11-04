@@ -102,7 +102,7 @@ function saveBuilder(root = ROOT) {
     localStorage: { getItem: () => null, setItem() {} } };
   c.window = c; vm.createContext(c);
   const load = (code, file) => vm.runInContext(code, c, { filename: file });
-  load(declarations(read(root, 'web/tm-utils.js'), ['_rngState', '_rngSeed']), 'tm-utils.js:actual-functions');
+  load(declarations(read(root, 'web/tm-utils.js'), ['_rngState', '_rngSeed', '_LOC_ALIASES', '_LOC_CAPITAL_WORDS', '_LOC_COURT_WORDS']), 'tm-utils.js:actual-functions');
   load(read(root, 'web/tm-huji-engine.js'), 'tm-huji-engine.js');
   load(culturalRestoreSource(root), 'tm-patches-start.js:actual-cultural-restore');
   load(declarations(source, ['SAVE_SCHEMA_VERSION', '_MIGRATIONS', 'PREF_CONF_KEYS']), 'tm-save-lifecycle.js:actual-functions-and-migrations');

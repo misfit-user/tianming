@@ -1887,6 +1887,7 @@ function doActualStart(sid, requestToken){
         }
       }
     }
+    if (typeof _tmEnsureCapital === 'function') _tmEnsureCapital(GM, P);
 
     // 人物势力绑定根治（通用·跨剧本）：把每个人物的 factionId 与 faction 名串补齐、双向对齐。
     // 此前人物多只靠 faction 名串关联（天启仅 48% 有 factionId）→名串是唯一锚、脆弱：势力改名/改换门庭即断。

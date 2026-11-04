@@ -101,6 +101,16 @@ var LETTER_CIPHERS = {
   silk_sewn: { label: '帛书缝衣', desc: '缝入衣裳夹层', interceptReadChance: 0.3, cost: 0 }
 };
 
+/** 玩家本人所在：在京写京城名；不在京（绍宋开局在亳州、亲征途中）写实地。书信、朱批、求见都按它算，不按京城 */
+function _ltHerePlace() {
+  var cap = GM._capital || '京城';
+  var here = '';
+  try { if (typeof _getPlayerLocation === 'function') here = _getPlayerLocation(); } catch (_) {}
+  if (!here) return cap;
+  var atCapital = (typeof _isSameLocation === 'function') ? _isSameLocation(here, cap) : here === cap;
+  return atCapital ? cap : here;
+}
+
 /** 估算两地信件传递天数（改进版） */
 function calcLetterDays(fromLoc, toLoc, urgency) {
   if (!fromLoc || !toLoc || fromLoc === toLoc) return 1;
@@ -126,11 +136,15 @@ function _ltCheckSameProvince(loc1, loc2) {
   var ah = src.player ? src.player : src[Object.keys(src)[0]];
   if (!ah || !ah.divisions) return false;
   var p1 = '', p2 = '';
+  // 所在常写成「京师·文渊阁」「亳州·明道宫」，区划树里是顺天府、亳州：比主地点，不比原字
+  var _key = function(n) { return (typeof _normalizeLocation === 'function') ? _normalizeLocation(n) : n; };
+  var k1 = _key(loc1), k2 = _key(loc2);
   ah.divisions.forEach(function(d) {
     var _names = [d.name];
     if (d.children) d.children.forEach(function(c){ _names.push(c.name); if(c.children) c.children.forEach(function(gc){ _names.push(gc.name); }); });
-    if (_names.indexOf(loc1) >= 0) p1 = d.name;
-    if (_names.indexOf(loc2) >= 0) p2 = d.name;
+    var _keys = _names.map(_key);
+    if (_keys.indexOf(k1) >= 0) p1 = d.name;
+    if (_keys.indexOf(k2) >= 0) p2 = d.name;
   });
   return p1 && p1 === p2;
 }
@@ -262,7 +276,7 @@ function renderLetterPanel() {
           var transitCount = _cc.transit;
           var lostCount = _cc.lost;
           var npcNewCount = _cc.npcNew;
-          var _isRouteBlocked = _ltIsRouteBlocked(capital, ch.location);
+          var _isRouteBlocked = _ltIsRouteBlocked(_ltHerePlace(), ch.location);
           var _inds = '';
           if (unreadCount > 0) _inds += '<div class="hy-ind hy-ind-unread" title="' + unreadCount + ' \u5C01\u672A\u8BFB">' + unreadCount + '</div>';
           if (npcNewCount > 0) _inds += '<div class="hy-ind hy-ind-new" title="' + npcNewCount + ' \u5C01\u6765\u51FD">' + npcNewCount + '</div>';
@@ -649,7 +663,7 @@ function _ltResend(letterId, mode) {
   var l = (GM.letters||[]).find(function(x){ return x.id === letterId; });
   if (!l) return;
   if (l._resendIssued) { toast('此信已重发过·请到新条目操作'); return; }
-  var capital = GM._capital || '京城';
+  var capital = _ltHerePlace();
   var ch = (typeof findCharByName === 'function') ? findCharByName(l.to) : null;
   var toLoc = ch ? (ch.location || capital) : (l.toLocation || capital);
   var _newUrgency = mode === 'multi_courier' ? 'extreme' : 'urgent';
@@ -696,7 +710,7 @@ function _ltResend(letterId, mode) {
 function _ltVerify(letterId) {
   var l = (GM.letters||[]).find(function(x){ return x.id === letterId; });
   if (!l) return;
-  var capital = GM._capital || '京城';
+  var capital = _ltHerePlace();
   var ch = findCharByName(l.to);
   var toLoc = ch ? (ch.location || capital) : capital;
   var days = calcLetterDays(capital, toLoc, 'urgent');
@@ -751,10 +765,10 @@ function sendLetter() {
     targets = [GM._pendingLetterTo];
   }
   if (targets.length === 0) { toast('请先选择收信人'); return; }
-  // 自检·剔除自己 + 在京者
+  // 自检·剔除自己 + 与玩家同地者（宜召对）；玩家不在京时，在京的臣子正该写信
   try {
     var _selfNm2 = (P.playerInfo && P.playerInfo.characterName) || '';
-    var _capSelf = GM._capital || '京师';
+    var _capSelf = _ltHerePlace();
     var _drop = [];
     targets = targets.filter(function(tn) {
       if (_selfNm2 && tn === _selfNm2) { _drop.push(tn + '(自己)'); return false; }
@@ -771,7 +785,7 @@ function sendLetter() {
     if (targets.length === 0) return;
   } catch(_){}
 
-  var capital = GM._capital || '京城';
+  var capital = _ltHerePlace();
   var urgLabels = { normal:'驿递', urgent:'加急', extreme:'八百里加急' };
   var typeLabel = (LETTER_TYPES[letterType]||{}).label || '书信';
   var sentDate = (typeof getTSText === 'function') ? getTSText(GM.turn) : '';
@@ -1080,7 +1094,7 @@ function _settleLettersAndTravel() {
   // 2. NPC主动来书入队（日制·默认多路驿递）
   // R: 用 try/catch 隔离每条 nl·防止单条数据异常（缺 from/content/type）卡死整批
   if (GM._pendingNpcLetters && GM._pendingNpcLetters.length > 0) {
-    var capital = GM._capital || '京城';
+    var capital = _ltHerePlace();
     var _enqueued = 0, _skipped = 0;
     GM._pendingNpcLetters.forEach(function(nl) {
       try {
@@ -1792,7 +1806,7 @@ function letterDoctor() {
 
   // 0·先把 pending NPC 队列消费成 letters（直接 returned·跳过 traveling 周期·让玩家立即看到）
   if (GM._pendingNpcLetters.length > 0) {
-    var _capital = GM._capital || '京城';
+    var _capital = _ltHerePlace();
     var _nlBatch = GM._pendingNpcLetters.slice();
     GM._pendingNpcLetters = [];
     _nlBatch.forEach(function(nl) {

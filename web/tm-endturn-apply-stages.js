@@ -928,8 +928,9 @@ inst._imprisonedTurn = GM.turn||0;
               _patch.court_ceremony_events.forEach(function(e) {
                 if (e.action === 'move_capital' && e.newCapital) {
                   GM._capitalHistory = GM._capitalHistory || [];
-                  GM._capitalHistory.push({ turn: GM.turn||0, from: GM.capital||'', to: e.newCapital, reason: e.reason||'', _autoFromReconcile: true });
+                  GM._capitalHistory.push({ turn: GM.turn||0, from: GM.capital||GM._capital||'', to: e.newCapital, reason: e.reason||'', _autoFromReconcile: true });
                   GM.capital = e.newCapital;
+                  GM._capital = e.newCapital; // arch-ok 迁都本身：内核全读 _capital，两个字段必须同步
                 } else {
                   // 角色相关：找 char 并加 title/posthumous/spouse
                   var ch = (GM.chars||[]).find(function(c){return c && c.name === e.target;});

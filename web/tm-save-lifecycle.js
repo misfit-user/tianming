@@ -284,6 +284,7 @@ function _ensureGMDefaults(GM, P) {
   if (!Array.isArray(GM._pendingMemorialDeliveries)) GM._pendingMemorialDeliveries = [];
   if (!Array.isArray(GM._interceptedIntel)) GM._interceptedIntel = [];
   if (!Array.isArray(GM._undeliveredLetters)) GM._undeliveredLetters = [];
+  if (typeof _tmEnsureCapital === 'function') _tmEnsureCapital(GM, P);
 }
 
 // 确保 P 所有字段存在默认值

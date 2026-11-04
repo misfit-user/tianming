@@ -1326,7 +1326,8 @@ function finiteNumberOr(value, fallback){
 var _LOC_ALIASES = {
   '京城': '京城', '京师': '京城', '北京': '京城', '燕京': '京城', '顺天府': '京城',
   '紫禁城': '京城', '皇城': '京城', '宫中': '京城', '内廷': '京城', '禁中': '京城',
-  '南京': '南京', '应天府': '南京', '建康': '南京', '金陵': '南京', '陪都': '南京',
+  // 建康不进此组：绍宋的南京应天府在商丘，建康府是另一座城
+  '南京': '南京', '应天府': '南京', '金陵': '南京', '陪都': '南京',
   '盛京': '盛京', '沈阳': '盛京', '赫图阿拉': '盛京', '辽阳': '盛京',
   '杭州': '杭州', '临安': '杭州', '西湖': '杭州',
   '苏州': '苏州', '姑苏': '苏州', '吴中': '苏州',
@@ -1335,31 +1336,73 @@ var _LOC_ALIASES = {
   '成都': '成都', '蜀京': '成都',
   '汉城': '汉城', '汉阳': '汉城', '首尔': '汉城'
 };
+// 通称，不是实地：哪一朝都指当朝京城，跟着 GM._capital 走。北京、燕京、顺天府、紫禁城是实地，不在此列
+var _LOC_CAPITAL_WORDS = ['京城', '京师', '皇城', '宫中', '内廷', '禁中'];
+// 行在、随驾也不是实地，但指天子此刻所在，跟着人走不跟京城（剧本 locationBindingContract 同此口径）
+var _LOC_COURT_WORDS = { '行在': 1, '行在所': 1, '随驾': 1 };
+
+function _locCourtPlace() {
+  if (typeof GM === 'undefined' || !GM) return '';
+  var chars = GM.chars || [];
+  var live = function(test) { return chars.find(function(c) { return c && c.alive !== false && test(c); }); };
+  var map = GM.mapData || GM.map;
+  var courtId = map && map.locationBindingContract && map.locationBindingContract.courtCharacterId;
+  var leader = GM.playerInfo && GM.playerInfo.factionLeader;
+  var court = (courtId && live(function(c) { return c.id === courtId; }))
+    || (leader && live(function(c) { return c.name === leader; }))
+    || live(function(c) { return c.isPlayer; });
+  return (court && court.location) || '';
+}
+
+function _locAliasOf(part) {
+  if (_LOC_ALIASES[part]) return _LOC_ALIASES[part];
+  // 别名表覆盖更长前缀（如 "紫禁城·乾清宫"）
+  var keys = Object.keys(_LOC_ALIASES);
+  for (var k = 0; k < keys.length; k++) {
+    if (part.indexOf(keys[k]) === 0) return _LOC_ALIASES[keys[k]];
+  }
+  return '';
+}
+
+function _locIsCapitalWord(part) {
+  return _LOC_CAPITAL_WORDS.some(function(word) { return part.indexOf(word) === 0; });
+}
+
+/** 取主地点。literal 为真时通称不再换算成当朝京城（算京城自己的主地点时用，防递归） */
+function _locKey(text, literal) {
+  var parts = text.split(/[·・\/\,，、\s\-—>→→]+/);
+  for (var i = 0; i < parts.length; i++) {
+    var p = (parts[i] || '').trim();
+    if (!p) continue;
+    if (_LOC_COURT_WORDS[p]) {
+      // 「行在·福建」：行在后面写了实地，以实地为准
+      if (p !== '随驾' && parts.slice(i + 1).some(function(x) { return x && x.trim(); })) continue;
+      var court = literal ? '' : _locCourtPlace();
+      return court ? _locKey(String(court).trim(), true) : p;
+    }
+    var key = _locAliasOf(p);
+    if (!key) return p; // 首段未匹配即返回
+    if (key === '京城' && !literal && _locIsCapitalWord(p)) {
+      var cap = (typeof GM !== 'undefined' && GM && (GM._capital || GM.capital)) || '';
+      return cap ? _locKey(String(cap).trim(), true) : key;
+    }
+    return key;
+  }
+  return text;
+}
 /**
  * 把地点字符串规范化到"主地点"——取首段（按 · , /、空格等分割）后查别名表。
  * 例："紫禁城·乾清宫" → "紫禁城" → 查表得 "京城"
  *     "京师·文渊阁" → "京师" → "京城"
  *     "南京·户部衙门" → "南京" → "南京"
  *     "陕西·西安" → "陕西"（未在表中，返回自身）
+ *     "京师"、"宫中" 是通称，取当朝京城的主地点（晚唐即京兆府）；"行在"、"随驾" 取天子此刻所在
  */
 function _normalizeLocation(loc) {
   if (!loc || typeof loc !== 'string') return '';
   var s = String(loc).trim();
   if (!s) return '';
-  // 取首段——按常见分隔符拆分
-  var parts = s.split(/[·・\/\,，、\s\-—>→→]+/);
-  for (var i = 0; i < parts.length; i++) {
-    var p = (parts[i] || '').trim();
-    if (!p) continue;
-    if (_LOC_ALIASES[p]) return _LOC_ALIASES[p];
-    // 别名表覆盖更长前缀（如 "紫禁城·乾清宫"）
-    var keys = Object.keys(_LOC_ALIASES);
-    for (var k = 0; k < keys.length; k++) {
-      if (p.indexOf(keys[k]) === 0) return _LOC_ALIASES[keys[k]];
-    }
-    return p; // 首段未匹配即返回
-  }
-  return s;
+  return _locKey(s, false);
 }
 /**
  * 判定两地是否"视为同地"——同城/同宫室都算。
@@ -1374,6 +1417,52 @@ function _isSameLocation(a, b) {
   // 原串相互包含亦算（兜底宽松匹配）
   if (a.indexOf(b) >= 0 || b.indexOf(a) >= 0) return true;
   return false;
+}
+
+/** 势力写的都城 → 运行时的京城名。去括注与占位；「北京·紫禁城」两段是一处留首段，「京兆府·长安」是府与城全留 */
+function _tmCleanCapitalName(raw) {
+  var s = String(raw == null ? '' : raw).replace(/[（(][^（）()]*[）)]/g, '').trim();
+  if (!s || /^(无|已无|未知|不详|流动|游牧|行在|随驾)/.test(s)) return '';
+  var parts = s.split(/[·・]/).map(function(x) { return x.trim(); }).filter(Boolean);
+  if (parts.length > 1) {
+    var first = _locKey(parts[0], true);
+    if (parts.every(function(x) { return _locKey(x, true) === first; })) return parts[0];
+  }
+  return s;
+}
+
+/** 从剧本推京城：玩家身份写的 → 本势力写的 → 君主所在（自编剧本常不写都城）。都没有返回空串，内核退回默认 */
+function _tmCapitalFromWorld(g, p) {
+  var pi = (g && g.playerInfo) || (p && p.playerInfo) || {};
+  var facs = (g && g.facs) || [];
+  var chars = (g && g.chars) || [];
+  var fac = facs.find(function(f) { return f && f.isPlayer; })
+    || facs.find(function(f) { return f && (f.name === pi.factionName || f.id === pi.factionId); });
+  var declared = [pi.capital, pi.capitalName, fac && fac.capital, fac && fac.capitalName];
+  for (var i = 0; i < declared.length; i++) {
+    var name = _tmCleanCapitalName(declared[i]);
+    if (name) return name;
+  }
+  var leader = pi.factionLeader || (fac && fac.leader);
+  var ruler = leader && chars.find(function(c) { return c && c.name === leader && c.alive !== false; });
+  return (ruler && _tmCleanCapitalName(ruler.location)) || '';
+}
+
+/** 开局、读档、存档前都走这里：_capital 是全内核读的京城，这里保证它有值且是最新的。只是兜底，出错不许拖垮存读档 */
+function _tmEnsureCapital(g, p) {
+  if (!g) return;
+  try {
+    // 老档的 AI 迁都只写过 GM.capital，它比 _capital 新
+    if (typeof g.capital === 'string' && g.capital && g.capital !== g._capital) {
+      g._capital = g.capital;
+      return;
+    }
+    if (g._capital) return;
+    var name = _tmCapitalFromWorld(g, p);
+    if (name) g._capital = name;
+  } catch (e) {
+    try { if (typeof TM !== 'undefined' && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, '_tmEnsureCapital'); } catch (_) {}
+  }
 }
 
 function _tmCleanIdentityName(value) {

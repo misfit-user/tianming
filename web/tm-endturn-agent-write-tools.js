@@ -575,6 +575,7 @@
     if (!Array.isArray(gm._capitalHistory)) gm._capitalHistory = [];
     gm._capitalHistory.push({ turn: gm.turn || 0, from: oldC, to: cap, reason: input.reason || '迁都', _agent: true });
     gm.capital = cap;
+    gm._capital = cap;
     _report(gm, { type: 'change', path: 'capital', old: oldC, new: cap, reason: (input.reason || '') + '·迁都', turn: gm.turn || 0, _agent: true, _op: 'relocate_capital' });
     return { ok: true, path: 'capital', old: oldC, new: cap };
   }

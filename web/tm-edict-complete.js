@@ -126,6 +126,7 @@
         if (!params.newCapital) return false;
         var oldCap = G._capital;
         G._capital = params.newCapital;
+        G.capital = params.newCapital; // arch-ok 迁都本身：AI 工具与老档读 capital，两个字段必须同步
         // 京畿虹吸目标改变；大量人口流动
         if (G.population && G.population.byRegion) {
           if (G.population.byRegion[params.newCapital]) {

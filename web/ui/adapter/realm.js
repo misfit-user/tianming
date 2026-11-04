@@ -14,9 +14,12 @@ const G = () => w.GM || {};
 const parts = () => (w.TMPhase8FormalBridge && w.TMPhase8FormalBridge.__p8MapParts) || {};
 const has = (v) => v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && !v.length) && !(typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length);
 const first = (...vs) => vs.find(has);
+// 剧本文字里夹的几个英文标记
+const TEXT_CN = [[/\s*\(rhetoric\)/g, '（名）'], [/\s*\(reality\)/g, '（实）'], [/relations\s*(?=[-+]?\d)/g, '邦交']];
+const cleanText = (s) => TEXT_CN.reduce((out, [re, to]) => out.replace(re, to), s);
 function pp(v) {
   const f = parts().ppValue;
-  if (f) { const s = f(v, ''); return s === '未记' ? '' : String(s || ''); }
+  if (f) { const s = f(v, ''); return s === '未记' ? '' : cleanText(String(s || '')); }
   if (!has(v)) return '';
   if (typeof v === 'number') return mapNum(v);
   if (Array.isArray(v)) return v.map(pp).filter(Boolean).join('、');
@@ -34,8 +37,22 @@ function mapNum(v) {
 }
 const ENUM_CN = { heavy_from_land: '重赋于田', light_touch: '轻徭薄赋', restricted: '有禁', open: '开放', silver_standard: '银本位', gold_silver: '金银并行', coin_standard: '钱法', barter: '以物易物',
   primogeniture: '嫡长承袭', election: '推举', tanistry: '幼子守灶', merit: '择贤', declining: '渐衰', rising: '方兴', stable: '安稳', tribute_conquest: '贡赋掳掠',
-  corvee: '力役', imperial: '宗室', noble: '勋贵', gentry: '士绅', commoner: '庶民' };
-const enumText = (v) => { const s = pp(v); return /[a-z_]/i.test(s) ? s.split('·').map((seg) => ENUM_CN[seg.trim()] || seg).join('·') : s; };
+  corvee: '力役', imperial: '宗室', noble: '勋贵', gentry: '士绅', commoner: '庶民',
+  free_wage: '雇工', wage: '雇工', mixed_slavery: '杂用奴隶', encomienda: '委托监护', clanHereditary: '宗族世袭' };
+// 枚举代号：查得到的换中文；查不到的如果后头有中文注（「trade_license·葡王 5%」）就只留注
+function enumSegment(seg) {
+  const t = seg.trim();
+  const m = /^([A-Za-z_+]+)(.*)$/.exec(t);
+  if (!m) return t;
+  const words = m[1].split('+').map((x) => ENUM_CN[x]);
+  return words.every(Boolean) ? words.join('、') + m[2] : m[2].trim();
+}
+const enumText = (v) => {
+  const s = pp(v);
+  if (!/[a-z_]/i.test(s)) return s;
+  const out = s.split('·').map(enumSegment).filter(Boolean).join('·');
+  return out || s;
+};
 const LEAD_LABEL = { ruler: '君主', regent: '摄政', general: '主将', chancellor: '宰辅', spy: '耳目', heir: '继嗣' };
 const MB_LABEL = { elite: '精锐', standingArmy: '常备', militia: '民兵', fleet: '水师' };
 
@@ -216,7 +233,7 @@ export function faction(key) {
     rel.length ? null : row('关系', f.relations),
     attitudeObj ? row('自居', attitudeObj.self) : row('态度', first(f.attitudeDetail, f.attitude)),
     attitudeObj ? row('所敌', attitudeObj.enemies, 'zhu') : null, attitudeObj ? row('所盟', attitudeObj.allies) : null, attitudeObj ? row('所持中立', attitudeObj.neutrals) : null,
-    row('与本朝', f.playerRelation), thresholds.length ? { k: '触怒之限', v: thresholds.join('\n'), tone: 'zhu' } : row('触怒之限', f.offendThresholds),
+    row('与本朝', f.playerRelation), thresholds.length ? { k: '触怒之限', v: cleanText(thresholds.join('\n')), tone: 'zhu' } : row('触怒之限', f.offendThresholds),
     row('内部派系', f.internalParties), row('党派关系', f.partyRelations),
     treatyRow(f), proposalRow(f),
     spies ? row('已知耳目', Object.keys(spies).filter((k) => Number.isFinite(Number(spies[k]))).map((k) => `${spyPlace(k)}${num(Number(spies[k]))}`).join(' · ')) : row('已知耳目', f.knownSpies)
@@ -271,7 +288,7 @@ function kin(s) {
 }
 export function families() {
   const all = G().families || {};
-  return Object.keys(all).map((k) => {
+  return Object.keys(all).filter((k) => k !== '[object Object]').map((k) => {   // 老档里可能有对象当键的一条
     const f = all[k] || {};
     const members = Array.isArray(f.members) ? f.members.length : (f.branches || []).reduce((s, b) => s + ((b && b.members) || []).length, 0);
     return { key: k, name: String(f.name || k), tier: tierText(f.tier), renown: Math.round(renownOf(f)), head: kin(first(f.currentHead, (f.branches || [])[0] && f.branches[0].head)).name, members,

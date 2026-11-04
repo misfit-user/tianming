@@ -2260,7 +2260,13 @@
       return '势力编号·' + raw.replace(/^fac[-_]/i, '');
     }
     if (/^among[A-Z]/.test(raw)) {
-      return '影响对象·' + readableUnknownField(raw.slice(5));
+      // 舆情按人群分（amongMerchants）：剧本里写过的人群都有中文名
+      var amongCn = { Followers: '部众', Peasantry: '农人', Scholars: '士人', Nobles: '贵族', Warriors: '武士', HanSubjects: '汉民', Captured: '俘户',
+        Gentry: '士绅', Tribes: '诸部', Portuguese: '葡人', TuSheng: '土生', Chinese: '华人', Jesuits: '耶稣会士', Dutch: '荷人',
+        AsianMercenaries: '南洋佣兵', Aboriginal: '土著', ChineseTraders: '华商', Spanish: '西班牙人', Mestizo: '混血', Sangley: '生理华商',
+        Natives: '土著', Luoluo: '罗罗', MiaoGelao: '苗仡佬', HanMilitary: '汉军', LocalOfficials: '地方官', Merchants: '商贾',
+        Refugees: '流民', Officers: '军官', Troops: '士卒', HeShuoCommoners: '河朔百姓', Loyalists: '旧臣', KhitanRemnants: '契丹遗民' };
+      return amongCn[raw.slice(5)] || ('影响对象·' + readableUnknownField(raw.slice(5)));
     }
     if (/^in[_-]/i.test(raw)) {
       return '所在范围·' + readableUnknownField(raw.replace(/^in[_-]/i, ''));
@@ -2332,6 +2338,8 @@
 
   function fieldLabel(k){
     var map = {
+      warning: '警戒线', hostile: '敌对线', enemy: '敌', since: '始于', year: '年', month: '月', startTurn: '起始回合',
+      crafts: '百工', cavalry: '骑射', logistics: '转输',
       id: '编号', sid: '剧本编号', key: '键名', name: '名称', label: '称谓', short: '简称', type: '类型',
       factionType: '势力类型', leader: '首领', leaderName: '首领', leaderTitle: '称号', ruler: '君主',
       capital: '首府', home: '核心据点', government: '政体', rank: '位阶', desc: '说明', description: '叙述',

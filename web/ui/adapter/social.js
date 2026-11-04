@@ -32,6 +32,7 @@ const charByName = (n) => (G().chars || []).find((c) => c && c.name === n) || nu
 const alive = (n) => { const c = charByName(n); return !!(c && c.alive !== false && !c.dead); };
 const nameHead = (s) => String(s || '').split(/[（(]/)[0].trim();
 const flipped = (domain) => { const f = typeof w._barFlipToPerceived === 'function' ? w._barFlipToPerceived : null; try { return !!(f && f(domain, 'index')); } catch (_e) { return false; } };
+const UNREST_PHASE = { calm: '安稳', uneasy: '不安', brewing: '酝酿', uprising: '起事' };
 export const SEALED_NOTE = '据奏之数——实情须厂卫、推问、查案方得掀见';
 
 // ---------- 共用：近因、议题、裁决、生态、行动 ----------
@@ -234,7 +235,7 @@ function minxinOf(c, name) {
     .map((x) => ({ turn: x.turn, source: loc(x.sourceSystem || 'class-minxin'), note: loc([x.linkedIssue, x.region, x.reason].filter(Boolean).join(' · ')) }));
   if (!mx && !ledger.length) return null;
   const tv = mx ? n0(mx.true != null ? mx.true : mx.index, NaN) : NaN;
-  return { true: Number.isFinite(tv) ? Math.round(tv) : null, perceived: mx ? Math.round(n0(mx.perceived, tv)) : null, phase: mx ? loc(mx.unrestPhase || 'calm') : '',
+  return { true: Number.isFinite(tv) ? Math.round(tv) : null, perceived: mx ? Math.round(n0(mx.perceived, tv)) : null, phase: mx ? (UNREST_PHASE[mx.unrestPhase || 'calm'] || loc(mx.unrestPhase)) : '',
     pressure: mx && mx.lastPressure ? loc(mx.lastPressure.reason) : '', ledger };
 }
 export function classes() {

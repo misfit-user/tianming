@@ -330,9 +330,11 @@ function initFamilyRegistry() {
   // 按family字段分组
   var grouped = {};
   GM.chars.forEach(function(c) {
-    if (!c.family) return;
-    if (!grouped[c.family]) grouped[c.family] = [];
-    grouped[c.family].push(c);
+    // family 写成对象的（有的存档如此）取它的名字，不然都并进「[object Object]」一族
+    var famKey = typeof c.family === 'string' ? c.family : (c.family && c.family.name);
+    if (!famKey) return;
+    if (!grouped[famKey]) grouped[famKey] = [];
+    grouped[famKey].push(c);
   });
 
   Object.keys(grouped).forEach(function(famName) {

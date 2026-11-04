@@ -3731,8 +3731,8 @@
     },
     {
       "path": "phase8-formal-map.js",
-      "sha256": "b8e4fb8a053597e6db542156698035f510eb7862c49068ade1b1e60a9ff1a8d3",
-      "size": 167591
+      "sha256": "ff10a3fe3ca1589d2a502702914afa7de005eb1fd63e47f527c719ca405a6545",
+      "size": 168673
     },
     {
       "path": "phase8-formal-modules.js",
@@ -5961,8 +5961,8 @@
     },
     {
       "path": "tm-mechanics-world.js",
-      "sha256": "b7ddef75c9a692cc1dcb92d94d592acfacf20651735f2267375167cc8a516b52",
-      "size": 85943
+      "sha256": "4a5cf7a995d40bc3a8ee110c3dcf4763fd9e40d2b8e55dace17b8f44fac53a48",
+      "size": 86137
     },
     {
       "path": "tm-mechanics.js",
@@ -6671,7 +6671,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "b9361a54786590fe5fcf9f3b6ae32315e207f2870690038bf55024139dc7a988",
+      "sha256": "510b7da59db53a11ef2ad703de01d80b010501561a086359a9dc9045a535de04",
       "size": 140397
     },
     {

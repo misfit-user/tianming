@@ -389,14 +389,14 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
           h('button.q-yapai', { type: 'button', onclick: () => { try { A.dismissQueue(q.qid); } catch (e) { toast(e.message); } j.close('ok'); openRoster(); } }, t.dismiss))))) : null,
       R.seeking.length ? h('section', h('h5', `${t.seeking} · ${num(R.seeking.length)}`), seekingGroups(R.seeking).map(([why, list]) => {
         const row = (c, bare) => h('div.au-req' + (bare ? '.bare' : ''),
-          h('b', c.name, h('small', { title: c.title }, c.title)), bare ? null : h('p', c.reason),
+          h('b', { 'data-person': c.name }, c.name, h('small', { title: c.title }, c.title)), bare ? null : h('p', c.reason),
           h('div', h('button.q-yapai', { type: 'button', onclick: go(() => enter(() => A.openSeeking(c.name))) }, t.accept),
             h('button.q-yapai', { type: 'button', onclick: () => { try { A.deny(c.name); } catch (e) { toast(e.message); } j.close('ok'); openRoster(); } }, t.refuse)));
         return list.length > 1 ? [h('h6.au-why', why, h('small', `${num(list.length)}人`)), h('div.au-reqs', list.map((c) => row(c, true)))] : row(list[0], false);
       })) : null,
       h('section', h('h5', `${t.court} · ${num(R.court.length)}`), R.court.length ? h('div.au-faces', pinnedFirst(R.court).map((c) => face(c, go(() => summon(c.name))))) : h('p.au-none', '朝中无人可召')),
       R.away.length ? h('section', h('h5', `${t.away} · ${num(R.away.length)}`), h('p.au-hint', '远方之人不能面对，点名即改遣书札'),
-        h('div.au-away', R.away.map((c) => h('button', { type: 'button', title: c.location, onclick: go(() => onLetter && onLetter(c.name)) }, c.name, h('small', c.travel ? `→${c.travel}` : c.location))))) : null);
+        h('div.au-away', R.away.map((c) => h('button', { type: 'button', title: c.location, 'data-person': c.name, onclick: go(() => onLetter && onLetter(c.name)) }, c.name, h('small', c.travel ? `→${c.travel}` : c.location))))) : null);
     j = juan({ title: t.title, note: game.select.date().text || '', width: '58rem', height: 'min(46rem, 86vh)', content });
   }
 

@@ -1141,6 +1141,13 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const inHall = () => !!(courtPage.opened || keyiPage.opened || mizhaoPage.opened);
   const onPaper = () => !!(lettersPage.opened || docket.opened);
   // 对一个人能做什么（右键可为单与人物窗左缘圆钮同一份）：见、书照身份取叫法；任官只元首一档有，余者不列；做不了的写缘由
+  // 召对灰着时说清人在哪：同一地块才能面对
+  function farReason(name) {
+    let c = null;
+    try { c = game.select.people().find((p) => p.name === name); } catch (_e) { c = null; }
+    if (c && c.travelTo) return `人在路上，正往${c.travelTo}，宜传书`;
+    return c && c.location ? `人在${c.location}，不在一地，宜传书` : '人不在近处，宜传书';
+  }
   function personCan(name) {
     // 书札、奏疏开着：看人可以（书札还能换个收信人），召对、任官这些要换场面的事先收卷
     const ro = per.previewing ? '借视角时只读' : inHall() ? '殿上议事，散了再说' : onPaper() ? '先收卷' : '';
@@ -1148,7 +1155,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const far = (() => { try { return game.letters.contacts().some((p) => p.name === name); } catch (_e) { return false; } })();
     return {
       audienceTitle: prof.audience.title, letterTitle: prof.letters.compose,
-      audience: ro || (near ? '' : '人不在近处，宜传书'),
+      audience: ro || (near ? '' : farReason(name)),
       letter: (lettersPage.opened && !per.previewing ? '' : ro) || (far ? '' : prof.letters.atCourt),
       office: prof.tier === 'sovereign' ? ro : null
     };

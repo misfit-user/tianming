@@ -4481,8 +4481,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "5eac4e818de8c0636d58f01fa26731321fbcb45e0cfd0e086bf7ab59697d77f5",
-      "size": 390546
+      "sha256": "0857b86b2665a8ee09f7a057839d35936243bfd6e7f34bad41856110c3e28b99",
+      "size": 390946
     },
     {
       "path": "styles.css",
@@ -5531,8 +5531,8 @@
     },
     {
       "path": "tm-game-ui-shell.js",
-      "sha256": "3a4471d7ce8749b70091f8f7163958daccfa7393633b34a6db6ce97683aeb5a9",
-      "size": 51924
+      "sha256": "b2c3b4a47e8ebd64ccf56f675425eb8914118f19fed7ae21cb15ab54c70bbf10",
+      "size": 51918
     },
     {
       "path": "tm-globalrules.js",
@@ -5591,8 +5591,8 @@
     },
     {
       "path": "tm-hongyan-office.js",
-      "sha256": "24eaebab17bfa6b574bd508a90338350132a74c3c0cb6ce1565ff59607102c91",
-      "size": 109846
+      "sha256": "a2cfaf24250933ba89c3054a8e6dda595087a22e473a0d0a00d226aefb66d4d2",
+      "size": 116712
     },
     {
       "path": "tm-hooks-tracker.js",
@@ -6671,7 +6671,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "4fb96fb49e1d8fadb0f1658802368aee12fe0b3d66bdced33c0a76cabf49f50b",
+      "sha256": "618bf1a5bed43e2a90763abf7c7f2d27a26153ef733342b56a5bcdc441872438",
       "size": 140397
     },
     {

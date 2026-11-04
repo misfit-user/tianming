@@ -8,7 +8,7 @@ const G = () => w.GM || {};
 const fn = (name) => (typeof w[name] === 'function' ? w[name] : null);
 const dict = (name) => (w[name] && typeof w[name] === 'object' ? w[name] : {});
 
-export const URGENCY = [['normal', '驿递', '日行五十里'], ['urgent', '加急', '日行三百里'], ['extreme', '八百里加急', '日行八百里']];
+export const URGENCY = [['normal', '驿递', '日行百里'], ['urgent', '加急', '日行三百里'], ['extreme', '八百里加急', '日行八百里']];
 export const SEND_MODES = [['multi_courier', '多路信使', '数路并发，截获者难尽'], ['secret_agent', '密使', '不走驿站，慢而稳']];
 
 const label = (table, key) => (dict(table)[key] || {}).label || '';

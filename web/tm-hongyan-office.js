@@ -111,10 +111,166 @@ function _ltHerePlace() {
   return atCapital ? cap : here;
 }
 
-/** 估算两地信件传递天数（改进版） */
+// 地图路程折信程：一公里约一里八（明清一里合五百七十六米上下），驿速里/日
+var LT_LI_PER_KM = 1.8;
+var LT_ROAD_LI_PER_DAY = { normal: 100, urgent: 300, extreme: 800 };
+// 走不通的两地（隔海、地图上不连）按直线加三成绕行
+var LT_OPEN_WATER_DETOUR = 1.3;
+// 同一地块里的两处，算一日路程
+var LT_SAME_REGION_LI = 60;
+var _ltRouteCaches = new WeakMap();
+
+function _ltRouteCache(map) {
+  var c = _ltRouteCaches.get(map);
+  if (!c) { c = { places: new Map(), km: new Map(), sources: new Set(), names: null }; _ltRouteCaches.set(map, c); }
+  return c;
+}
+
+/** 通称换成实地：京师、宫中是当朝京城，行在、随驾是天子此刻所在；本来就是实地的原样返回 */
+function _ltRealPlaceText(text) {
+  var parts = String(text).split(/[·・\/\,，、\s]+/);
+  for (var i = 0; i < parts.length; i++) {
+    var p = (parts[i] || '').trim();
+    if (!p) continue;
+    if (_LOC_COURT_WORDS[p]) {
+      // 「行在·福建」：行在后面写了实地，以实地为准（解析时自会取福建）
+      if (p !== '随驾' && parts.slice(i + 1).some(function(x) { return x && x.trim(); })) continue;
+      return _locCourtPlace() || text;
+    }
+    if (_locIsCapitalWord(p)) return (GM._capital || GM.capital || text);
+    return text;
+  }
+  return text;
+}
+
+/** 剧本没写地名契约（晚唐）时的索引：地块的名、别名，和「京兆府·长安」拆开的每一段 */
+function _ltPlaceNames(map, cache) {
+  if (cache.names) return cache.names;
+  var names = new Map();
+  var add = function(key, id) {
+    key = String(key || '').trim();
+    if (!key) return;
+    var row = names.get(key);
+    if (!row) names.set(key, [id]);
+    else if (row.indexOf(id) < 0) row.push(id);
+  };
+  (map.regions || []).forEach(function(r) {
+    if (!r || r.id == null) return;
+    var id = String(r.id);
+    [r.id, r.name, r.title].concat(Array.isArray(r.aliases) ? r.aliases : []).forEach(function(n) {
+      add(n, id);
+      String(n || '').split(/[·・]/).forEach(function(part) { add(part, id); });
+    });
+  });
+  cache.names = names;
+  return names;
+}
+
+function _ltLookupPlaceName(map, cache, text) {
+  var names = _ltPlaceNames(map, cache);
+  var head = String(text).split(/[（(]/)[0].trim();
+  if (names.has(head)) return names.get(head);
+  var tokens = head.split(/[·・\/／、，,；;\s]+/).filter(Boolean);
+  for (var i = 0; i < tokens.length; i++) if (names.has(tokens[i])) return names.get(tokens[i]);
+  var best = '';
+  names.forEach(function(_, key) { if (key.length >= 2 && key.length > best.length && head.indexOf(key) >= 0) best = key; });
+  return best ? names.get(best) : [];
+}
+
+function _ltReadPlace(map, cache, text) {
+  var locs = (typeof window !== 'undefined' && window.TMMapLocations) || (typeof TMMapLocations !== 'undefined' ? TMMapLocations : null);
+  if (!locs || !locs.enabled(map)) return _ltLookupPlaceName(map, cache, text);
+  var idsOf = function(hit) { return hit.regionId ? [hit.regionId] : (hit.candidateRegionIds || []); };
+  var ids = idsOf(locs.resolveText(text, map, null, 'character', GM, true));
+  if (ids.length) return ids;
+  // 势力专属的别名（日本的「京」）要带上人才认得：找一个写着这个地名的人
+  var who = (GM.chars || []).find(function(c) { return c && c.location === text; });
+  return who ? idsOf(locs.resolveText(text, map, who, 'character', GM, true)) : [];
+}
+
+function _ltPlaceIdsOf(map, text) {
+  var cache = _ltRouteCache(map);
+  if (cache.places.has(text)) return cache.places.get(text);
+  var ids = _ltReadPlace(map, cache, text);
+  if (!ids.length) {
+    // 同一处的别称挨个认：京城写「北京」，地图上这块叫顺天府
+    var group = _locAliasOf(String(text).split(/[·・]/)[0].trim());
+    var names = group ? Object.keys(_LOC_ALIASES) : [];
+    for (var i = 0; i < names.length && !ids.length; i++) {
+      if (_LOC_ALIASES[names[i]] === group) ids = _ltReadPlace(map, cache, names[i]);
+    }
+  }
+  cache.places.set(text, ids);
+  return ids;
+}
+
+/** 一段地名可能落在哪些地块。粗区（「河北」）和两可（「徐州／邳州」）都给候选，由算路的挑最近的 */
+function _ltPlaceRegionIds(map, text) {
+  var real = _ltRealPlaceText(text);
+  var ids = _ltPlaceIdsOf(map, real);
+  return (ids.length || real === text) ? ids : _ltPlaceIdsOf(map, text);
+}
+
+/** 两个地块之间的公里数：连着的沿邻接走，走不通的按直线加绕行；坐标都没有返回 null */
+function _ltRegionKm(map, cache, route, a, b) {
+  if (a === b) return 0;
+  var key = a < b ? a + '|' + b : b + '|' + a;
+  if (cache.km.has(key)) return cache.km.get(key);
+  // 哪头算过就从哪头算：绝大多数信都有玩家这一头，不必每个收信人跑一遍
+  var source = cache.sources.has(b) ? b : a;
+  var target = source === a ? b : a;
+  cache.sources.add(source);
+  var row = route.routeDays(map, source).get(target);
+  var km = row ? row.km : null;
+  if (km == null) {
+    var regions = map.regions || [];
+    var pick = function(id) { return route.lonLatOf(map, regions.find(function(r) { return r && String(r.id) === id; })); };
+    var p = pick(a), q = pick(b);
+    km = (p && q) ? _ltGreatCircleKm(p, q) * LT_OPEN_WATER_DETOUR : null;
+  }
+  cache.km.set(key, km);
+  return km;
+}
+
+function _ltGreatCircleKm(a, b) {
+  var rad = Math.PI / 180, dlat = (b[1] - a[1]) * rad, dlon = (b[0] - a[0]) * rad;
+  var h = Math.pow(Math.sin(dlat / 2), 2) + Math.cos(a[1] * rad) * Math.cos(b[1] * rad) * Math.pow(Math.sin(dlon / 2), 2);
+  return 6371 * 2 * Math.asin(Math.sqrt(Math.min(1, h)));
+}
+
+/** 两段地名之间的路程（公里）。地图缺或地名对不上返回 null，出错也只返回 null，不许拖垮写信和过回合 */
+function _ltRouteKm(fromLoc, toLoc) {
+  try {
+    var map = GM.mapData || GM.map;
+    var route = TM.MapRouteDays;
+    if (!route || !map || !Array.isArray(map.regions) || !map.regions.length) return null;
+    var from = _ltPlaceRegionIds(map, fromLoc);
+    var to = _ltPlaceRegionIds(map, toLoc);
+    if (!from.length || !to.length) return null;
+    var cache = _ltRouteCache(map);
+    var best = null;
+    from.forEach(function(a) {
+      to.forEach(function(b) {
+        var km = _ltRegionKm(map, cache, route, a, b);
+        if (km != null && (best == null || km < best)) best = km;
+      });
+    });
+    return best;
+  } catch (e) {
+    try { if (TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, '_ltRouteKm'); } catch (_) {}
+    return null;
+  }
+}
+
+/** 两地信件传递天数：先按地图真实路程；地图缺或地名对不上，退回按行政层级粗估 */
 function calcLetterDays(fromLoc, toLoc, urgency) {
   if (!fromLoc || !toLoc || fromLoc === toLoc) return 1;
-  // 古代驿站速度（里/天）：普通50里，加急300里，八百里加急800里
+  var km = _ltRouteKm(fromLoc, toLoc);
+  if (km != null) {
+    var roadLi = km > 0 ? km * LT_LI_PER_KM : LT_SAME_REGION_LI;
+    return Math.max(1, Math.ceil(roadLi / (LT_ROAD_LI_PER_DAY[urgency] || LT_ROAD_LI_PER_DAY.normal)));
+  }
+  // 粗估的里数本就是猜的，这张速度表和它配套，只在这里用；真实路程用上面的驿速
   var liPerDay = { normal: 50, urgent: 300, extreme: 800 };
   var speed = liPerDay[urgency] || 50;
   // 估算距离（里）——基于行政区划层级推断

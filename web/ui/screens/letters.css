@@ -191,6 +191,7 @@
 @media (max-width: 1000px) {
   .lt-left { bottom: 9.5rem; width: 190px; }
   .lt-right { max-height: calc(100vh - 16rem); width: calc(190px + 1.5rem); }
+  .lt-meta { max-width: calc(100vw - 2 * (190px + 5rem)); }
 }
 @media (max-width: 900px) {
   .lt-left { bottom: 15.5rem; }

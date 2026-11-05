@@ -11,7 +11,7 @@ import { qianzi, juan } from '../kit/index.js';
 const toast = (text) => bus.emit('kernel:toast', { text });
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
 const amt2 = (v) => num(roundSig(Math.abs(v || 0), 2));
-const signed = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + amt(v);
+const signed = (v) => (v > 0 ? '盈' : v < 0 ? '亏' : '') + amt(v);
 // 记数只写整数：不足半成的说不足一，写成「零%」像没有
 const pct = (v) => { const p = (v || 0) * 100; return p > 0 && p < 0.5 ? '不足一%' : `${num(p)}%`; };
 const TABS = [['guoku', '帑廪'], ['neitang', '内帑'], ['census', '户口']];
@@ -61,7 +61,7 @@ export function createFiscal({ root, game, onCircuit }) {
     if (!a) { replaceChildren(leftBody, h('p.ce-unk', '此账未具')); replaceChildren(right); return; }
     replaceChildren(leftBody,
       a.forecast ? h('p.fi-note', '本期尚未结账，所列为预估') : null,
-      a.distorted ? h('p.fi-note', '库存与银之收支皆据有司所奏，未经核实') : null,
+      a.distorted ? h('p.fi-note', `库存与${F.money().noun}之收支皆据有司所奏，未经核实`) : null,
       a.res.map(card));
     const r = a.res.find((x) => x.key === res) || a.res[0];
     replaceChildren(right,
@@ -114,12 +114,12 @@ export function createFiscal({ root, game, onCircuit }) {
     const max = Math.max(1, ...H.months.flatMap((m) => [m.inn, m.out]));
     return h('section.fi-sec.fi-hist',
       H.months.length ? [h('h4', `近${num(H.months.length)}期收支`),
-        h('div.fi-hbars', H.months.map((m) => h('div', { title: `第${num(m.turn)}回合　收${amt(m.inn)} 支${amt(m.out)} 净${signed(m.net)}　期末库银${amt(m.balance)}${unit}` },
+        h('div.fi-hbars', H.months.map((m) => h('div', { title: `第${num(m.turn)}回合　收${amt(m.inn)} 支${amt(m.out)} 净${signed(m.net)}　期末库${F.money().noun}${amt(m.balance)}${unit}` },
           h('i.in', { style: { height: `${(m.inn / max) * 100}%` } }), h('i.out', { style: { height: `${(m.out / max) * 100}%` } }), h('small', num(m.turn))))),
         h('p.fi-note', '左柱收、右柱支；悬停见当期之数。')] : null,
       H.years.length ? [h('h4', '年度决算'), H.years.map((y) => h('details.fi-year',
         h('summary', h('b', `${yearNum(y.year)}年`), h('span', `入${amt(y.inn)} · 出${amt(y.out)}`), h('em' + (y.net < 0 ? '.neg' : ''), signed(y.net)), y.bankrupt ? h('small.neg', `破产${num(y.bankrupt)}月`) : null),
-        h('p', `年终库银${amt(y.balance)}${unit}`),
+        h('p', `年终库${F.money().noun}${amt(y.balance)}${unit}`),
         y.regions.length ? h('div.fi-debts', y.regions.map((x) => h('p', h('span', x.name), h('b', `${signed(x.net)}`)))) : null))] : null);
   }
 
@@ -139,7 +139,7 @@ export function createFiscal({ root, game, onCircuit }) {
     const L = F.loans();
     return h('div.fi-acts',
       h('section.fi-sec', h('h4', `借贷 · 在借${num(L.list.length)}笔`),
-        L.list.map((x) => h('p.fi-loan', h('b', x.source), `本金${amt(x.principal)}两 · 月息${num(Math.round(x.rate * 1000) / 10)}% · 月付${amt(x.monthly)} · 余${num(x.left)}/${num(x.term)}月`)),
+        L.list.map((x) => h('p.fi-loan', h('b', x.source), `本金${amt(x.principal)}${F.money().unit} · 月息${num(Math.round(x.rate * 1000) / 10)}% · 月付${amt(x.monthly)} · 余${num(x.left)}/${num(x.term)}月`)),
         h('button.q-yapai', { type: 'button', onclick: () => openLoan(L.sources) }, '新借一笔')),
       h('section.fi-sec', h('h4', '户部条陈'), h('p.fi-note', '加派、开仓拟入议事清册，下旨方行；改铸、改制当场施行。'),
         h('div.fi-btns',
@@ -164,12 +164,12 @@ export function createFiscal({ root, game, onCircuit }) {
     j = juan({
       title: '借贷', note: '择来源', width: '32rem',
       content: h('div.au-pick', sources.map((s) => h('button.au-pick-row' + (s.foreign ? '.danger' : ''), { type: 'button', onclick: () => { j.close('ok'); loanForm(s); } },
-        h('b', s.name), h('small', `月息${num(Math.round(s.rate * 1000) / 10)}% · 上限${amt(s.max)}两 · ${s.note}`))))
+        h('b', s.name), h('small', `月息${num(Math.round(s.rate * 1000) / 10)}% · 上限${amt(s.max)}${F.money().unit} · ${s.note}`))))
     });
   }
   function loanForm(s) {
     const sizes = [0.3, 0.5, 1].map((k) => Math.round(s.max * k / 10000) * 10000);
-    const size = qianzi(sizes.map((v) => ({ value: v, label: `${amt(v)}两` })), { value: sizes[1] });
+    const size = qianzi(sizes.map((v) => ({ value: v, label: `${amt(v)}${F.money().unit}` })), { value: sizes[1] });
     const term = qianzi([6, 12, 24, 36].map((v) => ({ value: v, label: `${num(v)}月` })), { value: 12 });
     juan({
       title: s.name, note: `月息${num(Math.round(s.rate * 1000) / 10)}%`, width: '30rem',
@@ -178,7 +178,7 @@ export function createFiscal({ root, game, onCircuit }) {
         let r = null;
         try { r = F.takeLoan(s.id, Number(size.getValue()), Number(term.getValue())); } catch (e) { toast(e.message); return; }
         close('ok');
-        toast(r && r.success !== false ? `已向${s.name}借银${amt(Number(size.getValue()))}两` : `未成：${(r && r.reason) || ''}`);
+        toast(r && r.success !== false ? `已向${s.name}借${F.money().noun}${amt(Number(size.getValue()))}${F.money().unit}` : `未成：${(r && r.reason) || ''}`);
         render();
       } }]
     });
@@ -222,7 +222,7 @@ export function createFiscal({ root, game, onCircuit }) {
             h('button.q-yapai', { type: 'button', onclick: draft(() => F.transferDraft('toPalace', Number(amount.getValue()))) }, '帑廪拨入内帑'),
             h('button.q-yapai', { type: 'button', onclick: draft(() => F.transferDraft('toState', Number(amount.getValue()))) }, '发内帑济国用'))),
         F.CEREMONIES.map(([k, label, cost]) => h('div.fi-row', h('b', label),
-          h('small' + (cost > silver ? '.bad' : ''), `约费${amt(cost)}两${cost > silver ? '，内帑不足' : ''}`),
+          h('small' + (cost > silver ? '.bad' : ''), `约费${amt(cost)}${F.money().unit}${cost > silver ? '，内帑不足' : ''}`),
           h('button.q-yapai', { type: 'button', onclick: draft(() => F.ceremonyDraft(k)) }, '拟举')))));
   }
 

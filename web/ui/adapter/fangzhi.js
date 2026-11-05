@@ -6,6 +6,7 @@
 // 第七卷「账本」点开才取（ledger）。
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
+import { money } from './currency.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -238,7 +239,7 @@ function build(p, r) {
     has(first(fc.autonomyLevel, fc.autonomy)) ? row('财政自主', pct(first(fc.autonomyLevel, fc.autonomy)), '', mRate(first(fc.autonomyLevel, fc.autonomy))) : null,
     row('税负', first(fc.taxBurden, d.taxBurden)), row('税级', d.taxLevel),
     row('库钱', b.treasury.money), row('掌藏记', d.custodyNote), row('库藏粮', b.treasury.grain), row('库帛', b.treasury.cloth),
-    row('本回合银产', fc.moneyOutput, 'gold'), row('本回合粮产', fc.grainOutput, 'gold'),
+    row(`本回合${money().noun}产`, fc.moneyOutput, 'gold'), row('本回合粮产', fc.grainOutput, 'gold'),
     row('豪强', magnate(b.liveStats), 'bad')
   ]);
   const armies = armiesOf(b.army.liveArmies || []);
@@ -590,7 +591,7 @@ function buildCircuit(p, MC, c, clicked) {
   const caiji = own.length ? keep([
     row('实征', sum.actualRevenue, '', sum.compliance != null ? { note: `合规${Math.round(sum.compliance * 100)}%` } : {}),
     row('起运', sum.remittedToCenter), row('留用', sum.retainedBudget),
-    row('公帑·银', sum.treasury && sum.treasury.money), row('公帑·粮', sum.treasury && sum.treasury.grain, '', { note: '各州库藏合计' }),
+    row(`公帑·${money().noun}`, sum.treasury && sum.treasury.money), row('公帑·粮', sum.treasury && sum.treasury.grain, '', { note: '各州库藏合计' }),
     row('掌藏记', profile.custodyNote)
   ]) : [];
   // 营造
@@ -810,7 +811,7 @@ export function ledger(id) {
   let treasury = null;
   const pt = div.publicTreasury;
   if (pt && typeof pt === 'object') {
-    const books = [['money', '银账'], ['grain', '粮账'], ['cloth', '布账']].map(([k, label]) => {
+    const books = [['money', `${money().noun}账`], ['grain', '粮账'], ['cloth', '布账']].map(([k, label]) => {
       const led = pt[k];
       if (!led) return null;
       const stock = num0(led.stock), quota = num0(led.quota);

@@ -13,20 +13,23 @@
 .gs-seal ol li { flex: 1; height: .375rem; background: rgba(120, 90, 50, .15); }
 .gs-seal ol li.f { background: #8a5a2a; }
 .gs-seal ol li.n { background: #a3301f; }
-.gs-seal small { grid-area: sub; font-size: var(--fs-1); line-height: 1.4; color: var(--ink-faint); }
+.gs-seal small { grid-area: sub; display: flex; flex-wrap: wrap; column-gap: .75em; font-size: var(--fs-1); line-height: 1.4; color: var(--ink-faint); }
+.gs-seal small span { white-space: nowrap; }
 
 .gs-right { gap: .875rem; container-type: inline-size; }
 .gs-title { display: flex; align-items: center; gap: 1rem; padding-bottom: .375rem; border-bottom: 1px solid rgba(120, 90, 50, .35); }
 .gs-title h3 { margin: 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .3em; }
 /* 抬头的品第和顶栏那方印是同一个字 */
 .gs-grade { padding: 0 .5rem; font: 400 var(--fs-3) var(--f-title); letter-spacing: .2em; color: #7d1d12; box-shadow: inset 0 0 0 1px rgba(140, 40, 28, .45); }
-.gs-rows { display: grid; grid-template-columns: 1fr 1fr; gap: .25rem 2rem; }
-.gs-rows p { display: flex; align-items: baseline; gap: .75rem; margin: 0; font-size: var(--fs-3); line-height: 1.8; }
+/* 两栏总览：字段名给够五个字，数不折行，注写在数下面 */
+.gs-rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem 1.5rem; }
+.gs-rows p { display: flex; align-items: baseline; gap: .5rem; min-width: 0; margin: 0; font-size: var(--fs-3); line-height: 1.8; }
 .gs-rows p.big { grid-column: 1 / -1; }
 .gs-rows p.big b { font: 400 var(--fs-6) var(--f-title); }
-.gs-rows span { flex: none; width: 6em; white-space: nowrap; font: var(--fs-2) var(--f-title); letter-spacing: .2em; color: var(--ink-faint); }
-.gs-rows b { font-weight: 400; }
-.gs-rows small { font-size: var(--fs-1); color: var(--ink-faint); }
+.gs-rows .k { flex: none; width: 6em; white-space: nowrap; font: var(--fs-2) var(--f-title); letter-spacing: .12em; color: var(--ink-faint); }
+.gs-rows .v { display: flex; flex-wrap: wrap; align-items: center; column-gap: .5rem; min-width: 0; }
+.gs-rows b { font-weight: 400; white-space: nowrap; }
+.gs-rows small { flex-basis: 100%; font-size: var(--fs-1); line-height: 1.4; color: var(--ink-faint); }
 .gs-sealed { margin: 0; padding: .5rem .75rem; font-size: var(--fs-2); letter-spacing: .06em; color: #6a1f12; background: rgba(163, 40, 27, .06); box-shadow: inset .1875rem 0 0 rgba(163, 40, 27, .6); }
 /* 色调 */
 .gs-ov .good { color: #2f6b55; } .gs-ov .mid { color: #8a5a12; } .gs-ov .warn { color: #a8661a; } .gs-ov .bad { color: #a8261a; } .gs-ov .gold { color: #8a6a1a; } .gs-ov .plain { color: var(--ink); }
@@ -41,10 +44,12 @@
 
 /* 色带：标记在带子上方，不压字 */
 .gs-specbox { margin: 0 0 .25rem; }
-.gs-pins { position: relative; height: 1.25rem; }
+.gs-pins { position: relative; height: 1.5rem; }
+/* 只有一枚标记时没有字，不必留出字的高度 */
+.gs-pins.solo { height: .625rem; }
 .gs-pins em { position: absolute; bottom: 0; width: 0; height: 0; margin-left: -.3125rem; border-left: .3125rem solid transparent; border-right: .3125rem solid transparent; border-top: .4375rem solid #1e120a; font-style: normal; }
 .gs-pins em.seen { border-top-color: #9a7a2a; }
-.gs-pins em span { position: absolute; left: 0; bottom: .4375rem; transform: translateX(-50%); white-space: nowrap; line-height: 1.2; font: var(--fs-1) var(--f-title); color: #1e120a; }
+.gs-pins em span { position: absolute; left: 0; bottom: .5625rem; transform: translateX(-50%); white-space: nowrap; line-height: 1.2; font: var(--fs-1) var(--f-title); color: #1e120a; }
 .gs-pins em.seen span { color: #7a5f1c; }
 .gs-pins em.l span { transform: translateX(calc(-100% + .3125rem)); }
 .gs-pins em.r span { transform: translateX(-.3125rem); }
@@ -59,19 +64,20 @@
 .gs-dots i.f { background: #2a1a10; }
 .gs-depts { display: grid; grid-template-columns: 1fr 1fr; gap: .25rem 2rem; }
 .gs-depts p { display: grid; grid-template-columns: 2.5em auto 2.5em 1fr; align-items: center; gap: .625rem; margin: 0; font-size: var(--fs-3); white-space: nowrap; }
+.gs-depts em { font-size: var(--fs-1); }
 .gs-depts span { color: var(--ink-soft); }
 .gs-depts b { font-weight: 400; }
 .gs-depts em { font-style: normal; color: var(--ink-faint); }
 
 /* 数目按字宽（em）给列：按 rem 给的装不下「三十九万六千」，折出一个「千」 */
-.gs-tax-row { display: grid; grid-template-columns: 6.5em minmax(0, 1fr) 7em 4em; align-items: center; gap: .5rem; font-size: var(--fs-2); margin-top: .25rem; }
+.gs-tax-row { display: grid; grid-template-columns: 6.5em minmax(0, 1fr) 7em 5em; align-items: center; gap: .5rem; font-size: var(--fs-2); margin-top: .25rem; }
 .gs-tax-row span { white-space: nowrap; }
 .gs-tax-row i { height: .5rem; background: rgba(120, 90, 50, .12); }
 .gs-tax-row i b { display: block; height: 100%; }
 .gs-tax-row.nom i b { background: #b89a53; } .gs-tax-row.rec i b { background: #a3301f; } .gs-tax-row.paid i b { background: #c0603a; }
 .gs-tax-row em { font-style: normal; text-align: right; white-space: nowrap; font-family: var(--f-title); }
 .gs-tax-row small { color: var(--ink-faint); text-align: right; white-space: nowrap; }
-.gs-gaps p:not(.gs-note) { display: grid; grid-template-columns: 6.5em 7em 4em; gap: .5rem; margin: .125rem 0; font-size: var(--fs-2); color: var(--ink-soft); }
+.gs-gaps p:not(.gs-note) { display: grid; grid-template-columns: 6.5em 7em 5em; gap: .5rem; margin: .125rem 0; font-size: var(--fs-2); color: var(--ink-soft); }
 .gs-gaps b { font-weight: 400; text-align: right; white-space: nowrap; }
 .gs-gaps small { text-align: right; white-space: nowrap; }
 
@@ -95,21 +101,23 @@
 @container (max-width: 420px) { .gs-pair { grid-template-columns: minmax(0, 1fr); gap: .875rem; } }
 .gs-ledger { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .1875rem 1.25rem; }
 .gs-pair .gs-ledger { grid-template-columns: minmax(0, 1fr); }
-.gs-ledger p { display: grid; grid-template-columns: 3.75em minmax(0, 1fr) 4.25em; align-items: center; gap: .5rem; margin: 0; font-size: var(--fs-2); }
+.gs-ledger p { display: grid; grid-template-columns: 3.75em minmax(0, 1fr) 4.75em; align-items: center; gap: .5rem; margin: 0; font-size: var(--fs-2); }
 .gs-ledger span { white-space: nowrap; color: var(--ink-soft); }
 .gs-ledger i { height: .4375rem; background: rgba(120, 90, 50, .12); }
 .gs-ledger u { display: block; height: 100%; text-decoration: none; }
 .gs-ledger u.good { background: #3f7a62; } .gs-ledger u.bad { background: #a3301f; }
 .gs-ledger b { text-align: right; white-space: nowrap; font-weight: 400; font-family: var(--f-title); }
-.gs-names { margin: .25rem 0 0; font-size: var(--fs-1); line-height: 1.7; color: var(--ink-faint); }
-.gs-bars > div { margin-bottom: .25rem; }
-.gs-bars p { display: grid; grid-template-columns: 6em minmax(0, 1fr) 4em; align-items: center; gap: .5rem; margin: 0; font-size: var(--fs-2); }
+/* 名目可以换行，词不能拆开 */
+.gs-names { display: flex; flex-wrap: wrap; column-gap: 1em; margin: .25rem 0 0; font-size: var(--fs-1); line-height: 1.7; color: var(--ink-faint); }
+.gs-names span { white-space: nowrap; }
+.gs-bars > div { display: grid; grid-template-columns: var(--k, 6em) minmax(0, 1fr) 4em; align-items: center; column-gap: .5rem; margin-bottom: .25rem; font-size: var(--fs-2); }
+.gs-bars p { display: contents; }
 .gs-bars p span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-soft); }
 .gs-bars i { height: .4375rem; background: rgba(120, 90, 50, .12); }
 .gs-bars i b { display: block; height: 100%; }
 .gs-bars i b.good { background: #3f7a62; } .gs-bars i b.mid { background: #b89a53; } .gs-bars i b.bad { background: #a3301f; }
 .gs-bars em { font-style: normal; text-align: right; white-space: nowrap; font-family: var(--f-title); }
-.gs-bars small { display: block; margin: .125rem 0 .25rem 6.5em; padding: .125rem .5rem; font-size: var(--fs-1); color: var(--ink-faint); box-shadow: inset 2px 0 0 rgba(184, 154, 83, .6); }
+.gs-bars small { grid-column: 2 / -1; margin: .125rem 0 .25rem; padding: .125rem .5rem; font-size: var(--fs-1); color: var(--ink-faint); box-shadow: inset 2px 0 0 rgba(184, 154, 83, .6); }
 .gs-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(9em, 1fr)); gap: .25rem; font-size: var(--fs-1); }
 .gs-tiles span { display: flex; justify-content: space-between; padding: .1875rem .375rem; white-space: nowrap; color: #f9ead2; }
 .gs-tiles em { flex: none; font-style: normal; }

@@ -19,7 +19,8 @@
 .fi-card .flow span { white-space: nowrap; }
 .fi-card .flow .in { color: #2f6b55; }
 .fi-card .flow .out { color: #8a5a12; }
-.fi-card .flow .net { color: #2f6b55; }
+/* 净数独占一行，三张账卡折法一样 */
+.fi-card .flow .net { flex-basis: 100%; color: #2f6b55; }
 .fi-card .flow .net.neg { color: #8a2a1c; }
 .fi-card .last { font-size: var(--fs-1); color: var(--ink-faint); }
 .fi-card .deficit { margin-top: .25rem; font-size: var(--fs-2); color: #8a2a1c; }
@@ -60,7 +61,7 @@
 @container (max-width: 760px) { .fi-cols { grid-template-columns: minmax(0, 1fr); gap: .5rem; } }
 .fi-sec h4 { margin: .25rem 0 .5rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .25em; color: #5a2a12; }
 /* 数目一栏按字宽（em）给：小屏字号有下限，按 rem 给的 6rem 装不下「三十九万六千」，折出一个「千」 */
-.fi-bar { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 7em 3.5em; align-items: center; gap: .5rem; padding: .1875rem 0; font-size: var(--fs-2); }
+.fi-bar { display: grid; grid-template-columns: 6.5em minmax(0, 1fr) 7em 3.5em; align-items: center; gap: .5rem; padding: .1875rem 0; font-size: var(--fs-2); }
 .fi-bar.fi-two { grid-template-columns: 3em minmax(0, 1fr) 7em; }
 .fi-bar .k { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fi-bar .v { height: .5rem; background: rgba(120, 90, 50, .12); }

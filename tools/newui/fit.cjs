@@ -16,6 +16,8 @@ const opt = (name, fallback) => { const a = args.find((x) => x.startsWith(`--${n
 const out = args.find((a) => !a.startsWith('--'));
 if (!out) { console.error('用法：node tools/newui/fit.cjs <出图目录> [--scn=1] [--pick=刘宗周] [--sizes=a,b] [--tag=a]'); process.exit(2); }
 const scn = opt('scn', '1');
+// 选剧本用 nth-child，从 1 数；传 0 不会选中任何一部，静静跑默认那部，等于没查
+if (!(Number(scn) >= 1)) { console.error(`--scn 从 1 数，收到 ${scn}`); process.exit(2); }
 const pick = opt('pick', '刘宗周');
 const tag = opt('tag', 'fit');
 const SIZES = opt('sizes', '1920x1080,2560x1440,1920x969,1600x900,1536x730,1366x657,1280x647,1280x585,1180x820,1024x768,960x485,844x390')
@@ -168,6 +170,9 @@ const audit = (state) => {
   await key('2');
   await wait(1500);
   await p.evaluate((n) => { const i = document.querySelector('.xr-search'); if (i) { i.value = n; i.dispatchEvent(new Event('input', { bubbles: true })); } }, pick);
+  // 默认人名只在天启有：别的剧本搜不到时清掉搜索，名册第一人照样能开人物窗
+  await wait(400);
+  await p.evaluate(() => { if (document.querySelector('.xr-row')) return; const i = document.querySelector('.xr-search'); if (i) { i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); } });
   await wait(500);
   await p.evaluate((n) => { const r = [...document.querySelectorAll('.xr-row')].find((x) => x.dataset.person === n) || document.querySelector('.xr-row'); if (r) r.querySelector('.xr-main').click(); }, pick);
   await wait(1200);

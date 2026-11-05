@@ -128,7 +128,7 @@ export function createGongwei({ root, game, profile, onPerson, onAudience }) {
   function palaceDoc(p) {
     const t = T();
     return [h('header.gw-head.pal', h('i.gw-pal.big', p.name.charAt(0)), h('div', h('h3', p.name, h('em.gw-seal', p.typeLabel)), h('p', [p.location, p.statusLabel].filter(Boolean).join(' · ')))),
-      facts([['功用', p.use], ['始建', p.built ? (/^\d+$/.test(String(p.built)) ? `公元${yearNum(p.built)}年` : String(p.built)) : ''], ['岁修', p.cost ? `${num(p.cost)}两` : ''], ['上次修缮', p.lastRenovation ? turnTag(p.lastRenovation) : '']]),
+      facts([['功用', p.use], ['始建', p.built ? (/^\d+$/.test(String(p.built)) ? `公元${yearNum(p.built)}年` : String(p.built)) : ''], ['岁修', p.cost ? `${num(p.cost)}${game.fiscal.money().unit}` : ''], ['上次修缮', p.lastRenovation ? turnTag(p.lastRenovation) : '']]),
       p.description ? h('p.gw-bio', p.description) : null,
       p.halls.length ? h('section.gw-halls', h('h5', '殿宇'), p.halls.map((sh) => h('p', h('b', sh.name), h('small', `${sh.role} ${num(sh.occupants.length)}／${num(sh.capacity)}`), sh.occupants.join('、')))) : null,
       p.residents.length ? h('section.gw-halls', h('h5', '今居'), h('p', p.residents.map((n, i) => [i ? '、' : null, onPerson ? h('button.link', { type: 'button', onclick: () => person(n) }, n) : n]))) : null,

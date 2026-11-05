@@ -42,7 +42,8 @@ export function createBattle({ game }) {
   function fillEl(f, onclick) {
     const m = f.label.match(/^(.+?)\s*\+(\d+)\s*[（(](.*?)[）)]$/);
     if (!m) return h('button', { type: 'button', disabled: f.disabled, onclick }, f.label.replace(/\d+/g, (d) => num(+d)));
-    const cost = m[3].replace(/银(\d+)/, (_, v) => `银${num(+v)}两`).replace(/粮(\d+)/, (_, v) => `粮${num(+v)}石`);
+    const coin = game.fiscal.money();
+    const cost = m[3].replace(/银(\d+)/, (_, v) => `${coin.noun}${num(+v)}${coin.unit}`).replace(/粮(\d+)/, (_, v) => `粮${num(+v)}石`);
     return h('button', { type: 'button', disabled: f.disabled, onclick }, h('b', m[1]), h('span', +m[2] ? `+${num(+m[2])}人` : '无可补'), h('small', cost));
   }
 

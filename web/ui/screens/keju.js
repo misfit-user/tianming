@@ -59,8 +59,8 @@ export function createKeju({ root, game, profile, onPerson, onReform }) {
           h('i'), h('b', s.name), s.key === 'finished' ? null : h('small', i === at && s.days ? `${num(ex.elapsed)}／${num(s.days)}日` : s.days ? `${num(s.days)}日` : ''),
           i === at && s.days && s.key !== 'finished' ? h('div.track', h('i', { style: { width: `${pct(ex.elapsed, s.days)}%` } })) : null)))));
       const spent = ex.costs.local + ex.costs.provincial + ex.costs.central;
-      parts.push(h('div.kj-cost', h('span', '经费'), h('b', `累扣${money(spent)}两`), h('small', `国库余${money(ex.treasury)} · 内帑余${money(ex.privy)}`),
-        ex.costs.shortfall ? h('em', '经费断粮·本科流产') : ex.treasury + ex.privy < 4000 ? h('em', '两库合计不足四千两，殿试或将流产') : null));
+      parts.push(h('div.kj-cost', h('span', '经费'), h('b', `累扣${money(spent)}${game.fiscal.money().unit}`), h('small', `国库余${money(ex.treasury)} · 内帑余${money(ex.privy)}`),
+        ex.costs.shortfall ? h('em', '经费断粮·本科流产') : ex.treasury + ex.privy < 4000 ? h('em', `两库合计不足四千${game.fiscal.money().unit}，殿试或将流产`) : null));
     } else if (d.enabled) {
       parts.push(h('section.kj-plan.idle', h('h5', h('span', '本科'), h('small', d.preparing ? '筹办中' : '')), h('p', d.preparing ? '正在筹办，进展见于推演。' : '今无开科。')));
     }

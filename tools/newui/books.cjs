@@ -53,11 +53,41 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
       });
       const tall = [...ov.querySelectorAll('.fi-prov .row, .gs-tax-row, .gs-gaps p:not(.gs-note), .gs-tiles span, .fi-row:not(.xfer), .gs-bars p, .gs-ledger p, .gs-depts p')].filter((e) => e.getBoundingClientRect().height > parseFloat(getComputedStyle(e).fontSize) * 3.2).map((e) => e.textContent.slice(0, 16));
       const wide = leaf.scrollWidth > leaf.clientWidth + 1;
-      return { scroll: [leaf.scrollHeight, leaf.clientHeight], width: leaf.clientWidth, clipped, tall, wide };
+      // 一段字占了几行：数、名这种短东西折行就是版式错了
+      const linesOf = (range) => new Set([...range.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top))).size;
+      const lines = (e) => { const r = document.createRange(); r.selectNodeContents(e); return linesOf(r); };
+      const broken = [...ov.querySelectorAll('.gs-rows b, .gs-rows p > span:first-child, .fi-card .flow span, .gs-dims b, .gs-grade, .fi-sum-nums b, .gs-seal small span')]
+        .filter((e) => e.offsetParent && e.textContent.trim() && lines(e) > 1).map((e) => e.textContent.slice(0, 16));
+      // 名目列表：可以换行，但词不能拆开（「巡／狩」）
+      const split = [];
+      ov.querySelectorAll('.gs-names').forEach((box) => {
+        const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+          for (const m of n.data.matchAll(/[^\s　]+/g)) {
+            const r = document.createRange();
+            r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length);
+            if (linesOf(r) > 1) split.push(m[0]);
+          }
+        }
+      });
+      const text = ov.innerText;
+      // 负号在标题字里读作「一」；开发口吻不该进册
+      const minus = text.match(/[−–—-][零一二三四五六七八九十百千万]+/g) || [];
+      const dev = text.match(/预设表|undefined|NaN|\bnull\b|Δ/g) || [];
+      // 钱名跟朝代走：不用两的朝代，册里不该出现「若干两」「库银」「·银」
+      const moneyUnit = window.CurrencyUnit.getUnit().money;
+      const coin = moneyUnit === '两' ? [] : text.match(/[零一二三四五六七八九十百千万亿\d][ \t　]*两|库银|借银|拨银|内帑银|·\s*银|^银$/gm) || [];
+      return { scroll: [leaf.scrollHeight, leaf.clientHeight], width: leaf.clientWidth, clipped, tall, wide, broken, split, minus, dev, coin };
     });
     console.log(`  ${name}`, JSON.stringify(m));
     check(m && !m.wide, `${name}：右叶不横向溢出`);
     check(m && m.tall.length === 0, `${name}：表格行不折行`);
+    check(m && m.clipped.length === 0, `${name}：没有被裁掉的字 ${m ? m.clipped.join('、') : ''}`);
+    check(m && m.broken.length === 0, `${name}：数和名不折行 ${m ? m.broken.join('、') : ''}`);
+    check(m && m.split.length === 0, `${name}：名目不拆词 ${m ? m.split.join('、') : ''}`);
+    check(m && m.minus.length === 0, `${name}：不用负号写数 ${m ? m.minus.slice(0, 4).join('、') : ''}`);
+    check(m && m.dev.length === 0, `${name}：没有开发口吻 ${m ? m.dev.join('、') : ''}`);
+    check(m && m.coin.length === 0, `${name}：钱名合朝代 ${m ? m.coin.slice(0, 4).join('、') : ''}`);
     return m;
   };
   const toTab = async (label) => { await p.evaluate((t) => { const x = [...document.querySelectorAll('.fi-tabs button')].find((e) => e.innerText.replace(/\s/g, '').includes(t)); if (x) x.click(); }, label); await wait(500); };
@@ -193,6 +223,19 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
   await shot('settled-fiscal');
   await measure('结账后帑廪');
 
+  const coin = await p.evaluate(async () => {
+    const [F, S] = await Promise.all([import('/ui/adapter/fiscal.js'), import('/ui/adapter/select.js')]);
+    const bar = S.treasury().rows[0];
+    const card = F.account('guoku').res[0];
+    const me = S.person();
+    return { money: F.money(), bar: [bar.label, bar.unit], card: [card.label, card.unit], granary: F.MEASURES.granary[0][2], wealth: [me.wealth[0].k, me.wealth[0].unit], purse: [me.purse[0].k, me.purse[0].unit] };
+  });
+  console.log('  钱名', JSON.stringify(coin));
+  const same = (a) => a[0] === coin.money.noun && a[1] === coin.money.unit;
+  check(same(coin.bar), `顶栏钱名 ${coin.bar.join('、')} 合 ${coin.money.noun}、${coin.money.unit}`);
+  check(same(coin.card), `度支册钱名 ${coin.card.join('、')} 和顶栏一样`);
+  check(same(coin.wealth) && same(coin.purse), `人物家产公费钱名 ${coin.wealth.join('、')} 和顶栏一样`);
+  check(coin.granary.includes(`万${coin.money.unit}`), `赈济约费单位 ${coin.granary}`);
   check(errs.length === 0, `页面报错 ${errs.length}`);
   await b.close();
   console.log(`共 ${bad} 处问题`);

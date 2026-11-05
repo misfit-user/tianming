@@ -1,5 +1,6 @@
 // 读模型：从内核取数，返回纯数据快照（不带内核对象引用）。界面上显示的一律是「据奏」口径——
 // 奏报失真层开着时玩家看到的是有司上报的数，这里调内核自己的 _barReported / _barFlipToPerceived，与老顶栏同源。
+import { money } from './currency.js';
 const w = window;
 const G = () => w.GM || {};
 const fn = (name) => (typeof w[name] === 'function' ? w[name] : null);
@@ -221,8 +222,8 @@ export function person(ref) {
       { key: 'health', label: '康健', value: Math.round(num(r.health, num(ch && ch.health, 80))) },
       { key: 'mood', label: '心绪', value: Math.round(100 - num(r.stress, num(ch && ch.stress, 0))) }
     ],
-    wealth: [{ k: '银', v: num(pw.money), unit: '两' }, { k: '粮', v: num(pw.grain), unit: '石' }, { k: '布', v: num(pw.cloth), unit: '匹' }],
-    purse: [{ k: '银', v: num(pp.money), unit: '两' }, { k: '粮', v: num(pp.grain), unit: '石' }, { k: '布', v: num(pp.cloth), unit: '匹' }]
+    wealth: [{ k: money().noun, v: num(pw.money), unit: money().unit }, { k: '粮', v: num(pw.grain), unit: '石' }, { k: '布', v: num(pw.cloth), unit: '匹' }],
+    purse: [{ k: money().noun, v: num(pp.money), unit: money().unit }, { k: '粮', v: num(pp.grain), unit: '石' }, { k: '布', v: num(pp.cloth), unit: '匹' }]
   };
 }
 
@@ -257,7 +258,7 @@ function ledger(kind) {
     const shown = kind === 'guoku' ? reported(`guoku.${res}`, raw, 'good') : raw;
     const sub = view && view.subItems && view.subItems[i];
     const st = view && view.tip && view.tip.stocks && view.tip.stocks[i];
-    return { key: res, label: sub ? sub.k : ['银', '粮', '布'][i], value: shown, delta: sub && typeof sub.d === 'number' ? sub.d : 0, unit: (st && st.unit) || ['两', '石', '匹'][i] };
+    return { key: res, label: sub ? sub.k : [money().noun, '粮', '布'][i], value: shown, delta: sub && typeof sub.d === 'number' ? sub.d : 0, unit: (st && st.unit) || [money().unit, '石', '匹'][i] };
   });
   return {
     rows,

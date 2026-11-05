@@ -5,6 +5,7 @@
 import { bus } from '../core/bus.js';
 import { suggest } from './edict.js';
 import { num, turnTag } from '../core/numerals.js';
+import { money } from './currency.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -134,11 +135,12 @@ function composition(v) {
   if (v && typeof v === 'object') return Object.keys(v).map((k) => ({ type: k, count: Number(v[k]) || 0 }));
   return [];
 }
-const PAY = { money: '钱', grain: '粮', cloth: '帛', silver: '银' };
+const PAY = { grain: '粮', cloth: '帛', silver: '银' };
+const payName = (k) => (k === 'money' ? money().noun : PAY[k] || k);
 function pay(a) {
   const v = first(a, ['salary', 'annualSalary', 'yearlySalary', 'upkeep', 'cost', 'monthlyCost'], '');
-  if (Array.isArray(v)) return v.filter((r) => r && typeof r === 'object').map((r) => { const k = r.resource || r.type || r.name || r.currency || ''; return { label: PAY[k] || k, amount: Number(r.amount != null ? r.amount : r.value) || 0, unit: r.unit || '', period: r.period || '' }; });
-  if (v && typeof v === 'object') return Object.keys(v).map((k) => ({ label: PAY[k] || k, amount: Number(v[k]) || 0, unit: '', period: '' }));
+  if (Array.isArray(v)) return v.filter((r) => r && typeof r === 'object').map((r) => { const k = r.resource || r.type || r.name || r.currency || ''; return { label: payName(k), amount: Number(r.amount != null ? r.amount : r.value) || 0, unit: r.unit || '', period: r.period || '' }; });
+  if (v && typeof v === 'object') return Object.keys(v).map((k) => ({ label: payName(k), amount: Number(v[k]) || 0, unit: '', period: '' }));
   return v !== '' ? [{ label: '', amount: Number(v) || 0, unit: '', period: '' }] : [];
 }
 function equipment(a) {

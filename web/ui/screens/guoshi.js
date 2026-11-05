@@ -13,6 +13,11 @@ const digits = numText;
 // 源降账的累计是小数，记数只写整数；不足半点的说不足一，写成「零」看着像没动
 const tally = (v) => (Math.abs(v) < 0.5 ? '不足一' : num(Math.abs(v)));
 const clamp = (v) => Math.max(0, Math.min(100, v));
+// 一段小注按「 · 」分成几截，每截不折行；折行也折在截与截之间，不留一个孤零零的点
+const pieces = (text) => h('small', String(text || '').split(' · ').filter(Boolean).map((t) => h('span', digits(t))));
+// 名字栏按这一列最长的名字给宽（字数），再长就省略，全名放 title
+const nameWidth = (labels, cap = 9) => `${Math.min(cap, Math.max(2, ...labels.map((t) => t.length))) + 0.5}em`;
+const shortName = (t) => String(t).split(/\s*[（(]/)[0];
 
 const GO_NAME = { docket: '去批阅', edict: '去撰写', audience: '去召对', court: '去朝议' };
 // 案例不足这个数就直接摊开（时局、现任职掌只有一两段），多了才收起来
@@ -43,7 +48,7 @@ export function createGuoshi({ root, game, onGo }) {
       return h('button.gs-seal' + (key === sel ? '.on' : ''), { type: 'button', onclick: () => pickSeal(key) },
         h('b.ch', ch), h('span.name', label), h('span.grade', grade(v)),
         h('ol', Array.from({ length: 9 }, (_, i) => h('li' + (i < gi ? '.f' : i === gi ? '.n' : '')))),
-        h('small', digits(sub)));
+        pieces(sub));
     }), shiyunCard());
     renderDetail(S.detail(sel), vals[sel]);
   }
@@ -58,7 +63,7 @@ export function createGuoshi({ root, game, onGo }) {
     try { c = S.detail('shiyun').card; } catch (_e) { return null; }
     return h('button.gs-seal.gs-yun' + (sel === 'shiyun' ? '.on' : ''), { type: 'button', onclick: () => pickSeal('shiyun') },
       h('b.ch', '运'), h('span.name', '时运'), h('span.grade', c.phase),
-      h('small', [c.warns ? `气运警兆${num(c.warns)}条` : c.veiled ? '据奏未见警兆' : '眼下无警兆', c.statutes ? `祖制${num(c.statutes)}典` : ''].filter(Boolean).join(' · ')));
+      pieces([c.warns ? `气运警兆${num(c.warns)}条` : c.veiled ? '据奏未见警兆' : '眼下无警兆', c.statutes ? `祖制${num(c.statutes)}典` : ''].filter(Boolean).join(' · ')));
   }
 
   // ---------- 右叶 ----------
@@ -67,8 +72,9 @@ export function createGuoshi({ root, game, onGo }) {
     replaceChildren(right,
       // 数和势都在下面的总览里，抬头只留顶栏那一个品第，和顶栏对得上
       h('header.gs-title', h('h3', d.title), value != null ? h('b.gs-grade', grade(value)) : null),
-      h('div.gs-rows', d.rows.map((x) => h('p' + (x.big ? '.big' : ''), h('span', x.label),
-        x.dots != null ? dots(x.dots) : null, h('b.' + (x.tone || 'plain'), digits(x.value)), x.note ? h('small', digits(x.note)) : null))),
+      // 数是数、注是注：注另起一行写在数下面，窄页上两栏也不折
+      h('div.gs-rows', d.rows.map((x) => h('p' + (x.big ? '.big' : ''), h('span.k', x.label),
+        h('span.v', x.dots != null ? dots(x.dots) : null, h('b.' + (x.tone || 'plain'), digits(x.value)), x.note ? h('small', digits(x.note)) : null)))),
       d.sealed ? h('p.gs-sealed', d.sealedNote) : null,
       d.spectrum ? spectrum(d.spectrum) : null,
       sectionsEl(d.sections));
@@ -78,7 +84,7 @@ export function createGuoshi({ root, game, onGo }) {
     const two = seen != null && Math.round(seen) !== Math.round(mark);
     const pin = (v, cls, label, side) => h('em.' + cls + side, { style: { left: `${clamp(v)}%` } }, label ? h('span', label) : null);
     return h('section.gs-sec', h('div.gs-specbox',
-      h('div.gs-pins', two
+      h('div.gs-pins' + (two ? '' : '.solo'), two
         ? [pin(mark, 'truth', '真', mark < seen ? '.l' : '.r'), pin(seen, 'seen', '视', mark < seen ? '.r' : '.l')]
         : pin(mark, 'truth', '', '')),
       h('div.gs-spec', bands.map(([label, from, to, tone]) => h('i.' + tone, { style: { flexGrow: String(to - from) } }, h('span', label))))));
@@ -98,11 +104,11 @@ export function createGuoshi({ root, game, onGo }) {
   }
   function ledgerEl(s) {
     const moved = s.items.filter((x) => Math.abs(x.n) >= 0.05).sort((a, b) => Math.abs(b.n) - Math.abs(a.n));
-    if (!moved.length) return [h('p.gs-empty', s.still || '开局以来未动过'), h('p.gs-names', s.items.map((x) => x.label).join('　'))];
+    if (!moved.length) return [h('p.gs-empty', s.still || '开局以来未动过'), h('p.gs-names', s.items.map((x) => h('span', x.label)))];
     const max = Math.max(...moved.map((x) => Math.abs(x.n)));
     const idle = s.items.length - moved.length;
     return [h('div.gs-ledger', moved.map((x) => h('p', h('span', x.label), h('i', h('u.' + (x.tone || (x.n < 0 ? 'bad' : 'good')), { style: { width: `${(Math.abs(x.n) / max) * 100}%` } })),
-      h('b.' + (x.tone || (x.n < 0 ? 'bad' : 'good')), `${x.n < 0 ? '−' : '+'}${tally(x.n)}`)))),
+      h('b.' + (x.tone || (x.n < 0 ? 'bad' : 'good')), `${x.n < 0 ? '减' : '增'}${tally(x.n)}`)))),
     idle ? h('p.gs-names', { title: s.items.filter((x) => Math.abs(x.n) < 0.05).map((x) => x.label).join('　') }, `余${num(idle)}项未动`) : null];
   }
   function casesEl(s) {
@@ -118,11 +124,15 @@ export function createGuoshi({ root, game, onGo }) {
       case 'meter': return box(h('div.gs-meter', h('i', { style: { width: `${clamp(s.value)}%` } })), h('p.gs-note', digits(s.note)));
       case 'tax': {
         const max = Math.max(1, s.nominal, s.received, s.paid);
+        const versus = (v) => {
+          const d = Math.round(((v - s.nominal) / (s.nominal || 1)) * 100);
+          return d ? `${d > 0 ? '多' : '少'}${num(Math.abs(d))}%` : '持平';
+        };
         const line = (label, v, cls) => h('div.gs-tax-row.' + cls, h('span', label), h('i', h('b', { style: { width: `${(v / max) * 100}%` } })), h('em', amt(v)),
-          h('small', cls === 'nom' ? '基准' : digits(`${v - s.nominal >= 0 ? '+' : ''}${Math.round(((v - s.nominal) / (s.nominal || 1)) * 100)}%`)));
+          h('small', cls === 'nom' ? '基准' : versus(v)));
         return box(h('p.gs-note', s.label),
           line('应征（名义）', s.nominal, 'nom'), line('官府实收', s.received, 'rec'), line('民间实缴', s.paid, 'paid'),
-          s.loss > 0 ? h('div.gs-gaps', h('p.gs-note', `差额去向（${amt(s.loss)}两）`), s.gaps.map((g) => h('p', h('span', g.label), h('b', amt(g.value)), h('small', `${num(g.share)}%`)))) : null,
+          s.loss > 0 ? h('div.gs-gaps', h('p.gs-note', `差额去向（${amt(s.loss)}${s.unit}）`), s.gaps.map((g) => h('p', h('span', g.label), h('b', amt(g.value)), h('small', `${num(g.share)}%`)))) : null,
           s.notes.map((t) => h('p.gs-note', digits(t))));
       }
       case 'depts': return box(h('div.gs-depts', s.items.map((x) => h('p', h('span', x.label), dots(x.dots), h('b.' + (x.tone || 'plain'), digits(x.value)), h('em', x.trend)))));
@@ -132,7 +142,9 @@ export function createGuoshi({ root, game, onGo }) {
       case 'alert': return box(h('div.gs-alert', s.lead ? h('b', digits(s.lead)) : null, s.lines.map((t) => h('p', digits(t))), s.note ? h('small', digits(s.note)) : null));
       case 'hints': return box(h('div.gs-hints', s.items.map(([t, go]) => h('button', { type: 'button', onclick: () => { if (onGo) { hide(); onGo(go); } } }, t))), s.note ? h('p.gs-note', s.note) : null);
       case 'ledger': return box(...ledgerEl(s));
-      case 'bars': return box(h('div.gs-bars', s.items.map((x) => h('div', h('p', h('span', x.label), h('i', h('b.' + x.tone, { style: { width: `${clamp(x.value)}%` } })), h('em.' + x.tone, `${num(Math.round(x.value))}${x.trend}`)),
+      // 阶层民心：低的排前头，和民情图一个次序
+      case 'bars': return box(h('div.gs-bars', { '--k': nameWidth(s.items.map((x) => shortName(x.label))) }, s.items.slice().sort((a, b) => a.value - b.value).map((x) => h('div',
+        h('p', h('span', { title: x.label }, shortName(x.label)), h('i', h('b.' + x.tone, { style: { width: `${clamp(x.value)}%` } })), h('em.' + x.tone, `${num(Math.round(x.value))}${x.trend}`)),
         x.note ? h('small', digits(x.note)) : null))));
       // 民情图：低的排前头，一眼看到哪里最坏；全名放 title
       case 'tiles': return box(h('div.gs-tiles', s.items.slice().sort((a, b) => a.value - b.value).map((x) => h('span.' + x.tone, { title: `${x.label}　${num(x.value)}` }, h('b', provinceShort(x.label)), h('em', num(x.value))))));

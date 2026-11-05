@@ -9,6 +9,7 @@
 import { bus } from '../core/bus.js';
 import { claimOverlays } from './kernel.js';
 import { num, numText } from '../core/numerals.js';
+import { money } from './currency.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -466,7 +467,7 @@ export function audience(d, name, intent) {
 // 召对代价读成话：威望、国库、另许他人之事
 export function costText(c) {
   if (!c) return '';
-  return [n0(c.prestige) ? `威望${c.prestige > 0 ? '+' : ''}${c.prestige}` : '', n0(c.guoku) ? `国库${c.guoku > 0 ? '+' : ''}${c.guoku}两` : '', c.promiseToOthers ? `另许：${c.promiseToOthers}` : '']
+  return [n0(c.prestige) ? `威望${c.prestige > 0 ? '+' : ''}${c.prestige}` : '', n0(c.guoku) ? `国库${c.guoku > 0 ? '+' : ''}${c.guoku}${money().unit}` : '', c.promiseToOthers ? `另许：${c.promiseToOthers}` : '']
     .filter(Boolean).join('；');
 }
 export function suggestSubjects(d) {

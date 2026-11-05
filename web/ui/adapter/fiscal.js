@@ -4,6 +4,7 @@
 // 可见之律：奏报失真层开着时，帑廪三库存与银的本期收支照顶栏同一口径据奏（内核 _barReported：库藏、岁入报多，岁支报少），
 // 收支名目按比例随之缩放，免得分项之和露出真数；内帑是天子私账，不设失真。历年收支（history）是真账，失真层开着时不列。
 import { bus } from '../core/bus.js';
+import { money } from './currency.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -15,7 +16,8 @@ function call(name, ...args) {
   return f(...args);
 }
 const changed = (what) => bus.emit('game:changed', { what });
-export const RES = [['money', '银'], ['grain', '粮'], ['cloth', '布']];
+export { money };
+const resources = () => [['money', money().noun], ['grain', '粮'], ['cloth', '布']];
 
 // ---------- 账 ----------
 function labels() {
@@ -80,7 +82,7 @@ export function account(kind) {
   if (!acc) return null;
   unit = unit || acc.unit || { money: '两', grain: '石', cloth: '匹' };
   const led = acc.ledgers || {};
-  const res = RES.map(([k, label]) => ({ key: k, label, unit: unit[k] || '', ...ledgerView(led[k], L) }));
+  const res = resources().map(([k, label]) => ({ key: k, label, unit: unit[k] || '', ...ledgerView(led[k], L) }));
   if (kind !== 'guoku') {
     // 内帑的账本结账才有本期收支；没结账时读预估，和顶栏（tm-topbar-vars）同一份数，不然顶栏说亏这里说零
     for (const r of res) {
@@ -208,7 +210,11 @@ export function draftEdict(text) {
 }
 export const MEASURES = {
   extraTax: [[0.2, '薄赋加派（二成）', '民心 -3 · 腐败 +2'], [0.5, '五成加派', '民心 -7 · 腐败 +5'], [1.0, '三饷式加派（十成）', '民心 -15 · 末世之兆']],
-  granary: [['county', '州县赈济', '约五万两 · 民心 +3'], ['regional', '一省大赈', '约十五万两 · 民心 +8'], ['national', '普天大赈', '约五十万两 · 民心 +15']],
+  // 单位跟朝代走，开局后才定得下来，所以现取
+  get granary() {
+    const { unit } = money();
+    return [['county', '州县赈济', `约五万${unit} · 民心 +3`], ['regional', '一省大赈', `约十五万${unit} · 民心 +8`], ['national', '普天大赈', `约五十万${unit} · 民心 +15`]];
+  },
   coin: [[0.1, '减重一成（小调）', '获二至四月之入 · 通胀 +0.05 · 皇威 -1'], [0.2, '减重二成（常策）', '获五至八月之入 · 通胀 +0.1 · 皇威 -3 · 民心 -2'], [0.4, '减重四成（险策）', '获十至十五月之入 · 通胀 +0.2 · 皇威 -6 · 民心 -4']]
 };
 export function extraTax(rate) { call('_guoku_doExtraTax', rate); changed('edict-suggestion'); }
@@ -241,11 +247,11 @@ export function enactReform(id) {
 export const TRANSFER_AMOUNTS = [50000, 100000, 300000, 500000];
 // 第三项是约费，照 tm-neitang-engine 的 holdCeremony
 export const CEREMONIES = [['minor', '郊祀常礼', 50000], ['middle', '千叟宴·大飨', 150000], ['major', '封禅·万寿', 500000]];
-const wan = (n) => `${n >= 10000 ? n / 10000 + '万' : n}两`;
+const wan = (n) => `${n >= 10000 ? n / 10000 + '万' : n}${money().unit}`;
 export function transferDraft(direction, amount) {
   draftEdict(direction === 'toPalace'
-    ? `着户部自帑廪拨银${wan(amount)}入内帑，以备宫中支用。`
-    : `发内帑银${wan(amount)}充国用，以济军需，户部依数收讫。`);
+    ? `着户部自帑廪拨${money().noun}${wan(amount)}入内帑，以备宫中支用。`
+    : `发内帑${money().noun}${wan(amount)}充国用，以济军需，户部依数收讫。`);
 }
 export function ceremonyDraft(type) {
   const name = (CEREMONIES.find(([k]) => k === type) || [, '大典'])[1];

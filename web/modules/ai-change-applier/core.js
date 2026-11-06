@@ -831,6 +831,32 @@ export function createCore(deps) {
     return null;
   }
 
+  /**
+   * 逐条处理 AI 写回的一个数组字段。
+   * 主回合写回走逐条落账（aiOutput._commitMode === 'per-item'）：某一条在处理中抛错，
+   * 只把这一条记进 applied.failed，同批其余条目照常落地；不再一条出错整批撤回。
+   * 其它调用方行为不变：错误照旧抛出，由外层原子事务整批恢复。
+   */
+  function _eachAIRow(aiOutput, field, rows, applied, fn) {
+    var list = rows || [];
+    if (!aiOutput || aiOutput._commitMode !== 'per-item') { list.forEach(fn); return; }
+    if (!Array.isArray(list)) {
+      applied.failed.push({ field: field, index: null, code: 'invalid-field-shape', reason: field + ' 应为数组' });
+      return;
+    }
+    list.forEach(function(row, index) {
+      try { fn(row, index); }
+      catch (e) {
+        var message = String(e && (e.message || e) || 'handler exception');
+        applied.failed.push({ field: field, index: index, item: row, code: 'handler-exception', reason: '处理时出错：' + message });
+        try {
+          if (global.TM && global.TM.errors && global.TM.errors.capture) global.TM.errors.capture(e, 'applier] ' + field + ':');
+          else console.warn('[applier] ' + field + ':', e);
+        } catch (_) {}
+      }
+    });
+  }
+
   function _applyAIStructuredPolicyActions(aiOutput, applied, selectedFields) {
     var G = global.GM;
     var parser = global.EdictParser;
@@ -840,7 +866,7 @@ export function createCore(deps) {
     if (!Array.isArray(G._aiStructuredPolicyActions)) G._aiStructuredPolicyActions = [];
     fields.forEach(function(field) {
       var list = Array.isArray(aiOutput[field]) ? aiOutput[field] : [];
-      list.forEach(function(item) {
+      _eachAIRow(aiOutput, field, list, applied, function(item) {
         if (!item) return;
         var text = _aiStructuredPolicyText(field, item);
         if (!text) {
@@ -995,7 +1021,7 @@ export function createCore(deps) {
 
     // 0.5 税制变更（玩家诏书/奏疏/朝议/问对 → AI 推演解读 → 落地改 fiscalConfig.taxList）
     //   走治国闭环·非直改面板。AI 输出 tax_reforms:[{op:'rate'|'add'|'remove',taxId,rate?,tax?,reason}]·此处调引擎 applyPlayerTaxReform 落地（改即下回合 CascadeTax 重算 + 民心按民负响应）。
-    (aiOutput.tax_reforms || aiOutput.taxReforms || []).forEach(function(tr) {
+    _eachAIRow(aiOutput, 'tax_reforms', aiOutput.tax_reforms || aiOutput.taxReforms, applied, function(tr) {
       try {
         if (!tr || !tr.op) return;
         var FE = global.FiscalEngine;
@@ -1019,7 +1045,7 @@ export function createCore(deps) {
 
     // 1.5 改换门庭（推演驱动·叛降/归附/反正/俘获/拥立）：显式列表 [{character,newFaction,reason,type}]。
     //     兼容多种字段名；解析失败入 failed 可见。narrative 动词检测在叙事扫描段补漏（见下）。
-    (aiOutput.allegiance_changes || aiOutput.allegianceChanges || aiOutput.defections || []).forEach(function(a) {
+    _eachAIRow(aiOutput, 'allegiance_changes', aiOutput.allegiance_changes || aiOutput.allegianceChanges || aiOutput.defections, applied, function(a) {
       if (!a || typeof a !== 'object') return;
       var charRef = a.character || a.char || a.name || a.who || a.subject;
       var newFac = a.newFaction || a.toFaction || a.to_faction || a.faction || a.to || a.newAllegiance;
@@ -1030,7 +1056,7 @@ export function createCore(deps) {
     });
 
     // 2. 任免
-    (aiOutput.appointments || []).forEach(function(a) {
+    _eachAIRow(aiOutput, 'appointments', aiOutput.appointments, applied, function(a) {
       var r;
       if (a.action === 'appoint') r = onAppointment(a.charName, a.position, a.binding);
       else if (a.action === 'dismiss') r = onDismissal(a.charName, a.reason, aiOutput);
@@ -1044,7 +1070,7 @@ export function createCore(deps) {
     });
 
     // 3. 动态机构
-    (aiOutput.institutions || []).forEach(function(i) {
+    _eachAIRow(aiOutput, 'institutions', aiOutput.institutions, applied, function(i) {
       var r;
       if (i.action === 'create') r = { ok:true, inst: registerInstitution(i) };
       else if (i.action === 'abolish') r = abolishInstitution(i.id, i.reason);
@@ -1055,7 +1081,7 @@ export function createCore(deps) {
     });
 
     // 4. 区划变动
-    (aiOutput.regions || []).forEach(function(rg) {
+    _eachAIRow(aiOutput, 'regions', aiOutput.regions, applied, function(rg) {
       if (rg.action === 'reclassify') {
         var r = reclassifyRegion(rg.id, rg.newType, rg.reason);
         if (r.ok) {
@@ -1067,7 +1093,7 @@ export function createCore(deps) {
 
     // 4.5 地方官自主治理（localActions）—— 央地财政方案 Phase 3.3 discretionary
     // schema: { region, type:'disaster_relief|public_works_water|public_works_road|education|granary_stockpile|military_prep|charity_local|illicit', amount, reason, proposer }
-    (aiOutput.localActions || []).forEach(function(la, localActionIndex) {
+    _eachAIRow(aiOutput, 'localActions', aiOutput.localActions, applied, function(la, localActionIndex) {
       if (!la || !la.region || !la.type) return;
       var div = _findDivisionByNameOrId(G, la.region);
       if (!div) { applied.failed.push({localAction:la, reason:'region not found'}); return; }
@@ -1199,7 +1225,7 @@ export function createCore(deps) {
     });
 
     // 5. 事件（风闻）
-    (aiOutput.events || []).forEach(function(e) {
+    _eachAIRow(aiOutput, 'events', aiOutput.events, applied, function(e) {
       var _c4b = _modules.validators; if (_c4b && _c4b._gateEventTimepoint && _c4b._gateEventTimepoint(G, e, applied)) return;   // 刀C·C4·events 时点闸(逻辑在 validators·未来年份硬拒/未到期史实软提示)
       // v0.2·来源涌现：AI 标记 critical 的决策型事件(带 choices)+ 开关开 → 收编进御案时政 currentIssues
       //   (玩家在御案时政「陛下决断」·_chooseIssueOption 开关开走 AI 据局面裁后果)。寻常事件保持播报/走 playerChoices 软 surface(寄生为主·抉择 C)。
@@ -1238,7 +1264,7 @@ export function createCore(deps) {
     // 但也不再把它标成废弃，避免 validator/applier 与 prompt 消费方互相打架。
 
     // 7. NPC 关系变化
-    (aiOutput.relations || []).forEach(function(r) {
+    _eachAIRow(aiOutput, 'relations', aiOutput.relations, applied, function(r) {
       if (typeof global.applyNpcInteraction === 'function' && r.actor && r.target && r.type) {
         global.applyNpcInteraction(r.actor, r.target, r.type, Object.assign({}, r, r.extra || {}, { executionMode: r.executionMode || 'report' }));
         applied.relations++;
@@ -1265,7 +1291,7 @@ export function createCore(deps) {
     if (Array.isArray(aiOutput.armory_procurement)) {
       var AR_proc = (typeof window !== 'undefined' && window.TMArmory) || (typeof global !== 'undefined' && global.TMArmory);
       if (AR_proc && typeof AR_proc.procure === 'function') {
-        aiOutput.armory_procurement.forEach(function(p){
+        _eachAIRow(aiOutput, 'armory_procurement', aiOutput.armory_procurement, applied, function(p){
           if (!p || !p.category) return;
           try {
             var r = AR_proc.procure(G, p.category, (p.quantity != null ? p.quantity : p.amount), { unitPrice: p.unitPrice });
@@ -1291,7 +1317,7 @@ export function createCore(deps) {
     // ── 8. char_updates：角色任意字段修改+仕途条目+走位 ──
     // schema: [{ name, updates:{...任意字段...}, careerEvent:{title,date,summary,...}, travelTo:{toLocation,estimatedDays,reason} }]
     var charUpdCount = 0;
-    (aiOutput.char_updates || []).forEach(function(cu) {
+    _eachAIRow(aiOutput, 'char_updates', aiOutput.char_updates, applied, function(cu) {
       if (!cu) return;
       var stableRef=String(cu.characterId || cu.charId || '').trim(), ref=stableRef || String(cu.name || '').trim();
       var candidates=(G.chars || []).filter(function(row) { return row && row.id != null && String(row.id).trim() === ref; });
@@ -1388,7 +1414,7 @@ export function createCore(deps) {
     // ── 9. office_assignments：任命含走位 ──
     // schema: [{ name, post, dept, action:'appoint|dismiss|transfer', fromLocation, toLocation, estimatedDays, reason }]
     var officeCount = 0;
-    (aiOutput.office_assignments || []).forEach(function(oa) {
+    _eachAIRow(aiOutput, 'office_assignments', aiOutput.office_assignments, applied, function(oa) {
       if (!oa || !oa.name) return;
       var ch = _findEntity(G, 'char', oa.name);
       if (!ch) { applied.failed.push({office_assignment: oa, reason: 'char not found'}); return; }
@@ -1484,7 +1510,7 @@ export function createCore(deps) {
     var handledNames = {};
     (aiOutput.office_assignments || []).forEach(function(oa){ if (oa && oa.name) handledNames[oa.name] = true; });
     var personnelFromPcCount = 0;
-    (aiOutput.personnel_changes || []).forEach(function(pc){
+    _eachAIRow(aiOutput, 'personnel_changes', aiOutput.personnel_changes, applied, function(pc){
       if (!pc || !pc.name) return;
       if (handledNames[pc.name]) return;
       var changeText = String(pc.change || pc.desc || '').trim();
@@ -1651,7 +1677,7 @@ export function createCore(deps) {
         }
       }
     })();
-    (aiOutput.fiscal_adjustments || []).forEach(function(fa, fiscalIndex) {
+    _eachAIRow(aiOutput, 'fiscal_adjustments', aiOutput.fiscal_adjustments, applied, function(fa, fiscalIndex) {
       if (!fa) return;
       // ★ fiscal 容差归一(2026-06-02·bug A)：AI 常用中文/自然名指账户与收支·若不归一则 target 解析为 null·
       //   此条 fiscal 静默漏账(财政死账真凶之一)。映射常见别名到 guoku/neitang/province: 与 income/expense。
@@ -1910,7 +1936,7 @@ export function createCore(deps) {
 
     // ── 11. faction_updates ──
     var facCount = 0;
-    (aiOutput.faction_updates || []).forEach(function(fu) {
+    _eachAIRow(aiOutput, 'faction_updates', aiOutput.faction_updates, applied, function(fu) {
       if (!fu || !fu.name) return;
       var fac = _findEntity(G, 'faction', fu.name);
       if (!fac) { applied.failed.push({faction_update: fu, reason: 'faction not found'}); return; }
@@ -1961,7 +1987,7 @@ export function createCore(deps) {
 
     // ── 12. party_updates ──
     var partyCount = 0;
-    (aiOutput.party_updates || []).forEach(function(pu) {
+    _eachAIRow(aiOutput, 'party_updates', aiOutput.party_updates, applied, function(pu) {
       if (!pu || !pu.name) return;
       var party = _findEntity(G, 'party', pu.name);
       if (!party) { applied.failed.push({party_update: pu, reason: 'party not found'}); return; }
@@ -1972,7 +1998,7 @@ export function createCore(deps) {
 
     // ── 13. class_updates ──
     var classCount = 0;
-    (aiOutput.class_updates || []).forEach(function(cu) {
+    _eachAIRow(aiOutput, 'class_updates', aiOutput.class_updates, applied, function(cu) {
       if (!cu || !cu.name) return;
       var cls = _findEntity(G, 'class', cu.name);
       if (!cls) { applied.failed.push({class_update: cu, reason: 'class not found'}); return; }
@@ -1982,7 +2008,7 @@ export function createCore(deps) {
 
     // ── 14. region_updates ──
     var regionCount = 0;
-    (aiOutput.region_updates || []).forEach(function(ru) {
+    _eachAIRow(aiOutput, 'region_updates', aiOutput.region_updates, applied, function(ru) {
       if (!ru) return;
       var identifier = ru.id || ru.name;
       if (!identifier) return;
@@ -1998,7 +2024,7 @@ export function createCore(deps) {
     // schema: [{ name, type:'工程|商队|学堂|道路|etc', status:'planning|active|completed|abandoned', cost, progress, leader, region, startTurn, endTurn, description }]
     var projectCount = 0;
     if (!G.activeProjects) G.activeProjects = [];
-    (aiOutput.project_updates || []).forEach(function(pu) {
+    _eachAIRow(aiOutput, 'project_updates', aiOutput.project_updates, applied, function(pu) {
       if (!pu || !pu.name) return;
       var existing = G.activeProjects.find(function(p){ return p.name === pu.name; });
       if (existing) {
@@ -2034,7 +2060,7 @@ export function createCore(deps) {
     // ── 16. anyPathChanges：兜底·AI 可用任意路径改任意字段（除禁区） ──
     // schema: [{ path, op:'set|push|delta|merge|delete', value, reason }]
     var anyPathCount = 0;
-    (aiOutput.anyPathChanges || []).forEach(function(apc) {
+    _eachAIRow(aiOutput, 'anyPathChanges', aiOutput.anyPathChanges, applied, function(apc) {
       if (!apc || !apc.path) return;
       if (_isPathBlocked(apc.path)) {
         applied.failed.push({ anyPath: apc.path, reason: 'blocked' });

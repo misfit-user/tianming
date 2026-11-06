@@ -3196,8 +3196,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "556edc97650375e463d990cc15569410cfda48936b64f10d275b1068f6112dcc",
-      "size": 371180
+      "sha256": "005d78605966b045bd18148faf58b2d24332f1feb4532e152f61214e3307b1e2",
+      "size": 377074
     },
     {
       "path": "icon.png",
@@ -3661,8 +3661,8 @@
     },
     {
       "path": "modules/ai-change-applier/core.js",
-      "sha256": "b6d0b85a1db02d952f181349d71d85ada6955f83b359dfbb41086b42c920bb80",
-      "size": 185653
+      "sha256": "3a1529ca3be003340a5baa31f7e5408eb4b6d2e9cfae558487758fc0da746d4b",
+      "size": 187581
     },
     {
       "path": "modules/ai-change-applier/fiscal-posting.js",
@@ -3691,8 +3691,8 @@
     },
     {
       "path": "modules/ai-change-applier/reconcile.js",
-      "sha256": "4792354139d7aaf185e7c6da4881c23087018385523c967db572692df39889d8",
-      "size": 99201
+      "sha256": "a4d3664585b04ad46f64c7cb3aca4767cd0a31ea310fe1e3a71a44ccb5933586",
+      "size": 104506
     },
     {
       "path": "modules/ai-change-applier/validators.js",
@@ -4646,8 +4646,8 @@
     },
     {
       "path": "tm-central-local-engine.js",
-      "sha256": "f10c358d71e6d90a255f0665a22a32f956477c7ad82c99a5e396e22d19c32483",
-      "size": 45274
+      "sha256": "398387825ea788ee6873e9045c13e2a53127a2a0e954cf8bfa5368d141527bc0",
+      "size": 46423
     },
     {
       "path": "tm-change-queue.js",
@@ -5101,8 +5101,8 @@
     },
     {
       "path": "tm-endturn-apply-stages.js",
-      "sha256": "f47ce58ca4f07555217bb75003e9a4aa87433757804debebcd2ac1d7861965bf",
-      "size": 97788
+      "sha256": "53960461918732ccd72fbef0b70ed14a3859e7d71ce489d95f108d828553102e",
+      "size": 99878
     },
     {
       "path": "tm-endturn-apply.js",
@@ -5881,8 +5881,8 @@
     },
     {
       "path": "tm-mechanics-memory.js",
-      "sha256": "71ba316623394b4614af49d22b1a7162654237e4bc3f3c90cddee35f3fc1785b",
-      "size": 82858
+      "sha256": "4d15a6dc72238402a595e17c9a0987d9ee2985158f617258ffb4bd53744aead6",
+      "size": 83883
     },
     {
       "path": "tm-mechanics-world.js",
@@ -6596,7 +6596,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "82d2c3c8e5c98704c3c3f3f4e5c43240a0f94c065754ca300cfaef59021a44d1",
+      "sha256": "294b8b22340175b78ce241df6c260e38238dd27cb78ab6a9c591a598c60cbf33",
       "size": 139151
     },
     {

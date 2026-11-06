@@ -1208,6 +1208,30 @@
       }
       return null;
     }
+    function _eachAIRow(aiOutput, field, rows, applied, fn) {
+      var list = rows || [];
+      if (!aiOutput || aiOutput._commitMode !== "per-item") {
+        list.forEach(fn);
+        return;
+      }
+      if (!Array.isArray(list)) {
+        applied.failed.push({ field, index: null, code: "invalid-field-shape", reason: field + " 应为数组" });
+        return;
+      }
+      list.forEach(function(row, index) {
+        try {
+          fn(row, index);
+        } catch (e) {
+          var message = String(e && (e.message || e) || "handler exception");
+          applied.failed.push({ field, index, item: row, code: "handler-exception", reason: "处理时出错：" + message });
+          try {
+            if (global.TM && global.TM.errors && global.TM.errors.capture) global.TM.errors.capture(e, "applier] " + field + ":");
+            else console.warn("[applier] " + field + ":", e);
+          } catch (_) {
+          }
+        }
+      });
+    }
     function _applyAIStructuredPolicyActions(aiOutput, applied, selectedFields) {
       var G = global.GM;
       var parser = global.EdictParser;
@@ -1217,7 +1241,7 @@
       if (!Array.isArray(G._aiStructuredPolicyActions)) G._aiStructuredPolicyActions = [];
       fields.forEach(function(field) {
         var list = Array.isArray(aiOutput[field]) ? aiOutput[field] : [];
-        list.forEach(function(item) {
+        _eachAIRow(aiOutput, field, list, applied, function(item) {
           if (!item) return;
           var text = _aiStructuredPolicyText(field, item);
           if (!text) {
@@ -1368,7 +1392,7 @@
       if (aiOutput.narrative) {
         G._turnReport.push({ type: "narrative", text: aiOutput.narrative, turn: G.turn || 0 });
       }
-      (aiOutput.tax_reforms || aiOutput.taxReforms || []).forEach(function(tr) {
+      _eachAIRow(aiOutput, "tax_reforms", aiOutput.tax_reforms || aiOutput.taxReforms, applied, function(tr) {
         try {
           if (!tr || !tr.op) return;
           var FE = global.FiscalEngine;
@@ -1392,7 +1416,7 @@
       } else if (Array.isArray(aiOutput.changes) && aiOutput.changes.length) {
         applied.failed.push({ field: "changes", reason: "path dispatcher unavailable" });
       }
-      (aiOutput.allegiance_changes || aiOutput.allegianceChanges || aiOutput.defections || []).forEach(function(a) {
+      _eachAIRow(aiOutput, "allegiance_changes", aiOutput.allegiance_changes || aiOutput.allegianceChanges || aiOutput.defections, applied, function(a) {
         if (!a || typeof a !== "object") return;
         var charRef = a.character || a.char || a.name || a.who || a.subject;
         var newFac = a.newFaction || a.toFaction || a.to_faction || a.faction || a.to || a.newAllegiance;
@@ -1403,7 +1427,7 @@
           applied.changes++;
         } else applied.failed.push({ field: "allegiance_changes", text: charRef + " → " + newFac, reason: r.reason });
       });
-      (aiOutput.appointments || []).forEach(function(a) {
+      _eachAIRow(aiOutput, "appointments", aiOutput.appointments, applied, function(a) {
         var r;
         if (a.action === "appoint") r = onAppointment(a.charName, a.position, a.binding);
         else if (a.action === "dismiss") r = onDismissal(a.charName, a.reason, aiOutput);
@@ -1415,7 +1439,7 @@
           applied.failed.push({ appointment: a, reason: r && r.reason });
         }
       });
-      (aiOutput.institutions || []).forEach(function(i) {
+      _eachAIRow(aiOutput, "institutions", aiOutput.institutions, applied, function(i) {
         var r;
         if (i.action === "create") r = { ok: true, inst: registerInstitution(i) };
         else if (i.action === "abolish") r = abolishInstitution(i.id, i.reason);
@@ -1424,7 +1448,7 @@
           G._turnReport.push({ type: "institution", action: i.action, name: i.name || i.id, turn: G.turn || 0 });
         }
       });
-      (aiOutput.regions || []).forEach(function(rg) {
+      _eachAIRow(aiOutput, "regions", aiOutput.regions, applied, function(rg) {
         if (rg.action === "reclassify") {
           var r = reclassifyRegion(rg.id, rg.newType, rg.reason);
           if (r.ok) {
@@ -1433,7 +1457,7 @@
           }
         }
       });
-      (aiOutput.localActions || []).forEach(function(la, localActionIndex) {
+      _eachAIRow(aiOutput, "localActions", aiOutput.localActions, applied, function(la, localActionIndex) {
         if (!la || !la.region || !la.type) return;
         var div = _findDivisionByNameOrId(G, la.region);
         if (!div) {
@@ -1603,7 +1627,7 @@
           if (window.TM && TM.errors) TM.errors.capture(_lafve, "applier.localActions.fame");
         }
       });
-      (aiOutput.events || []).forEach(function(e) {
+      _eachAIRow(aiOutput, "events", aiOutput.events, applied, function(e) {
         var _c4b = _modules.validators;
         if (_c4b && _c4b._gateEventTimepoint && _c4b._gateEventTimepoint(G, e, applied)) return;
         if (e && e.critical && Array.isArray(e.choices) && e.choices.length && typeof global._eventAdjudicationOn === "function" && global._eventAdjudicationOn()) {
@@ -1639,7 +1663,7 @@
         applied.events++;
         G._turnReport.push({ type: "event", category: e.category, text: e.text, turn: G.turn || 0 });
       });
-      (aiOutput.relations || []).forEach(function(r) {
+      _eachAIRow(aiOutput, "relations", aiOutput.relations, applied, function(r) {
         if (typeof global.applyNpcInteraction === "function" && r.actor && r.target && r.type) {
           global.applyNpcInteraction(r.actor, r.target, r.type, Object.assign({}, r, r.extra || {}, { executionMode: r.executionMode || "report" }));
           applied.relations++;
@@ -1661,7 +1685,7 @@
       if (Array.isArray(aiOutput.armory_procurement)) {
         var AR_proc = typeof window !== "undefined" && window.TMArmory || typeof global !== "undefined" && global.TMArmory;
         if (AR_proc && typeof AR_proc.procure === "function") {
-          aiOutput.armory_procurement.forEach(function(p) {
+          _eachAIRow(aiOutput, "armory_procurement", aiOutput.armory_procurement, applied, function(p) {
             if (!p || !p.category) return;
             try {
               var r = AR_proc.procure(G, p.category, p.quantity != null ? p.quantity : p.amount, { unitPrice: p.unitPrice });
@@ -1681,7 +1705,7 @@
       var armyFieldFallbackCount = _applyNarrativeArmyFieldFallback(G, aiOutput);
       if (armyFieldFallbackCount > 0) applied.semantic.army_field_fallback = armyFieldFallbackCount;
       var charUpdCount = 0;
-      (aiOutput.char_updates || []).forEach(function(cu) {
+      _eachAIRow(aiOutput, "char_updates", aiOutput.char_updates, applied, function(cu) {
         if (!cu) return;
         var stableRef = String(cu.characterId || cu.charId || "").trim(), ref = stableRef || String(cu.name || "").trim();
         var candidates = (G.chars || []).filter(function(row) {
@@ -1772,7 +1796,7 @@
       });
       if (charUpdCount > 0) applied.semantic.char_updates = charUpdCount;
       var officeCount = 0;
-      (aiOutput.office_assignments || []).forEach(function(oa) {
+      _eachAIRow(aiOutput, "office_assignments", aiOutput.office_assignments, applied, function(oa) {
         if (!oa || !oa.name) return;
         var ch = _findEntity2(G, "char", oa.name);
         if (!ch) {
@@ -1866,7 +1890,7 @@
         if (oa && oa.name) handledNames[oa.name] = true;
       });
       var personnelFromPcCount = 0;
-      (aiOutput.personnel_changes || []).forEach(function(pc) {
+      _eachAIRow(aiOutput, "personnel_changes", aiOutput.personnel_changes, applied, function(pc) {
         if (!pc || !pc.name) return;
         if (handledNames[pc.name]) return;
         var changeText = String(pc.change || pc.desc || "").trim();
@@ -2039,7 +2063,7 @@
           }
         }
       })();
-      (aiOutput.fiscal_adjustments || []).forEach(function(fa, fiscalIndex) {
+      _eachAIRow(aiOutput, "fiscal_adjustments", aiOutput.fiscal_adjustments, applied, function(fa, fiscalIndex) {
         if (!fa) return;
         if (fa.target != null) {
           var _ft = String(fa.target).trim();
@@ -2266,7 +2290,7 @@
       var environmentActionCount = _applyAIStructuredPolicyActions(aiOutput, applied, ["environment_actions"]);
       if (environmentActionCount > 0) applied.semantic.ai_policy_actions = (applied.semantic.ai_policy_actions || 0) + environmentActionCount;
       var facCount = 0;
-      (aiOutput.faction_updates || []).forEach(function(fu) {
+      _eachAIRow(aiOutput, "faction_updates", aiOutput.faction_updates, applied, function(fu) {
         if (!fu || !fu.name) return;
         var fac = _findEntity2(G, "faction", fu.name);
         if (!fac) {
@@ -2330,7 +2354,7 @@
       var factionFieldFallbackCount = _applyNarrativeFactionFieldFallback(G, aiOutput);
       if (factionFieldFallbackCount > 0) applied.semantic.faction_field_fallback = factionFieldFallbackCount;
       var partyCount = 0;
-      (aiOutput.party_updates || []).forEach(function(pu) {
+      _eachAIRow(aiOutput, "party_updates", aiOutput.party_updates, applied, function(pu) {
         if (!pu || !pu.name) return;
         var party = _findEntity2(G, "party", pu.name);
         if (!party) {
@@ -2342,7 +2366,7 @@
       });
       if (partyCount > 0) applied.semantic.party_updates = partyCount;
       var classCount = 0;
-      (aiOutput.class_updates || []).forEach(function(cu) {
+      _eachAIRow(aiOutput, "class_updates", aiOutput.class_updates, applied, function(cu) {
         if (!cu || !cu.name) return;
         var cls = _findEntity2(G, "class", cu.name);
         if (!cls) {
@@ -2353,7 +2377,7 @@
       });
       if (classCount > 0) applied.semantic.class_updates = classCount;
       var regionCount = 0;
-      (aiOutput.region_updates || []).forEach(function(ru) {
+      _eachAIRow(aiOutput, "region_updates", aiOutput.region_updates, applied, function(ru) {
         if (!ru) return;
         var identifier = ru.id || ru.name;
         if (!identifier) return;
@@ -2369,7 +2393,7 @@
       if (regionFieldFallbackCount > 0) applied.semantic.region_field_fallback = regionFieldFallbackCount;
       var projectCount = 0;
       if (!G.activeProjects) G.activeProjects = [];
-      (aiOutput.project_updates || []).forEach(function(pu) {
+      _eachAIRow(aiOutput, "project_updates", aiOutput.project_updates, applied, function(pu) {
         if (!pu || !pu.name) return;
         var existing = G.activeProjects.find(function(p) {
           return p.name === pu.name;
@@ -2401,7 +2425,7 @@
       });
       if (projectCount > 0) applied.semantic.project_updates = projectCount;
       var anyPathCount = 0;
-      (aiOutput.anyPathChanges || []).forEach(function(apc) {
+      _eachAIRow(aiOutput, "anyPathChanges", aiOutput.anyPathChanges, applied, function(apc) {
         if (!apc || !apc.path) return;
         if (_isPathBlocked(apc.path)) {
           applied.failed.push({ anyPath: apc.path, reason: "blocked" });
@@ -6217,13 +6241,87 @@
       var unique = [];
       var seenFailures = /* @__PURE__ */ Object.create(null);
       failures.forEach(function(failure) {
-        var key = [failure.field, failure.index, failure.code, failure.target, failure.reason].join("|");
+        var key = _tmWritebackFailureKey(failure);
         if (!seenFailures[key]) {
           seenFailures[key] = true;
           unique.push(failure);
         }
       });
-      return { ok: unique.length === 0, output: detached, failures: unique };
+      var verdict = { ok: unique.length === 0, output: detached, failures: unique };
+      if (!verdict.ok && opts.prune === true) verdict.pruned = _tmPruneAndRevalidate(detached, unique, opts);
+      return verdict;
+    }
+    function _tmWritebackFailureKey(failure) {
+      return [failure && failure.field, failure && failure.index, failure && failure.code, failure && failure.target, failure && failure.reason].join("|");
+    }
+    function _tmPruneWritebackFailures(output, failures) {
+      var drops = /* @__PURE__ */ Object.create(null), dropped = [], fatal = [];
+      (failures || []).forEach(function(failure) {
+        if (!failure || failure.code === "invalid-writeback-batch") {
+          fatal.push(failure);
+          return;
+        }
+        var field = String(failure.field || ""), index = Number.isInteger(failure.index) ? failure.index : null;
+        var dot = field.indexOf(".");
+        if (dot > 0) {
+          var rest = field.slice(dot + 1).split(".");
+          field = field.slice(0, dot);
+          if (index === null && /^\d+$/.test(rest[0])) index = Number(rest[0]);
+        }
+        var value = field ? output[field] : void 0;
+        if (value == null || typeof value !== "object") {
+          dropped.push(Object.assign({ droppedBy: "strict-preflight", unlocated: true }, failure));
+          return;
+        }
+        if (Array.isArray(value) && index === null && failure.item) {
+          var at = value.indexOf(failure.item);
+          if (at >= 0) index = at;
+        }
+        var plan = drops[field] || (drops[field] = { whole: false, indexes: /* @__PURE__ */ Object.create(null) });
+        if (!Array.isArray(value) || index === null || index < 0 || index >= value.length) plan.whole = true;
+        else plan.indexes[index] = true;
+        dropped.push(Object.assign({ droppedBy: "strict-preflight" }, failure, {
+          field,
+          index,
+          item: failure.item || (Array.isArray(value) && index !== null ? value[index] : null)
+        }));
+      });
+      if (fatal.length) return { ok: false, fatal, dropped: [] };
+      var next = _tmCloneWriteback(output);
+      Object.keys(drops).forEach(function(field) {
+        var plan = drops[field];
+        if (plan.whole) {
+          if (Array.isArray(next[field])) next[field] = [];
+          else delete next[field];
+          return;
+        }
+        next[field] = next[field].filter(function(_, i) {
+          return !plan.indexes[i];
+        });
+      });
+      return { ok: true, output: next, dropped };
+    }
+    function _tmPruneAndRevalidate(output, failures, opts) {
+      var dropped = [], current = output, pending = failures, unlocated = /* @__PURE__ */ Object.create(null);
+      for (var round = 0; round < 4; round++) {
+        var cut = _tmPruneWritebackFailures(current, pending);
+        if (!cut.ok) return { ok: false, output: null, dropped, failures: cut.fatal };
+        cut.dropped.forEach(function(entry) {
+          if (entry.unlocated) {
+            var key = _tmWritebackFailureKey(entry);
+            if (unlocated[key]) return;
+            unlocated[key] = true;
+          }
+          dropped.push(entry);
+        });
+        var again = validateAIWriteBackBatch(cut.output, { source: (opts && opts.source || "strict-preflight") + ":pruned" });
+        pending = again.failures.filter(function(failure) {
+          return !unlocated[_tmWritebackFailureKey(failure)];
+        });
+        if (!pending.length) return { ok: true, output: again.output, dropped, failures: [] };
+        current = again.output;
+      }
+      return { ok: false, output: null, dropped, failures: pending };
     }
     function _applyBattleResult(G, aiOutput, applied) {
       if (!G || !aiOutput || !aiOutput.battleResult) return;
@@ -6577,19 +6675,29 @@
       var G = global.GM;
       var P0 = global.P;
       if (!G || !aiOutput || typeof aiOutput !== "object") return { ok: false, applied: { failed: [{ reason: "invalid GM/AI output" }] } };
+      var perItem = aiOutput._commitMode === "per-item";
+      var preflightDropped = [];
       if (aiOutput._strictValidation === true) {
-        var strictPreflight = validateAIWriteBackBatch(aiOutput, { source: "applyAITurnChangesAtomic" });
-        if (!strictPreflight.ok) {
+        var strictPreflight = validateAIWriteBackBatch(aiOutput, { source: "applyAITurnChangesAtomic", prune: perItem });
+        var pruned = !strictPreflight.ok && perItem ? strictPreflight.pruned : null;
+        if (!strictPreflight.ok && !(pruned && pruned.ok)) {
           return {
             ok: false,
             rolledBack: false,
             preflightRejected: true,
-            applied: { failed: strictPreflight.failures.map(function(failure) {
+            applied: { failed: (pruned && pruned.failures.length ? pruned.failures : strictPreflight.failures).map(function(failure) {
               return Object.assign({ reason: failure.reason || failure.code }, failure);
             }) }
           };
         }
-        aiOutput = strictPreflight.output;
+        if (pruned) {
+          preflightDropped = pruned.dropped.map(function(failure) {
+            return Object.assign({ reason: failure.reason || failure.code }, failure);
+          });
+          aiOutput = pruned.output;
+        } else {
+          aiOutput = strictPreflight.output;
+        }
       }
       if (aiOutput._strictValidation !== true && (aiOutput.char_updates || []).some(function(row) {
         return row && row.changes != null;
@@ -6609,12 +6717,15 @@
         result.applied.failed = Array.isArray(result.applied.failed) ? result.applied.failed : [];
         var stateFailures = _validateAIResultState(G);
         if (stateFailures.length) Array.prototype.push.apply(result.applied.failed, stateFailures);
-        if (result.ok !== true || result.applied.failed.length) {
+        if (preflightDropped.length) result.applied.failed = preflightDropped.concat(result.applied.failed);
+        var mustRestore = result.ok !== true || stateFailures.length > 0 || !perItem && result.applied.failed.length > 0;
+        if (mustRestore) {
           _restoreAIStateObject(G, gSnapshot);
           if (P0 && pSnapshot) _restoreAIStateObject(P0, pSnapshot);
           _refreshAIIndices(G, P0);
           return { ok: false, applied: result.applied, rolledBack: true, error: "AI writeback transaction rejected" };
         }
+        if (perItem && result.applied.failed.length) result.partial = true;
         return result;
       } catch (e) {
         try {

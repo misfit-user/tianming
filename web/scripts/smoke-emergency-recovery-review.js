@@ -140,11 +140,12 @@ test('starting another turn cancels a late background proposal before it can wri
 });
 test('review absence or failure is advisory once the main result exists',()=>{const f=setup(),c=f.c;try{load(c,'tm-endturn-validity.js');const x=ctx();x.meta.requireTurnReview=true;let r=c.TM.Endturn.Validity.validateBeforeCommit(x);assert(r.ok);assert(r.warnings.some(s=>s.includes('复核')));x.meta.emergencyReview={status:'pending',reason:'REVIEW_BUDGET'};assert(c.TM.Endturn.Validity.validateBeforeCommit(x).ok);}finally{f.dispose();}});
 
-test('a rejected atomic write is retained for background repair without fabricating success',async()=>{
+// 2026-11-06 主写回改逐条落账：一条坏了不再整批回滚、整回合挂起；坏的那条记账后作为待复核事项交给每回合复核补落。
+test('a failed main-writeback item no longer rolls back the turn; the review lands its correction without fabricating success',async()=>{
  const f=setup(),c=f.c,x=ctx(),story='张甲忠心转增，沿途忧虑灾民。';try{
   load(c,'tm-ai-result-contract.js');load(c,'tm-endturn-apply-stages.js');x.results.sc1={shizhengji:story,changes:[{path:'unknown.loyalty',value:55}]};
-  c.callAI=async prompt=>{const info=JSON.parse(prompt.slice(prompt.indexOf('\n')+1)),p=empty();if(info.case.mode==='main-repair'){const op=operation('retry_main',{edits:[{path:'changes.0.path',value:'chars.张甲.loyalty'}]});op.evidence[0].quote=story;p.operations=[op];}return reply(prompt,p)};
-  x.meta.transaction={committed:false,rolledBack:false};await assert.rejects(c.TM.Endturn.AI.apply.stages._applyCore_reconcile(x),e=>e.code==='ai-writeback-atomic-failed');assert.equal(c.GM.chars[0].loyalty,50);assert(x.meta.deferredMainOutput);c.TM.RecoveryReview.launchRoutine(x);c.TM.RecoveryReview.handoff(x);const result=await finishBackground(c,x);assert.equal(c.GM.chars[0].loyalty,55);assert(result.row.agentReview.verified);
+  c.callAI=async prompt=>{const info=JSON.parse(prompt.slice(prompt.indexOf('\n')+1)),p=empty();if(info.case.mode==='routine'&&(info.case.issues||[]).some(i=>i&&i.kind==='unlanded-writeback')){const op=operation('apply_changes',{changes:[{path:'chars.张甲.loyalty',value:55}]});op.evidence[0].quote=story;op.postconditions=[{path:'chars.张甲.loyalty',equals:55}];p.findings=info.case.issues.map((i,index)=>({index,verdict:'corrected',reason:'按原文补落张甲忠诚'}));p.operations=[op];}return reply(prompt,p)};
+  x.meta.transaction={committed:false,rolledBack:false};await c.TM.Endturn.AI.apply.stages._applyCore_reconcile(x);assert.equal(c.GM.chars[0].loyalty,50);assert((c.GM._unappliedChanges||[]).some(r=>r&&r.source==='sc1主应用'));assert(!x.meta.deferredMainOutput);c.TM.RecoveryReview.launchRoutine(x);c.TM.RecoveryReview.handoff(x);const result=await finishBackground(c,x);assert.equal(c.GM.chars[0].loyalty,55);assert(result.row.agentReview.verified);
  }finally{f.dispose();}
 });
 test('complete long annals, political chronicle and other generated results are actually sent, without prefix clipping',async()=>{

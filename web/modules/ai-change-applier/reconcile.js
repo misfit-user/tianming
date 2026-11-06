@@ -1214,10 +1214,90 @@ export function createReconcile(deps) {
     var unique = [];
     var seenFailures = Object.create(null);
     failures.forEach(function(failure) {
-      var key = [failure.field, failure.index, failure.code, failure.target, failure.reason].join('|');
+      var key = _tmWritebackFailureKey(failure);
       if (!seenFailures[key]) { seenFailures[key] = true; unique.push(failure); }
     });
-    return { ok: unique.length === 0, output: detached, failures: unique };
+    var verdict = { ok: unique.length === 0, output: detached, failures: unique };
+    if (!verdict.ok && opts.prune === true) verdict.pruned = _tmPruneAndRevalidate(detached, unique, opts);
+    return verdict;
+  }
+
+  function _tmWritebackFailureKey(failure) {
+    return [failure && failure.field, failure && failure.index, failure && failure.code, failure && failure.target, failure && failure.reason].join('|');
+  }
+
+  /**
+   * 逐条落账用：把严格预检点名的坏条目从批里剔掉，其余条目留着照常落地。
+   * - 定位得到条目（数组字段 + 下标，或带着条目本身）：只剔这一条。
+   * - 字段在批里但定位不到条目：剔掉这个字段。
+   * - 批里没有这个字段（多是由别的字段推出来的条目）：没有可剔的，记下来；落地时 applier
+   *   自带的预检还会把它挡掉。
+   * - 整批形状坏了（invalid-writeback-batch）：致命，整批不落。
+   */
+  function _tmPruneWritebackFailures(output, failures) {
+    var drops = Object.create(null), dropped = [], fatal = [];
+    (failures || []).forEach(function(failure) {
+      if (!failure || failure.code === 'invalid-writeback-batch') { fatal.push(failure); return; }
+      var field = String(failure.field || ''), index = Number.isInteger(failure.index) ? failure.index : null;
+      var dot = field.indexOf('.');
+      if (dot > 0) {
+        var rest = field.slice(dot + 1).split('.');
+        field = field.slice(0, dot);
+        if (index === null && /^\d+$/.test(rest[0])) index = Number(rest[0]);
+      }
+      var value = field ? output[field] : undefined;
+      if (value == null || typeof value !== 'object') {
+        dropped.push(Object.assign({ droppedBy: 'strict-preflight', unlocated: true }, failure));
+        return;
+      }
+      if (Array.isArray(value) && index === null && failure.item) {
+        var at = value.indexOf(failure.item);
+        if (at >= 0) index = at;
+      }
+      var plan = drops[field] || (drops[field] = { whole: false, indexes: Object.create(null) });
+      if (!Array.isArray(value) || index === null || index < 0 || index >= value.length) plan.whole = true;
+      else plan.indexes[index] = true;
+      dropped.push(Object.assign({ droppedBy: 'strict-preflight' }, failure, {
+        field: field,
+        index: index,
+        item: failure.item || (Array.isArray(value) && index !== null ? value[index] : null)
+      }));
+    });
+    if (fatal.length) return { ok: false, fatal: fatal, dropped: [] };
+    var next = _tmCloneWriteback(output);
+    Object.keys(drops).forEach(function(field) {
+      var plan = drops[field];
+      if (plan.whole) {
+        if (Array.isArray(next[field])) next[field] = [];
+        else delete next[field];
+        return;
+      }
+      next[field] = next[field].filter(function(_, i) { return !plan.indexes[i]; });
+    });
+    return { ok: true, output: next, dropped: dropped };
+  }
+
+  // 剔完再验：剔掉一条可能让别的条目失去依托（如更新引用了被剔的新建项），最多再剔几轮。
+  // 定位不到的失败只记一次，不因它反复出现而判整批不过。
+  function _tmPruneAndRevalidate(output, failures, opts) {
+    var dropped = [], current = output, pending = failures, unlocated = Object.create(null);
+    for (var round = 0; round < 4; round++) {
+      var cut = _tmPruneWritebackFailures(current, pending);
+      if (!cut.ok) return { ok: false, output: null, dropped: dropped, failures: cut.fatal };
+      cut.dropped.forEach(function(entry) {
+        if (entry.unlocated) {
+          var key = _tmWritebackFailureKey(entry);
+          if (unlocated[key]) return;
+          unlocated[key] = true;
+        }
+        dropped.push(entry);
+      });
+      var again = validateAIWriteBackBatch(cut.output, { source: (opts && opts.source || 'strict-preflight') + ':pruned' });
+      pending = again.failures.filter(function(failure) { return !unlocated[_tmWritebackFailureKey(failure)]; });
+      if (!pending.length) return { ok: true, output: again.output, dropped: dropped, failures: [] };
+      current = again.output;
+    }
+    return { ok: false, output: null, dropped: dropped, failures: pending };
   }
 
   function _applyBattleResult(G, aiOutput, applied) {
@@ -1549,23 +1629,40 @@ export function createReconcile(deps) {
     }
   }
 
+  /**
+   * AI 写回入口。默认整批原子：任一条失败就恢复原状。
+   * 主回合写回带 _commitMode:'per-item'，改为逐条落账：
+   *   预检点名的坏条目先剔掉，处理时失败的条目只记进 applied.failed，其余照常落地，
+   *   返回 ok:true（partial:true 表示有条目没落）。只有世界形状被写坏
+   *   （_validateAIResultState 不过）或 applier 在条目之外抛错，才整批恢复原状。
+   */
   function applyAITurnChangesAtomic(aiOutput) {
     var G = global.GM;
     var P0 = global.P;
     if (!G || !aiOutput || typeof aiOutput !== 'object') return { ok: false, applied: { failed: [{ reason: 'invalid GM/AI output' }] } };
+    var perItem = aiOutput._commitMode === 'per-item';
+    var preflightDropped = [];
     if (aiOutput._strictValidation === true) {
-      var strictPreflight = validateAIWriteBackBatch(aiOutput, { source:'applyAITurnChangesAtomic' });
-      if (!strictPreflight.ok) {
+      var strictPreflight = validateAIWriteBackBatch(aiOutput, { source:'applyAITurnChangesAtomic', prune:perItem });
+      var pruned = !strictPreflight.ok && perItem ? strictPreflight.pruned : null;
+      if (!strictPreflight.ok && !(pruned && pruned.ok)) {
         return {
           ok:false,
           rolledBack:false,
           preflightRejected:true,
-          applied:{ failed:strictPreflight.failures.map(function(failure) {
+          applied:{ failed:((pruned && pruned.failures.length) ? pruned.failures : strictPreflight.failures).map(function(failure) {
             return Object.assign({ reason:failure.reason || failure.code }, failure);
           }) }
         };
       }
-      aiOutput = strictPreflight.output;
+      if (pruned) {
+        preflightDropped = pruned.dropped.map(function(failure) {
+          return Object.assign({ reason:failure.reason || failure.code }, failure);
+        });
+        aiOutput = pruned.output;
+      } else {
+        aiOutput = strictPreflight.output;
+      }
     }
     if (aiOutput._strictValidation !== true && (aiOutput.char_updates || []).some(function(row) { return row && row.changes != null; })) {
       aiOutput=_tmCloneWriteback(aiOutput); var aliases=[]; _normalizeCharacterUpdateAliases(aiOutput, aliases);
@@ -1581,12 +1678,15 @@ export function createReconcile(deps) {
       result.applied.failed = Array.isArray(result.applied.failed) ? result.applied.failed : [];
       var stateFailures = _validateAIResultState(G);
       if (stateFailures.length) Array.prototype.push.apply(result.applied.failed, stateFailures);
-      if (result.ok !== true || result.applied.failed.length) {
+      if (preflightDropped.length) result.applied.failed = preflightDropped.concat(result.applied.failed);
+      var mustRestore = result.ok !== true || stateFailures.length > 0 || (!perItem && result.applied.failed.length > 0);
+      if (mustRestore) {
         _restoreAIStateObject(G, gSnapshot);
         if (P0 && pSnapshot) _restoreAIStateObject(P0, pSnapshot);
         _refreshAIIndices(G, P0);
         return { ok: false, applied: result.applied, rolledBack: true, error: 'AI writeback transaction rejected' };
       }
+      if (perItem && result.applied.failed.length) result.partial = true;
       return result;
     } catch (e) {
       try { if (gSnapshot) _restoreAIStateObject(G, gSnapshot); } catch (_) {}

@@ -19,11 +19,14 @@ const pct = (v) => { const p = (v || 0) * 100; return p > 0 && p < 0.5 ? '不足
 const TABS = [['guoku', '帑廪'], ['neitang', '内帑'], ['census', '户口']];
 const ACCOUNT_NAME = { guoku: '帑廪', neitang: '内帑' };
 const CENSUS_COLS = [['name', '省'], ['mouths', '口'], ['households', '户'], ['ding', '丁'], ['fugitives', '逃'], ['minxin', '民心'], ['lizhi', '吏治']];
-// 按亏空算：库存够再支几期；不亏或库已空的另说
+// 按亏空算：库存够再支几期；不亏或库已空的另说。开局还没拨存的，先从库里减掉
 const runwayOf = (r) => {
   const net = r.inn - r.out;
-  return net < 0 && r.stock > 0 ? Math.floor(r.stock / -net) : null;
+  const stock = r.stock - (r.heldPending ? r.held : 0);
+  return net < 0 && stock > 0 ? Math.floor(stock / -net) : null;
 };
+// 拨存给谁：一处写名字，多处写「某某等几处」
+const heldWho = (r) => (r.heldNames.length > 1 ? `${r.heldNames[0]}等${num(r.heldNames.length)}处` : r.heldNames[0] || '各署');
 // 只有一条「其他」等于没分目：开局账目就是这样，画一条百分之百的长条是假装有细目
 const itemized = (list) => list.length > 1 || (list.length === 1 && !/^(其他|qita|other)$/.test(list[0].label));
 const moodTone = (v) => (v == null ? '' : v < 40 ? '.bad' : v < 60 ? '.mid' : '.good');
@@ -53,6 +56,7 @@ export function createFiscal({ root, game, onCircuit }) {
       h('header', h('b', r.label), runway != null ? h('small' + (runway <= 3 ? '.bad' : ''), runway ? `可支${num(runway)}期` : '不足一期') : null),
       h('div.stock' + (r.stock < 0 ? '.neg' : ''), stockAmt(r.stock), h('small', r.unit)),
       h('div.flow', h('span.in', `收 ${amt(r.inn)}`), h('span.out', `支 ${amt(r.out)}`), h('span.net' + (r.inn - r.out < 0 ? '.neg' : ''), `净 ${signed(r.inn - r.out)}`)),
+      r.held ? h('div.held', `${r.heldPending ? '将拨存' : '已拨存'} ${amt(r.held)}`) : null,
       r.deficit ? h('div.deficit', `欠 ${amt(r.deficit)}${r.unit}`) : null);
   }
 
@@ -80,7 +84,8 @@ export function createFiscal({ root, game, onCircuit }) {
     const net = r.inn - r.out;
     const max = Math.max(1, r.inn, r.out);
     const runway = runwayOf(r);
-    const verdict = net >= 0 ? (net > 0 ? `本期盈余，库中之数渐增` : '收支相抵')
+    // 拨存是期初分割，不算收支；收有余而拨存更多，库中之数照样少
+    const verdict = net >= 0 ? (net - r.held < 0 ? '本期收有余，拨存之后库中之数仍减' : net > 0 ? `本期盈余，库中之数渐增` : '收支相抵')
       : r.stock <= 0 ? '库已空竭，又入不敷出'
       : runway ? `入不敷出，按此收支，库中之数尚可支${num(runway)}期` : '入不敷出，库中之数已不足支一期';
     const stat = (label, text, cls) => h('p.' + cls, h('span', label), h('b', text), h('small', r.unit));
@@ -89,7 +94,10 @@ export function createFiscal({ root, game, onCircuit }) {
       h('div.fi-sum-bars',
         h('i.in', h('u', { style: { width: `${(r.inn / max) * 100}%` } })),
         h('i.out', h('u', { style: { width: `${(r.out / max) * 100}%` } }))),
-      h('p.fi-sum-note' + (net < 0 && (r.stock <= 0 || (runway != null && runway <= 3)) ? '.bad' : ''), verdict));
+      h('p.fi-sum-note' + (net < 0 && (r.stock <= 0 || (runway != null && runway <= 3)) ? '.bad' : ''), verdict),
+      r.held ? h('p.fi-sum-held', r.heldPending
+        ? `开局将从库中拨存${heldWho(r)}待支钱物${amt(r.held)}${r.unit}。这是期初分割，不算本期支用，库中之数另减此数。`
+        : `本期开局已从库中拨存${heldWho(r)}待支钱物${amt(r.held)}${r.unit}。这是期初分割，不算支用，库中之数另减了此数。`) : null);
   }
 
   function namesEl(r, a) {

@@ -880,17 +880,18 @@
     if(!days&&global.FiscalStatement&&global.FiscalStatement.flowIsActual(opts)&&recorded)days=recorded.days;
     if(!opts.budget)opts.budget=previewBudget({game:G,faction:opts.faction||'player',turnDays:days||getTurnDays(opts,G)});
     if(!global.FiscalStatement){if(opts.budget)throw Error('FiscalStatement provider missing');return {account:opts.account,forecast:opts.account.flowBasis==='forecast',unit:opts.account.unit,budget:null};}
+    if(!opts.pending&&opts.scope!=='internal'&&opts.marker===G&&global.GuokuEngine&&global.GuokuEngine.pendingOutflows&&!global.FiscalStatement.flowIsActual(opts))opts.pending=global.GuokuEngine.pendingOutflows(G,opts.budget); // 预估带上清偿旧欠
     return global.FiscalStatement[write?'sync':'read'](opts);
   }
-  function writeBudgetDisplay(account, budget, useActual) {
+  function writeBudgetDisplay(account, budget, useActual, pending) {
     account.budgetPreview=clone(budget);
-    global.FiscalStatement.sync({account:account,budget:budget,scope:'central',actual:useActual});
+    global.FiscalStatement.sync({account:account,budget:budget,scope:'central',actual:useActual,pending:useActual?null:pending});
   }
   function applyBudgetSnapshot(opts) {
     opts=opts || {};var G=getGame(opts.game),budget=opts.budget || previewBudget(opts);if(!G||!budget)return null;
     var fac=budgetFaction(G,opts.faction),player=budgetFaction(G,'player');
     // Derived display only: no ledger creation, stock change, elapsed time or collection marker.
-    if(fac.id===player.id){if(!G.guoku)G.guoku={};writeBudgetDisplay(G.guoku,budget,false);if(G.neitang)global.FiscalStatement.sync({game:G,account:G.neitang,budget:budget,scope:'internal',actual:false});} // arch-ok fiscal preview mutator initializes its owned display container
+    if(fac.id===player.id){if(!G.guoku)G.guoku={};writeBudgetDisplay(G.guoku,budget,false,global.GuokuEngine&&global.GuokuEngine.pendingOutflows?global.GuokuEngine.pendingOutflows(G,budget):null);if(G.neitang)global.FiscalStatement.sync({game:G,account:G.neitang,budget:budget,scope:'internal',actual:false});} // arch-ok fiscal preview mutator initializes its owned display container
     else {fac.budgetPreview=clone(budget);}
     return budget;
   }
@@ -957,7 +958,7 @@
           ['money','grain','cloth'].forEach(function(k){target.ledgers[k].stock=safeNumber(local.publicTreasury[k].stock,0);});
         }else if(item.funding==='internal'){if(fac.id===player.id){ensureNeitang(G);target=G.neitang;}else {target=fac.innerTreasury;if(!target)throw Error('internal-account-missing:'+fac.id);if(!target.ledgers)target.ledgers={};['money','grain','cloth'].forEach(function(k){ensureLedger(target.ledgers,k,target[k]);});}}
         ['money','grain','cloth'].forEach(function(k){
-          var r=deductFromLedger(target.ledgers[k],item.amounts[k],global.FiscalStatement.expenseLabel(item));paid[k]=r.deducted;
+          var r=deductFromLedger(target.ledgers[k],item.amounts[k],global.FiscalStatement.expenseLabel(item),true);paid[k]=r.deducted;
           global.FiscalStatement.recordExpense(target.ledgers[k],item,r.deducted,r.deficit);deducted[item.funding][k]=fiscalRound(deducted[item.funding][k]+r.deducted);deficit[k]=fiscalRound(deficit[k]+r.deficit);
           if(local){local.publicTreasury[k].stock=target.ledgers[k].stock;local.publicTreasury[k].available=target.ledgers[k].stock;local.publicTreasury[k].deficit=target.ledgers[k].deficit||0;local.publicTreasury[k].thisTurnOut=target.ledgers[k].thisTurnOut;local.publicTreasury[k].sinks=clone(target.ledgers[k].sinks||{});local.publicTreasury[k].sinkDetails=clone(target.ledgers[k].sinkDetails||{});local.publicTreasury[k].deficitDetails=clone(target.ledgers[k].deficitDetails||{});}
         });
@@ -1047,7 +1048,7 @@
     }
   }
 
-  function deductFromLedger(ledger, amount, sinkTag) {
+  function deductFromLedger(ledger, amount, sinkTag, rowless) {
     amount = safeNumber(amount, 0);
     if (!ledger || amount <= 0) return { deducted: 0, deficit: 0 };
     var have = safeNumber(ledger.stock, 0);
@@ -1061,7 +1062,7 @@
       ledger.sinks[sinkTag] = safeNumber(ledger.sinks[sinkTag], 0) + deducted;
       if (deficit > 0) ledger.sinks[sinkTag + '_欠'] = safeNumber(ledger.sinks[sinkTag + '_欠'], 0) + deficit;
     }
-    if (deficit > 0) ledger.deficit = safeNumber(ledger.deficit, 0) + deficit;
+    if (deficit > 0) { ledger.deficit = safeNumber(ledger.deficit, 0) + deficit; if (sinkTag && !rowless && global.FiscalStatement && global.FiscalStatement.recordArrears) global.FiscalStatement.recordArrears(ledger, sinkTag, deficit); } // 欠下的也记一条明细，欠项总数才对得上明细；统一预算按条记在 recordExpense，传 rowless
     return { deducted: deducted, deficit: deficit };
   }
 
@@ -2505,7 +2506,7 @@
       var r = deductFromLedger(gLed, shortfall, '户部补内帑');
       if (r.deducted > 0 && nLed) {
         nLed.deficit = Math.max(0, safeNumber(nLed.deficit, 0) - r.deducted);
-        if (nLed.sinks && nLed.sinks['宫廷_欠']) nLed.sinks['宫廷_欠'] = Math.max(0, nLed.sinks['宫廷_欠'] - r.deducted);
+        if (nLed.sinks && nLed.sinks['宫廷_欠']) nLed.sinks['宫廷_欠'] = Math.max(0, nLed.sinks['宫廷_欠'] - r.deducted); if (global.FiscalStatement && global.FiscalStatement.repayDeficits) global.FiscalStatement.repayDeficits(nLed, r.deducted, {excludeManual:true}); // 户部补上的，明细一起减
       }
     });
 

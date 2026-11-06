@@ -61,6 +61,12 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
       return { forecast: a.forecast, res: a.res.map((r) => ({ key: r.key, inn: r.inn, out: r.out, sources: pick(r.sources), sinks: pick(r.sinks) })) };
     }, kind);
     const latin = /^[\x00-\x7f]+$/;
+    // 皇庄租征银：钱账有了，粮账就不能再挂皇庄；钱账的皇庄也不能再拆出「粮租」
+    if (kind === 'neitang') {
+      const zhuang = (key) => ((rows.res.find((r) => r.key === key) || { sources: [] }).sources.find((x) => x.label === '皇庄')) || null;
+      check(!(zhuang('money') && zhuang('grain')), `${stage}内帑：皇庄租只记一处（钱账${zhuang('money') ? '有' : '无'}，粮账${zhuang('grain') ? '有' : '无'}）`);
+      check(!(zhuang('money') && zhuang('money').details.some((d) => /粮/.test(d.name))), `${stage}内帑：钱账的皇庄不再拆出粮租`);
+    }
     for (const r of rows.res) {
       for (const [side, list, total] of [['收', r.sources, r.inn], ['支', r.sinks, r.out]]) {
         const sum = list.reduce((n, x) => n + x.amount, 0);
@@ -80,7 +86,7 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
     return rows;
   };
   // 画面：册里真画出来、能点开
-  const pageCheck = async (stage) => {
+  const pageCheck = async (stage, held) => {
     const m = await p.evaluate(() => {
       const items = [...document.querySelectorAll('.fi-right .fi-item')];
       if (items[0]) items[0].open = true;
@@ -91,6 +97,7 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
     check(m.bars > 2, `${stage}：册里画出了名目长条`);
     check(m.items >= 1 && m.subs > 1, `${stage}：有能展开的细目`);
     check(!m.blank, `${stage}：不再写「尚未分目」`);
+    if (held) check(m.text.includes(held), `${stage}：写明${held}`);
     check(!m.wide, `${stage}：不横向溢出`);
     check(!/[A-Za-z_]{3,}/.test(m.text), `${stage}：册里没有英文代号 ${(m.text.match(/[A-Za-z_]{3,}/g) || []).slice(0, 4).join('、')}`);
   };
@@ -109,15 +116,24 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
   await accountCheck('开局', 'neitang');
   const stocks = () => p.evaluate(async () => {
     const F = await import('/ui/adapter/fiscal.js');
-    // repaid：清偿旧欠。统一预算的开局预估不含这一笔，对比时扣掉
-    const read = (k) => F.account(k).res.map((r) => ({ key: r.key, stock: r.stock, inn: r.inn, out: r.out, repaid: Number((window.GM[k].ledgers[r.key].sinks || {})['清偿旧欠']) || 0 }));
+    // repaid：清偿旧欠，只记下来看；held：册里写的开局拨存（期初分割，不算收支）
+    // deficit/rowsSum：欠项总数与明细之和；manual：其中「待诏给付」的（manualSettlement），只能由诏令清结
+    const manualOf = (k, key) => { const d = ((window.GM[k].ledgers[key] || {}).deficitDetails) || {}; return Object.keys(d).reduce((n, c) => n + (d[c] || []).filter((x) => x && x.manualSettlement === true).reduce((s, x) => s + (Number(x.amount) || 0), 0), 0); };
+    const read = (k) => F.account(k).res.map((r) => ({ key: r.key, stock: r.stock, inn: r.inn, out: r.out, repaid: Number((window.GM[k].ledgers[r.key].sinks || {})['清偿旧欠']) || 0, held: r.held || 0, heldPending: !!r.heldPending, deficit: r.deficit || 0, rowsSum: (r.deficits || []).reduce((n, d) => n + (d.amount || 0), 0), manual: manualOf(k, r.key) }));
     return { guoku: read('guoku'), neitang: read('neitang') };
   });
+  // 欠项：总数和明细之和对得上（明细为空时不论）
+  const debtCheck = (stage, rows) => {
+    for (const kind of ['guoku', 'neitang']) for (const r of rows[kind]) {
+      if (r.rowsSum || r.deficit) check(Math.abs(r.deficit - r.rowsSum) <= 1, `${stage} ${kind}/${r.key}：欠项总数${Math.round(r.deficit)}和明细${Math.round(r.rowsSum)}对得上`);
+    }
+  };
   const before = await stocks();
+  debtCheck('开局', before);
   await openBook();
   await toTab('帑廪');
   await shot('open-guoku');
-  await pageCheck('开局帑廪');
+  await pageCheck('开局帑廪', before.guoku[0].held ? '将从库中拨存' : null);
   await shot('open-guoku-item');
   await toRes(1);
   await shot('open-guoku-grain');
@@ -143,6 +159,12 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
   await accountCheck('结账后', 'guoku');
   await accountCheck('结账后', 'neitang');
   const after = await stocks();
+  debtCheck('结账后', after);
+  // 「待诏给付」的旧欠只能由诏令清结：自动清偿旧欠不能超过开局可自动还的那部分
+  for (const r of after.guoku) {
+    const was = before.guoku.find((x) => x.key === r.key);
+    check(r.repaid <= Math.max(0, was.deficit - was.manual) + 1, `结账后 guoku/${r.key}：自动清偿旧欠${Math.round(r.repaid)}没碰待诏给付的${Math.round(was.manual)}`);
+  }
   // 开局拨给各官署公帑的经费：第一次结账才从两库划走，不算本期支出。回执在 _publicTreasuryOpeningTransfers
   const opening = await p.evaluate(() => {
     const sum = { money: 0, grain: 0, cloth: 0 };
@@ -164,6 +186,20 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
       check(Math.abs(gap + opening.sum[key]) <= 5, `开局拨付 ${key}：两库多减${Math.round(-gap)}等于回执合计${Math.round(opening.sum[key])}`);
     }
   }
+  // 拨存：开局写「将拨存」，结账后那一期写「已拨存」，两库合计都等于回执；没有拨存就不写
+  for (const key of ['money', 'grain', 'cloth']) {
+    const sum = (rows) => ['guoku', 'neitang'].reduce((s, kind) => s + (rows[kind].find((x) => x.key === key).held || 0), 0);
+    const want = opening.n ? opening.sum[key] : 0;
+    check(Math.abs(sum(before) - want) <= 5 && ['guoku', 'neitang'].every((kind) => before[kind].every((x) => !x.held || x.heldPending)), `拨存 ${key}：开局册里写将拨存${Math.round(sum(before))}，回执${Math.round(want)}`);
+    check(Math.abs(sum(after) - want) <= 5 && ['guoku', 'neitang'].every((kind) => after[kind].every((x) => !x.heldPending)), `拨存 ${key}：结账后册里写已拨存${Math.round(sum(after))}，回执${Math.round(want)}`);
+  }
+  if (opening.n) {
+    await openBook();
+    await toTab('帑廪');
+    const text = await p.evaluate(() => document.querySelector('.fi-left').innerText + document.querySelector('.fi-right').innerText);
+    check(/已拨存/.test(text), '结账后帑廪：册里写明已拨存');
+    await shot('settled1-guoku');
+  }
   // 对账：库存之变 = 收 − 支；开局预估 = 第一次结账
   for (const kind of ['guoku', 'neitang']) {
     after[kind].forEach((r, i) => {
@@ -174,7 +210,7 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
       if (!opening.n) check(Math.abs(moved - net) <= Math.max(1, Math.abs(r.out + r.inn) * 0.002), `对账 ${kind}/${r.key}：库存之变${Math.round(moved)}等于收减支${Math.round(net)}`);
       check(Math.abs(was.inn - r.inn) <= Math.max(1, r.inn * 0.03), `对账 ${kind}/${r.key}：开局预估收${Math.round(was.inn)}和实收${Math.round(r.inn)}相差不过三分`);
       const tol = Math.max(1, r.out * 0.03);
-      check(Math.abs(was.out - r.out) <= tol || Math.abs(was.out - (r.out - r.repaid)) <= tol, `对账 ${kind}/${r.key}：开局预估支${Math.round(was.out)}和实支${Math.round(r.out)}（其中清偿旧欠${Math.round(r.repaid)}）相差不过三分`);
+      check(Math.abs(was.out - r.out) <= tol, `对账 ${kind}/${r.key}：开局预估支${Math.round(was.out)}和实支${Math.round(r.out)}（其中清偿旧欠${Math.round(r.repaid)}）相差不过三分`);
     });
   }
   // 第二回合：账不能逐期累加，库存之变仍等于收减支
@@ -189,6 +225,8 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
     bus.emit('game:changed', { what: 'probe' });
   });
   const second = await stocks();
+  debtCheck('第二回合', second);
+  check(['guoku', 'neitang'].every((kind) => second[kind].every((x) => !x.held)), '第二回合：拨存那一期过了就不再写');
   for (const kind of ['guoku', 'neitang']) {
     second[kind].forEach((r, i) => {
       const was = after[kind][i];

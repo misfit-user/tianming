@@ -48,6 +48,8 @@
     var field=direction==='in'?'sourceDetails':'sinkDetails',key=keyFor(tag,scope,direction);
     if(!ledger[field])ledger[field]={};detail(ledger[field],key,id,name,amount);
   }
+  // 欠发记一条明细：同一支出名目历期累计在一行，清偿时随 repayDeficits 减（统一预算按条记在 recordExpense，不走这里）
+  function recordArrears(ledger,tag,amount){if(!amount||!ledger)return;if(!ledger.deficitDetails)ledger.deficitDetails={};var names={宫廷:'宫廷欠支',户部补内帑:'户部补内帑欠拨'};detail(ledger.deficitDetails,tag,'arrears:'+tag,names[tag]||('欠发'+tag),amount);}
   function repayDeficits(ledger,amount,options){
     var all=Object.keys(ledger.deficitDetails||{}).reduce(function(a,k){return a.concat(ledger.deficitDetails[k]);},[]),manual=options&&options.excludeManual?all.filter(function(r){return r.manualSettlement===true;}).reduce(function(n,r){return n+num(r.amount);},0):0;
     var rows=all.filter(function(r){return !(options&&options.excludeManual&&r.manualSettlement===true);}),sum=rows.reduce(function(n,r){return n+r.amount;},0);
@@ -153,11 +155,16 @@
     var status=actual&&periodTurn!=null&&periodTurn<(o.game||{}).turn?'previous':'current';
     return {account:view,forecast:forecast,periodStatus:status,unit:view.unit,budget:null,sourceDetailsByResource:sources,expenseDetailsByResource:expenses};
   }
+  // 结账时才发生、预算条目里没有的支出（如清偿旧欠）：只并进预估，结账后账上本来就有
+  function mergePending(planned,pending,scope){
+    RES.forEach(function(k){(pending&&pending[k]||[]).forEach(function(r){var flow=planned[k],v=num(r.amount);if(!v)return;add(flow.sinks,labels(scope,'out')[r.key]||r.key,v);detail(flow.sinkDetails,r.key,r.id,r.name,v);flow.expense=round(flow.expense+v);});});
+  }
   function read(o){
     o=o||{};var account=o.account||{},budget=o.budget,scope=o.scope||'central';
     if(!budget)return legacyStatement(o);
     var actual=flowIsActual(o),period=actual&&(account.accounting||account.period)||budget.period,days=num(period.days)||budget.period.days,year=budget.period.daysPerYear;
     var planned=budgetFlows(budget,scope),view=Object.assign({},account),sourceDetails={},expenseDetails={};
+    if(!actual&&o.pending)mergePending(planned,o.pending[scope],scope);
     view.ledgers={};view.sources={};view.expenses={};view.sourcesDetail={};view.expensesDetail={};
     Object.keys(labels(scope,'in')).forEach(function(k){view.sources[k]=0;});Object.keys(labels(scope,'out')).forEach(function(k){view.expenses[k]=0;});
     RES.forEach(function(k){
@@ -297,5 +304,5 @@
     }, {daysPerYear:year, turnDays:days});
   }
 
-  global.FiscalStatement={previewRevenue:previewRevenue,productionTaxBase:productionTaxBase,productionTaxAmount:productionTaxAmount,taxRevenuePreview:taxRevenuePreview,read:read,sync:sync,flowIsActual:flowIsActual,hasActualLedger:hasActualLedger,expenseKey:expenseKey,expenseLabel:expenseLabel,flowTag:flowTag,recordExpense:recordExpense,recordFlow:recordFlow,repayDeficits:repayDeficits,collectionZero:collectionZero,collectionTax:collectionTax,addCollection:addCollection,budgetFlows:budgetFlows,fixedSummary:fixedSummary,taxThree:taxThree,labels:labels,contextAccount:contextAccount};
+  global.FiscalStatement={recordArrears:recordArrears,previewRevenue:previewRevenue,productionTaxBase:productionTaxBase,productionTaxAmount:productionTaxAmount,taxRevenuePreview:taxRevenuePreview,read:read,sync:sync,flowIsActual:flowIsActual,hasActualLedger:hasActualLedger,expenseKey:expenseKey,expenseLabel:expenseLabel,flowTag:flowTag,recordExpense:recordExpense,recordFlow:recordFlow,repayDeficits:repayDeficits,collectionZero:collectionZero,collectionTax:collectionTax,addCollection:addCollection,budgetFlows:budgetFlows,fixedSummary:fixedSummary,taxThree:taxThree,labels:labels,contextAccount:contextAccount};
 })(typeof window!=='undefined'?window:globalThis);

@@ -180,6 +180,19 @@
     positionRows(G).forEach(function(row){var b=row.position.treasuryBinding;if(!b)return;bindingRefs(row.position).forEach(function(ref){var e=expand(G,ref,null,lookup);Array.prototype.push.apply(report.missing,e.missing);});});
     report.ok=report.ok&&!report.missing.length;return report;
   }
+  // 开局拨存各署库待支钱物：哪几笔、从帑廪还是内帑出、拨了没有。只读，供册子写明「拨存」：期初分割，不算支出
+  function getOpeningAllocations(o){
+    var G=game(o),zero=function(){return {money:0,grain:0,cloth:0};},out={declared:declared(G),rows:[],pending:{guoku:zero(),neitang:zero()},settled:{guoku:zero(),neitang:zero()},turn:null};
+    if(!out.declared)return out;
+    var receipts=G._publicTreasuryOpeningTransfers||{};
+    definitions(G).forEach(function(a){
+      if(!a||!a.openingTransfer)return;var t=a.openingTransfer,from=t.from==='guoku'?'guoku':t.from==='neitang'||t.from==='neicang'?'neitang':null;if(!from)return;
+      var receipt=receipts['opening:'+String(G.sid||'')+':'+a.id],paid=receipt&&receipt.result&&receipt.result.paid||{},bag=receipt?out.settled[from]:out.pending[from],row={id:a.id,name:a.name||a.id,from:from,reason:t.reason||'',done:!!receipt,turn:receipt?receipt.turn:null,amounts:{}};
+      RES.forEach(function(k){var v=receipt?number(paid[k])||0:number(t.amounts&&t.amounts[k])||0;row.amounts[k]=v;bag[k]=round(bag[k]+v);});
+      if(receipt&&out.turn==null)out.turn=receipt.turn;out.rows.push(row);
+    });
+    return out;
+  }
   function officeAssignmentChanged(o){
     var G=game(o);if(!declared(G))return {ok:true,legacy:true};var row=positionRows(G).find(function(r){return r.position.id===o.positionId;});if(!row)return {ok:false,reason:'position-missing'};
     var refs=bindingRefs(row.position),entries=[],seen={};refs.forEach(function(ref){expand(G,ref).entries.forEach(function(e){if(!seen[e.key]){seen[e.key]=true;entries.push(e);}});});
@@ -302,5 +315,5 @@
       G._privateRecoveryReceipts.push({id:o.id,signature:signature,result:clone(result)});return result;
     }catch(e){restore(ch.resources,saved);affected.forEach(function(x){restore(account(x.entry),x.before);if(x.fiscal)restore(x.entry.target.fiscal,x.fiscal);});return {ok:false,reason:'recovery-rolled-back',error:e.message};}
   }
-  TM.PublicTreasury={isDeclared:declared,initialize:initialize,getAccountView:getAccountView,getFactionAccountRef:getFactionAccountRef,getRegionAccountRefs:getRegionAccountRefs,listAccountViews:listAccountViews,getConsolidatedView:getConsolidatedView,getCharacterPublicAccounts:getCharacterPublicAccounts,transfer:transact,spend:transact,officeAssignmentChanged:officeAssignmentChanged,beginPeriod:beginPeriod,payrollItems:payrollItems,recordSalaryPayments:recordSalaryPayments,getCharacterPayroll:getCharacterPayroll,getCharacterSalaryReceipts:getCharacterSalaryReceipts,receivePrivateRecovery:receivePrivateRecovery,recordLiability:recordLiability,repayLiability:repayLiability,getLiabilities:getLiabilities};
+  TM.PublicTreasury={isDeclared:declared,initialize:initialize,getAccountView:getAccountView,getFactionAccountRef:getFactionAccountRef,getRegionAccountRefs:getRegionAccountRefs,listAccountViews:listAccountViews,getConsolidatedView:getConsolidatedView,getCharacterPublicAccounts:getCharacterPublicAccounts,getOpeningAllocations:getOpeningAllocations,transfer:transact,spend:transact,officeAssignmentChanged:officeAssignmentChanged,beginPeriod:beginPeriod,payrollItems:payrollItems,recordSalaryPayments:recordSalaryPayments,getCharacterPayroll:getCharacterPayroll,getCharacterSalaryReceipts:getCharacterSalaryReceipts,receivePrivateRecovery:receivePrivateRecovery,recordLiability:recordLiability,repayLiability:repayLiability,getLiabilities:getLiabilities};
 })(typeof window!=='undefined'?window:globalThis);

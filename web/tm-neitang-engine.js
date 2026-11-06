@@ -159,17 +159,13 @@
   // ═════════════════════════════════════════════════════════════
 
   var Sources = {
-    // 皇庄租·按 division.imperialFarmland 求和（粮租 60% / 银租 40%）
+    // 皇庄租·按 division.imperialFarmland 求和。租入征银（《明史·食货一》：嘉靖初皇庄改称官地，「诏所司征银解部」），
+    // 全数记在钱账。原先拆成粮租六成、银租四成，粮租折银记在钱账，粮账又按剧本进粮挂皇庄，同一笔租记了两次
     huangzhuang: function() {
       var acres = _imperialFarmlandTotal();
       var ratePerAcre = safe((GM.neitang || {}).huangzhuangRatePerAcre, 0) || 0.5;  // 两/亩·年，剧本写了就认剧本
-      var grainRent = acres * ratePerAcre * 0.6;
-      var silverRent = acres * ratePerAcre * 0.4;
-      var total = grainRent + silverRent;
-      _setSubsN('huangzhuang', [
-        { id: 'huangzhuang_grain', name: '皇庄粮租', amount: Math.round(grainRent), note: acres + ' 亩' },
-        { id: 'huangzhuang_silver', name: '皇庄银租', amount: Math.round(silverRent) }
-      ]);
+      var total = acres * ratePerAcre;
+      _setSubsN('huangzhuang', [{ id: 'huangzhuang_rent', name: '皇庄租入', amount: Math.round(total), note: acres + ' 亩' }]);
       return total;
     },
     // 皇产经营·按 division.imperialAssets 求和（织造/矿场/御窑各一类）
@@ -584,14 +580,18 @@
   }
 
   // 粮布本期各目。剧本写了每月粮布入项就按它，没写才按皇庄皇产折算（皇庄皇产认了剧本的数之后，折算只剩一个零头）。
+  // 剧本写的进粮记作「上供本色」，不挂皇庄：皇庄租入征银，已全数记在钱账。进布是织造本色，仍记皇产。
+  // 没写进粮的剧本（非官方、旧存档）仍按旧算法从皇庄折一点粮
   // 宫廷用度 FixedExpense 已从内帑扣过，这里只算其余；预估和结算共用
   function _grainClothFlow(mr, fixedPaid) {
     var n = GM.neitang, est = n.monthlyIncomeEstimate || {};
     var src = n.sources || {}, exp = n.expenses || {}, palace = fixedPaid ? 0 : safe(exp.gongting, 0);
-    var grainEstate = est.grain != null && isFinite(Number(est.grain)) ? Number(est.grain) * mr : safe(src.huangzhuang, 0) * 0.2 / 10 * mr / 12;
+    var grainIn = { tribute: safe(src.tribute, 0) * 0.1 / 10 * mr / 12 };
+    if (est.grain != null && isFinite(Number(est.grain))) grainIn['上供本色'] = Number(est.grain) * mr;
+    else grainIn.huangzhuang = safe(src.huangzhuang, 0) * 0.2 / 10 * mr / 12;
     var clothEstate = est.cloth != null && isFinite(Number(est.cloth)) ? Number(est.cloth) * mr : safe(src.huangchan, 0) * 0.15 / 5 * mr / 12;
     return {
-      grain: { in: { huangzhuang: grainEstate, tribute: safe(src.tribute, 0) * 0.1 / 10 * mr / 12 }, out: { gongting: palace * 0.3 / 10 * mr / 12, shangci: safe(exp.shangci, 0) * 0.2 / 10 * mr / 12 } },
+      grain: { in: grainIn, out: { gongting: palace * 0.3 / 10 * mr / 12, shangci: safe(exp.shangci, 0) * 0.2 / 10 * mr / 12 } },
       cloth: { in: { huangchan: clothEstate, tribute: safe(src.tribute, 0) * 0.2 / 5 * mr / 12 }, out: { shangci: safe(exp.shangci, 0) * 0.4 / 5 * mr / 12, gongting: palace * 0.1 / 5 * mr / 12 } }
     };
   }

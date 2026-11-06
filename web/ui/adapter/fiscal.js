@@ -185,6 +185,23 @@ function itemizePrivy(r, acc, L, forecast) {
   const names = labels('neitang').out;
   r.sinks = r.sinks.map((x) => ({ ...x, details: x.details.length ? x.details : yearlyDetails(acc.expensesDetail, keyOfLabel(names, x.label), x.amount, r.key) }));
 }
+// 开局拨存各署库待支钱物（晚唐有）：期初分割，不算收支，库中之数却要减这一笔。
+// 还没拨，开局写「将拨存」；拨在哪一期，结账后那一期写「已拨存」；再往后不提
+function heldOf(kind, forecast) {
+  const api = w.TM && w.TM.PublicTreasury;
+  let o = null;
+  try { o = api && api.getOpeningAllocations ? api.getOpeningAllocations({ game: G() }) : null; } catch (_e) { o = null; }
+  if (!o || !o.declared) return null;
+  const rows = o.rows.filter((x) => x.from === kind);
+  if (!rows.length) return null;
+  const pending = rows.some((x) => !x.done);
+  if (!pending && (forecast || o.turn == null || num(G().turn) !== num(o.turn) + 1)) return null;
+  return { pending, names: rows.map((x) => x.name), amounts: pending ? o.pending[kind] : o.settled[kind] };
+}
+function withHeld(res, kind, forecast) {
+  const h = heldOf(kind, forecast);
+  return res.map((r) => ({ ...r, held: h ? num(h.amounts[r.key]) : 0, heldPending: !!(h && h.pending), heldNames: h ? h.names : [] }));
+}
 // kind：guoku 帑廪 ／ neitang 内帑
 export function account(kind) {
   const g = G();
@@ -208,11 +225,11 @@ export function account(kind) {
       if (inn || out) { r.inn = inn; r.out = out; forecast = true; }
     }
     for (const r of res) itemizePrivy(r, acc, L, forecast);
-    return { kind, forecast, unit, res, distorted: false };
+    return { kind, forecast, unit, res: withHeld(res, kind, forecast), distorted: false };
   }
   if (!w.CascadeTax.isUnified(g, 'player')) for (const r of res) itemizeGuoku(r, forecast, acc, L);
   const rv = reportGuoku(res);
-  return { kind, forecast, unit, res: rv.res, distorted: rv.distorted };
+  return { kind, forecast, unit, res: withHeld(rv.res, kind, forecast), distorted: rv.distorted };
 }
 // 帑廪收支史：近十二期（每期收、支、净、期末库银）与近五年决算。失真层开着则封存（sealed）
 export function history() {

@@ -2459,10 +2459,16 @@
   // 清偿旧欠：库有余则按月偿还 ledgers.money.deficit（欠俸/欠饷累欠）。
   // deficit 此前全仓只进不出——一次欠账=永久 inCrisis·破产链棘轮升满永不解除(2026-07-04 审查定罪)。
   // 节奏：每月最多偿 月入25%×mr·且不动用库藏最后一成(留缓冲)·清讫发邸报。
+  // 「待诏给付」的旧欠（开局欠饷等，manualSettlement）只能由诏令清结，自动还款不碰，统一预算结算同此口径。
+  // 原先连它一起还：天启开局九百九十九万两欠饷全是待诏，每期被自动还掉三万多；晚唐那笔还完总数归零，明细还挂着
+  function _manualDeficit(led) {
+    var d = (led && led.deficitDetails) || {};
+    return Object.keys(d).reduce(function(n, c) { return n + (d[c] || []).filter(function(r) { return r && r.manualSettlement === true; }).reduce(function(s, r) { return s + Math.max(0, safe(r.amount, 0)); }, 0); }, 0);
+  }
   // 这一期能还多少：预估和结算共用
   function _repayDeficitAmount(available, monthlyIncome, mr) {
     var led = GM.guoku && GM.guoku.ledgers && GM.guoku.ledgers.money;
-    var owed = led ? Math.max(0, safe(led.deficit, 0)) : 0;
+    var owed = led ? Math.max(0, safe(led.deficit, 0) - _manualDeficit(led)) : 0;
     var avail = Math.max(0, safe(available, 0));
     if (!owed || avail <= 0) return 0;
     var monthly = Math.max(0, safe(monthlyIncome, 0));
@@ -2485,8 +2491,21 @@
     if (!led.sinks) led.sinks = {};
     led.sinks['清偿旧欠'] = safe(led.sinks['清偿旧欠'], 0) + pay;
     led.thisTurnOut = safe(led.thisTurnOut, 0) + pay;
+    // 统一预算的册子按凭据列细目：不记这条，结账后「其他」里只剩一笔「其余其他凭据」
+    if (unifiedFiscalActive() && global.FiscalStatement && global.FiscalStatement.recordFlow) global.FiscalStatement.recordFlow(led, 'central', 'out', '清偿旧欠', 'repayDeficit', '清偿旧欠', pay);
     if (led.deficit === 0 && typeof addEB === 'function') addEB('财政', '累年积欠清讫，帑藏归于常度', { credibility: 'high' });
     return pay;
+  }
+  // 统一预算结账时才发生、预算条目里没有的支出：清偿旧欠（tick 里 _repayDeficit 还，同一个算法）。
+  // 只并进预估，不然开局说盈、结完却亏。开局拨存各署库待支钱物是期初分割，不算支出，不进这里（见 TM.PublicTreasury.getOpeningAllocations）
+  function pendingOutflows(G, budget) {
+    var led = G && G.guoku && G.guoku.ledgers && G.guoku.ledgers.money;
+    if (G !== GM || !budget || !led || !global.FiscalStatement || !global.FiscalStatement.budgetFlows) return null;
+    var flow = global.FiscalStatement.budgetFlows(budget, 'central').money, days = safe(budget.period && budget.period.days, 30) || 30;
+    var service = global.TM && global.TM.PublicTreasury, opening = service && service.getOpeningAllocations ? service.getOpeningAllocations({game:G}) : null;
+    var held = opening && opening.declared ? safe(opening.pending.guoku.money, 0) : 0;
+    var repay = _repayDeficitAmount(safe(led.stock, safe(G.guoku.balance, 0)) - held + flow.income - flow.expense, flow.income * 30 / days, days / 30);
+    return repay > 0 ? {central:{money:[{key:'qita', id:'repayDeficit', name:'清偿旧欠', amount:repay}]}} : null;
   }
 
   function tick(context) {
@@ -2530,6 +2549,7 @@
     openingFiscalPending: openingFiscalPending,
     previewOpeningFiscal: previewOpeningFiscal,
     finishOpeningFiscal: finishOpeningFiscal,
+    pendingOutflows: pendingOutflows,
     tick: tick,
     syncBattleCasualtyBonus: syncBattleCasualtyBonus,
     ensureModel: ensureGuokuModel,

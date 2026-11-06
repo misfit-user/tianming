@@ -15,6 +15,7 @@
 .fi-card header small.bad { color: #8a2a1c; }
 .fi-card .stock { margin: .125rem 0; font: 400 1.875rem/1.2 var(--f-title); letter-spacing: .06em; color: #2a1608; }
 .fi-card .stock.neg { color: #8a2a1c; }
+.fi-card .held { font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; }
 .fi-card .stock small { margin-left: .25rem; font: var(--fs-2) var(--f-kai); color: var(--ink-faint); }
 .fi-card .flow { display: flex; flex-wrap: wrap; gap: .125rem .875rem; font-size: var(--fs-2); }
 .fi-card .flow span { white-space: nowrap; }

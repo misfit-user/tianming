@@ -2074,9 +2074,11 @@
     if (!G || !G.adminHierarchy) return 0;
     var total = 0;
     walkAdminDivisions(G, function(div) {
-      var eb = _ensureEconomyBase(div);
+      // readOnly：预估只读账，默认值补在副本上，不动地块本身
+      var d = opts.readOnly ? Object.assign({}, div, {tags:Object.assign({}, div.tags), economyBase:Object.assign({}, div.economyBase)}) : div;
+      var eb = _ensureEconomyBase(d);
       var value = safeNumber(eb && eb[field], 0);
-      if (opts.requireTag && (!div.tags || !div.tags[opts.requireTag])) value = 0;
+      if (opts.requireTag && (!d.tags || !d.tags[opts.requireTag])) value = 0;
       var reduce = safeNumber(div._disasterEconomyReduce && div._disasterEconomyReduce[field], 0);
       if (reduce > 0) value *= Math.max(0, 1 - reduce);
       total += value;
@@ -2457,6 +2459,10 @@
     try {
     var guokuLedgers = ensureGuoku(G);
     var neitangLedgers = ensureNeitang(G);
+    // 内帑本期账从这里起算（帑廪在 cascadeCollect 起算）；不复位，宫廷会一期期累加
+    resetTurnLedger(neitangLedgers.money, false);
+    resetTurnLedger(neitangLedgers.grain, false);
+    resetTurnLedger(neitangLedgers.cloth, false);
     reconcileLedgerScalar(guokuLedgers.money, G.guoku.money, G.guoku.balance);
     reconcileLedgerScalar(guokuLedgers.grain, G.guoku.grain, null);
     reconcileLedgerScalar(guokuLedgers.cloth, G.guoku.cloth, null);
@@ -2515,12 +2521,14 @@
       totalCloth: safeNumber(salary.total.cloth, 0) + safeNumber(royal.total.cloth, 0) + safeNumber(army.total.cloth, 0) + safeNumber(imperial.total.cloth, 0),
       turnDays: getTurnDays(ctx, G)
     };
-    G.guoku.turnExpense = Math.round(turnExpense.totalMoney);
-    G.guoku.turnGrainExpense = Math.round(turnExpense.totalGrain);
-    G.guoku.turnClothExpense = Math.round(turnExpense.totalCloth);
+    // 宫廷扣在内帑，帑廪的本期支出不含它
+    var guokuMoneyOut = turnExpense.totalMoney - safeNumber(imperial.total.money, 0);
+    G.guoku.turnExpense = Math.round(guokuMoneyOut);
+    G.guoku.turnGrainExpense = Math.round(turnExpense.totalGrain - safeNumber(imperial.total.grain, 0));
+    G.guoku.turnClothExpense = Math.round(turnExpense.totalCloth - safeNumber(imperial.total.cloth, 0));
     var turnFrac30 = Math.max(1, getTurnDays(ctx, G)) / 30;
-    G.guoku.monthlyExpense = Math.round(turnExpense.totalMoney / turnFrac30);
-    G.guoku.annualExpense = Math.round(turnExpense.totalMoney * (365 / Math.max(1, getTurnDays(ctx, G))));
+    G.guoku.monthlyExpense = Math.round(guokuMoneyOut / turnFrac30);
+    G.guoku.annualExpense = Math.round(guokuMoneyOut * (365 / Math.max(1, getTurnDays(ctx, G))));
     G._lastFixedExpense = turnExpense;
     G._lastFixedExpenseTurn = G.turn || 0;
     if (global.GuokuEngine && global.GuokuEngine.finishOpeningFiscal) global.GuokuEngine.finishOpeningFiscal(G);

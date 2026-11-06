@@ -1,4 +1,4 @@
-// 财：度支册。左叶择帑廪、内帑、户口：两库各列银粮布——库存、本期收支与净数、上期、欠项总数；户口列全国户、口、丁、逃户、隐户，另点出告急之省。
+// 财：度支册。左叶择帑廪、内帑、户口：两库各列银粮布——库存、本期收支与净数、欠项总数；户口列全国户、口、丁、逃户、隐户，另点出告急之省。
 // 右叶：两库先是本期总览（收、支、净，亏空时算尚可支几期），再是收支名目（结账后可展开细目）、欠项；
 // 帑廪另有收支史、借贷、户部条陈（加派、开仓赈济拟入清册；减重改铸、财政改革当场办）；
 // 内帑另有两库对照与宫中条陈（两库互拨、大典，拟入清册）；户口为各省（汇总叶子）户口、民心、吏治，可排序，点省名翻通志。经 game.fiscal。
@@ -12,6 +12,8 @@ const toast = (text) => bus.emit('kernel:toast', { text });
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
 const amt2 = (v) => num(roundSig(Math.abs(v || 0), 2));
 const signed = (v) => (v > 0 ? '盈' : v < 0 ? '亏' : '') + amt(v);
+// 库存可以是负数（库空了还得付），amt 只写大小，这里写明
+const stockAmt = (v) => (v < 0 ? '亏空' : '') + amt(v);
 // 记数只写整数：不足半成的说不足一，写成「零%」像没有
 const pct = (v) => { const p = (v || 0) * 100; return p > 0 && p < 0.5 ? '不足一%' : `${num(p)}%`; };
 const TABS = [['guoku', '帑廪'], ['neitang', '内帑'], ['census', '户口']];
@@ -49,9 +51,8 @@ export function createFiscal({ root, game, onCircuit }) {
     const runway = runwayOf(r);
     return h('article.fi-card' + (r.key === res ? '.on' : ''), { onclick: () => { res = r.key; render(); } },
       h('header', h('b', r.label), runway != null ? h('small' + (runway <= 3 ? '.bad' : ''), runway ? `可支${num(runway)}期` : '不足一期') : null),
-      h('div.stock', amt(r.stock), h('small', r.unit)),
+      h('div.stock' + (r.stock < 0 ? '.neg' : ''), stockAmt(r.stock), h('small', r.unit)),
       h('div.flow', h('span.in', `收 ${amt(r.inn)}`), h('span.out', `支 ${amt(r.out)}`), h('span.net' + (r.inn - r.out < 0 ? '.neg' : ''), `净 ${signed(r.inn - r.out)}`)),
-      r.lastIn || r.lastOut ? h('div.last', `上期 收${amt(r.lastIn)} 支${amt(r.lastOut)}`) : null,
       r.deficit ? h('div.deficit', `欠 ${amt(r.deficit)}${r.unit}`) : null);
   }
 
@@ -67,7 +68,7 @@ export function createFiscal({ root, game, onCircuit }) {
     replaceChildren(right,
       h('header.fi-title', h('h3', `${ACCOUNT_NAME[tab]}·${r.label}`), a.forecast ? h('small', '本期预估') : null),
       summaryEl(r),
-      namesEl(r, a.forecast),
+      namesEl(r, a),
       debtsEl(r),
       tab === 'guoku' && r.key === 'money' ? historyEl(r.unit) : null,
       tab === 'guoku' ? guokuActions() : [compareEl(r), palaceActions(a)]);
@@ -91,9 +92,9 @@ export function createFiscal({ root, game, onCircuit }) {
       h('p.fi-sum-note' + (net < 0 && (r.stock <= 0 || (runway != null && runway <= 3)) ? '.bad' : ''), verdict));
   }
 
-  function namesEl(r, forecast) {
+  function namesEl(r, a) {
     if (!r.inn && !r.out) return h('p.fi-note', '本期无出入。');
-    if (!itemized(r.sources) && !itemized(r.sinks)) return h('p.fi-note', forecast ? '账目尚未分目，结账后列出岁入名目与支用科目。' : '本期账目未分细目。');
+    if (!itemized(r.sources) && !itemized(r.sinks)) return h('p.fi-note', a.forecast ? '账目尚未分目，结账后列出岁入名目与支用科目。' : '本期账目未分细目。');
     return h('div.fi-cols', bars('岁入名目', r.sources, r.inn, 'in'), bars('支用科目', r.sinks, r.out, 'out'));
   }
 
@@ -114,12 +115,12 @@ export function createFiscal({ root, game, onCircuit }) {
     const max = Math.max(1, ...H.months.flatMap((m) => [m.inn, m.out]));
     return h('section.fi-sec.fi-hist',
       H.months.length ? [h('h4', `近${num(H.months.length)}期收支`),
-        h('div.fi-hbars', H.months.map((m) => h('div', { title: `第${num(m.turn)}回合　收${amt(m.inn)} 支${amt(m.out)} 净${signed(m.net)}　期末库${F.money().noun}${amt(m.balance)}${unit}` },
+        h('div.fi-hbars', H.months.map((m) => h('div', { title: `第${num(m.turn)}回合　收${amt(m.inn)} 支${amt(m.out)} 净${signed(m.net)}　期末库${F.money().noun}${stockAmt(m.balance)}${unit}` },
           h('i.in', { style: { height: `${(m.inn / max) * 100}%` } }), h('i.out', { style: { height: `${(m.out / max) * 100}%` } }), h('small', num(m.turn))))),
         h('p.fi-note', '左柱收、右柱支；悬停见当期之数。')] : null,
       H.years.length ? [h('h4', '年度决算'), H.years.map((y) => h('details.fi-year',
         h('summary', h('b', `${yearNum(y.year)}年`), h('span', `入${amt(y.inn)} · 出${amt(y.out)}`), h('em' + (y.net < 0 ? '.neg' : ''), signed(y.net)), y.bankrupt ? h('small.neg', `破产${num(y.bankrupt)}月`) : null),
-        h('p', `年终库${F.money().noun}${amt(y.balance)}${unit}`),
+        h('p', `年终库${F.money().noun}${stockAmt(y.balance)}${unit}`),
         y.regions.length ? h('div.fi-debts', y.regions.map((x) => h('p', h('span', x.name), h('b', `${signed(x.net)}`)))) : null))] : null);
   }
 
@@ -127,7 +128,7 @@ export function createFiscal({ root, game, onCircuit }) {
     const max = Math.max(1, ...list.map((x) => x.amount));
     const row = (x, tag) => h(tag + '.fi-bar.' + cls,
       h('span.k', x.label), h('span.v', h('i', { style: { width: `${(x.amount / max) * 100}%` } })), h('span.n', amt(x.amount)), h('small', total ? pct(x.amount / total) : ''));
-    return h('section.fi-sec', h('h4', title), list.length ? list.slice(0, 10).map((x) => (x.details.length > 1
+    return h('section.fi-sec', h('h4', title), list.length ? list.map((x) => (x.details.length > 1
       ? h('details.fi-item', row(x, 'summary'), h('div.fi-debts.sub', x.details.slice(0, 16).map((d) => h('p', h('span', d.name), h('b', amt(d.amount))))),
         x.details.length > 16 ? h('p.fi-note', `余${num(x.details.length - 16)}目`) : null)
       : row(x, 'div')))
@@ -208,7 +209,7 @@ export function createFiscal({ root, game, onCircuit }) {
     const other = g && g.res.find((x) => x.key === r.key);
     if (!other) return null;
     const max = Math.max(1, other.stock, r.stock);
-    const row = (label, v, cls) => h('div.fi-bar.fi-two.' + cls, h('span.k', label), h('span.v', h('i', { style: { width: `${(v / max) * 100}%` } })), h('span.n', amt(v)));
+    const row = (label, v, cls) => h('div.fi-bar.fi-two.' + cls, h('span.k', label), h('span.v', h('i', { style: { width: `${(Math.max(0, v) / max) * 100}%` } })), h('span.n', stockAmt(v)));
     return h('section.fi-sec', h('h4', `两库对照 · ${r.label}（${r.unit}）`), row('帑廪', other.stock, 'out'), row('内帑', r.stock, 'in'));
   }
   function palaceActions(a) {

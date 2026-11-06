@@ -57,7 +57,8 @@ const LAYER_MODE = { 民情: 'mood', 阶层: 'classPressure', 财赋: 'tax', 军
 
 const sig4 = (v) => { const n = Number(v) || 0; if (Math.abs(n) < 1e4) return n; const p = 10 ** (Math.floor(Math.log10(Math.abs(n))) - 3); return Math.round(n / p) * p; };
 // 顶栏账簿：身份档的 ledger 列哪几本，这里就按键取
-const row = (r) => ({ k: r.label || r.k, v: r.value ?? r.v, d: r.delta ?? r.d, unit: r.unit });
+// 开局的库存是整数，结账后带零头（一千二百五十万九千六百八十七），顶栏放不下也不必，取四位有效数字
+const row = (r) => ({ k: r.label || r.k, v: sig4(r.value ?? r.v), d: r.delta ?? r.d, unit: r.unit });
 const LEDGERS = {
   treasury: (s) => zhang('帑廪', s.treasury().rows.map(row)),
   privy: (s) => zhang('内帑', s.privy().rows.map(row)),

@@ -9,7 +9,8 @@ export function zhang(label, rows) {
     h('em.q-gold', label),
     h('ol', rows.map((r) => h('li',
       h('i', r.k),
-      h('b', r.text ?? num(r.v)),
+      // num 不带正负号：库存成了负数要写明亏空，不然和盈余看不出分别
+      h('b' + (r.v < 0 ? '.neg' : ''), r.text ?? (r.v < 0 ? `亏${num(r.v)}` : num(r.v))),
       r.unit ? h('u', r.unit) : null,
       r.d ? h('s' + (r.d > 0 ? '.up' : ''), delta(r.d)) : null
     ))));

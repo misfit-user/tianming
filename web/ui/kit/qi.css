@@ -109,6 +109,7 @@ button.q-yapai:disabled:hover { transform: none; box-shadow: var(--sh-lift), ins
 .q-zhang li { display: contents; font-size: max(.875rem, 12px); line-height: 1.125rem; white-space: nowrap; }
 .q-zhang li > i { grid-column: 1; margin-right: .375rem; font-style: normal; font-size: var(--fs-1); color: var(--gold); }
 .q-zhang li > b { grid-column: 2; text-align: right; font-weight: 400; color: #f6ecd8; letter-spacing: .04em; }
+.q-zhang li > b.neg { color: var(--loss); }
 .q-zhang li > u { grid-column: 3; margin-left: .1875rem; text-decoration: none; font-size: max(.6875rem, 11px); color: var(--ivory-soft); }
 .q-zhang li > s { grid-column: 4; margin-left: .4375rem; text-decoration: none; font-size: max(.6875rem, 11px); color: var(--loss); }
 .q-zhang li > s.up { color: var(--gain); }

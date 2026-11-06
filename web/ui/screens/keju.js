@@ -32,7 +32,7 @@ export function createKeju({ root, game, profile, onPerson, onReform }) {
 
   const T = () => profile().keju || {};
   const pct = (a, b) => (b > 0 ? Math.min(100, Math.round((a * 100) / b)) : 0);
-  const money = (v) => (v >= 10000 ? `${num(Math.round(v / 10000))}万` : num(Math.round(v)));
+  const money = (v) => (v < 0 ? '亏空' : '') + (Math.abs(v) >= 10000 ? `${num(Math.round(Math.abs(v) / 10000))}万` : num(Math.round(v)));
   const ratios = (label, list) => (list && list.length ? h('div.kj-ratio', h('span', label), h('div.bar', list.map(([k, v], i) => h('i', { style: { flexGrow: v, '--hue': i } }, `${k}${num(v)}%`)))) : null);
 
   // ---------- 左叶 ----------

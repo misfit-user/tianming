@@ -133,9 +133,10 @@
   // ═════════════════════════════════════════════════════════════
 
   // 取 CascadeTax 全国汇总·若不可用退回户口估算
+  var _forecasting = false; // 开局预估期间为真：预估只读账，合计不补地块默认值
   function _sumEB(field, fallback) {
     if (typeof CascadeTax !== 'undefined' && CascadeTax.sumEconomyBase) {
-      var v = CascadeTax.sumEconomyBase(field);
+      var v = CascadeTax.sumEconomyBase(field, _forecasting ? {readOnly:true} : undefined);
       if (v > 0) return v;
     }
     return fallback || 0;
@@ -437,8 +438,7 @@
         }
       });
       // 漕渠维护·年常项·按全国 postRelays 部分支出
-      var postRelaysG = (typeof CascadeTax !== 'undefined' && CascadeTax.sumEconomyBase) ?
-        CascadeTax.sumEconomyBase('postRelays') : 0;
+      var postRelaysG = _sumEB('postRelays', 0);
       var caoQu = Math.max(50000, postRelaysG * 30);  // 漕路驿站维护
       // 宫殿太庙修缮·常项
       var palace = 30000;
@@ -524,14 +524,12 @@
     // 其他·拆 教育科举(用 kejuQuota) / 驿递站银(用 postRelays) / 杂支
     qita: function() {
       // 教育科举·按全国 kejuQuota 求和 × 单生开销
-      var kejuQuota = (typeof CascadeTax !== 'undefined' && CascadeTax.sumEconomyBase) ?
-        CascadeTax.sumEconomyBase('kejuQuota') : 0;
+      var kejuQuota = _sumEB('kejuQuota', 0);
       var eduCost = kejuQuota * 50;  // 单生 50 两(路费+程仪+卷纸)·年
       // 当前正在举办大考时额外开销
       if (GM.P && GM.P.keju && GM.P.keju.currentExam) eduCost += 30000;
       // 驿递站银·按全国 postRelays × 站银
-      var postRelays = (typeof CascadeTax !== 'undefined' && CascadeTax.sumEconomyBase) ?
-        CascadeTax.sumEconomyBase('postRelays') : 0;
+      var postRelays = _sumEB('postRelays', 0);
       var postCost = postRelays * 200;  // 单驿年银 200 两
       if (postCost === 0) postCost = 30000;  // 无配置兜底
       // 杂支兜底
@@ -585,9 +583,30 @@
         var key = global.FiscalStatement.flowTag({sourceTag:t.sourceTag || t.id}, 'central', 'in').key;
         g.sources[key] = (g.sources[key] || 0) + t.central * 365 / days; // arch-ok: 国库写口汇总征收引擎报价，仅供年度收入显示。
       }); });
-      g.expenses = {fenglu:expense.salary.money*365/days, junxiang:expense.army.money*365/days, neiting:expense.imperial.money*365/days, qita:expense.royal.money*365/days}; // arch-ok: 国库写口维护本库支出预估分类，不扣库存。
+      // 帑廪实付多少，预估就写多少，和第一次结账同一套算法：宫廷扣在内帑不算；赈济工程祭祀赏赐杂支、内廷转运、定拨内帑结账时才扣，要算。
+      // 内廷转运按月入折算，先写月入。计算器只写本库分目，不动库存
+      g.monthlyIncome = Math.round(revenue.totals.central.money*30/days); // arch-ok: 国库预估写口写本库月入显示量，不写ledger。
+      var mr = days/30, residual = {};
+      _forecasting = true;
+      ['zhenzi','gongcheng','jisi','shangci','qita','neiting'].forEach(function(k) { var v = 0; try { v = Expenses[k]() || 0; } catch(_e) { v = 0; } residual[k] = v/12*mr; });
+      _forecasting = false;
+      var flowOut = {
+        money:{军饷:expense.army.money, 俸禄:expense.salary.money, 宗禄:expense.royal.money, 赈济:residual.zhenzi, 工程:residual.gongcheng, 祭祀:residual.jisi, 赏赐:residual.shangci, 内廷转运:residual.neiting, 其他:residual.qita},
+        grain:{军饷:expense.army.grain, 俸禄:expense.salary.grain, 宗禄:expense.royal.grain},
+        cloth:{军饷:expense.army.cloth, 俸禄:expense.salary.cloth, 宗禄:expense.royal.cloth}
+      };
+      var flowTotal = function(map) { return Object.keys(map).reduce(function(n, key) { return n + (Number(map[key]) || 0); }, 0); };
+      // 结账的后手也要算：先清还旧欠（_repayDeficit 同一算法），剩下的库够才定拨内帑（内帑 tick 外层同一条件）
+      var repay = _repayDeficitAmount(safe(g.balance, 0) + revenue.totals.central.money - flowTotal(flowOut.money), g.monthlyIncome, mr);
+      if (repay > 0) flowOut.money.清偿旧欠 = repay;
+      var toPrivy = global.NeitangEngine && global.NeitangEngine.autoTransferIn ? global.NeitangEngine.autoTransferIn(mr) : 0;
+      if (toPrivy > 0 && safe(g.balance, 0) + revenue.totals.central.money - flowTotal(flowOut.money) <= toPrivy) toPrivy = 0;
+      if (toPrivy > 0) flowOut.money.定拨内帑 = toPrivy;
+      g.forecastFlow = {money:{out:flowOut.money}, grain:{out:flowOut.grain}, cloth:{out:flowOut.cloth}, toPrivy:toPrivy}; // arch-ok: 国库预估写口留本期各目供册子显示，不写ledger。
+      var yearOf = 365/days;
+      g.expenses = {fenglu:expense.salary.money*yearOf, junxiang:expense.army.money*yearOf, zhenzi:residual.zhenzi*yearOf, gongcheng:residual.gongcheng*yearOf, jisi:residual.jisi*yearOf, shangci:residual.shangci*yearOf, neiting:residual.neiting*yearOf, qita:(expense.royal.money+residual.qita+toPrivy+repay)*yearOf}; // arch-ok: 国库写口维护本库支出预估分类，不扣库存。
       ['money','grain','cloth'].forEach(function(k) {
-        var suffix = k === 'money' ? '' : k[0].toUpperCase()+k.slice(1), cost = expense['total'+k[0].toUpperCase()+k.slice(1)];
+        var suffix = k === 'money' ? '' : k[0].toUpperCase()+k.slice(1), cost = flowTotal(flowOut[k]);
         ['Income','Expense'].forEach(function(dir) {
           var amount = dir === 'Income' ? revenue.totals.central[k] : cost;
           g['turn'+suffix+dir] = amount; // arch-ok: 国库预估写口按资源写本期显示量，不写ledger。
@@ -604,6 +623,7 @@
   function finishOpeningFiscal(G) {
     var g = G && G.guoku;
     if (g && g.openingFiscalPending) { delete g.openingFiscalPending; g.flowBasis = 'actual'; } // arch-ok: 国库结算写口只在财政引擎成功入账后结束开局预估状态。
+    if (g) delete g.forecastFlow; // arch-ok: 入账后预估分目作废。
   }
 
   function sourceFiscalConfig() {
@@ -825,13 +845,12 @@
 
     // ★ 央地财政正确衔接（防止 CascadeTax/FixedExpense 写入被覆盖）
     var cascadeRanThisTurn = (GM._lastCascadeTurn === GM.turn) || (GM._lastCascadeTurn === (GM.turn - 1)) || ((g.ledgers.money.thisTurnIn || 0) > 0);
-    var fixedRanThisTurn = (GM._lastFixedExpenseTurn === GM.turn);
     var oldBalance = g.balance || 0;
     var periodIn, periodOut;
     if (cascadeRanThisTurn) {
       // ✓ 正确路径：cascade 已写入 thisTurnIn·FixedExpense 已扣 fenglu/junxiang/neiting → ledger.stock 当前已含两者
       periodIn = g.ledgers.money.thisTurnIn || 0;
-      // monthlySettle 只补 residual 5 类（赈济/工程/祭祀/赏赐/其他）·neiting 由 FixedExpense / NeitangEngine 处理
+      // monthlySettle 补 residual（赈济/工程/祭祀/赏赐/其他）与内廷转运；FixedExpense 只扣俸饷宗禄，宫廷扣在内帑
       var residualMap = {
         zhenzi: { label: '赈济', amount: expBreakdown.zhenzi || 0 },
         gongcheng: { label: '工程', amount: expBreakdown.gongcheng || 0 },
@@ -839,8 +858,8 @@
         shangci: { label: '赏赐', amount: expBreakdown.shangci || 0 },
         qita: { label: '其他', amount: expBreakdown.qita || 0 }
       };
-      // 若 FixedExpense 未跑·neiting 也归 residual
-      if (!fixedRanThisTurn) residualMap.neiting = { label: '内廷转运', amount: expBreakdown.neiting || 0 };
+      // 内廷转运帑廪照付：内帑那头 Sources.guokuTransfer 收这笔。原先按 FixedExpense 跑没跑分支，真跑过反而没人付，内帑白得
+      residualMap.neiting = { label: '内廷转运', amount: expBreakdown.neiting || 0 };
       periodOut = 0;
       if (!g.ledgers.money.sinks) g.ledgers.money.sinks = {};
       // 累加 residual 到 stock + thisTurnOut + sinks（不覆盖 FixedExpense 写入的 俸禄/军饷/宫廷）
@@ -1747,7 +1766,8 @@
   function updateGrainClothFlow(mr) {
     var g = GM.guoku;
     if (!g.ledgers) return;
-    if (GM._lastCascadeTurn === GM.turn || unifiedFiscalActive()) {
+    // 结算在 GM.turn++ 之后，cascade 记的是上一回合（同 monthlySettle 的 2026-06-11 修法）；只认本回合时，真账之外又按老公式多跑一遍粮布
+    if (GM._lastCascadeTurn === GM.turn || GM._lastCascadeTurn === GM.turn - 1 || unifiedFiscalActive()) {
       var grainL = g.ledgers.grain, clothL = g.ledgers.cloth;
       if (grainL) {
         grainL.history = grainL.history || [];
@@ -2439,23 +2459,32 @@
   // 清偿旧欠：库有余则按月偿还 ledgers.money.deficit（欠俸/欠饷累欠）。
   // deficit 此前全仓只进不出——一次欠账=永久 inCrisis·破产链棘轮升满永不解除(2026-07-04 审查定罪)。
   // 节奏：每月最多偿 月入25%×mr·且不动用库藏最后一成(留缓冲)·清讫发邸报。
+  // 这一期能还多少：预估和结算共用
+  function _repayDeficitAmount(available, monthlyIncome, mr) {
+    var led = GM.guoku && GM.guoku.ledgers && GM.guoku.ledgers.money;
+    var owed = led ? Math.max(0, safe(led.deficit, 0)) : 0;
+    var avail = Math.max(0, safe(available, 0));
+    if (!owed || avail <= 0) return 0;
+    var monthly = Math.max(0, safe(monthlyIncome, 0));
+    var cap = monthly > 0 ? monthly * 0.25 * mr : avail * 0.25;
+    return Math.max(0, Math.round(Math.min(owed, avail * 0.9, cap)));
+  }
   function _repayDeficit(mr) {
     var g = GM.guoku;
     var led = g && g.ledgers && g.ledgers.money;
     if (!led) return 0;
     var owed = Math.max(0, safe(led.deficit, 0));
-    if (!owed) return 0;
-    var avail = Math.max(0, safe(g.balance, 0));
-    if (avail <= 0) return 0;
-    var monthly = Math.max(0, safe(g.monthlyIncome, 0));
-    var cap = monthly > 0 ? monthly * 0.25 * mr : avail * 0.25;
-    var pay = Math.round(Math.min(owed, avail * 0.9, cap));
+    var pay = _repayDeficitAmount(g.balance, g.monthlyIncome, mr);
     if (pay <= 0) return 0;
     led.stock = Math.max(0, safe(led.stock, 0) - pay);
+    // 三处库存一起改：原先只改 balance，下一次对账见 money 还是旧数，就把这笔当「外部调整」退回库里，旧债等于白清
     g.balance = led.stock;
+    g.money = led.stock; // arch-ok: 国库结算写口同步本库现银镜像。
     led.deficit = Math.round(Math.max(0, owed - pay));
+    if (global.FiscalStatement && global.FiscalStatement.repayDeficits) global.FiscalStatement.repayDeficits(led, pay, {excludeManual:true});
     if (!led.sinks) led.sinks = {};
     led.sinks['清偿旧欠'] = safe(led.sinks['清偿旧欠'], 0) + pay;
+    led.thisTurnOut = safe(led.thisTurnOut, 0) + pay;
     if (led.deficit === 0 && typeof addEB === 'function') addEB('财政', '累年积欠清讫，帑藏归于常度', { credibility: 'high' });
     return pay;
   }

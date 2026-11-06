@@ -37,6 +37,12 @@
   // 数据模型保障
   // ═════════════════════════════════════════════════════════════
 
+  // FixedExpense.collect 在 GM.turn++ 之前跑，两库结算在之后，所以要连上一回合一起认。
+  // 只认本回合时永远走「未跑」分支：内帑宫廷扣两遍，账面还只记小头（同国库 2026-06-11 修的 cascade 判断）
+  function _fixedExpenseRan() {
+    return GM._lastFixedExpenseTurn === GM.turn || GM._lastFixedExpenseTurn === GM.turn - 1;
+  }
+
   function explicitFiscalActive() {
     return !!((GM.neitang && GM.neitang._tmExplicitFlow === 'explicit-ledger-v1') ||
       (global.CascadeTax && global.CascadeTax.isUnified && global.CascadeTax.isUnified(GM, 'player')));
@@ -117,6 +123,8 @@
 
   // 全国皇庄汇总（imperialFarmland）·退化兜底用 GM.neitang.huangzhuangAcres
   function _imperialFarmlandTotal() {
+    // 剧本写明皇庄亩数就认它。地块上的 imperialFarmland 是耕地乘百分之五的公式数（天启算出 1395 万亩，剧本写的是 32 万亩）
+    if (GM.neitang && GM.neitang.huangzhuangDeclared && safe(GM.neitang.huangzhuangAcres, 0) > 0) return GM.neitang.huangzhuangAcres;
     var v = _sumEB('imperialFarmland', 0);
     if (v > 0) return v;
     return safe((GM.neitang || {}).huangzhuangAcres, 100000);
@@ -154,7 +162,7 @@
     // 皇庄租·按 division.imperialFarmland 求和（粮租 60% / 银租 40%）
     huangzhuang: function() {
       var acres = _imperialFarmlandTotal();
-      var ratePerAcre = 0.5;  // 两/亩·年
+      var ratePerAcre = safe((GM.neitang || {}).huangzhuangRatePerAcre, 0) || 0.5;  // 两/亩·年，剧本写了就认剧本
       var grainRent = acres * ratePerAcre * 0.6;
       var silverRent = acres * ratePerAcre * 0.4;
       var total = grainRent + silverRent;
@@ -166,6 +174,13 @@
     },
     // 皇产经营·按 division.imperialAssets 求和（织造/矿场/御窑各一类）
     huangchan: function() {
+      // 剧本写明皇产岁入就认它。按局场个数乘单价，天启算出近三百万两，矿监又早已撤了
+      var _bizRule = ((GM.neitang || {}).neicangRules || {}).imperialBusinesses;
+      var _bizDeclared = _bizRule && _bizRule.enabled !== false && safe(_bizRule.annualRevenue, 0) > 0 ? _bizRule.annualRevenue : safe((GM.neitang || {}).imperialBusinessRevenueAnnual, 0);
+      if (_bizDeclared > 0) {
+        _setSubsN('huangchan', [{ id: 'huangchan_declared', name: '皇产经营', amount: Math.round(_bizDeclared) }]);
+        return _bizDeclared;
+      }
       var assets = _imperialAssetsTotal();
       var zhizaoYield = assets.zhizao * 80000;       // 单局年息 8 万
       var kuangYield = assets.kuangchang * 50000;    // 单矿场年息 5 万
@@ -464,7 +479,8 @@
     n.expenses = expBreakdown;
 
     // ★ 央地正确衔接（同 GuokuEngine 修复）
-    var fixedRanThisTurn = (GM._lastFixedExpenseTurn === GM.turn);
+    var fixedRanThisTurn = _fixedExpenseRan();
+    delete n.forecastFlow; // arch-ok: 入账后预估分目作废。
     var oldBalance = n.balance;
     var periodIn, periodOut;
     if (fixedRanThisTurn && n.ledgers && n.ledgers.money) {
@@ -567,33 +583,50 @@
     n._recentConfiscation = 0;
   }
 
+  // 粮布本期各目。剧本写了每月粮布入项就按它，没写才按皇庄皇产折算（皇庄皇产认了剧本的数之后，折算只剩一个零头）。
+  // 宫廷用度 FixedExpense 已从内帑扣过，这里只算其余；预估和结算共用
+  function _grainClothFlow(mr, fixedPaid) {
+    var n = GM.neitang, est = n.monthlyIncomeEstimate || {};
+    var src = n.sources || {}, exp = n.expenses || {}, palace = fixedPaid ? 0 : safe(exp.gongting, 0);
+    var grainEstate = est.grain != null && isFinite(Number(est.grain)) ? Number(est.grain) * mr : safe(src.huangzhuang, 0) * 0.2 / 10 * mr / 12;
+    var clothEstate = est.cloth != null && isFinite(Number(est.cloth)) ? Number(est.cloth) * mr : safe(src.huangchan, 0) * 0.15 / 5 * mr / 12;
+    return {
+      grain: { in: { huangzhuang: grainEstate, tribute: safe(src.tribute, 0) * 0.1 / 10 * mr / 12 }, out: { gongting: palace * 0.3 / 10 * mr / 12, shangci: safe(exp.shangci, 0) * 0.2 / 10 * mr / 12 } },
+      cloth: { in: { huangchan: clothEstate, tribute: safe(src.tribute, 0) * 0.2 / 5 * mr / 12 }, out: { shangci: safe(exp.shangci, 0) * 0.4 / 5 * mr / 12, gongting: palace * 0.1 / 5 * mr / 12 } }
+    };
+  }
+  function _flowSum(map) { return Object.keys(map).reduce(function(s, k) { return s + (Number(map[k]) || 0); }, 0); }
+
   function updateGrainClothFlow(mr) {
-    var n = GM.neitang;
+    var n = GM.neitang, fixedPaid = _fixedExpenseRan(), gc = _grainClothFlow(mr, fixedPaid);
     // 内帑粮：朝贡/皇庄的粮食部分
     var grain = n.ledgers.grain;
-    var grainIn = (n.sources.huangzhuang * 0.2 + n.sources.tribute * 0.1) / 10 * mr / 12;
-    var grainOut = (n.expenses.gongting * 0.3 + n.expenses.shangci * 0.2) / 10 * mr / 12;
+    var grainIn = _flowSum(gc.grain.in);
+    var grainOut = _flowSum(gc.grain.out);
     grain.lastTurnIn = grainIn;
     grain.lastTurnOut = grainOut;
     grain.thisTurnIn = grainIn;
-    grain.thisTurnOut = grainOut;
-    grain.sources = periodBreakdown({huangzhuang:n.sources.huangzhuang*0.2,tribute:n.sources.tribute*0.1},grainIn);
-    grain.sinks = mergePeriodBreakdown(null,periodBreakdown({gongting:n.expenses.gongting*0.3,shangci:n.expenses.shangci*0.2},grainOut),false);
-    grain.turnDelta = Math.round(grainIn - grainOut);
+    grain.thisTurnOut = (fixedPaid ? (Number(grain.thisTurnOut) || 0) : 0) + grainOut;
+    grain.sources = periodBreakdown(gc.grain.in,grainIn);
+    grain.sinks = mergePeriodBreakdown(fixedPaid ? grain.sinks : null,periodBreakdown(gc.grain.out,grainOut),false);
+    grain.turnDelta = Math.round(grain.thisTurnIn - grain.thisTurnOut); // 连固定支出那份一起算，顶栏没有上期快照时读这里
     grain.stock = Math.max(0, (grain.stock || 0) + grainIn - grainOut);
 
     // 内帑布：织造局、朝贡布帛
     var cloth = n.ledgers.cloth;
-    var clothIn = (n.sources.huangchan * 0.15 + n.sources.tribute * 0.2) / 5 * mr / 12;
-    var clothOut = (n.expenses.shangci * 0.4 + n.expenses.gongting * 0.1) / 5 * mr / 12;
+    var clothIn = _flowSum(gc.cloth.in);
+    var clothOut = _flowSum(gc.cloth.out);
     cloth.lastTurnIn = clothIn;
     cloth.lastTurnOut = clothOut;
     cloth.thisTurnIn = clothIn;
-    cloth.thisTurnOut = clothOut;
-    cloth.sources = periodBreakdown({huangchan:n.sources.huangchan*0.15,tribute:n.sources.tribute*0.2},clothIn);
-    cloth.sinks = mergePeriodBreakdown(null,periodBreakdown({shangci:n.expenses.shangci*0.4,gongting:n.expenses.gongting*0.1},clothOut),false);
-    cloth.turnDelta = Math.round(clothIn - clothOut);
+    cloth.thisTurnOut = (fixedPaid ? (Number(cloth.thisTurnOut) || 0) : 0) + clothOut;
+    cloth.sources = periodBreakdown(gc.cloth.in,clothIn);
+    cloth.sinks = mergePeriodBreakdown(fixedPaid ? cloth.sinks : null,periodBreakdown(gc.cloth.out,clothOut),false);
+    cloth.turnDelta = Math.round(cloth.thisTurnIn - cloth.thisTurnOut);
     cloth.stock = Math.max(0, (cloth.stock || 0) + clothIn - clothOut);
+    // 镜像一起改：下回合对账见 grain、cloth 还是旧数，会把这一期的粮布收支当「外部调整」冲掉
+    n.grain = grain.stock; // arch-ok: 本库写口同步本库镜像。
+    n.cloth = cloth.stock; // arch-ok: 本库写口同步本库镜像。
 
     // 同步给 widget 用的标量（subItems 显示 d 值）
     n.turnGrainIncome = Math.round(grainIn);
@@ -958,7 +991,9 @@
       // 兼容旧字段
       if (no.balance !== undefined) { GM.neitang.balance = no.balance; GM.neitang.ledgers.money.stock = no.balance; }
       if (no.monthlyIncome !== undefined) GM.neitang.monthlyIncome = no.monthlyIncome;
-      if (no.huangzhuangAcres !== undefined) GM.neitang.huangzhuangAcres = no.huangzhuangAcres;
+      if (no.huangzhuangAcres !== undefined) { GM.neitang.huangzhuangAcres = no.huangzhuangAcres; GM.neitang.huangzhuangDeclared = true; }
+      if (no.huangzhuangRatePerAcre !== undefined) GM.neitang.huangzhuangRatePerAcre = no.huangzhuangRatePerAcre; // arch-ok: 内帑写口按剧本预设写本库皇庄亩租。
+      if (no.imperialBusinessRevenueAnnual !== undefined) GM.neitang.imperialBusinessRevenueAnnual = no.imperialBusinessRevenueAnnual; // arch-ok: 内帑写口按剧本预设写本库皇产岁入。
       if (no.specialTaxActive !== undefined) GM.neitang.specialTaxActive = no.specialTaxActive;
     }
 
@@ -993,6 +1028,56 @@
   // 主 tick
   // ═════════════════════════════════════════════════════════════
 
+  // 每期从帑廪定拨入内帑多少（预估用，结算见 tick 外层 autoTransfers）
+  function autoTransferIn(mr) {
+    var autos = ((GM.neitang || {}).neicangRules || {}).autoTransfers || [], total = 0;
+    autos.forEach(function(tr) {
+      if ((tr.cadence || 'monthly') !== 'monthly' || tr.from !== 'guoku.money' || (tr.to !== 'neitang.money' && tr.to !== 'neicang.money')) return;
+      if (tr.mode === 'fixed') total += (tr.amount || 0) * mr;
+      else if (tr.mode === 'percent') total += (tr.percent || 0) * ((GM.guoku && GM.guoku.monthlyIncome) || 0) * mr;
+    });
+    return total;
+  }
+
+  // 新开局只写显示预估，不写账本和库存。和第一次结账同一套算法：
+  // 收入是六源，支出是 FixedExpense 扣的宫廷加其余四项。剧本的月额估计只是开局前的占位，这里之后不再上册
+  function previewOpeningFiscal(opts) {
+    opts = opts || {};
+    var G = opts.game || GM, days = Number(opts.turnDays) || 30, mr = days / 30;
+    if (G !== GM || explicitFiscalActive() || !global.GuokuEngine || !global.GuokuEngine.openingFiscalPending(G) || !global.FixedExpense) return null;
+    ensureNeitangModel();
+    var n = GM.neitang, src = {}, exp = {};
+    delete n.sourcesDetail.other; delete n.expensesDetail.other; // arch-ok: 内帑预估写口清本库旧分目，下面按各目重算。
+    Object.keys(Sources).forEach(function(k) { var v = 0; try { v = Sources[k]() || 0; } catch(_e) { v = 0; } src[k] = v; });
+    Object.keys(Expenses).forEach(function(k) { var v = 0; try { v = Expenses[k]() || 0; } catch(_e) { v = 0; } exp[k] = v; });
+    n.sources = src; n.expenses = exp; // arch-ok: 内帑预估写口写本库年额分目，不写ledger。
+    var imperial = global.FixedExpense.preview({game:G, turnDays:days}).imperial || {};
+    var monthly = function(k) { return safe(exp[k], 0) / 12 * mr; };
+    var moneyIn = {};
+    Object.keys(src).forEach(function(k) { moneyIn[k] = src[k] / 12 * mr; });
+    // 定拨内帑看帑廪预估：库不够就不拨
+    var guokuFlow = GM.guoku && GM.guoku.forecastFlow;
+    var toPrivy = guokuFlow ? safe(guokuFlow.toPrivy, 0) : autoTransferIn(mr);
+    if (toPrivy > 0) moneyIn['定拨内帑'] = toPrivy;
+    var gc = _grainClothFlow(mr, true);
+    var flow = {
+      money: { in: moneyIn, out: { gongting: safe(imperial.money, 0), dadian: monthly('dadian'), shangci: monthly('shangci'), houGongLingQin: monthly('houGongLingQin'), guokuRescue: monthly('guokuRescue') } },
+      grain: { in: gc.grain.in, out: { gongting: safe(imperial.grain, 0), shangci: gc.grain.out.shangci } },
+      cloth: { in: gc.cloth.in, out: { gongting: safe(imperial.cloth, 0), shangci: gc.cloth.out.shangci } }
+    };
+    n.forecastFlow = flow; // arch-ok: 内帑预估写口留本期各目供册子显示，不写ledger。
+    ['money','grain','cloth'].forEach(function(k) {
+      var suffix = k === 'money' ? '' : k.charAt(0).toUpperCase() + k.slice(1);
+      [['Income', _flowSum(flow[k].in)], ['Expense', _flowSum(flow[k].out)]].forEach(function(p) {
+        n['turn' + suffix + p[0]] = p[1]; // arch-ok: 内帑预估写口按资源写本期显示量，不写ledger。
+        n['monthly' + suffix + p[0]] = Math.round(p[1] / mr); // arch-ok: 同一预估折算月显示量。
+        n['annual' + suffix + p[0]] = Math.round(p[1] * 12 / mr); // arch-ok: 同一预估折算年显示量。
+      });
+    });
+    n.flowBasis = 'forecast'; n.turnDays = days; n.lastDelta = n.turnIncome - n.turnExpense; // arch-ok: 内帑写口标明显示为未结算预估。
+    return flow;
+  }
+
   function tick(context) {
     if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.tick(GM, context, 'private');
     ensureNeitangModel();
@@ -1021,6 +1106,8 @@
     tick: tick,
     ensureModel: ensureNeitangModel,
     getMonthRatio: getMonthRatio,
+    previewOpeningFiscal: previewOpeningFiscal,
+    autoTransferIn: autoTransferIn,
     Sources: Sources,
     Expenses: Expenses,
     Actions: Actions,
@@ -1568,6 +1655,8 @@
     if (NeitangEngine.isExplicit && NeitangEngine.isExplicit()) return;
     var mr = (context && context._monthRatio) ||
              (typeof NeitangEngine.getMonthRatio === 'function' ? NeitangEngine.getMonthRatio() : 1);
+    // 这一段只动 balance，账上没有记录，收支就和库存对不上。结算完把动过的数记进本期账
+    var _balanceBeforeAddons = GM.neitang ? (Number(GM.neitang.balance) || 0) : 0, _autoIn = 0, _autoOut = 0;
 
     try { processIncidentalSources(mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'neitang-p2] incidental:') : console.error('[neitang-p2] incidental:', e); }
     try { applyRoyalClanPressure(mr); }   catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'neitang-p2] royalClan:') : console.error('[neitang-p2] royalClan:', e); }
@@ -1604,15 +1693,30 @@
           if (tr.from === 'guoku.money' && isNeitangMoneyPath(tr.to)) {
             if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: amt }, '定拨内帑');
             GM.neitang.balance += amt;
+            _autoIn += amt;
           } else if (isNeitangMoneyPath(tr.from) && tr.to === 'guoku.money') {
             if (GM.neitang.balance > amt) {
               GM.neitang.balance -= amt;
+              _autoOut += amt;
               if (typeof FiscalEngine !== 'undefined' && FiscalEngine.addToGuoku) FiscalEngine.addToGuoku({ money: amt }, '内帑定拨入库');
             }
           }
         }
       }
     });
+    (function recordAddons() {
+      var led = GM.neitang && GM.neitang.ledgers && GM.neitang.ledgers.money;
+      if (!led) return;
+      if (!led.sources) led.sources = {};
+      if (!led.sinks) led.sinks = {};
+      var other = (Number(GM.neitang.balance) || 0) - _balanceBeforeAddons - _autoIn + _autoOut;
+      function income(label, v) { led.sources[label] = (Number(led.sources[label]) || 0) + v; led.thisTurnIn = (Number(led.thisTurnIn) || 0) + v; }
+      function expense(label, v) { led.sinks[label] = (Number(led.sinks[label]) || 0) + v; led.thisTurnOut = (Number(led.thisTurnOut) || 0) + v; }
+      if (_autoIn > 0) income('定拨内帑', _autoIn);
+      if (_autoOut > 0) expense('内帑定拨入库', _autoOut);
+      if (other >= 0.5) income('内廷杂入', other);
+      else if (other <= -0.5) expense('内廷杂支', -other);
+    })();
     syncCashMirrors();
   };
 

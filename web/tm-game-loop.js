@@ -351,6 +351,7 @@ function enterGame(){
       try { IntegrationBridge.aggregateRegionsToVariables(); } catch(_agInitE) { _tmStartupIssue('IntegrationBridge 首轮聚合失败', _agInitE, true); }
     }
     if (_openingFiscal) GuokuEngine.previewOpeningFiscal({game:GM,turnDays:typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30});
+    if (_openingFiscal && typeof NeitangEngine !== 'undefined' && NeitangEngine.previewOpeningFiscal) NeitangEngine.previewOpeningFiscal({game:GM,turnDays:typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30});
     if (GM.turn === 1) {
       console.log('[enterGame-T1] 聚合后 GM.population.national:', GM.population && GM.population.national);
     }

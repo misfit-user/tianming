@@ -127,7 +127,7 @@
         [['in','sources','sourceDetails',led.thisTurnIn,sources[k]],['out','sinks','sinkDetails',led.thisTurnOut,expenses[k]]].forEach(function(p){
           var bag=k==='money'?a[p[1]==='sources'?'sources':'expenses']||{}:{},total=Object.keys(bag).reduce(function(n,key){return n+num(bag[key]);},0),annual=a['annual'+suffix+(p[0]==='in'?'Income':'Expense')];
           var key=scope==='internal'?'other':'qita',values={},details={},ratio=p[3]>0&&annual>0?annual/p[3]:year/days;
-          if(total>0&&Math.abs(total-num(annual))<.01)Object.keys(bag).forEach(function(id){var v=num(bag[id])/ratio;add(values,p[0]==='in'?id:labels(scope,'out')[id]||id,v);detail(details,id,id,labels(scope,p[0])[id]||id,v);});
+          if(total>0&&Math.abs(total-num(annual))<1)Object.keys(bag).forEach(function(id){var v=num(bag[id])/ratio;add(values,p[0]==='in'?id:labels(scope,'out')[id]||id,v);detail(details,id,id,labels(scope,p[0])[id]||id,v);});
           else if(p[3]){values[p[0]==='in'?key:labels(scope,'out')[key]]=p[3];detail(details,key,'unitemized','尚待具分目',p[3]);}
           led[p[1]]=values;led[p[2]]=details;
           Object.keys(details).forEach(function(id){p[4][id]=details[id].map(function(r){return Object.assign({},r,{amount:round(r.amount*ratio)});});});

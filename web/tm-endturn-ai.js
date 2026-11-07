@@ -4471,6 +4471,9 @@
         tp1c += '\u25C6 fengwen_snippets\uFF08\u98CE\u95FB\u5F55\u4E8B\u00B7\u5E38\u6001 12-20 \u6761\uFF09\u2014\u2014\n';
         tp1c += '  人物和势力的活动风闻——源自坊间耳目、朝堂风议、往来密函等，通过起居注/耳报/邸报/坊间传闻报入。\n';
         tp1c += '  字段：{type, text(30-60字古典中文风), credibility(0.3-0.95), actors:["人名或势力名"], source:"坊间/朝堂/耳目/邸报/密札/边关", mood?:"忧/喜/怒/恐/亲/仇(传递给 actors 记忆的主导情绪)"}\n';
+        // 文风设置（tm-wenfeng.js）：「照旧」时不加
+        var _wfFw = (typeof TM !== 'undefined' && TM.Wenfeng) ? TM.Wenfeng.directive('fengwen') : '';
+        if (_wfFw) tp1c += '  ' + _wfFw + '\n';
         tp1c += '  type 分类：弹劾/荐举/奏议/结党/造谣/私访/宴饮/游宴/诗社/学论/求婚/母祭/丹道/药释/巡视/巡者/赑搜/司法/核查/捐俸/财行/家事/置产/居着/雅集/密联/战报/边报/和亲/质子/朝贡/互市/盟约/遣使/揭私\n';
         tp1c += '  \u4F8B\uFF1A{type:"\u8BD7\u793E", text:"\u897F\u6E56\u4E09\u96C5\u96C6\u4E8E\u5317\u5C71\uFF0C\u67D0\u7532\u8D4B\u300A\u79CB\u6C34\u300B\uFF0C\u67D0\u4E59\u6B21\u97F5\uFF0C\u67D0\u4E19\u7ACB\u5212\u70B9\u65AD\u53E5\u3002", credibility:0.75, actors:["\u67D0\u7532","\u67D0\u4E59"], source:"\u574A\u95F4", mood:"\u559C"}\n';
         tp1c += '  \u3010\u786C\u89C4\u5219\u00B7\u98CE\u95FB\u8986\u76D6\u8981\u6C42\u3011\n';

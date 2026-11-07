@@ -1235,6 +1235,9 @@ openSettings=function(){
     "<div class=\"fd q\"><label>\u53D9\u4E8B\u8BB0\u5FC6</label><input type=\"number\" id=\"s-mem-chr\" value=\""+(P.conf.chronicleKeep||10)+"\" min=\"3\" max=\"50\"></div>"+
     "<div class=\"fd q\"><label>\u5BF9\u8BDD\u5386\u53F2</label><input type=\"number\" id=\"s-mem-conv\" value=\""+(P.conf.convKeep||40)+"\" min=\"10\" max=\"200\"></div></div></div>"+
 
+    // 文风（2026-11-07 同志定）：照旧/文言/半文半白/白话，各栏可单设，人物说话另设开关；这一节由 tm-wenfeng.js 出
+    ((window.TM && TM.Wenfeng) ? TM.Wenfeng.settingsHtml() : '')+
+
     // AI生成字数
     "<div class=\"settings-section\"><h4>AI\u751F\u6210\u5B57\u6570</h4>"+
     "<div style=\"font-size:0.75rem;color:var(--txt-d);margin-bottom:0.5rem;\">\u63A7\u5236\u5404\u7C7B\u5185\u5BB9\u7684\u751F\u6210\u5B57\u6570\uFF0C\u4F1A\u4E0E\u6A21\u578B\u4E0A\u4E0B\u6587\u7A97\u53E3\u8054\u52A8\u7F29\u653E</div>"+

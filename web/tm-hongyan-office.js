@@ -1718,6 +1718,9 @@ function _generateLetterReply(letter) {
     prompt += '\n6. 若近期有玩家涉君诏令·可在回信中顺带回应(感激/委屈/澄清/汇报)';
     prompt += '\n7. 语气与当前境/情绪/好感一致·不割裂';
     prompt += '\n8. 不要提及未在当前游戏时间之前发生的未来史实';
+    // 文风设置（tm-wenfeng.js）：「照旧」时不加，第 1 条「古典中文」照旧
+    var _wfLetter = (typeof TM !== 'undefined' && TM.Wenfeng) ? TM.Wenfeng.directive('documents') : '';
+    if (_wfLetter) prompt += '\n9. ' + _wfLetter;
     prompt += '\n\n直接输出回信正文·无前言无解释。';
     callAI(prompt, 600, null, (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined).then(function(reply) {  // 【降本2026-06-19】回信生成(机械对话)走次 API
       letter.reply = (reply || '').trim() || '臣叩首拜读·容臣三思后详禀。';

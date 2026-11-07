@@ -2317,6 +2317,8 @@
       _narrativeGuide += '\n\u3010\u98CE\u683C\u8303\u6587\uFF08\u53C2\u7167\u6B64\u6587\u98CE\uFF09\u3011' + P.chronicleConfig.styleSample;
     }
     sysP += _narrativeGuide;
+    // 文风设置（tm-wenfeng.js）：玩家给哪栏选了文风，在这里说明各栏用什么、实录固定文言；全是「照旧」时为空
+    try { if (typeof TM !== 'undefined' && TM.Wenfeng) sysP += TM.Wenfeng.mainBlock(); } catch (_wfE) {}
 
     // 1.7: 注入编辑器自定义的Prompt前缀
     var _sysPrefix = '';

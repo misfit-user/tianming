@@ -1250,7 +1250,10 @@ function getValidAge(subject, fallback) {
 function _aiDialogueWordHint(category) {
   category = category || 'cy';
   var r = (typeof _getCharRange === 'function') ? _getCharRange(category) : [150, 300];
-  return '（每条发言约 ' + r[0] + '-' + r[1] + ' 字）';
+  var hint = '（每条发言约 ' + r[0] + '-' + r[1] + ' 字）';
+  // 文风设置（tm-wenfeng.js）：问对、朝议各处都经这里。人物说话默认不跟总设置，返回空串；玩家打开「人物说话也随总设置」才接上
+  try { if (typeof TM !== 'undefined' && TM.Wenfeng) hint += TM.Wenfeng.directive('dialogue'); } catch (_wfE) {}
+  return hint;
 }
 
 /** 对话 max_tokens——按 speakerCount 预留 token 预算（保证多人场景每人都写足字数，不互相挤占）

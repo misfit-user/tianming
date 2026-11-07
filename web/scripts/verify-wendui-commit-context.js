@@ -9,7 +9,8 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const src = (fs.readFileSync(path.join(ROOT, 'tm-wendui.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-wendui-persona-views.js'), 'utf8'));
+// 问对的人物各块自 2026-11-07 起从 tm-person.js（TM.Person.frag）取，先装它
+const src = (fs.readFileSync(path.join(ROOT, 'tm-person.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-wendui.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-wendui-persona-views.js'), 'utf8'));
 
 let passed = 0;
 function assert(cond, msg) {

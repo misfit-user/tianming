@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "eda37b3ee40bb052b3564d930b4a7e564d6730f873fd5b09e8004e640c8929d3",
-      "size": 77862
+      "sha256": "ed2c190607748294f00b9bdfe8c08a86b18d138c48dc8b4a26bc9a084f593517",
+      "size": 78034
     },
     {
       "path": "INDEX.md",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "a98acf5bf50459c265775aafafe1b0b5777e53c2291ece559ca2cdd22159a761",
-      "size": 392932
+      "sha256": "eb9b656057e59afbb80d55cf6eff5d6955c231e0f0a859c5498e8ded7b1cecaa",
+      "size": 393478
     },
     {
       "path": "styles.css",
@@ -6335,6 +6335,11 @@
       "size": 21524
     },
     {
+      "path": "tm-person.js",
+      "sha256": "d0e7c531d52b16bbf5d1eee93f92c8447601821ba24451bcfb3e4079edde4c4d",
+      "size": 16421
+    },
+    {
       "path": "tm-personal-memory-recall.js",
       "sha256": "1b2123e8368c37f8f8e16f5996200c020bbb61f392951e5c1ec97c39e3ff286c",
       "size": 2615
@@ -6601,8 +6606,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "0a03a333dd89b18f970a2fc18097ffe5735bcc24b20cfd7e282e8fd97de2dafb",
-      "size": 139737
+      "sha256": "c66fa44b055c4e1c592d78b354ccc6e56a15637f1d90d326cda894c93e6842ec",
+      "size": 140018
     },
     {
       "path": "tm-start-selector.js",
@@ -6761,8 +6766,8 @@
     },
     {
       "path": "tm-wendui-persona-views.js",
-      "sha256": "db69d7b983f524d0dc5be1bcaaba6d40115a454c9d4702257c885e5b05349d33",
-      "size": 73536
+      "sha256": "5594dc8db33bf1007af383e457714f708bcb4694f91f08286b980716c0e8ab34",
+      "size": 64103
     },
     {
       "path": "tm-wendui-prison.js",

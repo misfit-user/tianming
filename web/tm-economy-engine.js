@@ -174,6 +174,11 @@
       if (!G.environment.byRegion) G.environment.byRegion = {};
       if (!G.environment.crisisHistory) G.environment.crisisHistory = [];
       if (!G.environment.historicalScarMap) G.environment.historicalScarMap = [];
+      // 旧档的技术时代是按剧本名猜的（见 _inferTechEra），读档时按朝代字段重认一次。
+      if (sc && G.environment.techEraRule !== ENV_TECH_ERA_RULE) {
+        G.environment.techEra = _inferTechEra(sc); // arch-ok: 环境引擎本体重认本子树的技术时代（旧规则认错朝代）
+        G.environment.techEraRule = ENV_TECH_ERA_RULE; // arch-ok: 同上·记下已按新规则认过
+      }
       return;
     }
 
@@ -190,18 +195,25 @@
       historicalScarMap: [],
       crisisHistory: [],
       techEra: _inferTechEra(sc),
+      techEraRule: ENV_TECH_ERA_RULE,
       activePolicies: [] // 正在推行的政策列表
     };
 
     _recomputeNationalCarrying();
   }
 
+  // 技术时代先按剧本的朝代字段认（dynasty，其次 era），都认不出再看剧本名。
+  // 旧写法只看剧本名：绍宋名里有「亳州明道宫」被认成明，天启名里没有朝代字落到默认的唐。
+  var ENV_TECH_ERA_RULE = 2;
   function _inferTechEra(sc) {
     if (!sc) return '唐';
-    var name = (sc.name || sc.dynasty || '').toString();
     var eras = ['先秦','汉','唐','宋','元','明','清'];
-    for (var i = eras.length - 1; i >= 0; i--) {
-      if (name.indexOf(eras[i]) >= 0) return eras[i];
+    var texts = [sc.dynasty, sc.era, sc.name];
+    for (var t = 0; t < texts.length; t++) {
+      var text = texts[t] == null ? '' : String(texts[t]);
+      for (var i = eras.length - 1; i >= 0; i--) {
+        if (text && text.indexOf(eras[i]) >= 0) return eras[i];
+      }
     }
     return '唐';
   }
@@ -421,40 +433,148 @@
     }, 0);
   }
 
-  function _recomputeRegionCarrying(rid, reg, options) {
-    // 1) 土地支撑
-    var G = global.GM;
-    var popCount = _environmentPopulationScope(rid).mouths;
-    var techEra = G.environment ? G.environment.techEra : '唐';
+  // ── 省一级承载上限以剧本标定为准 ──────────────────────────────────
+  // 三部官方剧本都在每个州（叶子）上给了承载上限 carryingCapacity.historicalCap（单位是口，
+  // 户籍引擎算各州负荷用的也是它），各省自带的上限正好是辖下各州之和。
+  // 旧写法不读这份数，拿下面算式里「耕地五十万、水一百五十万、柴七十五万」这类不分省大小的常数
+  // 当上限：三百万口的路被算成只养得活七十五万，过一回合负荷就到三五倍（绍宋二十八路有二十路、
+  // 天启十八省有十六省「崩溃」），每省又按全国扣一次民心，两回合民心见底、一百七十州同起民变。
+  //
+  // 第一次标定时定下规则，记在 reg.carryingCalibration：
+  //   有州给了上限 → 上限取各州之和；个别州没给的，按它第一次有人时的人口当作大致吃得饱
+  //     （负荷 0.8）折一个上限补进来，此后固定。
+  //   州都没给、省自己给了 → 用省的。
+  //   都没给、省的环境对象上有本引擎自己的耕地面积等实数（剧本 initialCarrying 或测试直接给的）
+  //     → 照旧按算式算绝对数（explicit-model）。
+  //   什么都没有 → 整省按人口、负荷 0.8 折上限。
+  // 除 explicit-model 外，耕地、水、柴薪、卫生这套算式（连同疤痕、技术）只作相对增减：
+  //   上限 × 现在四项里最小的一项 ÷ 标定时最小的一项。住房一项是人口的 1.1 倍，只作展示、
+  //   不进上限——它一进上限，负荷就永远不会低于 0.91。
+  var ENV_UNCALIBRATED_START_LOAD = 0.8;
+
+  function _envLeafCalibratedCap(node) {
+    if (!node || typeof node !== 'object') return 0;
+    // 取法与户籍引擎（tm-huji-engine.js _syncLeafPopulationMirrors）一致：数值型 environment.carrying 优先，其次 historicalCap。
+    var env = node.environment && typeof node.environment === 'object' ? node.environment : null;
+    var direct = env ? Number(env.carrying) : NaN;
+    if (isFinite(direct) && direct > 0) return direct;
+    var cc = node.carryingCapacity;
+    var cap = Number(cc && typeof cc === 'object' ? cc.historicalCap : cc);
+    return isFinite(cap) && cap > 0 ? cap : 0;
+  }
+
+  function _envModelSupports(reg, techEra) {
+    var scars = reg.ecoScars || {};
     var yieldMult = _envFiniteNumber(_getTechEraMult('agriculture', techEra, 'yieldMult'), 1.0);
     var irrigMult = _envFiniteNumber(_getTechEraMult('irrigation', techEra, 'capMult'), 1.0);
     var seedMult = _envFiniteNumber(_getTechEraMult('seedSelection', techEra, 'yieldMult'), 1.0);
+    // 1) 土地
     var farmland = _envFiniteNumber(reg.arableArea, 500000) * _envFiniteNumber(reg.soilFertility, 0.85) * yieldMult * seedMult * irrigMult
-                   - (reg.ecoScars.salinization || 0) * 200000
-                   - (reg.ecoScars.soilErosion || 0) * 150000;
-    reg.carrying.farmlandSupport = Math.max(100000, farmland);
+                   - (scars.salinization || 0) * 200000
+                   - (scars.soilErosion || 0) * 150000;
     // 2) 水
     var water = _envFiniteNumber(reg.aquiferLevel, 1.0) * 1500000 * _envFiniteNumber(reg.riverFlow, 1.0)
-                - (reg.ecoScars.waterTableDrop || 0) * 300000
-                - (reg.ecoScars.riverSilting || 0) * 200000;
-    reg.carrying.waterSupport = Math.max(100000, water);
+                - (scars.waterTableDrop || 0) * 300000
+                - (scars.riverSilting || 0) * 200000;
     // 3) 燃料
     var fuel = _envFiniteNumber(reg.forestArea, 500000) * 1.5 + _envFiniteNumber(reg.coalReserve, 0) * 3
-               - (reg.ecoScars.deforestation || 0) * 400000;
-    reg.carrying.fuelSupport = Math.max(50000, fuel);
-    // 4) 住房
-    reg.carrying.housingSupport = Math.max(0, popCount * 1.1); // 简化估算·人口口径与省辖叶级合计一致
-    // 5) 卫生
-    var sani = 1000000 - (reg.ecoScars.urbanSewageOverload || 0) * 500000;
-    reg.carrying.sanitationSupport = Math.max(100000, sani);
+               - (scars.deforestation || 0) * 400000;
+    // 5) 卫生（4 住房随人口，另算）
+    var sani = 1000000 - (scars.urbanSewageOverload || 0) * 500000;
+    return {
+      farmland: Math.max(100000, farmland),
+      water: Math.max(100000, water),
+      fuel: Math.max(50000, fuel),
+      sanitation: Math.max(100000, sani)
+    };
+  }
 
-    reg.carryingMax = Math.min(
-      reg.carrying.farmlandSupport,
-      reg.carrying.waterSupport,
-      reg.carrying.fuelSupport,
-      reg.carrying.housingSupport,
-      reg.carrying.sanitationSupport
-    );
+  function _envCarryingCalibration(reg, scope) {
+    var calib = reg.carryingCalibration;
+    if (calib && typeof calib === 'object' && (calib.rule === 'calibrated' || calib.rule === 'explicit-model')) return calib;
+    var hasLeafCap = (scope.rows || []).some(function(row) { return _envLeafCalibratedCap(row.leaf) > 0; });
+    var explicitModel = isFinite(_envFiniteNumber(reg.arableArea, NaN));
+    calib = {
+      rule: (hasLeafCap || _envLeafCalibratedCap(scope.owner) > 0 || !explicitModel) ? 'calibrated' : 'explicit-model',
+      turn: Number(global.GM && global.GM.turn) || 0,
+      modelBase: 0,
+      anchors: {}
+    };
+    reg.carryingCalibration = calib;
+    return calib;
+  }
+
+  function _envCalibratedCap(scope, calib) {
+    if (!calib.anchors || typeof calib.anchors !== 'object') calib.anchors = {};
+    var anchors = calib.anchors;
+    var total = 0;
+    var covered = 0;
+    var uncovered = [];
+    (scope.rows || []).forEach(function(row) {
+      var cap = _envLeafCalibratedCap(row.leaf);
+      if (cap > 0) { total += cap; covered++; }
+      else uncovered.push(row);
+    });
+    if (!covered) {
+      var own = _envLeafCalibratedCap(scope.owner);
+      if (own > 0) return own;
+    }
+    uncovered.forEach(function(row) {
+      var anchor = Number(anchors[row.id]);
+      if (!(anchor > 0)) {
+        if (!(row.mouths > 0)) return; // 没人的州先不立，等有人了再按那时的人口立
+        anchor = anchors[row.id] = Math.round(row.mouths / ENV_UNCALIBRATED_START_LOAD);
+      }
+      total += anchor;
+    });
+    if (!(total > 0)) {
+      var whole = Number(anchors.__province);
+      if (!(whole > 0) && scope.mouths > 0) whole = anchors.__province = Math.round(scope.mouths / ENV_UNCALIBRATED_START_LOAD);
+      total = whole > 0 ? whole : 1;
+    }
+    return total;
+  }
+
+  function _recomputeRegionCarrying(rid, reg, options) {
+    var G = global.GM;
+    if (!reg.carrying || typeof reg.carrying !== 'object') reg.carrying = {};
+    if (!reg.ecoScars || typeof reg.ecoScars !== 'object') reg.ecoScars = {};
+    var scope = _environmentPopulationScope(rid);
+    var popCount = scope.mouths;
+    var techEra = G.environment ? G.environment.techEra : '唐';
+    var model = _envModelSupports(reg, techEra);
+    var calib = _envCarryingCalibration(reg, scope);
+    // 4) 住房：人口的 1.1 倍（人口口径与省辖叶级合计一致）
+    reg.carrying.housingSupport = Math.max(0, popCount * 1.1);
+    if (calib.rule === 'explicit-model') {
+      reg.carrying.farmlandSupport = model.farmland;
+      reg.carrying.waterSupport = model.water;
+      reg.carrying.fuelSupport = model.fuel;
+      reg.carrying.sanitationSupport = model.sanitation;
+      reg.carryingMax = Math.min(
+        reg.carrying.farmlandSupport,
+        reg.carrying.waterSupport,
+        reg.carrying.fuelSupport,
+        reg.carrying.housingSupport,
+        reg.carrying.sanitationSupport
+      );
+    } else {
+      var modelMin = Math.min(model.farmland, model.water, model.fuel, model.sanitation);
+      if (!(Number(calib.modelBase) > 0)) calib.modelBase = modelMin;
+      var cap = _envCalibratedCap(scope, calib);
+      var scale = cap / calib.modelBase;
+      calib.cap = Math.round(cap);
+      reg.carrying.farmlandSupport = model.farmland * scale;
+      reg.carrying.waterSupport = model.water * scale;
+      reg.carrying.fuelSupport = model.fuel * scale;
+      reg.carrying.sanitationSupport = model.sanitation * scale;
+      reg.carryingMax = Math.min(
+        reg.carrying.farmlandSupport,
+        reg.carrying.waterSupport,
+        reg.carrying.fuelSupport,
+        reg.carrying.sanitationSupport
+      );
+    }
 
     // currentLoad 是派生值。持续政策通过明确的缓解量作用于派生负载，
     // 而不是先写 currentLoad、再被本函数立即覆盖。
@@ -507,6 +627,9 @@
       var reg = E.byRegion[rid];
       var populationScope = _environmentPopulationScope(rid);
       if (!populationScope.ok) throw new Error('环境地区无法解析人口层级: ' + rid);
+      // 整合桥按剧本建的省环境对象没有过载年数这一项，undefined 加数得 NaN，此后一直是 NaN。
+      if (!reg.ecoScars || typeof reg.ecoScars !== 'object') reg.ecoScars = {};
+      reg.overloadYears = _envFiniteNumber(reg.overloadYears, 0);
       var popCount = populationScope.mouths;
       var load = _envFiniteNumber(reg.currentLoad, 0.5);
       // 过载加速疤痕
@@ -559,10 +682,46 @@
   //  Ⅲ 过载多级反馈
   // ═══════════════════════════════════════════════════════════════════
 
+  function _envPlayerLeafMouths() {
+    var population = global.GM && global.GM.population || {};
+    var byLeaf = population.byLeafRegion || population.byRegion || {};
+    return Object.keys(byLeaf).reduce(function(sum, id) {
+      var row = byLeaf[id];
+      return sum + Math.max(0, _envFiniteNumber(row && row.mouths, 0));
+    }, 0);
+  }
+
+  // 过载伤民心只伤本省：按本省各州逐一记进民心账本，每州都吃足这一笔。
+  // 账本「来源累计」里记的是折成全国的量（本省人口占全国的比重 × 这一笔）：旧写法每个过载省都按全国扣一次
+  // （二十个省过载就是全国 −10），还和别的旧入口共用一份 −20 的累计额度，几个月就把额度耗光、此后饥荒不再伤民心。
+  function _envOverloadMinxin(rid, scope, perLeafDelta, level, nationalMouths) {
+    var G = global.GM;
+    var ledger = global.TM && global.TM.MinxinLedger;
+    if (!ledger || typeof ledger.recordAndApply !== 'function' || !perLeafDelta) return false;
+    var rows = (scope.rows || []).filter(function(row) { return row.mouths > 0; });
+    if (!rows.length) return false;
+    var share = nationalMouths > 0 ? Math.min(1, scope.mouths / nationalMouths) : 1;
+    var equivalent = Math.round(perLeafDelta * share * 100) / 100;
+    if (!equivalent) equivalent = perLeafDelta < 0 ? -0.01 : 0.01; // 账本按两位小数记，再小就被抹成零、整笔不落
+    var name = scope.owner && scope.owner.name ? String(scope.owner.name) : String(rid);
+    ledger.recordAndApply(G, {
+      sourceSystem: 'environment-overload',
+      kind: 'environmentOverload',
+      deltaTrue: equivalent,
+      targetRegions: rows.map(function(row) { return { region: row.id, weight: 1, deltaTrue: perLeafDelta }; }),
+      intensity: level >= 3 ? 0.8 : 0.5,
+      confidence: 0.9,
+      reason: name + (level >= 3 ? '人口远超地力所能养，生计崩坏' : '人口超出地力所能养，乡里饥馑')
+    }, { source: 'environment-overload', turn: G.turn, deferFinalize: true });
+    return true;
+  }
+
   function _tickOverloadFeedback(ctx, mr) {
     var E = global.GM.environment;
     if (!E) return;
     var G = global.GM;
+    var nationalMouths = null;
+    var minxinWritten = false;
     Object.keys(E.byRegion).forEach(function(rid) {
       var reg = E.byRegion[rid];
       var load = _envFiniteNumber(reg.currentLoad, 0.5);
@@ -580,16 +739,21 @@
       if (!mortality || mortality.ok === false) throw new Error('环境过载人口损失落账失败: ' + String(mortality && mortality.reason || 'unknown'));
       if (level === 1) {
         // 轻度压力仅兑现对应死亡率；不得落入三级崩溃的社会惩罚。
-      } else if (level === 2) {
-        var region = (G.regions || []).find(function(r) { return r.id === rid; });
-        if (region) region.unrest = Math.min(100, _envFiniteNumber(region.unrest, 30) + 3 * mr);
-        if (global._adjAuthority) global._adjAuthority('minxin', -0.2 * mr);
       } else {
-        var region2 = (G.regions || []).find(function(r) { return r.id === rid; });
-        if (region2) { region2.unrest = Math.min(100, _envFiniteNumber(region2.unrest, 30) + 8 * mr); region2.disasterLevel = Math.min(1, _envFiniteNumber(region2.disasterLevel, 0) + 0.05 * mr); }
-        if (global._adjAuthority) global._adjAuthority('minxin', -0.5 * mr);
+        if (nationalMouths === null) nationalMouths = _envPlayerLeafMouths();
+        if (level === 2) {
+          var region = (G.regions || []).find(function(r) { return r.id === rid; });
+          if (region) region.unrest = Math.min(100, _envFiniteNumber(region.unrest, 30) + 3 * mr);
+          if (_envOverloadMinxin(rid, scope, -0.2 * mr, level, nationalMouths)) minxinWritten = true;
+        } else {
+          var region2 = (G.regions || []).find(function(r) { return r.id === rid; });
+          if (region2) { region2.unrest = Math.min(100, _envFiniteNumber(region2.unrest, 30) + 8 * mr); region2.disasterLevel = Math.min(1, _envFiniteNumber(region2.disasterLevel, 0) + 0.05 * mr); }
+          if (_envOverloadMinxin(rid, scope, -0.5 * mr, level, nationalMouths)) minxinWritten = true;
+        }
       }
     });
+    var ledger = global.TM && global.TM.MinxinLedger;
+    if (minxinWritten && ledger && typeof ledger.finalizeBatch === 'function') ledger.finalizeBatch(G, { source: 'environment-overload' });
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -652,7 +816,9 @@
       }
       if (ef.farmlandLoss) {
         if (rid && E.byRegion[rid]) {
-          E.byRegion[rid].arableArea *= (1 - ef.farmlandLoss);
+          // 省环境对象可能没有耕地面积这一项；直接 *= 会得 NaN，算承载时又被当成缺省值，等于没毁田。
+          var lossRegion = E.byRegion[rid];
+          lossRegion.arableArea = _envFiniteNumber(lossRegion.arableArea, 500000) * (1 - ef.farmlandLoss);
         }
       }
     }
@@ -1081,6 +1247,15 @@
     var summary = { regions: [], migrated: 0, techBoosted: 0, restored: 0 };
     var regionIds = _envRegionIds(regionId);
     var migrationBatch = { bySource:{}, affectedRegionIds:[] };
+    // 第一回合还没过完时，省环境对象还是整合桥按剧本建的样子，没有各项支撑数，迁民规划会报「承载力无效」；
+    // 先把这样的省标定一遍（标定基准也就落在推政策之前，政策的增减不会被吞进基准）。
+    Object.keys(E.byRegion).forEach(function(rid) {
+      var unready = E.byRegion[rid];
+      if (unready && !(unready.carryingCalibration && unready.carryingCalibration.rule)
+          && !isFinite(Number(unready.carrying && unready.carrying.farmlandSupport))) {
+        _recomputeRegionCarrying(rid, unready);
+      }
+    });
     if (effect.migrateShare) {
       var migrationPlan = _planEnvironmentMigrations(regionIds, effect.migrateShare, regionId === 'all', policy);
       migrationBatch = _executeEnvironmentMigrationPlan(migrationPlan);

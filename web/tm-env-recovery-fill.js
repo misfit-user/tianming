@@ -94,11 +94,8 @@
         if (_mxV2 < 80) global._adjAuthority('minxin', 0.2 * mr);
       }
     }
-    // 9.2 承载力 × 民心段位
-    if (global._adjAuthority && E.nationalLoad > 1.2) {
-      var penalty = (E.nationalLoad - 1.2) * 3;
-      global._adjAuthority('minxin', -penalty * mr);
-    }
+    // 9.2 承载力 × 民心：不在这里按全国平均负荷再扣全国民心。各省过载已在环境引擎按本省各州扣过
+    //     （tm-economy-engine.js _tickOverloadFeedback），这里再扣就是同一件事记两遍，还把一省的灾摊到全国。
     // 9.3 环保政策 × 帑廪代价（已在 enactPolicy 实现）
     // 9.4 环保政策 × 皇权可行度（推政策需一定皇权）
     var activePolicies = (E.activePolicies || []).length + (E.activeRecoveries || []).length;

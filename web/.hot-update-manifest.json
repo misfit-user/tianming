@@ -5036,8 +5036,8 @@
     },
     {
       "path": "tm-economy-engine.js",
-      "sha256": "3c4f622dd93ecbb11a41422fe892322559a0d6bf4eed331039854d40f921e792",
-      "size": 148401
+      "sha256": "05940bbcb47dbb9c4a775e3f7e5aa761c91b1dc0da96800cf9a7447131017640",
+      "size": 158337
     },
     {
       "path": "tm-economy.js",
@@ -5331,8 +5331,8 @@
     },
     {
       "path": "tm-env-recovery-fill.js",
-      "sha256": "f8f89e366a990e4b1ceefc5e005b5d8da67512ae51a2ff255fd61bca66fede38",
-      "size": 10094
+      "sha256": "bbc74d8fa63f309bcaf67b3847646f74b5ce6b7dc75fd81b7efe7e9d6d763cf7",
+      "size": 10171
     },
     {
       "path": "tm-era-language-pack.js",
@@ -6676,7 +6676,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "cc7ceaf8b9905d486cb5bba6f8117c04e01e517597ebcd2267a7eb368bf49452",
+      "sha256": "560dac7155a5338080015fc7df8a3fd508982323a777fc47f12c6cdee0342fb5",
       "size": 140398
     },
     {

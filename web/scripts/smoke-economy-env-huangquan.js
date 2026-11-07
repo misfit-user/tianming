@@ -38,6 +38,7 @@ const countyA = makeLeaf('capital-east', '京东县', 600000);
 const countyB = makeLeaf('capital-west', '京西县', 500000);
 
 const authorityCalls = [];
+const overloadSignals = [];
 const ctx = {
   console,
   Date,
@@ -51,7 +52,13 @@ const ctx = {
   parseInt,
   parseFloat,
   isFinite,
-  TM: { errors: { capture() {}, captureSilent() {} } },
+  TM: {
+    errors: { capture() {}, captureSilent() {} },
+    MinxinLedger: {
+      recordAndApply(root, raw, options) { overloadSignals.push({ raw, options }); return { applied: true }; },
+      finalizeBatch() { return true; }
+    }
+  },
   GM: {
     sid: 'smoke',
     turn: 12,
@@ -135,6 +142,8 @@ function runOverloadTierCase(load) {
   const mouths = Math.round(load * 100000);
   const leaf = makeLeaf('tier-county', '分级县', mouths);
   const calls = [];
+  const minxinSignals = [];
+  let minxinFinalized = 0;
   const tierMath = Object.create(Math);
   tierMath.random = () => 1;
   const tierCtx = {
@@ -150,7 +159,13 @@ function runOverloadTierCase(load) {
     parseInt,
     parseFloat,
     isFinite,
-    TM: { errors: { capture() {}, captureSilent() {} } },
+    TM: {
+      errors: { capture() {}, captureSilent() {} },
+      MinxinLedger: {
+        recordAndApply(root, raw, options) { minxinSignals.push({ raw, options }); return { applied: true }; },
+        finalizeBatch() { minxinFinalized += 1; return true; }
+      }
+    },
     GM: {
       sid: 'overload-tier-' + String(load),
       turn: 12,
@@ -233,9 +248,208 @@ function runOverloadTierCase(load) {
   return {
     unrest: region.unrest - 30,
     disaster: region.disasterLevel,
-    minxin: calls.filter(call => call.key === 'minxin' && call.delta < 0)
-      .reduce((sum, call) => sum + call.delta, 0)
+    // 过载只伤本省：每州吃到的民心增减记在民心账本那一笔的 targetRegions 上
+    minxin: minxinSignals.reduce((sum, signal) => sum + Number(((signal.raw.targetRegions || [])[0] || {}).deltaTrue || 0), 0),
+    targets: minxinSignals.map(signal => (signal.raw.targetRegions || []).map(row => row.region).join(',')).join('|'),
+    national: calls.filter(call => call.key === 'minxin' && call.delta < 0)
+      .reduce((sum, call) => sum + call.delta, 0),
+    finalized: minxinFinalized
   };
+}
+
+// 省环境对象照官方剧本开局的样子：整合桥按剧本建，只有 carrying/ecoScars/currentLoad/arableLand/waterCapacity/carryingRegime，
+// 没有本引擎自己的耕地面积等实数；承载上限在各州 carryingCapacity.historicalCap 上。
+// 旧写法拿写死的常数当上限，四百万口的省被算成只养得活七十五万，负荷五倍多、按全国扣民心。
+function runCalibratedProvinceCase() {
+  const capped = makeLeaf('cal-capped', '有上限州', 3000000);
+  capped.carryingCapacity = { arable: 4000000, water: 4000000, climate: 1, historicalCap: 4000000, currentLoad: 0.75, carryingRegime: 'strained' };
+  const uncapped = makeLeaf('cal-uncapped', '无上限州', 1000000);
+  const signals = [];
+  const calMath = Object.create(Math);
+  calMath.random = () => 1;
+  const calCtx = {
+    console, Date, JSON, Math: calMath, Object, Array, Number, String, Boolean, parseInt, parseFloat, isFinite,
+    TM: {
+      errors: { capture() {}, captureSilent() {} },
+      MinxinLedger: {
+        recordAndApply(root, raw, options) { signals.push({ raw, options }); return { applied: true }; },
+        finalizeBatch() { return true; }
+      }
+    },
+    GM: {
+      sid: 'calibrated-province',
+      turn: 3,
+      regions: [],
+      adminHierarchy: {
+        player: {
+          factionId: 'player-faction',
+          divisions: [{
+            id: 'cal-province', name: '标定路', children: [capped, uncapped],
+            carryingCapacity: { arable: 4000000, water: 4000000, climate: 1, historicalCap: 4000000, currentLoad: 0.75, carryingRegime: 'strained' }
+          }]
+        }
+      },
+      population: {
+        byRegion: { 'cal-capped': capped.populationDetail, 'cal-uncapped': uncapped.populationDetail },
+        national: { mouths: 4000000, households: 800000, ding: 1200000 },
+        dynamics: { yearlyLog: [] }
+      },
+      minxin: { trueIndex: 60 },
+      environment: {
+        _inited: true,
+        techEra: '宋',
+        techEraRule: 2,
+        nationalLoad: 0.5,
+        nationalCarrying: {},
+        activePolicies: [],
+        crisisHistory: [],
+        byRegion: {
+          'cal-province': {
+            carrying: { farmland: 1, water: 1, fuel: 1, housing: 1, sanitation: 1 },
+            ecoScars: {},
+            currentLoad: 0.75,
+            arableLand: 4000000,
+            waterCapacity: 4000000,
+            carryingRegime: 'strained'
+          }
+        }
+      }
+    },
+    P: { id: 'calibrated-province', conf: {}, time: { daysPerTurn: 30 }, playerInfo: { factionName: 'player-faction' } },
+    IntegrationBridge: { getTopLevelDivisions(hierarchy) { return hierarchy.player.divisions; } },
+    _adjAuthority() { return { ok: true }; },
+    addEB() {},
+    turnsForMonths(months) { return months; },
+    findScenarioById() { return null; }
+  };
+  calCtx.window = calCtx;
+  calCtx.global = calCtx;
+  calCtx.globalThis = calCtx;
+  vm.createContext(calCtx);
+  vm.runInContext(src, calCtx, { filename: 'tm-economy-engine.js' });
+  vm.runInContext(hujiSource, calCtx, { filename: 'tm-huji-engine.js' });
+  const region = calCtx.GM.environment.byRegion['cal-province'];
+  calCtx.EnvCapacityEngine.tick({ monthRatio: 1, turn: calCtx.GM.turn, strict: true });
+  const anchoredCap = Math.round(1000000 / 0.8);
+  assert(region.carryingCalibration && region.carryingCalibration.rule === 'calibrated',
+    'a province without the engine own farmland figures must calibrate on the scenario caps, not on fixed constants');
+  assert(region.carryingCalibration.anchors['cal-uncapped'] === anchoredCap,
+    'a leaf without a scenario cap should be anchored once at its population as roughly fed (load 0.8)');
+  assert(Math.abs(region.carryingMax - (4000000 + anchoredCap)) < 1e-6,
+    'province carrying should equal the sum of its leaf caps on the first calibration');
+  assert(Math.abs(region.currentLoad - 4000000 / (4000000 + anchoredCap)) < 1e-9 && region.currentLoad < 1,
+    'a province the scenario calls strained must not be computed as several times overloaded');
+  assert(region.overloadYears === 0, 'overload years should be a real number on a scenario-built province object');
+  assert(signals.length === 0, 'a province under its calibrated cap should not touch minxin');
+  assert(capped.populationDetail.mouths === 3000000 && uncapped.populationDetail.mouths === 1000000,
+    'a province under its calibrated cap should suffer no overload deaths');
+
+  capped.populationDetail.mouths = 9000000;
+  capped.populationDetail.households = 1800000;
+  capped.populationDetail.ding = 2700000;
+  capped.populationDetail.byAge = { child: 1800000, adult: 7200000 };
+  capped.populationDetail.byGender = { male: 4500000, female: 4500000 };
+  calCtx.GM.population.national = { mouths: 10000000, households: 2000000, ding: 3000000 };
+  calCtx.EnvCapacityEngine.tick({ monthRatio: 1, turn: calCtx.GM.turn + 1, strict: true });
+  assert(region.carryingCalibration.anchors['cal-uncapped'] === anchoredCap,
+    'the anchored cap stays fixed instead of following later population');
+  assert(region.currentLoad > 1.5, 'tripling a leaf past its cap should overload the province');
+  const overload = signals.filter(signal => signal.raw.sourceSystem === 'environment-overload');
+  assert(overload.length === 1
+    && overload[0].raw.targetRegions.map(row => row.region).sort().join(',') === 'cal-capped,cal-uncapped'
+    && overload[0].raw.targetRegions.every(row => row.deltaTrue === -0.5),
+  'collapse-tier overload should debit minxin in each leaf of the province only');
+}
+
+// 开局第一回合还没过，省环境对象还是整合桥按剧本建的样子（没有各项支撑数）时推环政：旧写法迁民规划直接报「承载力无效」。
+function runScenarioShapedPolicyCase() {
+  const north = makeLeaf('shape-north-county', '北州', 600000);
+  north.carryingCapacity = { historicalCap: 1000000, currentLoad: 0.6 };
+  const south = makeLeaf('shape-south-county', '南州', 400000);
+  south.carryingCapacity = { historicalCap: 800000, currentLoad: 0.5 };
+  const bridgeShaped = () => ({ carrying: { farmland: 1, water: 1, fuel: 1, housing: 1, sanitation: 1 }, ecoScars: {}, currentLoad: 0.6, arableLand: 0, waterCapacity: 0, carryingRegime: 'sustainable' });
+  const policyCtx = {
+    console, Date, JSON, Math, Object, Array, Number, String, Boolean, parseInt, parseFloat, isFinite,
+    TM: { errors: { capture() {}, captureSilent() {} } },
+    GM: {
+      sid: 'scenario-shaped-policy',
+      turn: 1,
+      regions: [],
+      guoku: { money: 1000000, grain: 500000, cloth: 0 },
+      adminHierarchy: {
+        player: {
+          factionId: 'player-faction',
+          divisions: [
+            { id: 'shape-north', name: '北路', children: [north] },
+            { id: 'shape-south', name: '南路', children: [south] }
+          ]
+        }
+      },
+      population: {
+        byRegion: { 'shape-north-county': north.populationDetail, 'shape-south-county': south.populationDetail },
+        national: { mouths: 1000000, households: 200000, ding: 300000 },
+        dynamics: { yearlyLog: [] }
+      },
+      minxin: { trueIndex: 60 },
+      environment: {
+        _inited: true, techEra: '明', techEraRule: 2, nationalLoad: 0.5, nationalCarrying: {}, activePolicies: [], crisisHistory: [],
+        byRegion: { 'shape-north': bridgeShaped(), 'shape-south': bridgeShaped() }
+      }
+    },
+    P: { id: 'scenario-shaped-policy', conf: {}, time: { daysPerTurn: 30 }, playerInfo: { factionName: 'player-faction' } },
+    IntegrationBridge: { getTopLevelDivisions(hierarchy) { return hierarchy.player.divisions; } },
+    FiscalEngine: {
+      spendFromGuoku(cost) {
+        const deducted = {};
+        ['money', 'grain', 'cloth'].forEach(kind => {
+          const amount = Number(cost[kind]) || 0;
+          policyCtx.GM.guoku[kind] -= amount;
+          deducted[kind] = { deducted: amount, deficit: 0 };
+        });
+        return { ok: true, deducted };
+      }
+    },
+    _adjAuthority() { return { ok: true }; },
+    addEB() {},
+    turnsForMonths(months) { return months; },
+    findScenarioById() { return null; }
+  };
+  policyCtx.window = policyCtx;
+  policyCtx.global = policyCtx;
+  policyCtx.globalThis = policyCtx;
+  vm.createContext(policyCtx);
+  vm.runInContext(src, policyCtx, { filename: 'tm-economy-engine.js' });
+  vm.runInContext(hujiSource, policyCtx, { filename: 'tm-huji-engine.js' });
+  const result = policyCtx.EnvCapacityEngine.enactPolicy('migration_relief', 'all');
+  assert(result && result.ok, 'an environment policy enacted before the first turn ends must not fail on scenario-built provinces: ' + (result && result.reason));
+  const north2 = policyCtx.GM.environment.byRegion['shape-north'];
+  assert(north2.carryingCalibration && north2.carryingCalibration.rule === 'calibrated'
+    && isFinite(north2.carrying.farmlandSupport) && Math.abs(north2.carryingMax - 1000000) < 1e-6,
+  'the policy should first calibrate a scenario-built province on its leaf caps');
+}
+
+function runTechEraCase() {
+  const eraCtx = {
+    console, Date, JSON, Math, Object, Array, Number, String, Boolean, parseInt, parseFloat, isFinite,
+    TM: { errors: { capture() {}, captureSilent() {} } },
+    GM: { sid: 'era', turn: 1, regions: [] },
+    addEB() {}
+  };
+  eraCtx.window = eraCtx;
+  eraCtx.global = eraCtx;
+  eraCtx.globalThis = eraCtx;
+  vm.createContext(eraCtx);
+  vm.runInContext(src, eraCtx, { filename: 'tm-economy-engine.js' });
+  eraCtx.EnvCapacityEngine.init({ name: '绍宋·建炎元年八月——亳州明道宫，九龙井醒', dynasty: '宋', era: '南宋·建炎初' });
+  assert(eraCtx.GM.environment.techEra === '宋', 'a Song scenario whose name mentions 明道宫 must not be read as Ming');
+  eraCtx.GM.environment = null;
+  eraCtx.EnvCapacityEngine.init({ name: '天启七年·九月——君王初立，权阉当国', dynasty: '明', era: '明末·天启朝尾' });
+  assert(eraCtx.GM.environment.techEra === '明', 'a Ming scenario without a dynasty word in its name must not fall back to Tang');
+  eraCtx.GM.environment.techEra = '唐';
+  delete eraCtx.GM.environment.techEraRule;
+  eraCtx.EnvCapacityEngine.init({ name: '天启七年·九月——君王初立，权阉当国', dynasty: '明' });
+  assert(eraCtx.GM.environment.techEra === '明' && eraCtx.GM.environment.techEraRule === 2,
+    'an old save with an era guessed from the scenario name should be re-read once by the dynasty field');
 }
 
 function runZeroResourceCase() {
@@ -348,14 +562,22 @@ vm.runInContext(hujiSource, ctx, { filename: 'tm-huji-engine.js' });
 const lightOverload = runOverloadTierCase(1.10);
 const mediumOverload = runOverloadTierCase(1.30);
 const severeOverload = runOverloadTierCase(1.60);
-assert(lightOverload.unrest === 0 && lightOverload.disaster === 0 && lightOverload.minxin === 0,
+assert(lightOverload.unrest === 0 && lightOverload.disaster === 0 && lightOverload.minxin === 0 && lightOverload.targets === '',
   'level-one overload should not fall through to level-three collapse effects');
 assert(mediumOverload.unrest === 3 && mediumOverload.disaster === 0 && mediumOverload.minxin === -0.2,
   'level-two overload should apply only the famine-tier social effects');
 assert(severeOverload.unrest === 8 && severeOverload.disaster === 0.05 && severeOverload.minxin === -0.5,
   'level-three overload should apply the strongest collapse effects');
+assert(mediumOverload.targets === 'tier-county' && severeOverload.targets === 'tier-county'
+  && mediumOverload.finalized === 1 && severeOverload.finalized === 1,
+  'overload minxin should be one ledger record per province aimed at exactly its own leaves, finalized as one batch');
+assert([lightOverload, mediumOverload, severeOverload].every(row => row.national === 0),
+  'overload minxin must never be deducted nationally through the legacy _adjAuthority path');
 assert(lightOverload.unrest < mediumOverload.unrest && mediumOverload.unrest < severeOverload.unrest,
   'overload social penalties should increase monotonically across all three tiers');
+runCalibratedProvinceCase();
+runScenarioShapedPolicyCase();
+runTechEraCase();
 runZeroResourceCase();
 
 const beforeHuangquan = ctx.GM.huangquan.index;
@@ -379,7 +601,11 @@ assert(ctx.GM.population.mortalityLedger.some(row => /^environment-overload:/.te
   assert(ageTotal === detail.mouths && genderTotal === detail.mouths,
     'overload mortality should keep each leaf demographic bundle exact');
 });
-assert(authorityCalls.some(call => call.key === 'minxin'), 'overload should still affect minxin');
+assert(overloadSignals.some(signal => signal.raw.sourceSystem === 'environment-overload'
+  && (signal.raw.targetRegions || []).map(row => row.region).sort().join(',') === 'capital-east,capital-west'),
+'overload should still affect minxin, but only in the overloaded province leaves');
+assert(!authorityCalls.some(call => call.key === 'minxin' && call.delta < 0),
+  'overload must not deduct national minxin through the legacy _adjAuthority path');
 assert(!authorityCalls.some(call => call.key === 'huangquan'), 'environment capacity must not adjust huangquan');
 assert(ctx.GM.huangquan.index === beforeHuangquan, 'huangquan index should remain unchanged by environment capacity');
 

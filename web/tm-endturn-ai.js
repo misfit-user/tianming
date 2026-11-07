@@ -4019,6 +4019,8 @@
         var _dateText1d = ''; try { _dateText1d = (typeof getTSText === 'function') ? getTSText(GM.turn || 1) : ''; } catch(_) {}
         var tp1d = '【实录·时政记专项】\n';
         if (TM.EdictOutcomes) tp1d += TM.EdictOutcomes.narrativeFacts(GM, GM.turn);
+        // 史官成文在主写回之后：把账上实际动了的数目（库存期初与本回合动用、已落账收支、指标、人事、没落地的声明）交给史官
+        try { if (TM.TurnLedgerFacts) tp1d += TM.TurnLedgerFacts.block(GM, { turn: GM.turn, oldVars: ctx && ctx.input && ctx.input.oldVars, before: _unappliedBeforeSc1 }); } catch (_tlfE) { _dbg('[SC1d] ledger facts fail', _tlfE); }
         tp1d += '你只负责把 SC1 已判定的结构化账本改写为史官文本，不得新增任何事实、数值、死亡、任免、战事或地块变化。\n';
         tp1d += '本回合：T' + (GM.turn || 1) + (_dateText1d ? (' · ' + _dateText1d) : '') + '\n';
         tp1d += '玩家诏令/行止原始摘要：' + _packSc1d({ edicts: edicts || {}, xinglu: xinglu || '' }, 2500) + '\n';
@@ -4898,6 +4900,8 @@
       ctx.results.sc1c = (GM._turnAiResults && GM._turnAiResults.subcall1c) || ctx.results.sc1c || null;
       ctx.results.sc1d = (GM._turnAiResults && GM._turnAiResults.subcall1d) || ctx.results.sc1d || null;
       ctx.followup.p1Summary = p1Summary || "";
+      // 主写回之前已有的未落地条目（如同回合早先失败那次留下的）：史官成文只认这次主写回新添的
+      var _unappliedBeforeSc1 = (GM && Array.isArray(GM._unappliedChanges)) ? GM._unappliedChanges.slice() : [];
       if (typeof afterSc1 === "function") {
         var _applyStarted = Date.now();
         try {

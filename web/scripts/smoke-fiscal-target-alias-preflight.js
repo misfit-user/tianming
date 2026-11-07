@@ -106,5 +106,49 @@ function run(fiscal) {
     assert(G.guoku.extraIncome.length === 0 && G.neitang.extraIncome.length === 0, '案6 垃圾 target(月球)经 preflight 剔除·不落任何库');
   }
 
+  // ── 案7~11·另一种写法 {subject, action, amount, note}（11-07·玩家 09-21 那局实录形状）：认得准的改成标准形状落账 ──
+  {
+    const alt = { subject: '太仓银库', action: '拨发陕西急赈', amount: -100000, note: '拨发十万两急救关中饥荒，户部帑藏极度告匮。' };
+    const { G } = run([Object.assign({}, alt)]);
+    const row = G.guoku.extraExpense[0];
+    assert(G.guoku.extraExpense.length === 1 && G.guoku.money === 5000000 - 100000, '案7 ★负数为支出·太仓银库认作 guoku·落账（原来整条 missing target/kind）');
+    assert(row && row.name === '拨发陕西急赈', '案7 action 记作名目');
+    const rep = G._turnReport.find(r => r.type === 'fiscal_adj');
+    assert(rep && rep.kind === 'expense' && rep.amount === 100000, '案7 _turnReport 记一笔支出 10 万');
+  }
+  {
+    const { G } = run([{ subject: '户部', action: '出售虚衔冠带', amount: 30000, note: '续售监生资格，得银三万' }]);
+    assert(G.guoku.extraIncome.length === 1 && G.guoku.money === 5000000 + 30000, '案8 正数看字面：出售为入·落 guoku 收入');
+  }
+  {
+    const { G } = run([
+      { subject: '太仓', action: '调整', amount: 50000 },                      // 正数又看不出出入：不改
+      { subject: '陕西布政使司', action: '拨发赈银', amount: -20000 }           // 账户认不得（省账不猜）：不改
+    ]);
+    assert(G.guoku.extraIncome.length === 0 && G.guoku.extraExpense.length === 0 && G.guoku.money === 5000000, '案9 认不准的照旧剔·不猜');
+  }
+  {
+    // 同批央地调拨是同一笔钱：只按调拨落，财政这条跳过（不扣两次）
+    ctx.GM = freshGM();
+    const batch = {
+      fiscal_adjustments: [{ subject: '太仓银库', action: '拨发陕西急赈', amount: -100000, note: '急救关中饥荒' }],
+      central_local_actions: [{ action: 'transfer_to_region', fromAccount: 'guoku.money', region: '陕西布政使司', amount: 100000, purpose: 'disaster_relief', reason: '赈济水灾' }]
+    };
+    const v = ctx.validateAIWriteBackBatch(batch, { source: 'test' });
+    const fa = v.output.fiscal_adjustments[0];
+    assert(fa.target === 'guoku' && fa.kind === 'expense' && /陕西布政使司/.test(fa._dupOfTransfer || ''), '案10 严格预检里就地改形、认出与调拨同一笔');
+    assert(!v.failures.some(f => f.field === 'fiscal_adjustments'), '案10 严格预检不再把这条判 missing target/kind');
+    assert(batch.fiscal_adjustments[0].target === undefined, '案10 严格预检只改副本，不动原批');
+    ctx.GM = freshGM();
+    ctx.applyAITurnChanges({ fiscal_adjustments: [Object.assign({}, batch.fiscal_adjustments[0])], central_local_actions: [] });
+    const g1 = ctx.GM;
+    assert(g1.guoku.extraExpense.length === 1, '案10 没有同批调拨时照常落一笔（去重只对同一笔钱）');
+    ctx.GM = freshGM();
+    ctx.applyAITurnChanges({ fiscal_adjustments: [Object.assign({}, batch.fiscal_adjustments[0])], central_local_actions: batch.central_local_actions.map(x => Object.assign({}, x)) });
+    const g2 = ctx.GM;
+    assert(g2.guoku.extraExpense.length === 0, '案11 ★与同批调拨同一笔：财政这条不再扣一次');
+    assert(g2._turnReport.some(r => r.type === 'fiscal_adj_dedup' && r.requested === 100000), '案11 跳过留痕 fiscal_adj_dedup');
+  }
+
   console.log('\nsmoke-fiscal-target-alias-preflight: ' + passed + ' assertions PASS');
 })();

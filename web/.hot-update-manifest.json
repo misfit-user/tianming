@@ -3196,8 +3196,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "005d78605966b045bd18148faf58b2d24332f1feb4532e152f61214e3307b1e2",
-      "size": 377074
+      "sha256": "ccbca048fb52734888f41dcc47478c6e642edf31176a6d73763c28d421738be6",
+      "size": 382896
     },
     {
       "path": "icon.png",
@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "ed2c190607748294f00b9bdfe8c08a86b18d138c48dc8b4a26bc9a084f593517",
-      "size": 78034
+      "sha256": "6799bcd85313e6dd8b7915cc1bc3e106e65289565496aaf4446d359576e1ae4f",
+      "size": 78194
     },
     {
       "path": "INDEX.md",
@@ -3661,8 +3661,8 @@
     },
     {
       "path": "modules/ai-change-applier/core.js",
-      "sha256": "3a1529ca3be003340a5baa31f7e5408eb4b6d2e9cfae558487758fc0da746d4b",
-      "size": 187581
+      "sha256": "eb68d3f274e8f8f1e43d28318215e57639bb1f5d32e9f0fda7fa1eea0fb90b16",
+      "size": 188713
     },
     {
       "path": "modules/ai-change-applier/fiscal-posting.js",
@@ -3691,13 +3691,13 @@
     },
     {
       "path": "modules/ai-change-applier/reconcile.js",
-      "sha256": "a4d3664585b04ad46f64c7cb3aca4767cd0a31ea310fe1e3a71a44ccb5933586",
-      "size": 104506
+      "sha256": "2037526237a2f3a194e33e8592add44a6dc39d176f2b7980788078baf6b1b3c6",
+      "size": 109572
     },
     {
       "path": "modules/ai-change-applier/validators.js",
-      "sha256": "40f0079ecd24fec17166a2ec0c3d79066eb660eb380a367f7d83bf3fb3ce3ea1",
-      "size": 126092
+      "sha256": "710f38581186a16d6f612611dc340ec9763f244fc7af859452cfd27ca72aefe9",
+      "size": 128485
     },
     {
       "path": "package.json",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "eb9b656057e59afbb80d55cf6eff5d6955c231e0f0a859c5498e8ded7b1cecaa",
-      "size": 393478
+      "sha256": "02a46122e5dab820a2c457dd4cdb22fb34eca37e34e795ef677f6293e395610b",
+      "size": 394035
     },
     {
       "path": "styles.css",
@@ -4441,8 +4441,8 @@
     },
     {
       "path": "tm-ai-change-narrative.js",
-      "sha256": "d5ee2b17a969f13096bb73bf0bdc40d000761a56a23652d14857a0c11e504b91",
-      "size": 50856
+      "sha256": "23c43a0e1a2f0bca643e49d0f730038a34b10e10cea796aa35e7b995f8297350",
+      "size": 51768
     },
     {
       "path": "tm-ai-change-pathutils.js",
@@ -4996,8 +4996,8 @@
     },
     {
       "path": "tm-edict-parser.js",
-      "sha256": "a1c6567b81b68b53225480936ce492c6598088a4372ae03a7a3878e8c62f82d0",
-      "size": 126766
+      "sha256": "91976c454a2c786638c795c570e664a27f86cba261028056b55c689a9315af38",
+      "size": 127198
     },
     {
       "path": "tm-edict-thresholds.js",
@@ -5096,8 +5096,8 @@
     },
     {
       "path": "tm-endturn-ai.js",
-      "sha256": "efdb72f56a30b018e44e2f61b022504caf4652d33f2d6d2f2ada40a3c57b5946",
-      "size": 409186
+      "sha256": "437a5b5e84f5c6faf9c75a366f02b4f95e7643fa85110630c571369fed59a579",
+      "size": 409855
     },
     {
       "path": "tm-endturn-apply-stages.js",
@@ -5126,8 +5126,8 @@
     },
     {
       "path": "tm-endturn-followup.js",
-      "sha256": "6a4909726ec25574e29027064360a6743b49a3fa2b766697f7ca4cce8c628f2c",
-      "size": 286545
+      "sha256": "d55fc04164c3a5a3df9755d859c08b7f3a3d488f9ee0599b3cc2ea86f3e3fbc2",
+      "size": 289569
     },
     {
       "path": "tm-endturn-helpers.js",
@@ -6606,8 +6606,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "c66fa44b055c4e1c592d78b354ccc6e56a15637f1d90d326cda894c93e6842ec",
-      "size": 140018
+      "sha256": "e482781582447c1cb130bf5b1aa7beffe62105a9492d19de4fd952c57c956b1e",
+      "size": 140298
     },
     {
       "path": "tm-start-selector.js",
@@ -6743,6 +6743,11 @@
       "path": "tm-traits-data.js",
       "sha256": "8c9741683bd931dbe296986a388259b99f875e7c95c8f19e7de4f29651b61dca",
       "size": 38450
+    },
+    {
+      "path": "tm-turn-ledger-facts.js",
+      "sha256": "a3b74e23da7731435ddbcfccec0fe7a477c81186390bbb8c3e4dbce6cefe9b16",
+      "size": 17582
     },
     {
       "path": "tm-ui-foundation.js",

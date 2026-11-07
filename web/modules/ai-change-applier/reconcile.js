@@ -757,6 +757,59 @@ export function createReconcile(deps) {
     return (s === 'income' || s === 'expense') ? s : '';
   }
 
+  // ── fiscal_adjustments 的另一种写法（11-07 记：玩家 09-21 那局的主推演写成
+  //    {subject:"太仓银库", action:"拨发陕西急赈", amount:-100000, note:"……"}）──
+  //   没有 target/kind，预检原来整条剔掉（missing target/kind）。就地改成标准形状再过闸，只改认得准的：
+  //   subject 认账户（太仓、国库、户部 → guoku；内帑、内库、内承运库 → neitang），认不出不改；
+  //   amount 为负是支出；为正看字面（拨发、赈济、犒赏……为出，征收、捐纳、鬻卖……为入），两样都有或都没有就不改；
+  //   action 记作名目，note 记作事由，原写法留在 _altShape。
+  //   同批央地调拨若是同一笔钱（同账户同资源、金额差 1% 内、调拨的地名出现在这条里），标 _dupOfTransfer，
+  //   落账时跳过（applier 的 fiscal 段），免得一笔赈银扣两次。
+  //   只就地改、不增删条目：严格预检按下标剔条目。严格预检（validateAIWriteBackBatch）与 applier 入口各调一次，已改过的不再动。
+  var _FA_ALT_OUT = /拨|发放|发帑|发银|支|赈|犒|赏|赐|给|付|偿|修|筑|造|建|购|买|采办|转运|运脚|军费|饷|济|恤|贴/;
+  var _FA_ALT_IN = /征|收|入库|纳|捐|鬻|卖|售|抄没|籍没|罚|没入|进奉|上缴|解送|解京/;
+  var _REGION_NAME_SUFFIX = /(承宣布政使司|布政使司|行都指挥使司|都指挥使司|宣慰使司|宣慰司|宣抚司|省)$/;
+  function _normalizeFiscalAltShape(output) {
+    var rows = output && Array.isArray(output.fiscal_adjustments) ? output.fiscal_adjustments : [];
+    var transfers = output && Array.isArray(output.central_local_actions) ? output.central_local_actions : [];
+    var changed = 0;
+    rows.forEach(function(fa) {
+      if (!fa || typeof fa !== 'object' || fa.target != null || fa.kind != null) return;
+      var subject = String(fa.subject || fa.account || fa.treasury || '').trim();
+      var amount = parseFloat(fa.amount);
+      if (!subject || !isFinite(amount) || amount === 0) return;
+      var target = /内帑|内库|内承运|私帑|帝室|御库/.test(subject) ? 'neitang' : (/太仓|国库|户部|外库|公帑|公库/.test(subject) ? 'guoku' : '');
+      if (!target) return;
+      var desc = String(fa.action || fa.name || '').trim(), note = String(fa.note || fa.reason || '').trim();
+      var words = desc + ' ' + note, out = _FA_ALT_OUT.test(words), inn = _FA_ALT_IN.test(words);
+      var kind = amount < 0 ? 'expense' : (out && !inn ? 'expense' : (inn && !out ? 'income' : ''));
+      if (!kind) return;
+      fa._altShape = { subject: fa.subject, action: fa.action, amount: fa.amount, note: fa.note };
+      fa.target = target;
+      fa.kind = kind;
+      if (!fa.resource) fa.resource = /粮|米|麦|粟|谷/.test(subject + desc) ? 'grain' : (/布|绢|帛|缎|棉/.test(subject + desc) ? 'cloth' : 'money');
+      fa.amount = Math.abs(amount);
+      fa.action = 'add';
+      if (!fa.name) fa.name = desc || subject;
+      if (!fa.reason) fa.reason = note || desc;
+      changed++;
+      if (kind !== 'expense') return;
+      var text = subject + ' ' + desc + ' ' + note;
+      var dup = transfers.filter(function(t) {
+        if (!t || typeof t !== 'object') return false;
+        if (!/transfer|grant|下拨|拨银|发帑|赈/.test(String(t.action || t.type || t.kind || t.policyId || ''))) return false;
+        var from = String(t.fromAccount || 'guoku.money').split('.');
+        if (from[0] !== target || (from[1] || 'money') !== fa.resource) return false;
+        var tAmt = parseFloat(t.amount || t.money || t.silver);
+        if (!(tAmt > 0) || Math.abs(tAmt - fa.amount) > fa.amount * 0.01) return false;
+        var region = String(t.regionName || t.region || t.target || t.province || '').trim().replace(_REGION_NAME_SUFFIX, '');
+        return region.length >= 2 && text.indexOf(region) >= 0;
+      })[0];
+      if (dup) fa._dupOfTransfer = String(dup.regionName || dup.region || dup.target || dup.province || '') + ' ' + (parseFloat(dup.amount || dup.money || dup.silver) || '');
+    });
+    return changed;
+  }
+
   function preflightAIWriteBack(aiOutput, opts) {
     var G = global.GM;
     if (!G || !aiOutput || typeof aiOutput !== 'object') return aiOutput;
@@ -1027,6 +1080,16 @@ export function createReconcile(deps) {
     }
     var byName = rows.filter(function(row) { return row && row.name != null && String(row.name).trim() === raw; });
     if (byName.length === 1) return byName[0];
+    // 区划：落账处（applier 的 _findDivisionForAI）认「陕西省」「陕西承宣布政使司」这类去后缀相等的名字，
+    // 预检要和落账用同一规矩，不然好账在预检就被剔（11-07）。只在精确名一个都没有时才放宽；有重名照旧报歧义。
+    if (kind === 'region' && byName.length === 0) {
+      var pathUtils = global.TM && global.TM.AIChange && global.TM.AIChange.PathUtils;
+      var fuzzy = pathUtils && typeof pathUtils.findDivisionByNameFuzzy === 'function' ? pathUtils.findDivisionByNameFuzzy(global.GM, raw) : null;
+      if (fuzzy) {
+        var same = rows.filter(function(row) { return row && fuzzy.id != null && row.id != null && String(row.id) === String(fuzzy.id); });
+        return same.length ? same[0] : fuzzy;
+      }
+    }
     fail({
       field: field,
       index: index,
@@ -1152,6 +1215,7 @@ export function createReconcile(deps) {
     _validateIdentityAgreement(G, aiOutput, failures);
     var detached = _tmCloneWriteback(aiOutput);
     _normalizeCharacterUpdateAliases(detached, failures);
+    _normalizeFiscalAltShape(detached);
     var previousCollector = _tmPreflightCollector;
     var previousSideEffects = _tmPreflightSideEffects;
     var previousContext = _tmPreflightContext;
@@ -1732,6 +1796,7 @@ export function createReconcile(deps) {
     _applyRegentDecisions: _applyRegentDecisions,
     preflightAIWriteBack: preflightAIWriteBack,
     validateAIWriteBackBatch: validateAIWriteBackBatch,
+    _normalizeFiscalAltShape: _normalizeFiscalAltShape,
     _applyBattleResult: _applyBattleResult,
     _applyFiscalDeficitPenalties: _applyFiscalDeficitPenalties,
     _hasInstantArrivalRule: _hasInstantArrivalRule,

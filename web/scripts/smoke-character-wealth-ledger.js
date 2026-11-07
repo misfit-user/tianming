@@ -88,6 +88,8 @@ function fixture(explicit=true){
 {
  const {s,L,E,char}=fixture(),c=char('governor','本州主官');const div={id:'county',name:'本州',governor:c.name,governorId:c.id,publicTreasury:{money:{stock:20,available:20},grain:{stock:0,available:0},cloth:{stock:0,available:0}}};s.GM.adminHierarchy={player:{divisions:[div]}};s.GM.publicTreasuryConfig.accounts.push({id:'county-fund',name:'本州库',kind:'physical',factionId:'tang',source:{kind:'region',id:div.id}});s.GM._turnReport=[];
  s.G=s.GM;s.applied={failed:[]};s.aiOutput={localActions:[{region:div.id,type:'illicit',amount:100,reason:'追查经手侵夺'}]};s._findDivisionByNameOrId=(G,id)=>id===div.id?div:null;
+ // 2026-11-07 地方举措按名找区划改走 _findDivisionForAI（core.js 顶部绑定：有去后缀模糊认就用它，否则退回精确认）；这里只验落账，按 id 认即可
+ s._findDivisionForAI=s._findDivisionByNameOrId;
  // 2026-11-06 applier 条目循环统一走 _eachAIRow（主写回逐条落账）：取真实的循环帮手与 localActions 那一段
  vm.runInContext(sourceNode('modules/ai-change-applier/core.js',x=>x.type==='FunctionDeclaration'&&x.id&&x.id.name==='_eachAIRow'),s);
  const expr=sourceNode('modules/ai-change-applier/core.js',x=>x.type==='CallExpression'&&x.callee&&x.callee.type==='Identifier'&&x.callee.name==='_eachAIRow'&&x.arguments[1]&&x.arguments[1].type==='Literal'&&x.arguments[1].value==='localActions');

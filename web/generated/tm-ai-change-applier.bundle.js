@@ -401,6 +401,7 @@
     var _syncCoreVarSideEffects = _PathUtils && _PathUtils.syncCoreVarSideEffects;
     var _deriveLabel = _PathUtils && _PathUtils.deriveLabel;
     var _findDivisionByNameOrId = _PathUtils && _PathUtils.findDivisionByNameOrId;
+    var _findDivisionForAI = _PathUtils && _PathUtils.findDivisionByNameFuzzy || _findDivisionByNameOrId;
     var _findInTreeDeep = _PathUtils && _PathUtils.findInTreeDeep;
     var _recordCharChange = _PathUtils && _PathUtils.recordCharChange;
     var _recordToTurnChanges = _PathUtils && _PathUtils.recordToTurnChanges;
@@ -476,7 +477,7 @@
           return i && (i.name === identifier || i.id === identifier);
         });
       } else if (category === "region" || category === "division") {
-        return _findDivisionByNameOrId(G, identifier);
+        return _findDivisionForAI(G, identifier);
       }
       return null;
     }
@@ -1363,6 +1364,7 @@
       _FiscalPosting.begin();
       var _validatorBaseline = _captureValidatorBaseline(G);
       var _deathNormalization = typeof global.normalizeAIWriteBackDeaths === "function" ? global.normalizeAIWriteBackDeaths(aiOutput, { source: "applyAITurnChanges" }) : { added: [], routed: [], failed: [], normalized: 0 };
+      _normalizeFiscalAltShape(aiOutput);
       if (typeof preflightAIWriteBack === "function") preflightAIWriteBack(aiOutput, { source: "applyAITurnChanges" });
       if (!G._turnReport) G._turnReport = [];
       var applied = {
@@ -1459,7 +1461,7 @@
       });
       _eachAIRow(aiOutput, "localActions", aiOutput.localActions, applied, function(la, localActionIndex) {
         if (!la || !la.region || !la.type) return;
-        var div = _findDivisionByNameOrId(G, la.region);
+        var div = _findDivisionForAI(G, la.region);
         if (!div) {
           applied.failed.push({ localAction: la, reason: "region not found" });
           return;
@@ -2065,6 +2067,10 @@
       })();
       _eachAIRow(aiOutput, "fiscal_adjustments", aiOutput.fiscal_adjustments, applied, function(fa, fiscalIndex) {
         if (!fa) return;
+        if (fa._dupOfTransfer) {
+          G._turnReport.push({ type: "fiscal_adj_dedup", target: fa.target, kind: fa.kind, resource: fa.resource || "money", name: fa.name || "", requested: Math.abs(parseFloat(fa.amount) || 0), dupOf: fa._dupOfTransfer, reason: "与同批央地调拨同一笔，按调拨落", turn: G.turn || 0 });
+          return;
+        }
         if (fa.target != null) {
           var _ft = String(fa.target).trim();
           if (/^(太仓|太仓库|国库|户部库|外库|公帑|公库|guoku|taicang|taicangku)$/i.test(_ft)) fa.target = "guoku";
@@ -2141,7 +2147,7 @@
           fiscalStockTarget = G.neitang;
         } else if (/^province:/.test(fa.target)) {
           var provName = fa.target.replace(/^province:/, "");
-          var div = _findDivisionByNameOrId(G, provName);
+          var div = _findDivisionForAI(G, provName);
           if (div) {
             if (!div.extraFiscal) div.extraFiscal = { income: [], expense: [] };
             target = div.extraFiscal;
@@ -2381,7 +2387,7 @@
         if (!ru) return;
         var identifier = ru.id || ru.name;
         if (!identifier) return;
-        var div = _findDivisionByNameOrId(G, identifier);
+        var div = _findDivisionForAI(G, identifier);
         if (!div) {
           applied.failed.push({ region_update: ru, reason: "region not found" });
           return;
@@ -2675,6 +2681,9 @@
     }
     function preflightAIWriteBack(aiOutput, opts) {
       return _modules.reconcile.preflightAIWriteBack.apply(this, arguments);
+    }
+    function _normalizeFiscalAltShape(aiOutput) {
+      return _modules.reconcile._normalizeFiscalAltShape.apply(this, arguments);
     }
     function _applyBattleResult(G, aiOutput, applied) {
       return _modules.reconcile._applyBattleResult.apply(this, arguments);
@@ -4019,23 +4028,7 @@
       var narrative = _getNarrativeText(aiOutput);
       if (!narrative) return;
       function parseNum(s, mult) {
-        var cnMap = { "零": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10, "百": 100, "千": 1e3, "万": 1e4 };
-        var n = parseFloat(s);
-        if (isNaN(n) || n <= 0) {
-          n = 0;
-          var prev = 0;
-          for (var i = 0; i < s.length; i++) {
-            var ch = s.charAt(i);
-            if (cnMap[ch] != null) {
-              if (ch === "十" || ch === "百" || ch === "千" || ch === "万") prev = (prev || 1) * cnMap[ch];
-              else prev = prev * 10 + cnMap[ch];
-            }
-          }
-          n = prev;
-        }
-        if (mult === "万") n *= 1e4;
-        else if (mult === "千") n *= 1e3;
-        return n;
+        return _amountOf(s, mult);
       }
       var addVerbs = "招募|募兵|招兵|增兵|扩军|新建|添募|添兵|增编|拨补|增添";
       var cutVerbs = "裁汰|裁军|裁撤|遣散|罢遣|裁革|削减|裁减";
@@ -4046,6 +4039,7 @@
         while ((m = pat.exec(narrative)) !== null) {
           var n = parseNum(m[2], m[3] || "");
           if (n < 100) continue;
+          if (_notLedgerAmount(narrative, m.index + m[0].length)) continue;
           arr.push({ kind, verb: m[1], num: n, raw: m[0] });
         }
         return arr;
@@ -4421,6 +4415,80 @@
       for (var i = 0; i < arr.length; i++) if (text.indexOf(arr[i]) >= 0) return arr[i];
       return null;
     }
+    var _CN_DIGIT = {
+      "零": 0,
+      "〇": 0,
+      "一": 1,
+      "二": 2,
+      "两": 2,
+      "三": 3,
+      "四": 4,
+      "五": 5,
+      "六": 6,
+      "七": 7,
+      "八": 8,
+      "九": 9,
+      "壹": 1,
+      "贰": 2,
+      "叁": 3,
+      "肆": 4,
+      "伍": 5,
+      "陆": 6,
+      "柒": 7,
+      "捌": 8,
+      "玖": 9
+    };
+    var _CN_SMALL = { "十": 10, "拾": 10, "百": 100, "佰": 100, "千": 1e3, "仟": 1e3 };
+    function _localAmount(s) {
+      s = String(s == null ? "" : s).replace(/\s+/g, "");
+      if (!s) return 0;
+      var arabic = /^[+\-]?(\d+(?:\.\d+)?)(亿|万|千|百|十)?$/.exec(s);
+      if (arabic) return parseFloat(arabic[1]) * ({ "亿": 1e8, "万": 1e4, "千": 1e3, "百": 100, "十": 10 }[arabic[2]] || 1);
+      var total = 0, section = 0, num = 0;
+      for (var i = 0; i < s.length; i++) {
+        var ch = s.charAt(i);
+        if (_CN_DIGIT[ch] != null) num = _CN_DIGIT[ch];
+        else if (_CN_SMALL[ch]) {
+          section += (num || 1) * _CN_SMALL[ch];
+          num = 0;
+        } else if (ch === "万") {
+          total += (section + num || 1) * 1e4;
+          section = 0;
+          num = 0;
+        } else if (ch === "亿") {
+          total = (total + section + num || 1) * 1e8;
+          section = 0;
+          num = 0;
+        } else return 0;
+      }
+      return total + section + num;
+    }
+    function _amountOf(numStr, mult) {
+      var s = String(numStr == null ? "" : numStr) + (mult || "");
+      var parser = global.TMNumberParser;
+      if (parser && typeof parser.parseNumber === "function") {
+        var parsed = parser.parseNumber(s);
+        if (parsed && parsed.ok && isFinite(parsed.value)) return Math.abs(parsed.value);
+      }
+      return Math.abs(_localAmount(s));
+    }
+    function _quotedAt(text, index) {
+      var para = text.slice(0, index).split("\n").pop();
+      var open = 0, ascii = 0;
+      for (var i = 0; i < para.length; i++) {
+        var ch = para.charAt(i);
+        if (ch === "“" || ch === "「" || ch === "『") open++;
+        else if ((ch === "”" || ch === "」" || ch === "』") && open > 0) open--;
+        else if (ch === '"') ascii++;
+      }
+      return open > 0 || ascii % 2 === 1;
+    }
+    var _NOT_LEDGER_CLAUSE = /请|乞|恳|索|求|讨要|要求|欲|拟|商议|提议|建议|计划|打算|准备|若|倘|假如|如若|如果|风闻|听闻|闻报|闻知|传闻|传言|谣言|据传|探得|探知|得报|细作|谍报/;
+    function _notLedgerAmount(text, endIndex) {
+      if (_quotedAt(text, endIndex)) return true;
+      var clause = text.slice(0, endIndex).split(/[。！？；;\n，,]/).pop();
+      return _NOT_LEDGER_CLAUSE.test(clause);
+    }
     function _validateDiplomacyConsistency(G, aiOutput, applied) {
       if (!G || !aiOutput) return;
       var narrative = _getNarrativeText(aiOutput);
@@ -4536,8 +4604,8 @@
       if (!G || !aiOutput) return;
       var narrative = _getNarrativeText(aiOutput);
       if (!narrative) return;
-      var buildKw = _firstHit(narrative, ["兴工", "督造", "敕造", "竣工", "落成", "营建", "营造", "重建", "修缮", "整修", "修陵", "治水", "河工", "堰塞", "筑城", "筑堡", "铸钱", "铸器", "造船", "试制"]);
-      var destroyKw = _firstHit(narrative, ["烧毁", "毁", "摧", "颓", "坍", "圮", "废墟", "焚毁"]);
+      var buildKw = _firstAssertedHit(narrative, ["兴工", "督造", "敕造", "竣工", "落成", "营建", "营造", "重建", "修缮", "整修", "修陵", "治水", "河工", "堰塞", "筑城", "筑堡", "铸器", "造船", "试制"]);
+      var destroyKw = _firstAssertedHit(narrative, ["烧毁", "焚毁", "拆毁", "毁坏", "冲毁", "毁于", "坍塌", "倒塌", "崩塌", "圮毁", "坍圮", "颓圮", "倾圮", "化为废墟", "夷为平地"]);
       if (!buildKw && !destroyKw) return;
       var hasRelevant = (aiOutput.changes || []).some(function(c) {
         var p = c && c.path || "";
@@ -4605,8 +4673,9 @@
       if (!G || !aiOutput) return;
       var narrative = _getNarrativeText(aiOutput);
       if (!narrative) return;
-      var crisisKw = _firstHit(narrative, ["银荒", "钱荒", "钞贱", "通胀", "铜贵", "银贵", "物价腾贵", "米价踊贵", "货贵", "钱贱"]);
-      var reformKw = _firstHit(narrative, ["币改", "换钞", "行钞", "行银", "铸大钱", "改铸", "禁银", "禁铜", "解禁", "弛禁"]);
+      var currencyText = narrative.replace(/钞关/g, "税关");
+      var crisisKw = _firstAssertedHit(currencyText, ["银荒", "钱荒", "钞贱", "通胀", "铜贵", "银贵", "物价腾贵", "米价踊贵", "货贵", "钱贱"]);
+      var reformKw = _firstAssertedHit(currencyText, ["币改", "换钞", "行钞", "行宝钞", "发行宝钞", "印造宝钞", "印造新钞", "铸大钱", "改铸", "禁银", "禁铜", "弛银禁", "弛铜禁", "开铜禁"]);
       if (!crisisKw && !reformKw) return;
       var hasUpdate = (aiOutput.changes || []).some(function(c) {
         var p = c && c.path || "";
@@ -4804,29 +4873,7 @@
       if (aiOutput.event && aiOutput.event.desc) narrativeText += String(aiOutput.event.desc) + "\n";
       if (!narrativeText) return;
       function _parseNum(numStr, mult) {
-        var cnMap = { "零": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "两": 2, "壹": 1, "贰": 2, "叁": 3, "肆": 4, "伍": 5, "陆": 6, "柒": 7, "捌": 8, "玖": 9 };
-        var n = parseFloat(numStr);
-        if (!isNaN(n) && n > 0) {
-          if (/万$/.test(numStr)) n *= 1e4;
-          else if (/千$/.test(numStr)) n *= 1e3;
-          else if (/百$/.test(numStr)) n *= 100;
-          else if (/十$/.test(numStr)) n *= 10;
-        } else {
-          n = 0;
-          for (var i = 0; i < numStr.length; i++) {
-            var ch = numStr.charAt(i);
-            if (cnMap[ch] != null) n = n * 10 + cnMap[ch];
-            else if (ch === "十") n = (n || 1) * 10;
-            else if (ch === "百") n = (n || 1) * 100;
-            else if (ch === "千") n = (n || 1) * 1e3;
-            else if (ch === "万") n = (n || 1) * 1e4;
-          }
-        }
-        if (mult === "万") n *= 1e4;
-        else if (mult === "千") n *= 1e3;
-        else if (mult === "百") n *= 100;
-        else if (mult === "十") n *= 10;
-        return n;
+        return _amountOf(numStr, mult);
       }
       var mentioned = [];
       var outflowVerbs = "支银|支出|支付|支取|赐|赏|发|拨|赈|征|没收|缴获|贡|赔|罚没|献|输|筹|济|捐|赠|颁|犒|赠送|耗费|花费|花|靡费|费|拨付|拨给|拨入|拨内帑|拨内库|划拨|调拨|发付|发给|发支|出库|起解|起运|解送|解部|解到|报销|发还|分给|拨与|赏给|犒赏|犒军|赈济|赈灾|赈给|安抚|抚恤|抚慰|支应|支给|支用|支放|支发|支领|动支|动用|提取|提用|划支|划归|经费|靡费|开支|开销|耗用";
@@ -4842,6 +4889,7 @@
           var unit = m[4];
           var amt = _parseNum(numStr, mult);
           if (!amt || amt < 100) continue;
+          if (_notLedgerAmount(narrativeText, m.index + m[0].length)) continue;
           var resType = unit === "石" || unit === "斛" || unit === "斗" ? "grain" : unit === "匹" ? "cloth" : "money";
           mentioned.push({ action, amount: amt, resource: resType, kind, raw: m[0] });
         }
@@ -4860,6 +4908,7 @@
             })) continue;
             var amt = _parseNum(m[2], "万");
             if (!amt || amt < 1e3) continue;
+            if (_notLedgerAmount(narrativeText, m.index + m[0].length)) continue;
             mentioned.push({ action: m[1], amount: amt, resource: "money", kind, raw, _loose: true });
           }
         };
@@ -5747,6 +5796,49 @@
       if (/^(expense|expenditure|支出|开支|耗费|拨支|出项)$/i.test(s)) return "expense";
       return s === "income" || s === "expense" ? s : "";
     }
+    var _FA_ALT_OUT = /拨|发放|发帑|发银|支|赈|犒|赏|赐|给|付|偿|修|筑|造|建|购|买|采办|转运|运脚|军费|饷|济|恤|贴/;
+    var _FA_ALT_IN = /征|收|入库|纳|捐|鬻|卖|售|抄没|籍没|罚|没入|进奉|上缴|解送|解京/;
+    var _REGION_NAME_SUFFIX = /(承宣布政使司|布政使司|行都指挥使司|都指挥使司|宣慰使司|宣慰司|宣抚司|省)$/;
+    function _normalizeFiscalAltShape(output) {
+      var rows = output && Array.isArray(output.fiscal_adjustments) ? output.fiscal_adjustments : [];
+      var transfers = output && Array.isArray(output.central_local_actions) ? output.central_local_actions : [];
+      var changed = 0;
+      rows.forEach(function(fa) {
+        if (!fa || typeof fa !== "object" || fa.target != null || fa.kind != null) return;
+        var subject = String(fa.subject || fa.account || fa.treasury || "").trim();
+        var amount = parseFloat(fa.amount);
+        if (!subject || !isFinite(amount) || amount === 0) return;
+        var target = /内帑|内库|内承运|私帑|帝室|御库/.test(subject) ? "neitang" : /太仓|国库|户部|外库|公帑|公库/.test(subject) ? "guoku" : "";
+        if (!target) return;
+        var desc = String(fa.action || fa.name || "").trim(), note = String(fa.note || fa.reason || "").trim();
+        var words = desc + " " + note, out = _FA_ALT_OUT.test(words), inn = _FA_ALT_IN.test(words);
+        var kind = amount < 0 ? "expense" : out && !inn ? "expense" : inn && !out ? "income" : "";
+        if (!kind) return;
+        fa._altShape = { subject: fa.subject, action: fa.action, amount: fa.amount, note: fa.note };
+        fa.target = target;
+        fa.kind = kind;
+        if (!fa.resource) fa.resource = /粮|米|麦|粟|谷/.test(subject + desc) ? "grain" : /布|绢|帛|缎|棉/.test(subject + desc) ? "cloth" : "money";
+        fa.amount = Math.abs(amount);
+        fa.action = "add";
+        if (!fa.name) fa.name = desc || subject;
+        if (!fa.reason) fa.reason = note || desc;
+        changed++;
+        if (kind !== "expense") return;
+        var text = subject + " " + desc + " " + note;
+        var dup = transfers.filter(function(t) {
+          if (!t || typeof t !== "object") return false;
+          if (!/transfer|grant|下拨|拨银|发帑|赈/.test(String(t.action || t.type || t.kind || t.policyId || ""))) return false;
+          var from = String(t.fromAccount || "guoku.money").split(".");
+          if (from[0] !== target || (from[1] || "money") !== fa.resource) return false;
+          var tAmt = parseFloat(t.amount || t.money || t.silver);
+          if (!(tAmt > 0) || Math.abs(tAmt - fa.amount) > fa.amount * 0.01) return false;
+          var region = String(t.regionName || t.region || t.target || t.province || "").trim().replace(_REGION_NAME_SUFFIX, "");
+          return region.length >= 2 && text.indexOf(region) >= 0;
+        })[0];
+        if (dup) fa._dupOfTransfer = String(dup.regionName || dup.region || dup.target || dup.province || "") + " " + (parseFloat(dup.amount || dup.money || dup.silver) || "");
+      });
+      return changed;
+    }
     function preflightAIWriteBack(aiOutput, opts) {
       var G = global.GM;
       if (!G || !aiOutput || typeof aiOutput !== "object") return aiOutput;
@@ -6033,6 +6125,16 @@
         return row && row.name != null && String(row.name).trim() === raw;
       });
       if (byName.length === 1) return byName[0];
+      if (kind === "region" && byName.length === 0) {
+        var pathUtils = global.TM && global.TM.AIChange && global.TM.AIChange.PathUtils;
+        var fuzzy = pathUtils && typeof pathUtils.findDivisionByNameFuzzy === "function" ? pathUtils.findDivisionByNameFuzzy(global.GM, raw) : null;
+        if (fuzzy) {
+          var same = rows.filter(function(row) {
+            return row && fuzzy.id != null && row.id != null && String(row.id) === String(fuzzy.id);
+          });
+          return same.length ? same[0] : fuzzy;
+        }
+      }
       fail({
         field,
         index,
@@ -6167,6 +6269,7 @@
       _validateIdentityAgreement(G, aiOutput, failures);
       var detached = _tmCloneWriteback(aiOutput);
       _normalizeCharacterUpdateAliases(detached, failures);
+      _normalizeFiscalAltShape(detached);
       var previousCollector = _tmPreflightCollector;
       var previousSideEffects = _tmPreflightSideEffects;
       var previousContext = _tmPreflightContext;
@@ -6767,6 +6870,7 @@
       _applyRegentDecisions,
       preflightAIWriteBack,
       validateAIWriteBackBatch,
+      _normalizeFiscalAltShape,
       _applyBattleResult,
       _applyFiscalDeficitPenalties,
       _hasInstantArrivalRule,

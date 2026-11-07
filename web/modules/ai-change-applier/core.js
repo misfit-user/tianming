@@ -19,6 +19,8 @@ export function createCore(deps) {
   var _syncCoreVarSideEffects   = _PathUtils && _PathUtils.syncCoreVarSideEffects;
   var _deriveLabel              = _PathUtils && _PathUtils.deriveLabel;
   var _findDivisionByNameOrId   = _PathUtils && _PathUtils.findDivisionByNameOrId;
+  // AI 写回按名找区划：先精确，再比去掉「承宣布政使司/布政使司/省」等后缀的名字（AI 写「陕西」，区划叫「陕西布政使司」）
+  var _findDivisionForAI        = (_PathUtils && _PathUtils.findDivisionByNameFuzzy) || _findDivisionByNameOrId;
   var _findInTreeDeep           = _PathUtils && _PathUtils.findInTreeDeep;
   var _recordCharChange         = _PathUtils && _PathUtils.recordCharChange;
   var _recordToTurnChanges      = _PathUtils && _PathUtils.recordToTurnChanges;
@@ -86,7 +88,7 @@ export function createCore(deps) {
     } else if (category === 'item') {
       return (G.items||[]).find(function(i){ return i && (i.name === identifier || i.id === identifier); });
     } else if (category === 'region' || category === 'division') {
-      return _findDivisionByNameOrId(G, identifier);
+      return _findDivisionForAI(G, identifier);
     }
     return null;
   }
@@ -993,6 +995,8 @@ export function createCore(deps) {
     var _deathNormalization = (typeof global.normalizeAIWriteBackDeaths === 'function')
       ? global.normalizeAIWriteBackDeaths(aiOutput, { source: 'applyAITurnChanges' })
       : { added: [], routed: [], failed: [], normalized: 0 };
+    // fiscal_adjustments 的另一种写法（subject/action/amount/note）先就地改成标准形状，再过预检（reconcile.js 有详注）
+    _normalizeFiscalAltShape(aiOutput);
     // 确保 _turnReport 存在
     if (typeof preflightAIWriteBack === 'function') preflightAIWriteBack(aiOutput, { source: 'applyAITurnChanges' });
     if (!G._turnReport) G._turnReport = [];
@@ -1095,7 +1099,7 @@ export function createCore(deps) {
     // schema: { region, type:'disaster_relief|public_works_water|public_works_road|education|granary_stockpile|military_prep|charity_local|illicit', amount, reason, proposer }
     _eachAIRow(aiOutput, 'localActions', aiOutput.localActions, applied, function(la, localActionIndex) {
       if (!la || !la.region || !la.type) return;
-      var div = _findDivisionByNameOrId(G, la.region);
+      var div = _findDivisionForAI(G, la.region);
       if (!div) { applied.failed.push({localAction:la, reason:'region not found'}); return; }
       var privateLedger = global.TM && global.TM.CharacterEconomyLedger;
       if (privateLedger && privateLedger.handleLocalDiversion(div, la, localActionIndex, applied.failed, G._turnReport)) return;
@@ -1679,6 +1683,11 @@ export function createCore(deps) {
     })();
     _eachAIRow(aiOutput, 'fiscal_adjustments', aiOutput.fiscal_adjustments, applied, function(fa, fiscalIndex) {
       if (!fa) return;
+      // 与同批央地调拨是同一笔钱（_normalizeFiscalAltShape 认出的），按调拨落，这里不再扣一次
+      if (fa._dupOfTransfer) {
+        G._turnReport.push({ type: 'fiscal_adj_dedup', target: fa.target, kind: fa.kind, resource: fa.resource || 'money', name: fa.name || '', requested: Math.abs(parseFloat(fa.amount) || 0), dupOf: fa._dupOfTransfer, reason: '与同批央地调拨同一笔，按调拨落', turn: G.turn || 0 });   // arch-ok(事件簿留痕·与本段 fiscal_adj_rejected 同一写法)
+        return;
+      }
       // ★ fiscal 容差归一(2026-06-02·bug A)：AI 常用中文/自然名指账户与收支·若不归一则 target 解析为 null·
       //   此条 fiscal 静默漏账(财政死账真凶之一)。映射常见别名到 guoku/neitang/province: 与 income/expense。
       //   ★别名表镜像·改须与 _normTarget(上方 _flagFiscalTransferPairs 内)及 tm-ai-change-applier-reconcile.js:
@@ -1769,7 +1778,7 @@ export function createCore(deps) {
         fiscalStockTarget = G.neitang;
       } else if (/^province:/.test(fa.target)) {
         var provName = fa.target.replace(/^province:/, '');
-        var div = _findDivisionByNameOrId(G, provName);
+        var div = _findDivisionForAI(G, provName);
         if (div) {
           if (!div.extraFiscal) div.extraFiscal = { income: [], expense: [] };
           target = div.extraFiscal;
@@ -2012,7 +2021,7 @@ export function createCore(deps) {
       if (!ru) return;
       var identifier = ru.id || ru.name;
       if (!identifier) return;
-      var div = _findDivisionByNameOrId(G, identifier);
+      var div = _findDivisionForAI(G, identifier);
       if (!div) { applied.failed.push({region_update: ru, reason: 'region not found'}); return; }
       if (ru.updates) regionCount += _mergeUpdatesToEntity(div, ru.updates, 'region_update', div.name || div.id, ru.reason || '', applied.failed);
     });
@@ -2240,6 +2249,7 @@ export function createCore(deps) {
   function _applyDirectiveCompliance(G, aiOutput){ return _modules.reconcile._applyDirectiveCompliance.apply(this, arguments); }
   function _applyRegentDecisions(G, aiOutput){ return _modules.reconcile._applyRegentDecisions.apply(this, arguments); }
   function preflightAIWriteBack(aiOutput, opts){ return _modules.reconcile.preflightAIWriteBack.apply(this, arguments); }
+  function _normalizeFiscalAltShape(aiOutput){ return _modules.reconcile._normalizeFiscalAltShape.apply(this, arguments); }
   function _applyBattleResult(G, aiOutput, applied){ return _modules.reconcile._applyBattleResult.apply(this, arguments); }
   function _applyFiscalDeficitPenalties(G){ return _modules.reconcile._applyFiscalDeficitPenalties.apply(this, arguments); }
   function _hasInstantArrivalRule(G){ return _modules.reconcile._hasInstantArrivalRule.apply(this, arguments); }

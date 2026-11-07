@@ -152,6 +152,34 @@ console.log('===== H·幂等·同回合二次运行不双落账 =====');
   assert(rp2 === rp1, 'H3 _turnReport 不追加重复条目(幂等)');
 })();
 
+// ── I·地块与区划互认（11-07）：地块「陕西」认得区划「陕西布政使司」；府州不连到整省地块 ──
+console.log('===== I·地块与区划互认·去后缀与省级 regionId =====');
+(function () {
+  const ctx = makeCtx();
+  const G = baseG();
+  G.mapData.regions.push({ name: '陕西', id: 'ming-05', ownerName: '明廷' }, { name: '北直隶', id: 'ming-01', ownerName: '明廷' });
+  G.adminHierarchy = { player: { divisions: [
+    { id: 'div-sx', name: '陕西布政使司', level: 'province', regionId: 'ming-05', mapRegionId: 'ming-05', minxin: 40,
+      children: [{ id: 'div-xa', name: '西安府', level: 'prefecture', mapRegionId: 'ming-05' }] },
+    { id: 'div-bz', name: '北直隶总督辖区', level: 'province', regionId: 'ming-01', mapRegionId: 'ming-01',
+      children: [{ id: 'div-st', name: '顺天府', level: 'prefecture', mapRegionId: 'ming-01' }] }
+  ] } };
+  ctx.GM = G;
+  const N = ctx.TM.AIChange.Narrative;
+  const recs = N.regionNarrativeRecords(G);
+  const byId = (id) => recs.find(r => r.id === id);
+  assert(byId('ming-05').adminDiv && byId('ming-05').adminDiv.id === 'div-sx', 'I1 地块「陕西」认得区划「陕西布政使司」（去后缀）');
+  assert(byId('div-sx').mapRegion && byId('div-sx').mapRegion.id === 'ming-05', 'I2 省级区划经 regionId 认得地块');
+  assert(byId('ming-01').adminDiv && byId('ming-01').adminDiv.id === 'div-bz', 'I3 名字认不出时地块经省级 regionId 认得区划');
+  assert(!byId('div-xa').mapRegion && !byId('div-st').mapRegion, 'I4 府州不连到整省地块（不按 mapRegionId 认）');
+  N.applyNarrativeRegionFieldFallback(G, { shizhengji: '命刘诏为陕西巡抚，即日赴任。' });
+  const sx = G.mapData.regions.find(r => r.id === 'ming-05');
+  const div = G.adminHierarchy.player.divisions[0];
+  assert((sx.governor || sx.governorName) === '刘诏', 'I5 地块主官落账');
+  assert((div.governor || div.official) === '刘诏', 'I6 区划「陕西布政使司」主官一并落账（原来按精确名认不出）');
+  assert(!G.adminHierarchy.player.divisions[1].governor, 'I7 别省不受牵连');
+})();
+
 console.log('');
 console.log('[smoke-ledgergate-narrative-fallback] ' + passed + ' passed / ' + failed + ' failed');
 if (failed > 0) process.exit(1);

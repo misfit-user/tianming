@@ -641,25 +641,8 @@ export function createValidators(deps) {
     var narrative = _getNarrativeText(aiOutput);
     if (!narrative) return;
 
-    // 数字解析(中阿混合)
-    function parseNum(s, mult) {
-      var cnMap = {'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,'百':100,'千':1000,'万':10000};
-      var n = parseFloat(s);
-      if (isNaN(n) || n <= 0) {
-        n = 0; var prev = 0;
-        for (var i = 0; i < s.length; i++) {
-          var ch = s.charAt(i);
-          if (cnMap[ch] != null) {
-            if (ch === '十' || ch === '百' || ch === '千' || ch === '万') prev = (prev || 1) * cnMap[ch];
-            else prev = prev * 10 + cnMap[ch];
-          }
-        }
-        n = prev;
-      }
-      if (mult === '万') n *= 10000;
-      else if (mult === '千') n *= 1000;
-      return n;
-    }
+    // 数字解析(中阿混合)：统一读法见 _amountOf
+    function parseNum(s, mult) { return _amountOf(s, mult); }
 
     // 增兵动词 + 减兵动词
     var addVerbs = '招募|募兵|招兵|增兵|扩军|新建|添募|添兵|增编|拨补|增添';
@@ -671,6 +654,7 @@ export function createValidators(deps) {
       while ((m = pat.exec(narrative)) !== null) {
         var n = parseNum(m[2], m[3] || '');
         if (n < 100) continue;
+        if (_notLedgerAmount(narrative, m.index + m[0].length)) continue;
         arr.push({ kind: kind, verb: m[1], num: n, raw: m[0] });
       }
       return arr;
@@ -1111,6 +1095,58 @@ export function createValidators(deps) {
     return null;
   }
 
+  // 叙事里的数目（中文、阿拉伯混写）统一读法：走 TMNumberParser（人口校验已用它），没装载时用同规则的本地读法。
+  // 旧的逐字「乘十加位」把「十二万」读成一百零二万、「一万二千」读成一亿、「四十万三千」读成四十亿，
+  // 钱粮、兵数校验于是报出几十上千倍的「叙事数额」。
+  var _CN_DIGIT = { '零':0, '〇':0, '一':1, '二':2, '两':2, '三':3, '四':4, '五':5, '六':6, '七':7, '八':8, '九':9,
+    '壹':1, '贰':2, '叁':3, '肆':4, '伍':5, '陆':6, '柒':7, '捌':8, '玖':9 };
+  var _CN_SMALL = { '十':10, '拾':10, '百':100, '佰':100, '千':1000, '仟':1000 };
+  function _localAmount(s) {
+    s = String(s == null ? '' : s).replace(/\s+/g, '');
+    if (!s) return 0;
+    var arabic = /^[+\-]?(\d+(?:\.\d+)?)(亿|万|千|百|十)?$/.exec(s);
+    if (arabic) return parseFloat(arabic[1]) * ({ '亿':1e8, '万':1e4, '千':1e3, '百':100, '十':10 }[arabic[2]] || 1);
+    var total = 0, section = 0, num = 0;
+    for (var i = 0; i < s.length; i++) {
+      var ch = s.charAt(i);
+      if (_CN_DIGIT[ch] != null) num = _CN_DIGIT[ch];
+      else if (_CN_SMALL[ch]) { section += (num || 1) * _CN_SMALL[ch]; num = 0; }
+      else if (ch === '万') { total += ((section + num) || 1) * 1e4; section = 0; num = 0; }
+      else if (ch === '亿') { total = (total + section + num || 1) * 1e8; section = 0; num = 0; }
+      else return 0;
+    }
+    return total + section + num;
+  }
+  function _amountOf(numStr, mult) {
+    var s = String(numStr == null ? '' : numStr) + (mult || '');
+    var parser = global.TMNumberParser;
+    if (parser && typeof parser.parseNumber === 'function') {
+      var parsed = parser.parseNumber(s);
+      if (parsed && parsed.ok && isFinite(parsed.value)) return Math.abs(parsed.value);
+    }
+    return Math.abs(_localAmount(s));
+  }
+
+  // 叙事里的数目是不是「本期实发生的账」：引号里的话、请求、打算、假设、风闻，都不是。
+  function _quotedAt(text, index) {
+    var para = text.slice(0, index).split('\n').pop();
+    var open = 0, ascii = 0;
+    for (var i = 0; i < para.length; i++) {
+      var ch = para.charAt(i);
+      if (ch === '“' || ch === '「' || ch === '『') open++;
+      else if ((ch === '”' || ch === '」' || ch === '』') && open > 0) open--;
+      else if (ch === '"') ascii++;
+    }
+    return open > 0 || ascii % 2 === 1;
+  }
+  var _NOT_LEDGER_CLAUSE = /请|乞|恳|索|求|讨要|要求|欲|拟|商议|提议|建议|计划|打算|准备|若|倘|假如|如若|如果|风闻|听闻|闻报|闻知|传闻|传言|谣言|据传|探得|探知|得报|细作|谍报/;
+  // endIndex 取整个匹配的末尾：「得报：……拨内帑十万」里「得」本身就是收入动词，只看匹配之前会漏掉「得报」
+  function _notLedgerAmount(text, endIndex) {
+    if (_quotedAt(text, endIndex)) return true;
+    var clause = text.slice(0, endIndex).split(/[。！？；;\n，,]/).pop();
+    return _NOT_LEDGER_CLAUSE.test(clause);
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   //  激进版·14f-4·外交一致性校验
   //  扫『通使/朝贡/绝交/羁縻/抚夷』·对照 G.facs[].relations / attitude
@@ -1252,8 +1288,10 @@ export function createValidators(deps) {
   function _validateConstructionConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
-    var buildKw = _firstHit(narrative, ['兴工','督造','敕造','竣工','落成','营建','营造','重建','修缮','整修','修陵','治水','河工','堰塞','筑城','筑堡','铸钱','铸器','造船','试制']);
-    var destroyKw = _firstHit(narrative, ['烧毁','毁','摧','颓','坍','圮','废墟','焚毁']);
+    // 只认断言了「本期发生」的说法（_firstAssertedHit 排除打算、假设、往事和「…之权」「…之弊」这类名词用法）；
+    // 毁坏只认成词：单字「毁/颓/摧」会命中「诋毁」「边备倾颓之弊」；「铸钱」多是钱法（「铸钱之权」），不归营造。
+    var buildKw = _firstAssertedHit(narrative, ['兴工','督造','敕造','竣工','落成','营建','营造','重建','修缮','整修','修陵','治水','河工','堰塞','筑城','筑堡','铸器','造船','试制']);
+    var destroyKw = _firstAssertedHit(narrative, ['烧毁','焚毁','拆毁','毁坏','冲毁','毁于','坍塌','倒塌','崩塌','圮毁','坍圮','颓圮','倾圮','化为废墟','夷为平地']);
     if (!buildKw && !destroyKw) return;
     // 检查 changes 中是否含 building / project / item 路径
     var hasRelevant = (aiOutput.changes || []).some(function(c){
@@ -1331,8 +1369,10 @@ export function createValidators(deps) {
   function _validateCurrencyConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
-    var crisisKw = _firstHit(narrative, ['银荒','钱荒','钞贱','通胀','铜贵','银贵','物价腾贵','米价踊贵','货贵','钱贱']);
-    var reformKw = _firstHit(narrative, ['币改','换钞','行钞','行银','铸大钱','改铸','禁银','禁铜','解禁','弛禁']);
+    // 「钞关」是税关不是钞法（「试行钞关」会命中「行钞」）；「行银」「解禁」「弛禁」太泛（「推行银两折色」「海禁解禁」），换成指名钱法的说法。
+    var currencyText = narrative.replace(/钞关/g, '税关');
+    var crisisKw = _firstAssertedHit(currencyText, ['银荒','钱荒','钞贱','通胀','铜贵','银贵','物价腾贵','米价踊贵','货贵','钱贱']);
+    var reformKw = _firstAssertedHit(currencyText, ['币改','换钞','行钞','行宝钞','发行宝钞','印造宝钞','印造新钞','铸大钱','改铸','禁银','禁铜','弛银禁','弛铜禁','开铜禁']);
     if (!crisisKw && !reformKw) return;
     // 检查 changes / fiscal_adjustments / global_state_delta 是否含 currency/silver/copper/inflation
     var hasUpdate = (aiOutput.changes || []).some(function(c){var p=(c&&c.path)||'';return /currenc|silver|copper|inflation|银价|物价/i.test(p);})
@@ -1461,34 +1501,8 @@ export function createValidators(deps) {
     if (aiOutput.event && aiOutput.event.desc) narrativeText += String(aiOutput.event.desc) + '\n';
     if (!narrativeText) return;
 
-    // 中文/阿拉伯混合数字转阿拉伯数字
-    function _parseNum(numStr, mult) {
-      var cnMap = {'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'两':2,'壹':1,'贰':2,'叁':3,'肆':4,'伍':5,'陆':6,'柒':7,'捌':8,'玖':9};
-      var n = parseFloat(numStr);
-      if (!isNaN(n) && n > 0) {
-        // 阿拉伯前缀：检查尾部是否携带量级单位（如"30万"）
-        if (/万$/.test(numStr)) n *= 10000;
-        else if (/千$/.test(numStr)) n *= 1000;
-        else if (/百$/.test(numStr)) n *= 100;
-        else if (/十$/.test(numStr)) n *= 10;
-      } else {
-        // 纯中文数字解析
-        n = 0;
-        for (var i = 0; i < numStr.length; i++) {
-          var ch = numStr.charAt(i);
-          if (cnMap[ch] != null) n = n * 10 + cnMap[ch];
-          else if (ch === '十') n = (n || 1) * 10;
-          else if (ch === '百') n = (n || 1) * 100;
-          else if (ch === '千') n = (n || 1) * 1000;
-          else if (ch === '万') n = (n || 1) * 10000;
-        }
-      }
-      if (mult === '万') n *= 10000;
-      else if (mult === '千') n *= 1000;
-      else if (mult === '百') n *= 100;
-      else if (mult === '十') n *= 10;
-      return n;
-    }
+    // 中文/阿拉伯混合数字转阿拉伯数字：统一读法见 _amountOf
+    function _parseNum(numStr, mult) { return _amountOf(numStr, mult); }
 
     var mentioned = [];
     // ★ 双向匹配：支出动词(outflow) + 收入动词(inflow)·分别标记 kind
@@ -1513,6 +1527,7 @@ export function createValidators(deps) {
         var unit = m[4];
         var amt = _parseNum(numStr, mult);
         if (!amt || amt < 100) continue;
+        if (_notLedgerAmount(narrativeText, m.index + m[0].length)) continue;
         var resType = (unit === '石' || unit === '斛' || unit === '斗') ? 'grain'
                     : (unit === '匹') ? 'cloth'
                     : 'money';
@@ -1539,6 +1554,7 @@ export function createValidators(deps) {
           if (mentioned.some(function(x){return x.raw === raw;})) continue;
           var amt = _parseNum(m[2], '万');
           if (!amt || amt < 1000) continue;  // 兜底匹配·阈值更高(1000+ 单位=两)·避免误抓"X 万人/X 万亩"
+          if (_notLedgerAmount(narrativeText, m.index + m[0].length)) continue;
           mentioned.push({ action: m[1], amount: amt, resource: 'money', kind: kind, raw: raw, _loose: true });
         }
       }

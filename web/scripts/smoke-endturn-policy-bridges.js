@@ -355,6 +355,17 @@ function pushMemorial(ctx, spec) {
   assert(edict.calls.forceLevy[0].regionId === 'shanxi', 'force levy should resolve 山西 to region id');
   assert(edict.calls.forceLevy[0].amount === 30000, 'force levy should parse the levy amount');
 
+  // AI 结构化调拨常写省名简称（「陕西」），区划真名是「陕西布政使司」：照写回同一规则去后缀再认
+  // （11-06 第一回合实遇，旧码报「缺少下拨区域或金额」，十万两赈银没拨出去）。
+  edict.ctx.TM = edict.ctx.TM || {};
+  edict.ctx.TM.AIChange = { PathUtils: { findDivisionByNameFuzzy: function(G, name) { return name === '陕西' ? { id: 'div-sx', name: '陕西布政使司' } : null; } } };
+  const shortTransfer = edict.ctx.EdictParser.tryExecute('诏令：下拨陕西银40000两赈济水灾。',
+    { action: 'transfer_to_region', region: '陕西', amount: 40000, purpose: 'disaster_relief' },
+    { source: 'ai-structured-policy', field: 'central_local_actions', expectedType: 'central_local_finance' });
+  assert(!!shortTransfer.ok, 'AI transfer naming 陕西 should resolve 陕西布政使司: ' + JSON.stringify(shortTransfer).slice(0, 240));
+  assert(edict.calls.transferOrders[edict.calls.transferOrders.length - 1].toRegion === 'div-sx', 'AI transfer by short name should land on 陕西布政使司');
+  delete edict.ctx.TM.AIChange;
+
   const censor = edict.ctx.EdictParser.tryExecute('诏令：派监察御史巡按江南，核其钱粮。', {}, {});
   assert(!!censor.ok, 'central-local edict should dispatch a censor from text');
   assert(edict.calls.censors.length === 1, 'censor edict should call CentralLocalEngine.dispatchCensor');

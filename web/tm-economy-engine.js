@@ -434,22 +434,14 @@
   }
 
   // ── 省一级承载上限以剧本标定为准 ──────────────────────────────────
-  // 三部官方剧本都在每个州（叶子）上给了承载上限 carryingCapacity.historicalCap（单位是口，
-  // 户籍引擎算各州负荷用的也是它），各省自带的上限正好是辖下各州之和。
-  // 旧写法不读这份数，拿下面算式里「耕地五十万、水一百五十万、柴七十五万」这类不分省大小的常数
-  // 当上限：三百万口的路被算成只养得活七十五万，过一回合负荷就到三五倍（绍宋二十八路有二十路、
-  // 天启十八省有十六省「崩溃」），每省又按全国扣一次民心，两回合民心见底、一百七十州同起民变。
-  //
-  // 第一次标定时定下规则，记在 reg.carryingCalibration：
-  //   有州给了上限 → 上限取各州之和；个别州没给的，按它第一次有人时的人口当作大致吃得饱
-  //     （负荷 0.8）折一个上限补进来，此后固定。
-  //   州都没给、省自己给了 → 用省的。
-  //   都没给、省的环境对象上有本引擎自己的耕地面积等实数（剧本 initialCarrying 或测试直接给的）
-  //     → 照旧按算式算绝对数（explicit-model）。
-  //   什么都没有 → 整省按人口、负荷 0.8 折上限。
-  // 除 explicit-model 外，耕地、水、柴薪、卫生这套算式（连同疤痕、技术）只作相对增减：
-  //   上限 × 现在四项里最小的一项 ÷ 标定时最小的一项。住房一项是人口的 1.1 倍，只作展示、
-  //   不进上限——它一进上限，负荷就永远不会低于 0.91。
+  // 官方剧本每州都给了上限 carryingCapacity.historicalCap（单位是口，户籍引擎算州负荷也用它），省的上限取辖下各州之和。
+  // 旧写法拿下面算式里「耕地五十万、水一百五十万、柴七十五万」这类不分省大小的常数当上限：三百万口的路被算成
+  // 只养得活七十五万，绍宋、天启开局大半省份「崩溃」，每省再按全国扣一次民心，两回合民心见底。
+  // 第一次标定时定下规则（reg.carryingCalibration）：有州给了上限 → 取各州之和，个别没给的州按它第一次有人时的人口、
+  //   负荷 0.8 立一个固定上限；州都没给、省给了 → 用省的；都没给、但省上有本引擎自己的耕地面积等实数
+  //   （剧本 initialCarrying 或测试直接给的）→ 照旧按算式算绝对数（explicit-model）。
+  // 除 explicit-model 外，算式连同疤痕、技术只作相对增减：上限 × 现在耕地/水/柴薪/卫生四项最小值 ÷ 标定时最小值。
+  // 住房是人口的 1.1 倍，只作展示、不进上限（进了负荷就永远不低于 0.91）。
   var ENV_UNCALIBRATED_START_LOAD = 0.8;
 
   function _envLeafCalibratedCap(node) {
@@ -463,30 +455,23 @@
     return isFinite(cap) && cap > 0 ? cap : 0;
   }
 
+  // 耕地、水、柴薪、卫生四项（住房随人口，另算）
   function _envModelSupports(reg, techEra) {
     var scars = reg.ecoScars || {};
     var yieldMult = _envFiniteNumber(_getTechEraMult('agriculture', techEra, 'yieldMult'), 1.0);
     var irrigMult = _envFiniteNumber(_getTechEraMult('irrigation', techEra, 'capMult'), 1.0);
     var seedMult = _envFiniteNumber(_getTechEraMult('seedSelection', techEra, 'yieldMult'), 1.0);
-    // 1) 土地
     var farmland = _envFiniteNumber(reg.arableArea, 500000) * _envFiniteNumber(reg.soilFertility, 0.85) * yieldMult * seedMult * irrigMult
                    - (scars.salinization || 0) * 200000
                    - (scars.soilErosion || 0) * 150000;
-    // 2) 水
     var water = _envFiniteNumber(reg.aquiferLevel, 1.0) * 1500000 * _envFiniteNumber(reg.riverFlow, 1.0)
                 - (scars.waterTableDrop || 0) * 300000
                 - (scars.riverSilting || 0) * 200000;
-    // 3) 燃料
     var fuel = _envFiniteNumber(reg.forestArea, 500000) * 1.5 + _envFiniteNumber(reg.coalReserve, 0) * 3
                - (scars.deforestation || 0) * 400000;
-    // 5) 卫生（4 住房随人口，另算）
     var sani = 1000000 - (scars.urbanSewageOverload || 0) * 500000;
-    return {
-      farmland: Math.max(100000, farmland),
-      water: Math.max(100000, water),
-      fuel: Math.max(50000, fuel),
-      sanitation: Math.max(100000, sani)
-    };
+    return { farmland: Math.max(100000, farmland), water: Math.max(100000, water),
+             fuel: Math.max(50000, fuel), sanitation: Math.max(100000, sani) };
   }
 
   function _envCarryingCalibration(reg, scope) {
@@ -494,31 +479,20 @@
     if (calib && typeof calib === 'object' && (calib.rule === 'calibrated' || calib.rule === 'explicit-model')) return calib;
     var hasLeafCap = (scope.rows || []).some(function(row) { return _envLeafCalibratedCap(row.leaf) > 0; });
     var explicitModel = isFinite(_envFiniteNumber(reg.arableArea, NaN));
-    calib = {
-      rule: (hasLeafCap || _envLeafCalibratedCap(scope.owner) > 0 || !explicitModel) ? 'calibrated' : 'explicit-model',
-      turn: Number(global.GM && global.GM.turn) || 0,
-      modelBase: 0,
-      anchors: {}
-    };
-    reg.carryingCalibration = calib;
-    return calib;
+    var rule = (hasLeafCap || _envLeafCalibratedCap(scope.owner) > 0 || !explicitModel) ? 'calibrated' : 'explicit-model';
+    reg.carryingCalibration = { rule: rule, turn: Number(global.GM && global.GM.turn) || 0, modelBase: 0, anchors: {} };
+    return reg.carryingCalibration;
   }
 
   function _envCalibratedCap(scope, calib) {
-    if (!calib.anchors || typeof calib.anchors !== 'object') calib.anchors = {};
-    var anchors = calib.anchors;
-    var total = 0;
-    var covered = 0;
-    var uncovered = [];
+    var anchors = calib.anchors && typeof calib.anchors === 'object' ? calib.anchors : (calib.anchors = {});
+    var total = 0, covered = 0, uncovered = [];
     (scope.rows || []).forEach(function(row) {
       var cap = _envLeafCalibratedCap(row.leaf);
-      if (cap > 0) { total += cap; covered++; }
-      else uncovered.push(row);
+      if (cap > 0) { total += cap; covered++; } else uncovered.push(row);
     });
-    if (!covered) {
-      var own = _envLeafCalibratedCap(scope.owner);
-      if (own > 0) return own;
-    }
+    var own = covered ? 0 : _envLeafCalibratedCap(scope.owner);
+    if (own > 0) return own;
     uncovered.forEach(function(row) {
       var anchor = Number(anchors[row.id]);
       if (!(anchor > 0)) {
@@ -527,12 +501,10 @@
       }
       total += anchor;
     });
-    if (!(total > 0)) {
-      var whole = Number(anchors.__province);
-      if (!(whole > 0) && scope.mouths > 0) whole = anchors.__province = Math.round(scope.mouths / ENV_UNCALIBRATED_START_LOAD);
-      total = whole > 0 ? whole : 1;
-    }
-    return total;
+    if (total > 0) return total;
+    var whole = Number(anchors.__province);
+    if (!(whole > 0) && scope.mouths > 0) whole = anchors.__province = Math.round(scope.mouths / ENV_UNCALIBRATED_START_LOAD);
+    return whole > 0 ? whole : 1;
   }
 
   function _recomputeRegionCarrying(rid, reg, options) {
@@ -541,40 +513,22 @@
     if (!reg.ecoScars || typeof reg.ecoScars !== 'object') reg.ecoScars = {};
     var scope = _environmentPopulationScope(rid);
     var popCount = scope.mouths;
-    var techEra = G.environment ? G.environment.techEra : '唐';
-    var model = _envModelSupports(reg, techEra);
+    var model = _envModelSupports(reg, G.environment ? G.environment.techEra : '唐');
     var calib = _envCarryingCalibration(reg, scope);
-    // 4) 住房：人口的 1.1 倍（人口口径与省辖叶级合计一致）
-    reg.carrying.housingSupport = Math.max(0, popCount * 1.1);
-    if (calib.rule === 'explicit-model') {
-      reg.carrying.farmlandSupport = model.farmland;
-      reg.carrying.waterSupport = model.water;
-      reg.carrying.fuelSupport = model.fuel;
-      reg.carrying.sanitationSupport = model.sanitation;
-      reg.carryingMax = Math.min(
-        reg.carrying.farmlandSupport,
-        reg.carrying.waterSupport,
-        reg.carrying.fuelSupport,
-        reg.carrying.housingSupport,
-        reg.carrying.sanitationSupport
-      );
-    } else {
-      var modelMin = Math.min(model.farmland, model.water, model.fuel, model.sanitation);
-      if (!(Number(calib.modelBase) > 0)) calib.modelBase = modelMin;
+    var scale = 1;
+    if (calib.rule !== 'explicit-model') {
+      if (!(Number(calib.modelBase) > 0)) calib.modelBase = Math.min(model.farmland, model.water, model.fuel, model.sanitation);
       var cap = _envCalibratedCap(scope, calib);
-      var scale = cap / calib.modelBase;
       calib.cap = Math.round(cap);
-      reg.carrying.farmlandSupport = model.farmland * scale;
-      reg.carrying.waterSupport = model.water * scale;
-      reg.carrying.fuelSupport = model.fuel * scale;
-      reg.carrying.sanitationSupport = model.sanitation * scale;
-      reg.carryingMax = Math.min(
-        reg.carrying.farmlandSupport,
-        reg.carrying.waterSupport,
-        reg.carrying.fuelSupport,
-        reg.carrying.sanitationSupport
-      );
+      scale = cap / calib.modelBase;
     }
+    reg.carrying.farmlandSupport = model.farmland * scale;
+    reg.carrying.waterSupport = model.water * scale;
+    reg.carrying.fuelSupport = model.fuel * scale;
+    reg.carrying.sanitationSupport = model.sanitation * scale;
+    reg.carrying.housingSupport = Math.max(0, popCount * 1.1); // 人口口径与省辖叶级合计一致
+    reg.carryingMax = Math.min(reg.carrying.farmlandSupport, reg.carrying.waterSupport, reg.carrying.fuelSupport, reg.carrying.sanitationSupport);
+    if (calib.rule === 'explicit-model') reg.carryingMax = Math.min(reg.carryingMax, reg.carrying.housingSupport);
 
     // currentLoad 是派生值。持续政策通过明确的缓解量作用于派生负载，
     // 而不是先写 currentLoad、再被本函数立即覆盖。

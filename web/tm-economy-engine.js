@@ -662,7 +662,7 @@
       sourceSystem: 'environment-overload',
       kind: 'environmentOverload',
       deltaTrue: equivalent,
-      targetRegions: rows.map(function(row) { return { region: row.id, weight: 1, deltaTrue: perLeafDelta }; }),
+      targetRegions: rows.map(function(row) { return { region: row.id, weight: 1, deltaTrue: perLeafDelta, exact: true }; }), // 精确认州，免得按「包含」连扣别州
       intensity: level >= 3 ? 0.8 : 0.5,
       confidence: 0.9,
       reason: name + (level >= 3 ? '人口远超地力所能养，生计崩坏' : '人口超出地力所能养，乡里饥馑')

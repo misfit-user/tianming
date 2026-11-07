@@ -425,8 +425,11 @@
         r.status = 'dispersed';
       }
     });
-    // 清理已结束的 (保留最近 30)
-    mx.revolts = mx.revolts.slice(-30);
+    // 只清已结束的（留最近 30 条），进行中的一律留着。旧写法 slice(-30) 连进行中的一起挤掉：
+    // 民变一多，早起的几股被挤出列表，实体层见源民变「出档」就按覆灭清掉它的势力和军队，没人镇压它自己没了；
+    // 民心链见它不在，冷却过后又在原地另生一股。
+    var _endedKeep = mx.revolts.filter(function(r) { return r && r.status !== 'ongoing'; }).slice(-30);
+    mx.revolts = mx.revolts.filter(function(r) { return r && (r.status === 'ongoing' || _endedKeep.indexOf(r) >= 0); });
   }
 
   function suppressRevolt(revoltId, troops) {
@@ -1129,6 +1132,73 @@
   //  P1-8 · 民心 7 源补完
   // ═══════════════════════════════════════════════════════════════════
 
+  // 民变不宁只扰本省：每股民变给它所在省（顶级区划）的各州逐一记一笔 −0.15×月数，每州吃的量与旧写法相同。
+  // 旧写法不给地点，账本便按全国扣：每股民变全国每州 −0.15，民变越多全国越跌、跌破线的州又起新民变，越滚越大
+  // （天启开局一回合十七股，这一条全国 −2.55；绍宋修承载前一百七十股，这一条每回合二十多点，直到撞上来源累计额度）。
+  // 账本「来源累计」记折成全国的量（本省人口占全国的比重 × 这一笔），与环境过载同一规矩。
+  // 认不出所在省的民变（地名对不上任何州省，或重名分属两省）把原地名交给账本照旧去配；配不上时账本按它的既有规矩全国兜底。
+  // 根本没有地方的（空地名或 unknown）不扣。
+  function _revoltSecurityMinxin(G, revolts, mr, adj) {
+    var ledger = global.TM && global.TM.MinxinLedger;
+    var IB = global.IntegrationBridge;
+    var tops = (IB && typeof IB.getTopLevelDivisions === 'function' && G.adminHierarchy) ? (IB.getTopLevelDivisions(G.adminHierarchy, 'player') || []) : [];
+    if (!ledger || typeof ledger.recordAndApply !== 'function' || !tops.length) {
+      adj('security', -0.15 * mr * revolts.length, '民变不宁'); // 账本或区划不在（裸跑）：照旧
+      return;
+    }
+    function key(v) { return String(v == null ? '' : v).replace(/\s+/g, '').toLowerCase(); }
+    function mouthsOf(div) { // 与账本聚合全国民心时的人口权重同一口径
+      var p = div && div.population;
+      var m = Number(p && typeof p === 'object' ? (p.mouths != null ? p.mouths : p.count) : p);
+      if (!(m > 0)) m = Number(div && div.populationDetail && div.populationDetail.mouths);
+      return m > 0 ? m : 1;
+    }
+    var provinces = tops.map(function(top) {
+      var nodes = [], leaves = [], keys = {};
+      (function walk(node) {
+        if (!node || typeof node !== 'object') return;
+        nodes.push(node);
+        [node.id, node.name, node.regionId, node.mapRegionId].forEach(function(v) { if (key(v)) keys[key(v)] = true; });
+        var kids = Array.isArray(node.children) ? node.children : [];
+        if (kids.length) kids.forEach(walk); else leaves.push(node);
+      })(top);
+      return { top: top, nodes: nodes, leaves: leaves, keys: keys, count: 0, mouths: leaves.reduce(function(s, d) { return s + mouthsOf(d); }, 0) };
+    });
+    var PU = global.TM && global.TM.AIChange && global.TM.AIChange.PathUtils;
+    var fuzzy = PU && (typeof PU.findDivisionByNameFuzzy === 'function' ? PU.findDivisionByNameFuzzy : PU.findDivisionByNameOrId);
+    var unresolved = {};
+    revolts.forEach(function(r) {
+      var k = key(r.region);
+      if (!k || k === 'unknown') return; // 没有地方的民变（旧档里阶层压力生的 unknown）：无处可扰，不扣全国
+      var hits = k ? provinces.filter(function(p) { return p.keys[k]; }) : [];
+      if (!hits.length && k && typeof fuzzy === 'function') { // 「陕西」认「陕西布政使司」
+        var div = null;
+        try { div = fuzzy(G, r.region); } catch (_) {}
+        hits = div ? provinces.filter(function(p) { return p.nodes.indexOf(div) >= 0; }) : [];
+      }
+      if (hits.length === 1) hits[0].count++;
+      else unresolved[r.region || ''] = (unresolved[r.region || ''] || 0) + 1;
+    });
+    var total = provinces.reduce(function(s, p) { return s + p.mouths; }, 0);
+    var wrote = false;
+    provinces.forEach(function(p) {
+      var perLeaf = Math.round(-0.15 * mr * p.count * 100) / 100;
+      if (!perLeaf || !p.leaves.length) return;
+      var equivalent = Math.round(perLeaf * (total > 0 ? p.mouths / total : 1) * 100) / 100 || -0.01; // 账本按两位小数记，再小就被抹成零、整笔不落
+      ledger.recordAndApply(G, {
+        sourceSystem: 'authority-engines', kind: 'security', deltaTrue: equivalent,
+        targetRegions: p.leaves.map(function(d) { return { region: d.id || d.name || d.regionId || d.mapRegionId, weight: 1, deltaTrue: perLeaf, exact: true }; }),
+        intensity: Math.min(1, Math.abs(perLeaf) / 20), confidence: 0.8,
+        reason: (p.top.name || p.top.id || '') + '民变不宁（' + p.count + '股）'
+      }, { source: 'authority-engines', turn: G.turn, deferFinalize: true });
+      wrote = true;
+    });
+    if (wrote && typeof ledger.finalizeBatch === 'function') ledger.finalizeBatch(G, { source: 'authority-engines' });
+    Object.keys(unresolved).forEach(function(region) {
+      adj('security', -0.15 * mr * unresolved[region], '民变不宁', region ? { targetRegions: [{ region: region, weight: 1 }] } : undefined);
+    });
+  }
+
   function _tickMinxinAdditionalSources(ctx, mr) {
     var G = global.GM;
     var mx = G.minxin;
@@ -1141,9 +1211,9 @@
     }).length;
     if (corruptOfficials > 5) adj('judicialFairness', -0.1 * mr * corruptOfficials / 5, '冤案多');
     else if (corruptOfficials === 0 && (G.chars || []).filter(function(c){return c.alive!==false && c.officialTitle;}).length > 10) adj('judicialFairness', 0.05 * mr, '刑政清明');
-    // security（治安）
-    var activeRevolts = (mx.revolts || []).filter(function(r){return r.status === 'ongoing';}).length;
-    if (activeRevolts > 0) adj('security', -0.15 * mr * activeRevolts, '民变不宁');
+    // security（治安）：民变不宁只扰本省
+    var activeRevolts = (mx.revolts || []).filter(function(r){return r.status === 'ongoing';});
+    if (activeRevolts.length > 0) _revoltSecurityMinxin(G, activeRevolts, mr, adj);
     // socialMobility（阶层流动）
     if (G.population && G.population.classMobility) {
       var recentTrans = (G.population.classMobility.yearlyTransitions || []).filter(function(t){return (G.turn - t.turn) < _turnsForMonthsLocal(12);});
@@ -1616,6 +1686,8 @@
     computeEdictExecutionRate: computeEdictExecutionRate,
     getExtendedAIContext: getExtendedAIContext,
     tickOfficeTenure: _tickOfficeTenure,
+    tickMinxinSources: _tickMinxinAdditionalSources,   // 民心七源单跑（smoke 核「民变不宁只扰本省」）
+    tickRevoltUpgrade: _tickRevoltUpgrade,             // 民变爬梯单跑（smoke 核「进行中的民变不被挤出列表」）
     refreshHuangquanDimensions: _tickHuangquanSubDims,
     detectPowerMinister: _detectPowerMinister,
     tickPowerMinister: _tickPowerMinister,

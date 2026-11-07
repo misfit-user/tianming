@@ -143,4 +143,141 @@ assert(/Minxin Ledger/.test(railSource), 'right rail debug panel should expose M
 const topbarSource = fs.readFileSync(path.join(ROOT, 'tm-topbar-vars.js'), 'utf8');
 assert(/_renderMinxinLedgerCauses/.test(topbarSource), 'topbar minxin panel should render ledger causes');
 
+// 精确认州：exact 行只扣编号/名字完全相同的那个州；按「包含」认会把名字里含「杞县」的州一起扣。
+// 精确点名配不上（那州已不在治下）不转去扣全国。
+const exactGM = {
+  turn: 5,
+  minxin: { trueIndex: 40, perceivedIndex: 40, byRegion: {}, byClass: {}, sources: {}, uprisingCandidates: [] },
+  adminHierarchy: { player: { divisions: [
+    { id: 'qi', name: '杞县', minxin: 40, population: 100 },
+    { id: 'qibei', name: '杞县北', minxin: 40, population: 100 },
+    { id: 'chenliu', name: '陈留县', minxin: 40, population: 100 }
+  ] } }
+};
+const exactLeaves = exactGM.adminHierarchy.player.divisions;
+ML.recordAndApply(exactGM, { sourceSystem: 'smoke', kind: 'exact-check', deltaTrue: -0.5, reason: 'exact by name',
+  targetRegions: [{ region: '杞县', weight: 1, deltaTrue: -2, exact: true }] }, { turn: 5, source: 'smoke-exact' });
+assert(exactLeaves[0].minxin === 38, 'exact row should hit the named county in full: ' + exactLeaves[0].minxin);
+assert(exactLeaves[1].minxin === 40 && exactLeaves[2].minxin === 40, 'exact row must not hit a county whose name merely contains the target');
+ML.recordAndApply(exactGM, { sourceSystem: 'smoke', kind: 'exact-check', deltaTrue: -0.5, reason: 'exact by id',
+  targetRegions: [{ region: 'chenliu', weight: 1, deltaTrue: -1, exact: true }] }, { turn: 5, source: 'smoke-exact' });
+assert(exactLeaves[2].minxin === 39 && exactLeaves[0].minxin === 38 && exactLeaves[1].minxin === 40, 'exact row should also match by id');
+ML.recordAndApply(exactGM, { sourceSystem: 'smoke', kind: 'exact-check', deltaTrue: -0.5, reason: 'exact miss',
+  targetRegions: [{ region: 'nowhere', weight: 1, deltaTrue: -2, exact: true }] }, { turn: 5, source: 'smoke-exact' });
+assert(exactLeaves[0].minxin === 38 && exactLeaves[1].minxin === 40 && exactLeaves[2].minxin === 39, 'unmatched exact row must not fall back to a national hit');
+
+// 民变不宁只扰本省：每股民变给所在省各州 −0.15×月数；认不出省的交给账本按原地名去配；不再按全国扣。
+load('tm-authority-complete.js', sandbox);
+assert(sandbox.AuthorityComplete && typeof sandbox.AuthorityComplete.tickMinxinSources === 'function', 'AuthorityComplete.tickMinxinSources should be exported');
+const securityCalls = [];
+sandbox.AuthorityEngines = { adjustMinxin(source, delta, reason, opts) { securityCalls.push({ source, delta, reason, opts }); } };
+sandbox.IntegrationBridge.getTopLevelDivisions = (ah) => (ah && ah.player && ah.player.divisions) || [];
+const shaanxiNode = { id: 'shaanxi', name: '陕西布政使司', children: [
+  { id: 'xian', name: '西安府', minxin: 30, population: 1000 },
+  { id: 'yanan', name: '延安府', minxin: 20, population: 500 }
+] };
+sandbox.TM.AIChange = { PathUtils: { findDivisionByNameFuzzy: (G, key) => (key === '陕西' ? shaanxiNode : null) } };
+sandbox.GM = {
+  turn: 6, chars: [],
+  minxin: { trueIndex: 30, perceivedIndex: 30, byRegion: {}, byClass: {}, sources: {}, uprisingCandidates: [],
+    revolts: [
+      { id: 'r1', region: '延安府', status: 'ongoing' },
+      { id: 'r2', region: '陕西', status: 'ongoing' },
+      { id: 'r3', region: '某处', status: 'ongoing' },
+      { id: 'r4', region: '西安府', status: 'suppressed' },
+      { id: 'r5', region: 'unknown', status: 'ongoing' },
+      { id: 'r6', region: '', status: 'ongoing' }
+    ] },
+  adminHierarchy: { player: { divisions: [
+    shaanxiNode,
+    { id: 'henan', name: '河南布政使司', children: [{ id: 'kaifeng', name: '开封府', minxin: 40, population: 2000 }] }
+  ] } }
+};
+sandbox.AuthorityComplete.tickMinxinSources({ turn: 6 }, 1);
+const xian = shaanxiNode.children[0], yanan = shaanxiNode.children[1];
+const kaifeng = sandbox.GM.adminHierarchy.player.divisions[1].children[0];
+assert(xian.minxin === 29.7 && yanan.minxin === 19.7, 'two revolts in Shaanxi should cost each Shaanxi prefecture 0.3: ' + xian.minxin + '/' + yanan.minxin);
+assert(kaifeng.minxin === 40, 'a province without revolts must not move: ' + kaifeng.minxin);
+const securitySignal = sandbox.GM._minxinLedger.items.find(x => x.kind === 'security');
+assert(securitySignal && /陕西布政使司民变不宁（2股）/.test(securitySignal.reason), 'province security signal should name the province and count');
+assert(securitySignal.deltaTrue === -0.13 && sandbox.GM.minxin.sources.security === -0.13, 'source accumulator should record the national equivalent (-0.3 x 1500/3500): ' + securitySignal.deltaTrue);
+const legacySecurity = securityCalls.filter(c => c.source === 'security');
+assert(legacySecurity.length === 1 && legacySecurity[0].delta === -0.15 && legacySecurity[0].opts && legacySecurity[0].opts.targetRegions[0].region === '某处',
+  'only the unplaceable revolt should go through the old entry, carrying its own place name (placeless ones cost nothing): ' + JSON.stringify(legacySecurity));
+
+// 民变须有地方：没指明地方的阶层候选升到三级也只留作酝酿的链，不生 unknown 民变；有地方的照旧生。
+const placeGM = {
+  turn: 9,
+  minxin: { trueIndex: 50, perceivedIndex: 50, byRegion: {}, byClass: {}, sources: {}, revolts: [],
+    uprisingCandidates: [
+      { id: 'c-general', region: '', className: 'Farmers', level: 3, momentum: 80, cause: 'national levy' },
+      { id: 'c-mountain', region: 'Mountain County', className: 'Farmers', level: 3, momentum: 80, cause: 'local levy' }
+    ] },
+  adminHierarchy: { player: { divisions: [{ id: 'mountain', name: 'Mountain County', minxin: 50, population: 100 }] } }
+};
+ML.advanceUprisingChain(placeGM, { turn: 9 });
+const placeChains = placeGM.minxin.uprisingChain || [];
+assert(placeChains.some(c => c.region === '' && c.className === 'Farmers' && c.level >= 3), 'placeless class pressure should still brew as a chain');
+const placeRevolts = (placeGM.minxin.revolts || []).filter(r => r && r.status === 'ongoing');
+assert(placeRevolts.length === 1 && placeRevolts[0].region === 'Mountain County', 'only the placed chain should become a revolt: ' + JSON.stringify(placeRevolts.map(r => r.region)));
+assert(!placeRevolts.some(r => r.region === 'unknown'), 'no revolt may be spawned without a place');
+
+// 同一阶层同一地方只认一条链：阶层桥每回合按回合号重出候选，旧写法每回合另立新链、各生一股民变。
+// 旧候选（早于上一回合）不再推链，压力消了链就消退。
+const stableGM = {
+  turn: 12,
+  minxin: { trueIndex: 50, perceivedIndex: 50, byRegion: {}, byClass: {}, sources: {}, revolts: [],
+    uprisingCandidates: [
+      { id: 'mxuc-11-farmers-mountaincounty', turn: 11, region: 'Mountain County', className: 'Farmers', level: 3, momentum: 80 },
+      { id: 'mxuc-12-farmers-mountaincounty', turn: 12, region: 'Mountain County', className: 'Farmers', level: 3, momentum: 80 },
+      { id: 'mxuc-3-farmers-rivercounty', turn: 3, region: 'River County', className: 'Farmers', level: 3, momentum: 80 }
+    ] },
+  adminHierarchy: { player: { divisions: [
+    { id: 'mountain', name: 'Mountain County', minxin: 50, population: 100 },
+    { id: 'river', name: 'River County', minxin: 50, population: 100 }
+  ] } }
+};
+ML.advanceUprisingChain(stableGM, { turn: 12 });
+const farmerChains = stableGM.minxin.uprisingChain.filter(c => c.className === 'Farmers');
+assert(farmerChains.length === 1 && farmerChains[0].region === 'Mountain County', 'one chain per class and place; a stale candidate must not open one: ' + JSON.stringify(farmerChains.map(c => c.id)));
+const ongoingOf = (G) => (G.minxin.revolts || []).filter(r => r && r.status === 'ongoing');
+assert(ongoingOf(stableGM).length === 1, 'two candidates for the same class and place should raise one revolt: ' + ongoingOf(stableGM).length);
+stableGM.turn = 13;
+stableGM.minxin.uprisingCandidates.push({ id: 'mxuc-13-farmers-mountaincounty', turn: 13, region: 'Mountain County', className: 'Farmers', level: 3, momentum: 80 });
+ML.advanceUprisingChain(stableGM, { turn: 13 });
+assert(ongoingOf(stableGM).length === 1, 'a fresh candidate next turn must not raise a second revolt in the same place: ' + ongoingOf(stableGM).length);
+
+// 进行中的民变不被挤出列表：只清已结束的（留最近 30 条）。旧写法 slice(-30) 会把最早起事、仍在进行的几股挤掉，
+// 实体层随后按覆灭清掉它们的势力和军队。
+assert(typeof sandbox.AuthorityComplete.tickRevoltUpgrade === 'function', 'AuthorityComplete.tickRevoltUpgrade should be exported');
+const listRevolts = [];
+for (let i = 1; i <= 5; i++) listRevolts.push({ id: 'o' + i, region: 'Mountain County', status: 'ongoing', level: 3, scale: 30000, turn: 50 });
+for (let i = 1; i <= 31; i++) listRevolts.push({ id: 'e' + i, region: 'Mountain County', status: 'suppressed', level: 3, scale: 30000, turn: 40 });
+sandbox.GM = { turn: 50, minxin: { trueIndex: 10, perceivedIndex: 10, byRegion: {}, byClass: {}, sources: {}, uprisingCandidates: [], revolts: listRevolts },
+  adminHierarchy: { player: { divisions: [{ id: 'mountain', name: 'Mountain County', minxin: 10, population: 100 }] } } };
+sandbox.AuthorityComplete.tickRevoltUpgrade({ turn: 50 }, 1);
+const keptIds = sandbox.GM.minxin.revolts.map(r => r.id);
+assert(['o1', 'o2', 'o3', 'o4', 'o5'].every(id => keptIds.indexOf(id) >= 0), 'every ongoing revolt must stay in the list: ' + keptIds.slice(0, 8).join(','));
+assert(keptIds.indexOf('e1') < 0 && keptIds.length === 35, 'only finished revolts are trimmed to the latest 30: ' + keptIds.length);
+
+// 民变链封顶八十条，但已生过民变的链（进行中，或剿平后还在冷却里）一条不挤，挤只挤酝酿中的。
+// 旧写法 slice(-80) 按先后挤掉最早立的链；挤掉的链下回合原地重立、冷却记录丢了，剿平的民变次回合就复起。
+const capGM = { turn: 18, minxin: { trueIndex: 50, perceivedIndex: 50, byClass: {}, sources: {}, revolts: [], uprisingCandidates: [],
+  byRegion: { ash: { true: 20, regionName: 'Ash County' }, bell: { true: 20, regionName: 'Bell County' } } } };
+ML.advanceUprisingChain(capGM, { turn: 18 });
+assert(ongoingOf(capGM).length === 2, 'Ash and Bell should both rise at turn 18: ' + ongoingOf(capGM).length);
+capGM.minxin.revolts.find(r => r.region === 'Ash County').status = 'suppressed'; // 灰县这股已被剿平
+for (let i = 1; i <= 90; i++) capGM.minxin.byRegion['c' + i] = { true: 30, regionName: 'County ' + i }; // 另有九十州民心偏低、尚未起事
+capGM.turn = 20;
+ML.advanceUprisingChain(capGM, { turn: 20 });
+const capChains = capGM.minxin.uprisingChain;
+assert(capChains.length === 80, 'the chain list should still be capped at 80: ' + capChains.length);
+assert(capChains.some(c => c.region === 'Ash County') && capChains.some(c => c.region === 'Bell County'),
+  'chains that already raised a revolt (ongoing, or suppressed and cooling down) must not be trimmed: ' + capChains.slice(0, 3).map(c => c.region).join(','));
+capGM.turn = 21;
+ML.advanceUprisingChain(capGM, { turn: 21 });
+const ashAgain = ongoingOf(capGM).filter(r => r.region === 'Ash County').length;
+assert(ashAgain === 0, 'a suppressed revolt must not rise again inside its cooldown just because the chain list is full: ' + ashAgain);
+assert(ongoingOf(capGM).filter(r => r.region === 'Bell County').length === 1, 'the ongoing revolt in Bell County stays single');
+
 console.log('[smoke-minxin-ledger-six-stage] PASS unified minxin six-stage implementation');

@@ -240,6 +240,14 @@
     return names.some(function(x) { return x === n || x.indexOf(n) >= 0 || n.indexOf(x) >= 0; });
   }
 
+  // 精确认州：调用方已经从叶级区划本身取了编号或名字（exact:true），只认编号/名字完全相同的那一个。
+  // 上面的模糊认法按「包含」认，点名「杞县」会连名字里含「杞县」的州一起扣，编号「…_1」也会连「…_12」一起扣。
+  function exactRegion(div, wanted) {
+    var k = explicitKey(wanted);
+    if (!k || !div) return false;
+    return [div.id, div.name, div.regionId, div.mapRegionId].some(function(v) { return v != null && explicitKey(v) === k; });
+  }
+
   function targetRegionRows(raw) {
     var rows = [];
     toArray(raw && (raw.targetRegions || raw.regions || raw.regionWeights || raw.affectedRegions)).forEach(function(r) {
@@ -251,7 +259,9 @@
       // 行未显式给 delta 就留 null → apply 端按权重摊「削顶后」的信号 delta。
       // （旧写法回退到 raw.deltaTrue：每个命中区各吃全额未封顶原始值·权重拆分成死路·P-ZV7 封顶被架空·2026-07-04 审查定罪）
       var delta = Number(r.deltaTrue != null ? r.deltaTrue : (r.delta != null ? r.delta : NaN));
-      rows.push({ region: region, weight: weight, deltaTrue: isFinite(delta) ? delta : null });
+      var row = { region: region, weight: weight, deltaTrue: isFinite(delta) ? delta : null };
+      if (r.exact === true) row.exact = true;
+      rows.push(row);
     });
     return rows;
   }
@@ -428,7 +438,7 @@
       if (targetRows.length && leaves.length) {
         var total = targetRows.reduce(function(sum, r) { return sum + Math.max(0, Number(r.weight) || 0); }, 0) || 1;
         targetRows.forEach(function(r) {
-          var matched = leaves.filter(function(div) { return matchRegion(div, r.region); });
+          var matched = leaves.filter(function(div) { return r.exact ? exactRegion(div, r.region) : matchRegion(div, r.region); });
           var perRegionDelta = r.deltaTrue != null ? Number(r.deltaTrue) : delta * ((Number(r.weight) || 1) / total);
           matched.forEach(function(div) {
             var before = Number(div.minxin != null ? div.minxin : div.minxinLocal);
@@ -437,7 +447,8 @@
             affected.push({ region: regionNameOf(div), regionId: regionIdOf(div), before: round2(before), after: round2(div.minxin), delta: round2(div.minxin - before) });
           });
         });
-        if (!affected.length) {
+        // 精确点名的州是调用方当回合从叶级区划本身取的，配不上只能是那州已不在玩家治下，不该转去扣全国。
+        if (!affected.length && targetRows.some(function(r) { return !r.exact; })) {
           // 目标区域全失配（跨剧本别名/AI 生成地名）：全国兜底摊布——旧行为是静默丢弃效果却仍烧封顶额度(2026-07-04 审查定罪)
           leaves.forEach(function(div) {
             var before = Number(div.minxin != null ? div.minxin : div.minxinLocal);
@@ -729,14 +740,39 @@
     return found;
   }
 
+  var CHAIN_RESPAWN_COOLDOWN = 12;
+  var CHAIN_CAP = 80;
+
+  // 链数封顶 80。已生过民变的链（民变还在进行，或剿平后还在复燃冷却里）一条不挤；挤只挤酝酿中的，先挤早立的。
+  // 旧写法 slice(-80) 一律按先后挤，最早立的链先出——正是那些已经起事的（天启第七回合链数就到了顶）。
+  // 挤掉的链下回合原地重立，冷却记录跟着丢了：剿平的民变次回合就在原地复起。
+  function trimChains(mx, turn) {
+    var chains = mx.uprisingChain;
+    if (chains.length <= CHAIN_CAP) return chains;
+    var live = {};
+    toArray(mx.revolts).forEach(function(r) { if (r && r.status === 'ongoing' && r.sourceChainId) live[r.sourceChainId] = true; });
+    function pinned(c) { return !!live[c.id] || (c._lastSpawnTurn != null && (turn - c._lastSpawnTurn) < CHAIN_RESPAWN_COOLDOWN); }
+    var pinnedCount = chains.filter(pinned).length;
+    var drop = (chains.length - pinnedCount) - Math.max(0, CHAIN_CAP - pinnedCount);
+    return chains.filter(function(c) {
+      if (pinned(c)) return true;
+      if (drop > 0) { drop--; return false; }
+      return true;
+    });
+  }
+
   function syncRevoltFromChain(root, chain) {
     var mx = ensureMinxin(root);
     if (!chain || chain.level < 3) return null;
+    // 民变须有地方：阶层不满没指明地方的候选只留作酝酿的链，不生民变。旧写法把地方记成 unknown——
+    // 地图上找不到、账本认不出就按全国扣「民变不宁」，候选又按回合号每回合另立新链，天启四回合攒了十三股。
+    // 真要起事由各州民心链去起，那些都有地方。
+    if (!String(chain.region || '').trim()) return null;
     var existing = mx.revolts.filter(function(r) { return r && r.sourceChainId === chain.id && r.status === 'ongoing'; })[0];
     if (existing) return existing;
     var _t = Number(root.turn) || 0;
     // 复燃冷却：同链上一场民变结束后 12 回合内不自动补位——旧行为=镇压次回合原地复活成永动民变(2026-07-04 审查定罪)
-    if (chain._lastSpawnTurn != null && (_t - chain._lastSpawnTurn) < 12) return null;
+    if (chain._lastSpawnTurn != null && (_t - chain._lastSpawnTurn) < CHAIN_RESPAWN_COOLDOWN) return null;
     var scale = chain.level >= 4 ? 200000 : 30000;
     var revolt = {
       id: 'revolt-' + chain.id + '-t' + _t, // 带回合号唯一 id·旧写法复用同 id 令镇压 find 命中旧尸体(按 id 镇不掉复燃场)
@@ -761,10 +797,17 @@
     if (options.turn == null) options.turn = Number(root.turn) || 0; // 统一回合锚·upsert 的 _touchedTurn 与下方衰减判据同源
     var mx = ensureMinxin(root);
     if (!Array.isArray(mx.uprisingChain)) mx.uprisingChain = [];
+    var _candTurn = Number(options.turn) || 0;
     toArray(mx.uprisingCandidates).forEach(function(c) {
       if (!c) return;
+      // 候选只在生出的当回合和下一回合推链（阶层桥与账本收口先后不定）。旧写法留着的八十条候选回回都推，
+      // 链永不消退，民变剿了冷却过后又原地复起。
+      var _ct = Number(c.turn);
+      if (isFinite(_ct) && _ct < _candTurn - 1) return;
       upsertChain(mx, {
-        id: c.id ? 'mxchain-' + c.id : '',
+        // 同一阶层同一地方只认一条链。候选编号带回合号（阶层桥每回合拿最近的压力记录重出候选），
+        // 旧写法拿它当链号，每回合另立新链、各生一股民变：天启第四回合陕西十五州一口气多出十五股，照此每回合还要再多。
+        id: chainId(c.region, c.className || c.classKey),
         region: c.region || '',
         className: c.className || '',
         classKey: c.classKey || '',
@@ -803,8 +846,9 @@
       }
       return chain.momentum > 0;
     });
-    mx.uprisingChain = mx.uprisingChain.slice(-80);
+    // 先让够级的链起事、再封顶，刚起事的链也算「已生过民变」，不会在起事前被挤掉。
     mx.uprisingChain.forEach(function(chain) { syncRevoltFromChain(root, chain); });
+    mx.uprisingChain = trimChains(mx, _nowTurn);
     root._minxinLedgerUprising = { turn: Number(options.turn != null ? options.turn : root.turn) || 0, chains: mx.uprisingChain.length, revolts: toArray(mx.revolts).filter(function(r) { return r && r.status === 'ongoing'; }).length };
     return clone(root._minxinLedgerUprising);
   }

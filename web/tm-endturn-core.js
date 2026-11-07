@@ -747,6 +747,22 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
     ctx.meta.canonicalWorldSnapshot = null;
     ctx.meta.canonicalWorldSnapshotMeta = null;
   }
+  // 提交之后，事务里的几份整局拷贝就用不上了：回滚拷贝（txn.gm、txn.p）、推演前恢复点、定稿、
+  // 存档文字包（整局 JSON 字符串和压缩件），以及只在存档写入未确认时才用的核对入口（它的闭包连着定稿和文字包）。
+  // 回滚（_tmRollbackEndTurnTransaction）和存档核对（TM.Endturn.SaveReconcile）都只在提交前用得到。
+  // 回合后台待办的闭包连着推演上下文和事务，要留到下一回合推演中途才清；这几份不放，就跟着留下来
+  // （绍宋一回合约 1.2GB），下一回合又拷一套，推演峰值叠到 3.7GB，页面撑爆。已提交的基线另有归属，不在这里。
+  txn.gm = null;
+  txn.p = null;
+  if (txn.captureSession) {
+    txn.captureSession.rollbackCapture = null;
+    txn.captureSession.preEndturnState = null;
+    txn.captureSession.preEndturnPayload = null;
+    txn.captureSession.finalCanonicalState = null;
+    txn.captureSession.finalPayload = null;
+  }
+  ctx.meta.canonicalWorldPayload = null;
+  ctx.meta.acceptReconciledCommit = null;
   try {
     if (typeof _endTurn_publishStagedTurnData === 'function') await _endTurn_publishStagedTurnData(ctx);
   } catch (publishError) {

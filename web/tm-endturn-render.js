@@ -156,6 +156,17 @@ function _endTurn_saveSnapshot(ctx) {
       && GM.turn === _endturnSaveTurn && GM.sid === _endturnSaveSid
       && (!_livePreId || _livePreId === _endturnSavePreId);
   };
+  // 后台记忆（sc25、sc25c）补完后再补存一次。这串回调要建在这一层，别挪进下面的 async 函数：
+  // 那个函数里放着定稿和存档文字包（各是整局大小），在同一个函数里建的回调会把它们一起留住，
+  // 一直留到记忆补完——后台模型排队时能拖一两分钟，白占约 600MB（绍宋），其间赶上后台自动存档，空闲时就到 2GB。
+  if (typeof _awaitPostTurnJobsForSave === 'function') {
+    Promise.resolve().then(function(){return _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);}).then(function(){
+      if(_endturnSaveStillCurrent()&&typeof requestBackgroundAutosave==='function')return requestBackgroundAutosave({reason:'post-turn-memory-complete',expectedTurn:_endturnSaveTurn});
+    }).catch(function(error){
+      if(window.TM&&TM.Endturn&&TM.Endturn.Validity)TM.Endturn.Validity.defer(ctx,'后台记忆',error);
+      else console.warn('[EndturnDeferred] 后台记忆待补正:',error.message);
+    });
+  }
   return (async function() {
     var _canonicalCommitted = false;
     var _snapshotTask = null;
@@ -189,14 +200,6 @@ function _endTurn_saveSnapshot(ctx) {
     }
 
     try {
-      if (typeof _awaitPostTurnJobsForSave === 'function') {
-        Promise.resolve().then(function(){return _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);}).then(function(){
-          if(_endturnSaveStillCurrent()&&typeof requestBackgroundAutosave==='function')return requestBackgroundAutosave({reason:'post-turn-memory-complete',expectedTurn:_endturnSaveTurn});
-        }).catch(function(error){
-          if(window.TM&&TM.Endturn&&TM.Endturn.Validity)TM.Endturn.Validity.defer(ctx,'后台记忆',error);
-          else console.warn('[EndturnDeferred] 后台记忆待补正:',error.message);
-        });
-      }
       if (!_endturnSaveStillCurrent()) return false;
       try { if (typeof _wtRunFulfillAudit === 'function') _wtRunFulfillAudit(); } catch (_wtFaHkE) {}
       var _autoT0 = Date.now();

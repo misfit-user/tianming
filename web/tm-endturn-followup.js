@@ -3439,9 +3439,12 @@
       }
 
       // 历史检查环节（轻度和严格史实模式）
-      //   ★ 核心原则：此检查只"标注"AI 自生的时代错乱（如唐代 shizhengji 中出现"火枪"）
-      //   ★ 绝对不触碰玩家诏令引发的任何字面执行（玩家诏"赏银万两"在唐代·按原文记录·不修正）
-      //   ★ 只能追加"史官按"注释·不得重写 shizhengji/zhengwen 原文
+      //   ★ 以本局世界（GM）为准：推演里历史本可走样，事件提前推迟、人物际遇与史书不同都不算错；
+      //     只修与本局世界明文相悖的，和本时代绝不可能有的东西（后世器物/制度/称谓，世界里没有且此时未生或早殁之人）
+      //   ★ 绝对不触碰玩家诏令引发的任何字面执行（玩家诏"赏银万两"在唐代·按原文记录·不修正）；改句摘自诏令原文的一律不用
+      //   ★ 只要「原句→改句」清单，逐字换进时政记、实录、正文/后人戏说各处，各栏一致。
+      //     不再整篇回写（旧版正文只送前 500 字，整篇回写会截断正文），也不再追加「史官按」
+      //     （读者看不到被改掉的原句，按语反倒像在驳眼前的正文；11-06 对照实验第一回合盲读时批出）
       // Start queued memory/snapshot jobs after foreground memory compression is done.
       // In historical modes, history_check is still on the player's wait path, so
       // it must not be queued behind background sc25/sc28/sc_consolidate work.
@@ -3459,8 +3462,29 @@
             var _eVals = [edicts.decree, edicts.political, edicts.military, edicts.diplomatic, edicts.economic, edicts.other].filter(Boolean);
             _edictText = _eVals.join('\n · ');
           } catch(_eE) {}
+          var _histZhengwen = hourenXishuo || zhengwen || '';
+          // 本局世界：文中点到的人物现状（存殁、所在、官职、势力），检查以此为准
+          var _histWorld = '';
+          try {
+            var _histHay = [shizhengji, shiluText, _histZhengwen].join('\n');
+            var _histRows = [];
+            (GM.chars || []).forEach(function(c) {
+              if (!c || typeof c.name !== 'string' || c.name.length < 2) return;
+              var _at = _histHay.indexOf(c.name);
+              if (_at < 0) return;
+              var _bits = [c.alive === false ? '已殁' : '在世'];
+              var _title = c.officialTitle || c.title;
+              if (c.alive !== false && typeof c.location === 'string' && c.location) _bits.push(c.location.slice(0, 24));
+              if (c.alive !== false && typeof _title === 'string' && _title) _bits.push(_title.slice(0, 30));
+              if (typeof c.faction === 'string' && c.faction) _bits.push(c.faction.slice(0, 16));
+              _histRows.push({ at: _at, line: c.name + '：' + _bits.join('·') });
+            });
+            _histRows.sort(function(a, b) { return a.at - b.at; });
+            _histWorld = _histRows.slice(0, 40).map(function(r) { return r.line; }).join('\n');
+          } catch(_hwE) {}
 
-          var histCheckPrompt = "你是历史顾问 AI。剧本背景：" + (sc ? sc.dynasty : "") + "，" + (sc ? sc.emperor : "") + "皇帝时期。\n\n";
+          var histCheckPrompt = "你是历史顾问 AI。剧本背景：" + (sc ? sc.dynasty : "") + "，" + (sc ? sc.emperor : "") + "皇帝时期。"
+            + (typeof getTSText === 'function' ? "本回合：" + getTSText(GM.turn) + "。" : "") + "\n\n";
           histCheckPrompt += "【不可改的部分·玩家诏令原文】\n · " + (_edictText || '（无明确诏令）') + "\n";
           // 策名豁免名单（玩家亲自策名的人物，含跨时代）
           var _cemingExempt = '';
@@ -3470,22 +3494,21 @@
             }
           } catch(_ce) {}
           if (_cemingExempt) histCheckPrompt += _cemingExempt + '\n';
+          if (_histWorld) histCheckPrompt += "【本局世界·文中人物现状】（游戏世界的实情·以此为准）\n" + _histWorld + "\n\n";
           histCheckPrompt += '【铁律一】玩家诏令字面执行是最高原则。即使诏令本身时代错乱（如唐代用白银、刑部管科举），你绝不得将其改回「历史正确版本」——那是玩家的选择·以混乱/阻力形式体现。与玩家诏令相关的叙事文字原样保留。\n';
-          histCheckPrompt += '【铁律二】纯 AI 自生的时代错乱（如 AI 凭空写出 火枪/蒸汽船/拿破仑/共和国/未出生的历史人物 等超时代元素）必须修正。此为你的核心职责。\n';
-          histCheckPrompt += '【铁律三】玩家通过策名系统纳入的人物（上方豁免名单·若有）一律视为合法角色·与玩家诏令字面同等保护·任何叙事提及不得改写。\n\n';
-          histCheckPrompt += "【检查并修正】下方时政记/正文：\n";
-          histCheckPrompt += "时政记：" + shizhengji + "\n";
-          histCheckPrompt += "正文：" + zhengwen.substring(0, 500) + "\n\n";
+          histCheckPrompt += '【铁律二】本局是推演，历史本可走样。与【本局世界】相符的一律不是错，即便与正史不同：事件提前或推迟、史上已死之人在本局仍在世、官职去处与史书不同、史上没有的事在本局发生，都不得改。\n';
+          histCheckPrompt += '【铁律三】玩家通过策名系统纳入的人物（上方豁免名单·若有）一律视为合法角色·与玩家诏令字面同等保护·任何叙事提及不得改写。\n';
+          histCheckPrompt += '【只修两类】一、与【本局世界】明文相悖的：已殁之人仍在行事，人在某地却写他亲身在别处，官职写错。二、本时代绝不可能有的东西：后世才有的器物、制度、称谓、地名、用语（如唐代出现火枪、蒸汽船、拿破仑、共和国），以及本局世界里没有、此时尚未出生或早已死去的历史人物。拿不准的不改。\n\n';
+          histCheckPrompt += "【待查文字】\n";
+          histCheckPrompt += "时政记：" + shizhengji + "\n\n";
+          if (shiluText) histCheckPrompt += "实录：" + shiluText + "\n\n";
+          if (_histZhengwen) histCheckPrompt += "正文：" + _histZhengwen.substring(0, 6000) + "\n\n";
           histCheckPrompt += "返回 JSON：\n";
           histCheckPrompt += '{\n';
-          histCheckPrompt += '  "has_ai_hallucination": true/false,\n';
-          histCheckPrompt += '  "ai_errors": ["AI 自虚构的错误描述·列举具体错误点"],\n';
-          histCheckPrompt += '  "corrected_shizhengji": "修正后的时政记全文·仅替换 AI 自生错误的词句·玩家诏令引起的内容原样保留",\n';
-          histCheckPrompt += '  "corrected_zhengwen": "修正后的正文全文·同规则",\n';
-          histCheckPrompt += '  "note": "一段 30-60 字的「史官按」注释·文言体·说明 AI 幻觉已被修正"\n';
+          histCheckPrompt += '  "fixes": [{"from": "要改的那一小段·从上面原文逐字照抄·10 到 40 字", "to": "改后的这一段", "why": "一句话·依据哪一条"}]\n';
           histCheckPrompt += '}\n';
-          histCheckPrompt += "★ 修正原则：只换 AI 错的词句·不删不增玩家内容·不改叙事框架。\n";
-          histCheckPrompt += "★ 若全部是玩家诏令引起（即便荒唐）·返回 has_ai_hallucination:false·其他字段留空。";
+          histCheckPrompt += "★ 同一错处在时政记、实录、正文里写法不同的，各列一条。只换错的词句·不删不增玩家内容·不改叙事框架。\n";
+          histCheckPrompt += '★ 没有要改的，返回 {"fixes": []}。';
 
           var _histBody = {
             model:P.ai.model||"gpt-4o",
@@ -3500,24 +3523,43 @@
           var histContent = _histCall.raw || "";
 
           try {
-            var _histParsed = await _parseOrRepairJsonResult(histContent, histData, '历史检查', { url: url, key: P.ai.key, body: _histBody, expectedKeys: ['has_ai_hallucination', 'ai_errors', 'corrected_shizhengji', 'corrected_zhengwen'], priority: 'critical' });
+            var _histParsed = await _parseOrRepairJsonResult(histContent, histData, '历史检查', { url: url, key: P.ai.key, body: _histBody, expectedKeys: ['fixes'], priority: 'critical' });
             if (_histParsed && _histParsed.raw) histContent = _histParsed.raw;
             var histJson = _histParsed ? _histParsed.parsed : null;
-            if(histJson && histJson.has_ai_hallucination) {
-              _dbg('[历史检查] AI 幻觉:', histJson.ai_errors);
-              // 替换 AI 自生的错误·玩家诏令引起的内容由 AI 保留
-              if (histJson.corrected_shizhengji) shizhengji = (global.TM && TM.AIResultContract) ? TM.AIResultContract.text(histJson.corrected_shizhengji, 'corrected_shizhengji') : histJson.corrected_shizhengji;
-              if (histJson.corrected_zhengwen) zhengwen = histJson.corrected_zhengwen;
-              // 追加史官按注释
-              if (histJson.note) {
-                shizhengji = (shizhengji || '') + '\n\n【史官按】' + histJson.note;
+            var _histFixes = (histJson && Array.isArray(histJson.fixes)) ? histJson.fixes.slice(0, 16) : [];
+            var _histApplied = [], _histUnused = [];
+            _histFixes.forEach(function(f) {
+              var _from = (f && typeof f.from === 'string') ? f.from.trim() : '';
+              var _to = (f && typeof f.to === 'string') ? f.to.trim() : '';
+              if (_from.length < 4 || !_to || _from === _to) return;
+              if (_edictText && _edictText.indexOf(_from) >= 0) { _histUnused.push(_from + '（出自诏令原文·不改）'); return; }
+              var _hit = false;
+              var _swap = function(s) {
+                if (typeof s !== 'string' || s.indexOf(_from) < 0) return s;
+                _hit = true;
+                return s.split(_from).join(_to);
+              };
+              shizhengji = _swap(shizhengji);
+              shiluText = _swap(shiluText);
+              zhengwen = _swap(zhengwen);
+              hourenXishuo = _swap(hourenXishuo);
+              turnSummary = _swap(turnSummary);
+              szjTitle = _swap(szjTitle);
+              szjSummary = _swap(szjSummary);
+              playerStatus = _swap(playerStatus);
+              playerInner = _swap(playerInner);
+              // 记录收口（Validity.preserveNarrative）取正文时 sc2 排在 record 前面，源头也得换，否则改了也被盖回
+              if (p2 && typeof p2 === 'object') {
+                ['houren_xishuo', 'hourenXishuo', 'houren', 'zhengwen'].forEach(function(k) {
+                  if (typeof p2[k] === 'string') p2[k] = _swap(p2[k]);
+                });
               }
-              if(histJson.ai_errors && histJson.ai_errors.length > 0) {
-                console.warn('[历史检查] AI 幻觉已修正:', histJson.ai_errors.join('; '));
-              }
-            } else {
-              _dbg('[历史检查] 未发现 AI 幻觉');
-            }
+              if (_hit) _histApplied.push(_from + ' → ' + _to);
+              else _histUnused.push(_from + '（原文里没有这句）');
+            });
+            if (_histApplied.length) console.warn('[历史检查] 已改 ' + _histApplied.length + ' 处:', _histApplied.join('; '));
+            else _dbg('[历史检查] 无需改动');
+            if (_histUnused.length) _dbg('[历史检查] 没用上的改句:', _histUnused);
           } catch(histParseErr) {
             console.warn('[历史检查] 解析结果失败:', histParseErr);
           }

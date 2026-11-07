@@ -655,7 +655,8 @@ async function genMemorialsAI(count){
           // 远方NPC奏疏——进入驿递队列
           mem._remoteFrom = ch.location;
           mem._generatedTurn = GM.turn;
-          var days = (typeof calcLetterDays === 'function') ? calcLetterDays(ch.location, capital, 'normal') : 5;
+          // 奏疏经通政司走官驿急递（日行三百里），不按私人捎信的脚程
+          var days = (typeof calcLetterDays === 'function') ? calcLetterDays(ch.location, capital, 'urgent') : 5;
           var dpv = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 15;
           mem._deliveryTurn = GM.turn + Math.max(1, Math.ceil(days / dpv));
           mem.status = 'in_transit';

@@ -5,6 +5,7 @@
 // 修法：开局、读档都补真实京城（读本势力写的都城）；京师、宫中这些通称跟着当朝京城走；
 // 行在、随驾跟着天子走（剧本 locationBindingContract 同此口径）；
 // 书信、朱批、求见看玩家本人所在，因为绍宋开局玩家在亳州，京城却是应天府。
+// 11-06：书信路程改按地名坐标算真实距离（旧法跨省一律一千里，京师到东莞、到宁远都是二十日）。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -166,15 +167,22 @@ send('卿听旨', ['李德裕', '何重顺']);
 assert(sandbox.GM.letters.map((l) => l.to).join() === '何重顺', '晚唐：长安同城剔除，魏州能写');
 assert(sandbox.GM.letters[0].fromLocation === '京兆府·长安', '信从长安发出');
 
-console.log('八、同省按主地点比');
+console.log('八、书信路程按真实距离（京师换成当朝京城；认不出的地方仍按同省、跨省估）');
+// 直线距离乘 1.3 算驿路，按明里折算；普通日行五十里，加急三百里，八百里加急
 sandbox.GM = { _capital: '北京', adminHierarchy: { player: { divisions: [
-  { name: '北直隶', children: [{ name: '顺天府' }, { name: '保定府' }] },
+  { name: '北直隶', children: [{ name: '顺天府' }, { name: '保定府' }, { name: '甲县' }, { name: '乙县' }] },
   { name: '南直隶', children: [{ name: '应天府' }, { name: '苏州府' }] },
 ] } } };
-assert(sandbox.calcLetterDays('京师·文渊阁', '保定府', 'normal') === 4, '京师到保定：同省四日');
-assert(sandbox.calcLetterDays('北京', '保定府', 'normal') === 4, '北京到保定：同省四日');
-assert(sandbox.calcLetterDays('北京', '苏州府', 'normal') === 20, '北京到苏州：跨省二十日');
-assert(sandbox.calcLetterDays('南京·户部', '苏州府', 'urgent') === 1, '南京到苏州：同省加急一日');
+assert(sandbox.calcLetterDays('京师·文渊阁', '保定府', 'normal') === 7, '京师到保定：约四百里，七日');
+assert(sandbox.calcLetterDays('北京', '保定府', 'normal') === 7, '北京到保定：与京师同');
+assert(sandbox.calcLetterDays('北京', '苏州府', 'normal') === 47, '北京到苏州：两千三百余里，四十七日（旧法一律二十日）');
+assert(sandbox.calcLetterDays('南京·户部', '苏州府', 'urgent') === 2, '南京到苏州：加急二日');
+assert(sandbox.calcLetterDays('京师·紫禁城·乾清宫', '广东东莞', 'urgent') === 15, '京师到东莞：加急十五日');
+assert(sandbox.calcLetterDays('京师·紫禁城·乾清宫', '辽东·宁远', 'extreme') === 2, '京师到宁远：八百里加急二日');
+assert(sandbox.calcLetterDays('甲县', '乙县', 'normal') === 4, '认不出的地方：同省仍按二百里估');
+assert(sandbox.calcLetterDays('某甲地', '某丙地', 'normal') === 20, '认不出的地方：跨省仍按一千里估');
+sandbox.GM = { _capital: '京兆府·长安' };
+assert(sandbox.calcLetterDays('京师', '魏州', 'normal') === 28, '晚唐：京师是长安，到魏州二十八日');
 
 console.log('九、迁都两个字段一起写');
 assert(/G\._capital = params\.newCapital;\s*G\.capital = params\.newCapital;/.test(read('tm-edict-complete.js')), '迁都诏同写两字段');

@@ -450,7 +450,8 @@ function _endTurn_collectInput() {
       // 跨势力诏令·letterType 为外交文书·否则走原路径
       var _ltType = et._crossFaction ? 'diplomatic_dispatch' :
                     (et.category === '军令' ? 'military_order' : 'formal_edict');
-      var _urgency = et.category === '军令' ? 'urgent' : 'normal';
+      // 诏令走官驿：常诏经急递铺（日行三百里），军令马上飞递（八百里）；日行五十里是私人捎信的脚程
+      var _urgency = et.category === '军令' ? 'extreme' : 'urgent';
       _remoteTargets.forEach(function(ch) {
         var toLoc = ch.location || _capital;
         var days = (typeof calcLetterDays === 'function') ? calcLetterDays(_capital, toLoc, _urgency) : 5;

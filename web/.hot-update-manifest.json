@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "6373eb7c11e68abd947eb4bf85841d0106868a03870d597ee6262914a20d5995",
-      "size": 391596
+      "sha256": "6d921ad486c3d6ec88a86ce0abe9789934e59d3d2f410e51080e83c5a7a49b64",
+      "size": 391838
     },
     {
       "path": "styles.css",
@@ -5126,8 +5126,8 @@
     },
     {
       "path": "tm-endturn-followup.js",
-      "sha256": "17f45bbeeb518d4edd03cbf76ef9523a92447bdd07c3395365a28f2e80288c96",
-      "size": 283169
+      "sha256": "6a4909726ec25574e29027064360a6743b49a3fa2b766697f7ca4cce8c628f2c",
+      "size": 286545
     },
     {
       "path": "tm-endturn-helpers.js",
@@ -5161,8 +5161,8 @@
     },
     {
       "path": "tm-endturn-prep.js",
-      "sha256": "9f1c6ba06b7b9fdff419eb9ba803e8d9c6bd9d467e9d1ef6815b5af8e3178327",
-      "size": 40098
+      "sha256": "05768997da2907e9498f6dcfb485b00d18286771a4a17c1c771f01adb8df2b6e",
+      "size": 40244
     },
     {
       "path": "tm-endturn-progress.js",
@@ -5516,8 +5516,8 @@
     },
     {
       "path": "tm-hongyan-office.js",
-      "sha256": "26c2825fdcb05f597f8736f047007dabb98ad19538c76fdb6da50b8008ee9d1f",
-      "size": 109101
+      "sha256": "308d43fc8a8ba1b1558d78173b1f0ad4462e65bab47601341651e1558caa5bc3",
+      "size": 118106
     },
     {
       "path": "tm-hooks-tracker.js",
@@ -5896,8 +5896,8 @@
     },
     {
       "path": "tm-memorials.js",
-      "sha256": "e315ec9134d1e5fe053ffc3f10265ee347124c0fd3011e7e76f08506fd3664ee",
-      "size": 80852
+      "sha256": "5a8f4ee6bae38103d4fb9b477636e8a45d8f8c1adad6b80fae7e8704dc5a4588",
+      "size": 80950
     },
     {
       "path": "tm-memory-adapter.js",
@@ -6596,7 +6596,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "294b8b22340175b78ce241df6c260e38238dd27cb78ab6a9c591a598c60cbf33",
+      "sha256": "596595519b9f583d0c82bc8edcab07f8e6d38712eb54a0404ab9339e2cba9a5e",
       "size": 139151
     },
     {

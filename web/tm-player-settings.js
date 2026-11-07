@@ -322,6 +322,7 @@ function _togglePConf(confKey, on) {
     try { if (typeof _tmSyncLivingWorldMaster === 'function') _tmSyncLivingWorldMaster(); } catch (_e) {}
   }
   var labels = {
+    mattersLedgerEnabled: { on: '已启用事的容器·过回合时只读整理案单，不改世界', off: '已关闭事的容器' },
     recallGateEnabled: { on: '已启用召回节流·常规回合跳过 SC_RECALL 节省 API', off: '已关闭召回节流·每回合都全跑 5 源召回' },
     consolidationEnabled: { on: '已启用后台记忆固化', off: '已关闭后台记忆固化·sc_consolidate 不再调用' },
     memorySynthesisEnabled: { on: '已启用后台记忆固化/综合', off: '已关闭后台记忆固化·记忆连贯性减低' },

@@ -1098,6 +1098,20 @@ openSettings=function(){
       return h;
     })()+
 
+    // ── 新推演施工·事的容器（甲1a·2026-11-07）：只读整理旧账成案单，不改世界；默认关。不挂实验模式总闸（开它不必连带打开实验玩法）──
+    (function(){
+      var _mlOn = !!(P.conf && P.conf.mattersLedgerEnabled === true);
+      return '<div class="settings-section"><h4>新推演施工（实验）</h4>' +
+        '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;">' +
+          '<input type="checkbox" id="s-matters-ledger" ' + (_mlOn?'checked ':'') + 'onchange="_togglePConf(\'mattersLedgerEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">事的容器（默认关）</div>' +
+            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">只读：每次过回合，把诏令、承诺、要务、待议、奏疏等旧账整理成一份案单，随存档保存。不改动世界、不调模型、不影响推演。供新推演施工用。</div>' +
+          '</div>' +
+        '</label>' +
+      '</div>';
+    })()+
+
     (function(){
       var _ofa = window.TM && TM.OfficeFlags ? TM.OfficeFlags.masterOn() : (P.conf && typeof P.conf.officeActivationEnabled === 'boolean' ? P.conf.officeActivationEnabled : !(P.ai && P.ai.officeActivationEnabled === false));
       return '<div class="settings-section"><h4>官制活化</h4>' +

@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "4c4744e0cb076d5325dc0e77fc92ebad77e88de324be6e67729753082142bf39",
-      "size": 77495
+      "sha256": "d02e3d7539674afa69b035b6de5095b2d2118956ec49e890047127f9d878c2e4",
+      "size": 77667
     },
     {
       "path": "INDEX.md",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "6d921ad486c3d6ec88a86ce0abe9789934e59d3d2f410e51080e83c5a7a49b64",
-      "size": 391838
+      "sha256": "28f0d86b4165127a0cff0f6762e1839eb305a3b091fbfee0bbdcd0848a665cd1",
+      "size": 392385
     },
     {
       "path": "styles.css",
@@ -5161,8 +5161,8 @@
     },
     {
       "path": "tm-endturn-prep.js",
-      "sha256": "05768997da2907e9498f6dcfb485b00d18286771a4a17c1c771f01adb8df2b6e",
-      "size": 40244
+      "sha256": "dfd2d04ffa4ce837882f8dcf35cbd4c0221b17fa482002629425f5c924a6b3cc",
+      "size": 40888
     },
     {
       "path": "tm-endturn-progress.js",
@@ -5880,6 +5880,11 @@
       "size": 8076
     },
     {
+      "path": "tm-matters.js",
+      "sha256": "4dd310db3574498df7b35877e470fe8d7bda42ed241d100a21c6963717186a3b",
+      "size": 47040
+    },
+    {
       "path": "tm-mechanics-memory.js",
       "sha256": "4d15a6dc72238402a595e17c9a0987d9ee2985158f617258ffb4bd53744aead6",
       "size": 83883
@@ -6316,8 +6321,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "13b150550cf5b70af0c7f00595ca986efa81e99d6181ef9c453a5ac09cf6e4ef",
-      "size": 187266
+      "sha256": "efad1ed2464f8b302eb4511992f299185750399b2845612d11eb1901ee238eb5",
+      "size": 188466
     },
     {
       "path": "tm-pause-fab.js",
@@ -6356,8 +6361,8 @@
     },
     {
       "path": "tm-player-settings.js",
-      "sha256": "8efb8c40132e79939cebd16da4e728a1206f556b26c02641d8e1c572a3eaf845",
-      "size": 35280
+      "sha256": "a4882f765a6986eb5a8b638c2efae90bb1daa663c2256081fc3a5314b79519f5",
+      "size": 35416
     },
     {
       "path": "tm-player-tools.js",
@@ -6596,8 +6601,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "596595519b9f583d0c82bc8edcab07f8e6d38712eb54a0404ab9339e2cba9a5e",
-      "size": 139151
+      "sha256": "8f7cd37254de4190b64bd21ec3ede0167d4bd70ebc1955f6212d55dafae438ce",
+      "size": 139433
     },
     {
       "path": "tm-start-selector.js",

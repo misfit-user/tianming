@@ -513,6 +513,15 @@ function _endTurn_collectInput() {
     }
   }
   if (typeof TM !== 'undefined' && TM.EdictOutcomes) TM.EdictOutcomes.collect(GM, edicts, GM.turn);
+  // 事的容器（甲1a，开关默认关）：本回合诏令登记之后、推演之前，把旧账整理成案单存进 GM.matters。
+  // 只读，不改世界，不调模型；出错只记下，绝不挡回合。
+  if (typeof TM !== 'undefined' && TM.Matters && P.conf && P.conf.mattersLedgerEnabled === true) {
+    try { TM.Matters.file(GM, { edictDrafts: edicts, xinglu: xinglu }); }
+    catch (_mtE) {
+      try { console.warn('[事的容器] 整理案单失败', _mtE); } catch (_) {}
+      try { if (TM.errors && typeof TM.errors.captureSilent === 'function') TM.errors.captureSilent(_mtE, 'matters-file'); } catch (_) {}
+    }
+  }
   if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({turn:GM.turn,time:getTSText(GM.turn),edicts:edicts,xinglu:xinglu,memorials:memRes,edictsSource:_edictsSource});
   resetTurnChanges();
   // 注意：不在此处清空 _couplingReport/_edictExecutionReport/_buildingOutputReport/_npcIntents/_healthAlerts/_decisionAlerts

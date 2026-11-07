@@ -10,7 +10,8 @@ import { tiao } from '../kit/index.js';
 export function shortCount(n) {
   n = Math.max(0, Math.round(Number(n) || 0));
   if (numeralStyle() === 'arabic') return n >= 1e4 ? `${(n / 1e4).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, '')}万` : String(n);
-  if (n >= 1e4) { const k = Math.round(n / 1e3), a = Math.floor(k / 10), b = k % 10; return `${cnNum(a)}万${b ? cnNum(b) : ''}`; }
+  // 九千九百五十起，千位四舍五入就进到一万，归「万」这一档写「一万」，不写「十千」（晚唐银州军九千九百余人原先就写成十千）
+  if (n >= 9950) { const k = Math.round(n / 1e3), a = Math.floor(k / 10), b = k % 10; return `${cnNum(a)}万${b ? cnNum(b) : ''}`; }
   if (n >= 1e3) { const k = Math.round(n / 100), a = Math.floor(k / 10), b = k % 10; return `${cnNum(a)}千${b ? cnNum(b) : ''}`; }
   return cnNum(Math.round(n / 10) * 10) || '〇';
 }

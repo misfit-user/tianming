@@ -1350,7 +1350,8 @@
       led = container.ledgers.money = { stock: Number(container.money) || Number(container.balance) || 0, sources: {}, sinks: {}, thisTurnIn: 0, thisTurnOut: 0, history: [] };
     }
     var before = Number(led.stock) || 0;
-    var after = Math.max(0, before + delta);
+    // 支不过库：库里没有就不扣。库已是亏空（负数）时原先 max(0, …) 会把库拉回 0，亏空一笔勾销、还记成一笔收入
+    var after = Math.max(Math.min(0, before), before + delta);
     var applied = after - before;
     led.stock = after;
     if (applied >= 0) {
@@ -1362,6 +1363,8 @@
       if (!led.sinks) led.sinks = {};
       led.sinks[tag] = (Number(led.sinks[tag]) || 0) - applied;
     }
+    // 帑廪册里逐条列名（原先只进 sinks/sources，度支册「其他」里只见「其余其他凭据」）
+    if (applied && global.GM && container === global.GM.guoku && global.FiscalStatement && global.FiscalStatement.recordFlow) global.FiscalStatement.recordFlow(led, 'central', applied > 0 ? 'in' : 'out', tag, 'linkage:' + tag, tag, Math.abs(applied));
     container.balance = led.stock;
     container.money = led.stock;
     return applied;
@@ -1489,7 +1492,12 @@
       if (G.guoku) {
         var authorityTaxEff = _clampNumber(1 + ((Number(hq.index) || 50) - 55) / 250, 0.75, 1.18);
         G._authorityTaxEfficiencyMult = authorityTaxEff;
-        var authorityTaxDelta = Math.round(_populationDing(G) * (authorityTaxEff - 1) * 0.25 * mr);
+        // 效率乘在本期实征正税上（CascadeTax 记的 turnTaxMoney，已是这一回合的数，不再乘 mr）。
+        // 原先乘的是「每丁每月 0.25 两」的假想税基，与实征无关：天启每月凭空多收 49 万两（比全部正税 40 万还多），
+        // 绍宋每月凭空少收 49 万两（正税的三分之二）
+        var taxThisTurn = Number(G.guoku.turnTaxMoney);
+        if (!isFinite(taxThisTurn) || taxThisTurn < 0) taxThisTurn = Math.max(0, Number(G.guoku.turnIncome) || 0);
+        var authorityTaxDelta = Math.round(taxThisTurn * (authorityTaxEff - 1));
         _linkageFiscalFlow(G.guoku, authorityTaxDelta, '皇权·征收效率');
       }
       // 皇权 → 户口（强则编审有力，弱则逃亡隐匿增加）

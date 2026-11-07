@@ -1233,8 +1233,8 @@
     root.fiscal.effectiveRevenue = nextTurn;
     if (g.ledgers && g.ledgers.money) {
       var ledger = g.ledgers.money;
-      ledger.thisTurnIn = Math.min(number(ledger.thisTurnIn, nextTurn), nextTurn);
-      ledger.lastTurnIn = Math.min(number(ledger.lastTurnIn, nextTurn), nextTurn);
+      // 账上本期收入照实入记：真从库里扣了折损的，上面已一并减过。原先这里一律截到 nextTurn，库里一文没少、册上少记，
+      // 帑廪收减支对不上库存之变（绍宋第一回合差 37389 两）；turnIncome 仍是受户籍折损约束的数
       g.lastDelta = number(ledger.thisTurnIn, nextTurn) - number(ledger.thisTurnOut, g.turnExpense || 0);
     } else {
       g.lastDelta = nextTurn - number(g.turnExpense || g.monthlyExpense, 0);

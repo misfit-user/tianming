@@ -130,6 +130,48 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
   };
   const before = await stocks();
   debtCheck('开局', before);
+  // 皇庄：各地块分摊之和就是全国数（内帑据以收租的数），租入 = 亩数 × 每亩租率；
+  // 方志风物志的皇庄行取同一个数，没有皇庄（唐宋、统一预算）就不列
+  const capitalOf = { 天启: '顺天府', 绍宋: '开封府', 晚唐: '京兆府' };
+  const zhuangRead = () => p.evaluate(async (cap) => {
+    const G = window.GM, n = G.neitang || {}, NT = window.NeitangEngine;
+    let sum = 0, rows = 0, capShare = null;
+    Object.keys(G.adminHierarchy || {}).forEach((fk) => {
+      const walk = (divs) => (divs || []).forEach((d) => {
+        if (!d) return;
+        const kids = (d.children && d.children.length) || (d.divisions && d.divisions.length);
+        if (!kids) { const v = NT.huangzhuangOf(d); sum += v; if (v) rows++; }
+        if (cap && String(d.name || '').startsWith(cap)) capShare = NT.huangzhuangOf(d);
+        walk(d.children); walk(d.divisions);
+      });
+      walk((G.adminHierarchy[fk] || {}).divisions);
+    });
+    const rent = ((n.sourcesDetail || {}).huangzhuang || [])[0];
+    let page = null;
+    if (cap) {
+      try {
+        const Z = await import('/ui/adapter/fangzhi.js');
+        if (Z.ensureCircuits) await Z.ensureCircuits();
+        const id = Z.regionIdOf(cap), pg = id ? Z.region(id) : null;
+        const vol = pg && pg.vols.find((v) => v.key === 'fengwu');
+        const row = vol && (vol.grid || []).find((x) => x.k === '皇庄');
+        page = { id, row: row ? row.v : null };
+      } catch (e) { page = { err: e.message.slice(0, 120) }; }
+    }
+    return { explicit: !!n._tmExplicitFlow, declared: n.huangzhuangDeclared === true ? n.huangzhuangAcres : null, rate: n.huangzhuangRatePerAcre, sum, rows, capShare, rent: rent ? rent.amount : null, sources: n.sources || {}, page };
+  }, capitalOf[scnKey] || null);
+  const hz = await zhuangRead();
+  console.log(`  皇庄 全国${hz.declared} 每亩${hz.rate} 分摊${hz.sum}（${hz.rows} 块） 租入${hz.rent} 方志${JSON.stringify(hz.page)}`);
+  if (hz.explicit) {
+    check(hz.sum === 0, `皇庄：统一预算的内库不收皇庄租，地块不列皇庄（分摊${hz.sum}）`);
+  } else if (hz.declared != null) {
+    check(Math.abs(hz.sum - hz.declared) <= hz.rows, `皇庄：地块分摊之和${hz.sum}就是全国${hz.declared}`);
+    check(Math.abs((hz.rent || 0) - Math.round(hz.declared * (hz.rate || 0))) <= 1, `皇庄：租入${hz.rent}等于亩数乘每亩租率`);
+  }
+  if (hz.page && !hz.page.err && hz.page.id) {
+    const want = hz.capShare || 0, got = hz.page.row == null || hz.page.row === '' ? 0 : Number(hz.page.row);
+    check(got === want, `皇庄：方志${capitalOf[scnKey]}的皇庄行（${got || '不列'}）取内帑分摊数（${want || '无'}）`);
+  } else if (capitalOf[scnKey]) check(false, `皇庄：方志${capitalOf[scnKey]}读不到 ${JSON.stringify(hz.page)}`);
   await openBook();
   await toTab('帑廪');
   await shot('open-guoku');
@@ -266,6 +308,46 @@ const check = (ok, msg) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${msg}`); if
   await pageCheck('结账后内帑');
   await shot('settled-neitang-item');
 
+  // 旧存档：存档里没有 huangzhuangDeclared、每亩租率、皇产岁入（那时皇庄按地块公式数合计入账）。
+  // 去掉这几项、亩数退回旧剧本的 32 万，再结一期：补读剧本写明的数，皇庄、皇产两项年额和新开局一样
+  if (!hz.explicit) {
+    const oldSave = await p.evaluate(() => {
+      const G = window.GM, n = G.neitang, want = { huangzhuang: n.sources.huangzhuang, huangchan: n.sources.huangchan };
+      delete n.huangzhuangDeclared; delete n.huangzhuangRatePerAcre; delete n.imperialBusinessRevenueAnnual; n.huangzhuangAcres = 320000;
+      // 各块亩数也换成旧剧本那样的数（每块都记着），补读后应回到剧本现记的
+      // 只换剧本里记着的块（开局才由地图生成的块不在剧本里，旧存档里也是同一套生成的数）
+      const sc = window.findScenarioById && window.findScenarioById(G.sid), named = new Set();
+      const walkSc = (l) => (l || []).forEach((d) => { if (!d) return; if (d.economyBase && d.economyBase.imperialFarmland !== undefined) named.add(d.name); walkSc(d.children); walkSc(d.divisions); });
+      Object.keys((sc && sc.adminHierarchy) || {}).forEach((fk) => walkSc((sc.adminHierarchy[fk] || {}).divisions));
+      const divs = [], walk = (l) => (l || []).forEach((d) => { if (!d) return; if (d.economyBase && named.has(d.name)) divs.push(d); walk(d.children); walk(d.divisions); });
+      Object.keys(G.adminHierarchy || {}).forEach((fk) => walk((G.adminHierarchy[fk] || {}).divisions));
+      const fresh = divs.map((d) => d.economyBase.imperialFarmland || 0);
+      // 旧剧本的数比现记的大（天启顺天府旧 129.9 万亩、现 94.8 万）。皇庄所在块的亩数随耕地浮动，
+      // 块上还记着上期的自然量和每亩比率，旧存档里记的也是旧剧本的数，一并换掉
+      let floating = 0;
+      divs.forEach((d, i) => {
+        const eb = d.economyBase, old = Math.round(fresh[i] * 1.5) + 12345;
+        eb.imperialFarmland = old;
+        if (typeof eb._imperialFarmlandNaturalLast !== 'number') return;
+        floating++;
+        eb._imperialFarmlandNaturalLast = old; eb._imperialFarmlandNaturalRate = old / Math.max(1, eb.farmland || 0); eb._imperialFarmlandNaturalDriverLast = eb.farmland;
+      });
+      window.CascadeTax.collect(); window.FixedExpense.collect(); G.turn++;
+      window.GuokuEngine.tick({ turn: G.turn, monthRatio: 1, _monthRatio: 1 });
+      window.NeitangEngine.tick({ turn: G.turn, monthRatio: 1, _monthRatio: 1 });
+      // 浮动的块开局后已结过一期，和剧本所记差一点，差 2% 以内算回来了
+      const near = (a, b) => Math.abs(a - b) <= Math.max(2, Math.abs(b) * 0.02);
+      const off = () => divs.filter((d, i) => !near(d.economyBase.imperialFarmland || 0, fresh[i])).map((d) => d.name);
+      const wrong = off();
+      // 再结一期：补读的亩数不能被浮动基数拉回旧剧本的
+      window.CascadeTax.collect();
+      const pulledBack = off();
+      return { want, got: { huangzhuang: n.sources.huangzhuang, huangchan: n.sources.huangchan }, flag: n.huangzhuangDeclared, divs: divs.length, floating, wrong, pulledBack };
+    });
+    for (const k of ['huangzhuang', 'huangchan']) check(Math.abs((oldSave.got[k] || 0) - (oldSave.want[k] || 0)) <= 1, `旧存档：补读剧本后${k === 'huangzhuang' ? '皇庄' : '皇产'}年额${Math.round(oldSave.got[k] || 0)}和新开局${Math.round(oldSave.want[k] || 0)}一样`);
+    check(oldSave.wrong.length === 0, `旧存档：${oldSave.divs} 块的皇庄亩数补读后回到剧本所记${oldSave.wrong.length ? `，没回来的 ${oldSave.wrong.length} 块：` + oldSave.wrong.slice(0, 8).join('、') : ''}`);
+    check(oldSave.pulledBack.length === 0, `旧存档：再结一期，亩数随耕地浮动的 ${oldSave.floating} 块没被拉回旧数${oldSave.pulledBack.length ? `，拉回的：` + oldSave.pulledBack.slice(0, 8).join('、') : ''}`);
+  }
   check(errs.length === 0, `页面报错 ${errs.length}`);
   console.log(bad ? `共 ${bad} 处不过` : '全过');
   await b.close();

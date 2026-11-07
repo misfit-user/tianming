@@ -1223,7 +1223,7 @@
       mineralRegion: /矿|礦|铁|鐵|铜|銅|银|銀|煤/.test(text),
       horseRegion: /马|馬|牧|草原|边镇|九边/.test(text),
       fishingRegion: /渔|漁|鱼|魚|湖|海|江/.test(text),
-      imperialDomain: /皇庄|内府|织造|御|陵|京畿/.test(text)
+      imperialDomain: /皇庄|宫庄|庄宅|内府|织造|御窑/.test(text) // 原先单字「陵」撞上地势「丘陵」（晚唐 259 块连新罗都成了皇庄、织造），「御」撞防御使，「京畿」撞倭国畿内
     };
     Object.keys(tagDefaults).forEach(function(key) {
       if (typeof div.tags[key] !== 'boolean') div.tags[key] = !!tagDefaults[key];
@@ -1991,7 +1991,7 @@
 
     aggregateParentFiscal(G);
     syncAccountScalars(G.guoku, ledgers);
-    G.guoku.turnIncome = Math.round(totals.central.money);
+    G.guoku.turnIncome = G.guoku.turnTaxMoney = Math.round(totals.central.money); // turnTaxMoney：本期实征正税入帑廪（turnIncome 其后还会被户籍折损、月结改写），皇权征收效率按它算
     G.guoku.turnGrainIncome = Math.round(totals.central.grain);
     G.guoku.turnClothIncome = Math.round(totals.central.cloth);
     G.guoku.turnDays = turnDays;

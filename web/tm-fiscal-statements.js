@@ -3,7 +3,7 @@
   'use strict';
   var RES=['money','grain','cloth'];
   var IN={tianfu:'田赋',dingshui:'丁税',caoliang:'漕粮',yanlizhuan:'盐铁专卖',shipaiShui:'市舶',quanShui:'榷税',juanNa:'捐纳',qita:'其他',mining:'矿冶',fishingTax:'渔课'};
-  var OUT={fenglu:'俸禄',junxiang:'军饷',zhenzi:'赈济',gongcheng:'工程',jisi:'祭祀',shangci:'赏赐',neiting:'内廷转运',qita:'其他'};
+  var OUT={fenglu:'俸禄',junxiang:'军饷',zhenzi:'赈济',gongcheng:'工程',jisi:'祭祀',shangci:'赏赐',neiting:'内廷转运',qingchang:'清偿旧欠',qita:'其他'};
   var INNER_IN={huangzhuang:'皇庄',huangchan:'皇产',specialTax:'特别税',confiscation:'抄没',tribute:'朝贡',guokuTransfer:'帑廪转运',other:'其他'};
   var INNER_OUT={gongting:'宫廷',dadian:'大典',shangci:'赏赐',houGongLingQin:'后宫陵寝',guokuRescue:'接济帑廪',other:'其他'};
   function num(v){return typeof v==='number'&&isFinite(v)?v:0;}

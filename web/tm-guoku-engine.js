@@ -412,8 +412,13 @@
       if (byType.plague) subs.push({ id: 'relief_plague', name: '瘟疫赈抚', amount: byType.plague * unitCost.plague, note: byType.plague + ' 处' });
       if (byType.locust) subs.push({ id: 'relief_locust', name: '蝗灾赈济', amount: byType.locust * unitCost.locust, note: byType.locust + ' 处' });
       if (byType.other) subs.push({ id: 'relief_other', name: '其他灾赈', amount: byType.other * unitCost.other, note: byType.other + ' 处' });
-      // 流民安置·按全国 fugitives 人户
-      var fugitives = (GM.hukou && GM.hukou.fugitives) || 0;
+      // 流民安置·按全国逃户户数，单户 1.2 两。hukou.fugitives 是口数（户口结算里 fugitiveHouseholds = 口数 ÷ 户均口数），
+      // 原先拿口数乘单户价，多算四五倍；开局 GM.hukou 还没结算过、是空的，预估就漏了这一项，故退读 population
+      var hk = GM.hukou || {}, pop = GM.population || {}, nat = pop.national || {};
+      var fugMouths = finiteNumberOr(hk.fugitives, 0) > 0 ? hk.fugitives : finiteNumberOr(pop.fugitives, 0);
+      var fugHh = finiteNumberOr(hk.fugitiveHouseholds, 0) > 0 ? hk.fugitiveHouseholds : finiteNumberOr(nat.fugitiveHouseholds, 0);
+      var perHh = finiteNumberOr(nat.mouths, 0) / Math.max(1, finiteNumberOr(nat.households, 0));
+      var fugitives = Math.round(fugHh > 0 ? fugHh : fugMouths / Math.max(2.5, perHh > 0 ? perHh : 5));
       if (fugitives > 0) {
         var migCost = Math.round(fugitives * 1.2);  // 单户安置 1.2 两
         subs.push({ id: 'relief_migrants', name: '流民安置', amount: migCost, note: fugitives + ' 户·路费/口粮' });
@@ -534,8 +539,9 @@
       if (postCost === 0) postCost = 30000;  // 无配置兜底
       // 杂支兜底
       var miscCost = safe((GM.guoku || {}).otherExpense, 0);
-      // 救荒社仓·按全国户数粗估（100 户一仓，年支 0.5 两）
-      var householdsTotal = finiteNumberOr(GM.hukou && GM.hukou.households, 0);
+      // 救荒社仓·按全国户数粗估（100 户一仓，年支 0.5 两）。hukou.households 没人写，原先总落到 registeredTotal——那是口数，
+      // 多算四五倍；开局 GM.hukou 还空着，又落到一千万的缺省，预估与第一回合对不上。改读户口结算的在册户数，开局退读 population
+      var householdsTotal = finiteNumberOr(GM.hukou && GM.hukou.registeredHouseholds, 0) || finiteNumberOr(GM.population && GM.population.national && GM.population.national.households, 0);
       if (householdsTotal === 0) householdsTotal = finiteNumberOr(GM.hukou && GM.hukou.registeredTotal, 10000000);
       if (householdsTotal > 1e8) householdsTotal = householdsTotal / 5;  // 防止误传 mouths
       var sheCang = Math.round(householdsTotal / 100 * 0.5);
@@ -2505,7 +2511,7 @@
     var service = global.TM && global.TM.PublicTreasury, opening = service && service.getOpeningAllocations ? service.getOpeningAllocations({game:G}) : null;
     var held = opening && opening.declared ? safe(opening.pending.guoku.money, 0) : 0;
     var repay = _repayDeficitAmount(safe(led.stock, safe(G.guoku.balance, 0)) - held + flow.income - flow.expense, flow.income * 30 / days, days / 30);
-    return repay > 0 ? {central:{money:[{key:'qita', id:'repayDeficit', name:'清偿旧欠', amount:repay}]}} : null;
+    return repay > 0 ? {central:{money:[{key:'qingchang', id:'repayDeficit', name:'清偿旧欠', amount:repay}]}} : null;
   }
 
   function tick(context) {

@@ -1774,7 +1774,9 @@
         if (!paid && GM.guoku && GM.guoku.balance >= salary) {
           // 俸禄双扣修(2026-07-04 审查定罪)：FixedExpense 本回合已按 officeTree 编制从国库总扣过「俸禄」——
           // 此处只记「发放到人」不再二次出账；FixedExpense 未跑的场合才走真账兜底。
-          if (GM._lastFixedExpenseTurn !== GM.turn) {
+          // FixedExpense 在 GM.turn++ 之前结账，这里在之后：连上一回合一起认（同 NeitangEngine._fixedExpenseRan）。
+          // 只认本回合时永远判「未跑」，俸禄扣两遍（绍宋每月多扣 48808 两）
+          if (GM._lastFixedExpenseTurn !== GM.turn && GM._lastFixedExpenseTurn !== GM.turn - 1) {
             if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: salary }, '俸禄'); // 收口·走真账
           }
           paid = true;

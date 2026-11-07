@@ -83,7 +83,8 @@ function baseGM(overrides) {
     turn: 1,
     settings: {},
     chars: [],
-    guoku: { money: o.guokuMoney == null ? 1000000 : o.guokuMoney },
+    // 皇权征收效率乘在本期实征正税上（CascadeTax 记 turnTaxMoney）
+    guoku: { money: o.guokuMoney == null ? 1000000 : o.guokuMoney, turnTaxMoney: o.turnTax == null ? 100000 : o.turnTax },
     neitang: { money: o.neitangMoney == null ? 100000 : o.neitangMoney },
     corruption: { overall: corr, trueIndex: corr, perceivedIndex: corr },
     population: {

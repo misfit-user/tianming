@@ -1389,7 +1389,8 @@
       led = container.ledgers.money = { stock: Number(container.money) || Number(container.balance) || 0, sources: {}, sinks: {}, thisTurnIn: 0, thisTurnOut: 0, history: [] };
     }
     var before = Number(led.stock) || 0;
-    var after = Math.max(0, before + delta);
+    // 支不过库：库里没有就不扣。库已是亏空（负数）时原先 max(0, …) 会把库拉回 0，亏空一笔勾销、还记成一笔收入
+    var after = Math.max(Math.min(0, before), before + delta);
     var applied = after - before;
     led.stock = after;
     if (applied >= 0) {
@@ -1401,6 +1402,8 @@
       if (!led.sinks) led.sinks = {};
       led.sinks[tag] = (Number(led.sinks[tag]) || 0) - applied;
     }
+    // 帑廪册里逐条列名（原先只进 sinks/sources，度支册「其他」里只见「其余其他凭据」）
+    if (applied && global.GM && container === global.GM.guoku && global.FiscalStatement && global.FiscalStatement.recordFlow) global.FiscalStatement.recordFlow(led, 'central', applied > 0 ? 'in' : 'out', tag, 'linkage:' + tag, tag, Math.abs(applied));
     container.balance = led.stock;
     container.money = led.stock;
     return applied;
@@ -1456,11 +1459,8 @@
       if (typeof global.AuthorityEngines !== 'undefined') global.AuthorityEngines.adjustMinxin('imperialVirtue', -0.1 * mr, '内帑奢靡');
     }
 
-    // 户口 → 内帑（皇庄进项）
-    if (population && population.byCategory.huangzhuang && G.neitang) {
-      var huangzhuangMouths = population.byCategory.huangzhuang.mouths;
-      _linkageFiscalFlow(G.neitang, huangzhuangMouths * 0.3 * mr / 12, '皇庄进项');
-    }
+    // 户口 → 内帑（皇庄进项）撤了：皇庄租入由 NeitangEngine.Sources.huangzhuang 按剧本写明的亩数、租率记账，
+    // 这里再按皇庄户口每口三钱记一份是同一笔租记两次（晚唐、绍宋本无皇庄，也照记）
     // 户口 → 腐败（冗员多则腐败增）
     if (population && population.byCategory.ruhu && G.corruption && typeof G.corruption === 'object') {
       var ruhu = population.byCategory.ruhu.mouths;
@@ -1486,10 +1486,8 @@
       _addCorrIndex(G, -0.05 * mr);
     }
 
-    // 皇权 → 帑廪（强皇权 → 税收效率高）
-    if (G.huangquan && G.huangquan.index > 70 && G.guoku) {
-      _linkageFiscalFlow(G.guoku, Math.max(0, (G.huangquan.index - 70)) * 100 * mr / 12, '皇权·征收效率');
-    }
+    // 皇权 → 帑廪（征收效率）撤了：AuthorityEngines._tickVarLinkage 已按皇权指数把效率乘在本期实征正税上，记同一名目，
+    // 这里再按指数记一笔是同一效应算两次
     // 皇权 → 内帑（强皇权 → 内帑富实）
     if (G.huangquan && G.huangquan.index > 70 && G.neitang) {
       _linkageFiscalFlow(G.neitang, Math.max(0, (G.huangquan.index - 70)) * 50 * mr / 12, '皇权·内帑充实');

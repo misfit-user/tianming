@@ -123,11 +123,66 @@
 
   // 全国皇庄汇总（imperialFarmland）·退化兜底用 GM.neitang.huangzhuangAcres
   function _imperialFarmlandTotal() {
-    // 剧本写明皇庄亩数就认它。地块上的 imperialFarmland 是耕地乘百分之五的公式数（天启算出 1395 万亩，剧本写的是 32 万亩）
-    if (GM.neitang && GM.neitang.huangzhuangDeclared && safe(GM.neitang.huangzhuangAcres, 0) > 0) return GM.neitang.huangzhuangAcres;
+    // 剧本写明皇庄亩数就认它，写明 0 也认（宋无皇庄）。地块上的 imperialFarmland 只是各块分摊的比重
+    if (GM.neitang && GM.neitang.huangzhuangDeclared && safe(GM.neitang.huangzhuangAcres, -1) >= 0) return GM.neitang.huangzhuangAcres;
     var v = _sumEB('imperialFarmland', 0);
     if (v > 0) return v;
     return safe((GM.neitang || {}).huangzhuangAcres, 100000);
+  }
+  // 旧存档没有 huangzhuangDeclared：那时皇庄租按地块公式数合计（天启 1395 万亩），存档里的亩数并不入账，
+  // 也没存每亩租率、皇产岁入。补读剧本写明的数，只补一次（剧本没写就记 false，往后照旧按地块合计）
+  function _adoptScenarioDeclared() {
+    var n = GM.neitang;
+    if (!n || n.huangzhuangDeclared !== undefined || explicitFiscalActive() || typeof global.findScenarioById !== 'function') return;
+    var sc = GM.sid ? global.findScenarioById(GM.sid) : null, no = (sc && sc.neitang) || {};
+    if (no.huangzhuangAcres === undefined) { n.huangzhuangDeclared = false; return; } // arch-ok: 内帑写口给旧存档补剧本预设。
+    n.huangzhuangAcres = no.huangzhuangAcres; n.huangzhuangDeclared = true; // arch-ok: 内帑写口给旧存档补剧本预设。
+    _adoptDivisionHuangzhuang(sc);
+    if (no.huangzhuangRatePerAcre !== undefined && n.huangzhuangRatePerAcre === undefined) n.huangzhuangRatePerAcre = no.huangzhuangRatePerAcre; // arch-ok: 内帑写口给旧存档补剧本预设。
+    if (no.imperialBusinessRevenueAnnual !== undefined && n.imperialBusinessRevenueAnnual === undefined) n.imperialBusinessRevenueAnnual = no.imperialBusinessRevenueAnnual; // arch-ok: 内帑写口给旧存档补剧本预设。
+  }
+  // 旧存档各块的皇庄亩数是旧剧本的（天启原把南直隶、浙江和河南王府庄田都记作皇庄，绍宋开封府、京畿路记着公式数），
+  // 全国数补读之后各块也按剧本现记的改，方志页的分摊才落在剧本写明的地方；剧本里找不到的块不动
+  function _adoptDivisionHuangzhuang(sc) {
+    // 剧本里的地块多半没有 id（开局才生成），按 id 对不上就按势力加地名对，再不行按地名对
+    var byId = {}, byName = {}, count = 0;
+    var walk = function(list, fn) { (list || []).forEach(function(d) { if (!d) return; fn(d); walk(d.children, fn); walk(d.divisions, fn); }); };
+    Object.keys((sc && sc.adminHierarchy) || {}).forEach(function(fk) {
+      walk((sc.adminHierarchy[fk] || {}).divisions, function(d) {
+        var eb = d.economyBase;
+        if (!eb || eb.imperialFarmland === undefined) return;
+        var v = Math.max(0, Number(eb.imperialFarmland) || 0);
+        if (d.id) byId[d.id] = v;
+        byName[fk + '|' + d.name] = v;
+        if (byName['|' + d.name] === undefined) byName['|' + d.name] = v;
+        count++;
+      });
+    });
+    if (!count) return;
+    Object.keys(GM.adminHierarchy || {}).forEach(function(fk) {
+      walk((GM.adminHierarchy[fk] || {}).divisions, function(d) {
+        if (!d.economyBase) return;
+        var v = d.id && byId[d.id] !== undefined ? byId[d.id] : byName[fk + '|' + d.name] !== undefined ? byName[fk + '|' + d.name] : byName['|' + d.name];
+        if (v === undefined) return;
+        var eb = d.economyBase;
+        eb.imperialFarmland = v; // arch-ok: 内帑写口给旧存档补剧本预设。
+        // 皇庄所在的块，亩数随耕地浮动（tm-fiscal-engine settleProductionBase），块上记着上期的自然量和每亩比率；
+        // 不清掉，下期结算又按旧剧本的比率把亩数拉回去（天启顺天、保定、河间三府）。清掉后下期按新亩数重新起算
+        delete eb._imperialFarmlandNaturalLast; delete eb._imperialFarmlandNaturalRate; delete eb._imperialFarmlandNaturalDriverLast; // arch-ok: 同上，随补读一并重起浮动基数。
+      });
+    });
+  }
+  // 地块页的皇庄亩数：全国皇庄（内帑据以收租的数）按各块所记亩数的比重分摊，各块相加就是全国数。
+  // 统一预算的内库不收皇庄租，一律 0。父级按下属叶子合计
+  function huangzhuangOf(div) {
+    if (!div || !GM.neitang || explicitFiscalActive()) return 0;
+    var leafSum = function(d) {
+      var kids = (d.children && d.children.length ? d.children : null) || (d.divisions && d.divisions.length ? d.divisions : null);
+      if (!kids) return Math.max(0, safe(d.economyBase && d.economyBase.imperialFarmland, 0));
+      return kids.reduce(function(s, k) { return s + (k ? leafSum(k) : 0); }, 0);
+    };
+    var all = _sumEB('imperialFarmland', 0), own = leafSum(div);
+    return all > 0 && own > 0 ? Math.round(_imperialFarmlandTotal() * own / all) : 0;
   }
   // 全国皇产汇总（zhizao/kuangchang/yuyao）·只计叶子，父级可存下属合计
   function _imperialAssetsTotal() {
@@ -450,6 +505,7 @@
     }
 
     // 计算 6 源年度总
+    _adoptScenarioDeclared();
     delete n.sourcesDetail.other; delete n.expensesDetail.other;
     var totalIncome = 0;
     var srcBreakdown = {};
@@ -587,8 +643,8 @@
     var n = GM.neitang, est = n.monthlyIncomeEstimate || {};
     var src = n.sources || {}, exp = n.expenses || {}, palace = fixedPaid ? 0 : safe(exp.gongting, 0);
     var grainIn = { tribute: safe(src.tribute, 0) * 0.1 / 10 * mr / 12 };
+    // 皇庄租全数征银记在钱账，粮账不再按皇庄折一份（没写进粮的剧本原先在这里把同一笔租又记成粮）
     if (est.grain != null && isFinite(Number(est.grain))) grainIn['上供本色'] = Number(est.grain) * mr;
-    else grainIn.huangzhuang = safe(src.huangzhuang, 0) * 0.2 / 10 * mr / 12;
     var clothEstate = est.cloth != null && isFinite(Number(est.cloth)) ? Number(est.cloth) * mr : safe(src.huangchan, 0) * 0.15 / 5 * mr / 12;
     return {
       grain: { in: grainIn, out: { gongting: palace * 0.3 / 10 * mr / 12, shangci: safe(exp.shangci, 0) * 0.2 / 10 * mr / 12 } },
@@ -1047,6 +1103,7 @@
     if (G !== GM || explicitFiscalActive() || !global.GuokuEngine || !global.GuokuEngine.openingFiscalPending(G) || !global.FixedExpense) return null;
     ensureNeitangModel();
     var n = GM.neitang, src = {}, exp = {};
+    _adoptScenarioDeclared();
     delete n.sourcesDetail.other; delete n.expensesDetail.other; // arch-ok: 内帑预估写口清本库旧分目，下面按各目重算。
     Object.keys(Sources).forEach(function(k) { var v = 0; try { v = Sources[k]() || 0; } catch(_e) { v = 0; } src[k] = v; });
     Object.keys(Expenses).forEach(function(k) { var v = 0; try { v = Expenses[k]() || 0; } catch(_e) { v = 0; } exp[k] = v; });
@@ -1107,6 +1164,7 @@
     ensureModel: ensureNeitangModel,
     getMonthRatio: getMonthRatio,
     previewOpeningFiscal: previewOpeningFiscal,
+    huangzhuangOf: huangzhuangOf,
     autoTransferIn: autoTransferIn,
     Sources: Sources,
     Expenses: Expenses,
@@ -1480,7 +1538,8 @@
     var dest = rcp.destination || 'guoku.grain';
     // 宗禄出账判权(2026-07-04 审查定罪)：rcp.annualStipendPaid 已配则 FixedExpense.calcRoyalStipend
     // 按年额扣同一 sink「宗禄」——本引擎同回合再按人口扣一遍=双扣。FixedExpense 本回合已跑即让位(人口演化照跑)。
-    var _fixedOwnsStipend = (Number(rcp.annualStipendPaid) > 0) && (GM._lastFixedExpenseTurn === GM.turn);
+    // 内帑结算在 GM.turn++ 之后，只认本回合永远判「未跑」，帑廪粮账宗禄扣两遍（天启、绍宋每月多扣 4172 石）
+    var _fixedOwnsStipend = (Number(rcp.annualStipendPaid) > 0) && _fixedExpenseRan();
     if (!_fixedOwnsStipend) {
       // 宗禄支出走 FiscalEngine 真账(2026-07-04 收口)·粮价 5 两/石等价折算
       if (dest === 'guoku.grain' && typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) {

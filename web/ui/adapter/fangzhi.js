@@ -151,6 +151,9 @@ function build(p, r) {
   const d = b.data || {};
   const econ = d.economyBase || {};
   const assets = econ.imperialAssets || {};
+  // 皇庄亩数取内帑据以收租的全国数按本块比重分摊（各块相加即全国数）；内核没给口子才读地块原数
+  const NT = w.NeitangEngine;
+  const zhuang = (NT && typeof NT.huangzhuangOf === 'function' ? NT.huangzhuangOf(b.liveDivision || d) : econ.imperialFarmland) || '';   // 无皇庄不列（唐宋本无皇庄之名）
   const turn = Number(g.turn) || 0;
   const circuit = typeof p.findCircuit === 'function' ? p.findCircuit(r) : null;
   const mine = typeof p.isPlayerRegion === 'function' ? !!p.isPlayerRegion(r) : false;
@@ -271,7 +274,7 @@ function build(p, r) {
   const fengwuGrid = keep([
     row('耕地', econ.farmland), row('商贸', econ.commerceVolume), row('商贸盛衰', econ.commerceCoefficient),
     row('盐课', econ.saltProduction), row('矿课', econ.mineralProduction), row('马政', econ.horseProduction),
-    row('渔课', econ.fishingProduction), row('皇庄', econ.imperialFarmland), row('海贸', econ.maritimeTradeVolume),
+    row('渔课', econ.fishingProduction), row('皇庄', zhuang), row('海贸', econ.maritimeTradeVolume),
     row('织造', assets.zhizao), row('矿场', assets.kuangchang), row('御窑', assets.yuyao),
     row('驿站', econ.postRelays), row('道路', econ.roadQuality)
   ]);

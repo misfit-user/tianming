@@ -438,6 +438,11 @@
   function _tickMilitarySupply(mr) {
     var G = global.GM;
     if (!G.population || !G.population.military) return;
+    // military.types 是 GM.armies 派生的（syncMilitarySources，紧跟 FixedExpense 之后）。FixedExpense 已按 armies 发过饷粮，
+    // 欠饷月数、兵变险由 tm-military 按各军记。这里再按派生兵表扣一遍是同一批兵的饷粮：钱那一半被账本镜像盖掉，
+    // 粮那一半被对账记成「外部调整」（天启每月 55.9 万石、绍宋 36.2 万石）；再拿这笔没发出去的假想饷额判「帑廪不足」，
+    // 每月报一次「欠饷逃亡」。FixedExpense 跑过（在 GM.turn++ 之前，故连上一回合一起认）就整段让位
+    if (G._lastFixedExpenseTurn === G.turn || G._lastFixedExpenseTurn === G.turn - 1) return;
     Object.keys(G.population.military.types).forEach(function(k) {
       var t = G.population.military.types[k];
       if (!t.enabled || !t.strength) return;

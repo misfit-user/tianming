@@ -528,6 +528,11 @@
       if (gk.ledgers && gk.ledgers.money && typeof gk.ledgers.money === 'object') {
         var _ml = gk.ledgers.money;
         _ml.stock = (Number(_ml.stock) || 0) + totalSeigniorage;
+        // 本期收入、名目、度支册细目一并记（原先只加库存，帑廪册收减支对不上库存之变，绍宋每月差 36000 两）
+        _ml.thisTurnIn = (Number(_ml.thisTurnIn) || 0) + totalSeigniorage;
+        if (!_ml.sources) _ml.sources = {};
+        _ml.sources['铸钱净息'] = (Number(_ml.sources['铸钱净息']) || 0) + totalSeigniorage;
+        if (global.FiscalStatement && global.FiscalStatement.recordFlow) global.FiscalStatement.recordFlow(_ml, 'central', 'in', '铸钱净息', 'mint:seigniorage', '铸钱净息', totalSeigniorage);
         gk.balance = _ml.stock;
         gk.money = _ml.stock;
       } else if (typeof gk.money === 'number') {

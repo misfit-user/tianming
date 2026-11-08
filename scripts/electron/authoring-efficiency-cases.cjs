@@ -73,12 +73,24 @@ module.exports=async function({win,root,check}){
     if(P.ai?.key)throw Error('unexpected key');const sc=JSON.parse(${JSON.stringify(JSON.stringify(edited))}),before=JSON.stringify(sc),expected=JSON.parse(before);
     EconomyGapFill.buildHierarchyFromAdminDepth(expected);P.scenarios=P.scenarios.filter(s=>s.id!==sc.id);P.scenarios.push(sc);P.conf.fixedSeed='authoring-acceptance';const initial={};
     for(const [engine,key] of [[GuokuEngine,'guoku'],[NeitangEngine,'neitang']]){const old=engine.initFromDynasty;engine.initFromDynasty=function(...a){const r=old.apply(this,a),g=GM[key];initial[key]={balance:g.balance,money:g.money,stock:g.ledgers.money.stock};return r;};}
-    const pin=_tmStartPinMinxinFromVars;window._tmStartPinMinxinFromVars=function(sc){const r=pin(sc),values=[];function walk(nodes){for(const n of nodes||[]){const kids=n.children||n.divisions||n.subRegions||[];if(kids.length)walk(kids);else values.push(n.minxinLocal);}}walk(P.adminHierarchy.player.divisions);initial.minxinLeaves=[...new Set(values)];return r;};
+    const pin=_tmStartPinMinxinFromVars;window._tmStartPinMinxinFromVars=function(sc){
+     const leaves=[];(function walk(ns){for(const n of ns||[]){if(!n||typeof n!=='object')continue;const kids=Array.isArray(n.children)?n.children:Array.isArray(n.divisions)?n.divisions:Array.isArray(n.subRegions)?n.subRegions:[];if(kids.length)walk(kids);else leaves.push(n);}})(P.adminHierarchy.player.divisions);
+     const own=d=>{const v=Number(d.minxin!=null?d.minxin:d.minxinLocal);return Number.isFinite(v)?v:null;};
+     const weight=d=>{const p=d.population,pd=d.populationDetail||{};let m=(p&&typeof p==='object')?Number(p.mouths!=null?p.mouths:p.count):NaN;if(Number.isFinite(m)&&m>0)return m;if(Number.isFinite(Number(p))&&Number(p)>0)return Number(p);m=Number(pd.mouths!=null?pd.mouths:pd.population);return Number.isFinite(m)&&m>0?m:1;};
+     const before=leaves.map(d=>({authored:own(d),weight:weight(d)})),r=pin(sc);
+     initial.minxinLeaves=leaves.map((d,i)=>({...before[i],pinned:d.minxinLocal,mirror:d.minxin}));return r;};
     doActualStart(sc.id);await _tmAwaitLoadBarrier();return{sid:GM.sid,initial,sourceUnchanged:before===JSON.stringify(sc),sourceMatchesDeclaredInitialization:JSON.stringify(expected)===JSON.stringify(sc),canonical:['guoku','neitang'].every(k=>GM[k].balance===GM[k].money&&GM[k].money===GM[k].ledgers.money.stock),officeDescription:GM.officeTree?.[0]?.desc,minxin:GM.minxin?.trueIndex};
    })()`);
    console.log('AUTHORING_RUNTIME_OBSERVATION '+JSON.stringify(r));
    assert.equal(r.sid,input.id);assert(r.sourceMatchesDeclaredInitialization,'only the existing level initialization may change runtime input; saved editor source remains separate');assert(r.canonical);assert.deepEqual(r.initial.guoku,{balance:900123,money:900123,stock:900123});assert.deepEqual(r.initial.neitang,{balance:123987,money:123987,stock:123987});observations.push({kind:'actual-game-consumer',...r});
-   assert.equal(r.officeDescription,'隔离官制职责验收');assert.deepEqual(r.initial.minxinLeaves,[77]);assert(Number.isFinite(r.minxin)&&r.minxin>=0&&r.minxin<=100);
+   assert.equal(r.officeDescription,'隔离官制职责验收');
+   // 剧本给的全国民心（此处验收改成 77）进游戏：作者逐州给了民心的，按人口加权同比缩放，全国正好是 77、各州高下照留（越界夹在 0~100）；
+   // 州上没值的直接落 77。同志 11-08 定，取代旧的「每州都抹成一个数」。权重口径与 _tmStartPinMinxinFromVars 一致。
+   const leaves=r.initial.minxinLeaves;assert(Array.isArray(leaves)&&leaves.length>0,'民心 pin 时没观察到玩家叶子区划');
+   const given=leaves.filter(x=>x.authored!==null),W=given.reduce((s,x)=>s+x.weight,0),avg=W>0?given.reduce((s,x)=>s+x.authored*x.weight,0)/W:0;
+   leaves.forEach(x=>{const want=x.authored!==null&&avg>0?Math.max(0,Math.min(100,x.authored*77/avg)):77;assert(Math.abs(x.pinned-want)<=0.006&&x.mirror===x.pinned,'民心落州不对：'+JSON.stringify({...x,want}));});
+   if(new Set(given.map(x=>x.authored)).size>1)assert(new Set(given.map(x=>x.pinned)).size>1,'作者逐州的民心高下被抹平');
+   assert(Number.isFinite(r.minxin)&&r.minxin>=0&&r.minxin<=100);
    await win.loadFile(path.join(root,'web/preview/scenario-editor-reset-preview.html'));await until(`document.body.dataset.scenarioEditorResetApp==='ready'`);
   });
  }

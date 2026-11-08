@@ -2966,12 +2966,12 @@
     },
     {
       "path": "data/maps/scenario-library/index.json",
-      "sha256": "de587ac540353df457616963c2edb3391de1a5c79afc8fef877a36f3457693c0",
+      "sha256": "4932497519cd1fe1027c431a1bbd9080feb5e54d932b0824c26843f05cab7207",
       "size": 2410
     },
     {
       "path": "data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
-      "sha256": "b085b6846a5be5b9cde6a001210ab92fee2589bbcfb136b814236265a18d6025",
+      "sha256": "5d75fba864c8ee25d85a4a7dacc7e49dbb03834e31445836c5a847bbda602f63",
       "size": 11815292
     },
     {
@@ -2981,7 +2981,7 @@
     },
     {
       "path": "data/maps/scenario-library/sc-tianqi7-1627.json",
-      "sha256": "f5f1a4843f918ae096841c9bd955fbe076771cfd0ca951cec73393632763680e",
+      "sha256": "c58c40b485489156f14bf96a3abf935bbd231ca2059d584664b633437f1b0265",
       "size": 1486190
     },
     {

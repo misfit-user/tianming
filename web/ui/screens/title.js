@@ -21,7 +21,7 @@ const BOARD = [
 export function createTitle({ root, stage, study, game, onEnter }) {
   const board = h('nav.q-qi.board', { 'aria-label': '卷目' });
   const foot = h('div.foot', h('span', '传世诸卷'));
-  const demoNote = demoBuild() ? h('p.demo-note', '新界面试看版。只为看看界面，游戏内容停在十月，不是正式更新，存档与正式版各归各。') : null;
+  const demoNote = demoBuild() ? h('p.demo-note', '新界面试看版。只为看看界面，不是正式更新，存档与正式版各归各。') : null;
   const el = h('section.scr.scr-title', h('div.shade'), board, foot, demoNote);
   root.append(el);
   let busy = false;

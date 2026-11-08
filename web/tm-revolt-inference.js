@@ -232,7 +232,11 @@
         return r._identity;
       }
     } catch (_eF) {}
-    delete r._identityPending;  // 失败→镜像层下回合模板兜底(双轨)
+    // 只试一次（同志 11-08 定）：旧写法失败后只删「在锻」标记，下回合 schedule 又重派、镜像层又跳过——
+    // 天启假模型下五十四股民变每回合五十四次调用，一股也没成实体。失败就记下，不再派；
+    // 镜像层也不拿固定兵数的模板军兜底，等民变重做按人物和兵源来生。
+    delete r._identityPending;
+    r._identityFailed = (G && G.turn) || 0;
     return null;
   }
 
@@ -426,7 +430,7 @@
     try {
       ((G.minxin && G.minxin.revolts) || []).forEach(function (r) {
         if (!r || r.status !== 'ongoing' || (r.level || 0) < 3) return;
-        if (r._identity || r._identityPending == null && !_aiOn()) return;
+        if (r._identity || r._identityFailed != null || r._identityPending == null && !_aiOn()) return;  // 起旗号失败过的不再派
         var hasEntity = (G.facs || []).some(function (f) { return f && f._revoltEntity && f.sourceRevoltId === r.id; });
         if (hasEntity || r._identity) return;
         if (r._identityPending != null) return;  // 已在锻

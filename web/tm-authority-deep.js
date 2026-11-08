@@ -303,10 +303,13 @@
     if (ongoing.length < 2) return;
     // 每多 1 地 +5% 升级概率
     var inspirationMult = 1 + (ongoing.length - 1) * 0.05;
+    // 五级梯冻住期间（同志 11-08 定，见 tm-authority-complete REVOLT_LADDER_FROZEN）这里也不再「同起升一级」；激励系数照记。
+    // 只有那边明说解冻（=== false）才爬；没载那边时按冻住算。
+    var frozen = !(global.AuthorityComplete && global.AuthorityComplete.REVOLT_LADDER_FROZEN === false);
     ongoing.forEach(function(r) {
       r._multiInspiration = inspirationMult;
       // 加速升级（高概率升级）
-      if (r.level < 5 && Math.random() < 0.01 * inspirationMult * mr) {
+      if (!frozen && r.level < 5 && Math.random() < 0.01 * inspirationMult * mr) {
         r.level++;
         if (global.addEB) global.addEB('民变', '响 ' + ongoing.length + ' 地同起，' + (r.region || '某地') + ' 升一级');
       }
@@ -464,6 +467,7 @@
     applyPermanentReformLegacy: applyPermanentReformLegacy,
     getMinxinByOldClass: getMinxinByOldClass,
     computeRevoltInterventionOutcome: computeRevoltInterventionOutcome,
+    applyMultiRebellionInspiration: _applyMultiRebellionInspiration,   // smoke 单跑（核五级梯冻住时不「同起升一级」）
     getCurrentCorruptionMode: getCurrentCorruptionMode,
     detectFraudulentReports: detectFraudulentReports,
     checkLumpSumWarning: checkLumpSumWarning,

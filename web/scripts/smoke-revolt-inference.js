@@ -75,13 +75,15 @@ assert(!!fac && fac.name === '闯字营', '旗号=AI 锻造「闯字营」(非�
 assert(!!leader && leader.name === '高闯王', '渠帅=AI 立的「高闯王」');
 assert(!!army && army.commander === '高闯王', '军主帅=渠帅');
 
-console.log('② 身份锻造中缓拍(双轨)');
-GM.minxin.revolts.push({ id: 'rvB', region: '山东', status: 'ongoing', level: 3, scale: 30000, turn: 6, _identityPending: 6 });
+console.log('② 身份锻造中缓拍；锻久未成按失败算，不拿模板军兜底（同志 11-08 定）');
+var rvB = { id: 'rvB', region: '山东', status: 'ongoing', level: 3, scale: 30000, turn: 6, _identityPending: 6 };
+GM.minxin.revolts.push(rvB);
 RE.sync(GM);
 assert(!GM.facs.some(function (f) { return f._revoltEntity && f.sourceRevoltId === 'rvB'; }), '锻造中(_identityPending)→本回合不具象化');
 GM.turn = 8;
 RE.sync(GM);
-assert(GM.facs.some(function (f) { return f._revoltEntity && f.sourceRevoltId === 'rvB' && f.name === '山东义军'; }), '锻久未成→模板兜底具象化(双轨)');
+assert(!GM.facs.some(function (f) { return f._revoltEntity && f.sourceRevoltId === 'rvB'; }) && rvB._identityFailed === 8 && rvB._identityPending == null,
+  '锻久未成→按失败记下(_identityFailed)·不拿固定兵数的模板军兜底');
 
 console.log('③ 占府宪法闸：师未至/兵力不敌皆拦·合规才易手');
 army.location = '陕西'; army.garrison = '陕西';  // 造真「师未至」态(驻地与目标府无涉)
@@ -142,10 +144,31 @@ console.log('⑨ 招抚旨匹配器');
 var eds = RI._recentPacifyEdicts(GM, { fac: { name: '曹字营' }, r: { region: '河南' }, leader: { name: '罗曹操' } });
 assert(eds.length >= 1, '泛旨「招抚…流贼」对任一股可见(点名语义交 AI 读原文)');
 
-console.log('');
-if (failures.length) {
-  console.log('FAIL smoke-revolt-inference: ' + failures.length + ' 处失败');
-  failures.forEach(function (f) { console.log('  - ' + f); });
-  process.exit(1);
-}
-console.log('PASS smoke-revolt-inference (AI身份具象化/缓拍双轨/占府闸/裹挟顶/建国记账/分合/招抚三闸/受抚清账)');
+console.log('⑩ AI 起旗号只试一次（同志 11-08 定）：回得不对就记失败，不再每回合重派，也不生模板军');
+(async function () {
+  var identityCalls = 0;
+  sandbox.callAI = function (prompt) {
+    if (String(prompt).indexOf('测试州民乱') >= 0) identityCalls++;
+    return Promise.resolve({ text: '{"无关":1}' });
+  };
+  var rvC = { id: 'rvC', region: '测试州', status: 'ongoing', level: 3, scale: 30000, turn: 9 };
+  GM.minxin.revolts.push(rvC);
+  GM.turn = 9;
+  var forged = await RI.forgeIdentity(GM, rvC);
+  assert(forged === null && rvC._identityFailed === 9 && rvC._identityPending == null, '回得不对→记失败(_identityFailed=9)·不留「在锻」标记');
+  RE.sync(GM);
+  GM.turn = 10;
+  RE.sync(GM);
+  await new Promise(function (resolve) { setTimeout(resolve, 0); });
+  assert(identityCalls === 1, '失败后两回合都不再重派(只调过 1 次)·实得 ' + identityCalls);
+  assert(!GM.facs.some(function (f) { return f._revoltEntity && f.sourceRevoltId === 'rvC'; }), '失败的不拿模板军兜底');
+  delete sandbox.callAI;
+
+  console.log('');
+  if (failures.length) {
+    console.log('FAIL smoke-revolt-inference: ' + failures.length + ' 处失败');
+    failures.forEach(function (f) { console.log('  - ' + f); });
+    process.exit(1);
+  }
+  console.log('PASS smoke-revolt-inference (AI身份具象化/缓拍/起旗号只试一次/占府闸/裹挟顶/建国记账/分合/招抚三闸/受抚清账)');
+})().catch(function (e) { console.log('FAIL smoke-revolt-inference: ' + (e && e.stack || e)); process.exit(1); });

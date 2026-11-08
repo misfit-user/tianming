@@ -334,6 +334,12 @@
     { id:5, name:'改朝', scale:1000000, threshold:5,  threat:'doom',    description:'问鼎中原，王朝终结' }
   ];
 
+  // 民变重做落地前先止血（同志 11-08 定）：五级梯冻住，民变停在起事时的级别，不再按民心掷骰往上爬，
+  // 也就不再扣皇权皇威、不会「兵临京师」；起事最高到暴动。天启真过十四回合：第一回合陕西就有起义、改朝，
+  // 第八回合起爬到改朝、剑指京师，皇权 75→41、皇威 70→30；换成回话正常的模型，开局约八个月京师就陷。
+  var REVOLT_LADDER_FROZEN = true;
+  var REVOLT_START_MAX_LEVEL = 3;
+
   // 区引用 → 该省 div.minxin 真值（A·并账地基）。r.region 可能是行政区名("陕西")或 div.id，
   //   复用 PathUtils.findDivisionByNameOrId(按 name|id 深度匹配) 落到 adminHierarchy 叶子取真值源 div.minxin；
   //   解析不到（旧民变挂的 G.regions id 对不上 / 无 adminHierarchy）→ 回退全国 fallback，不致崩。
@@ -363,11 +369,12 @@
         for (var i = 0; i < REVOLT_LEVELS.length; i++) {
           if (idx <= REVOLT_LEVELS[i].threshold) r.level = REVOLT_LEVELS[i].id;
         }
+        r.level = Math.min(r.level, REVOLT_START_MAX_LEVEL); // 起事最高到暴动
         r.scale = REVOLT_LEVELS[r.level - 1].scale;
       }
-      // 升级条件：民心仍低 + 官军未剿 + 时间够长
+      // 升级条件：民心仍低 + 官军未剿 + 时间够长（五级梯冻住期间不爬）
       var currentDef = REVOLT_LEVELS[r.level - 1];
-      if (r.level < 5) {
+      if (r.level < 5 && !REVOLT_LADDER_FROZEN) {
         var upgradeReady = (ctx.turn - r.turn) > _turnsForMonthsLocal(6) && localMx < currentDef.threshold && !r._suppressed;
         if (upgradeReady && Math.random() < 0.15 * mr) {
           r.level++;
@@ -1696,6 +1703,7 @@
     powerMinisterEndgame: _powerMinisterEndgame,   // 刀丁4·供 ConspiracyEngine palace_coup 复用 R1d 废帝(usurpation)·勿另起终局路
 
     REVOLT_LEVELS: REVOLT_LEVELS,
+    REVOLT_LADDER_FROZEN: REVOLT_LADDER_FROZEN,   // 「同起升一级」(tm-authority-deep) 也读这一个
     HEAVEN_SIGNS: HEAVEN_SIGNS,
     AUSPICIOUS_SIGNS: AUSPICIOUS_SIGNS,
     QUADRANT_PROTOTYPES: QUADRANT_PROTOTYPES,

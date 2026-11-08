@@ -322,10 +322,15 @@ function _applyBreachOutcome(G, r, o) {
     G.minxin.revolts.forEach(function (r) {
       if (!r || r.status !== 'ongoing') return;
       if ((r.level || 0) < 3) return;
-      // 批三·身份锻造中缓拍(subcall 起号立领袖·失败/超时自动落模板=双轨)
-      if (r._identityPending != null && !r._identity) {
-        if (r._identityPending >= (G.turn || 0) - 1) return;
-        delete r._identityPending;
+      // 批三·身份锻造中缓拍。起旗号只试一次（同志 11-08 定）：锻了没回音按失败算；失败的不拿固定兵数的模板军兜底，
+      // 等民变重做按人物和兵源来生。没接 AI（callAI 不在）时照旧直接落模板。
+      if (!r._identity) {
+        if (r._identityPending != null) {
+          if (r._identityPending >= (G.turn || 0) - 1) return;
+          delete r._identityPending;
+          r._identityFailed = G.turn || 0;
+        }
+        if (r._identityFailed != null) return;
       }
       try { _ensureTrio(G, r); } catch (_eT) {}
       if ((r.level || 0) >= 5) { try { _tickBreach(G, r); } catch (_eB) {} }  // 破京链三拍(批二刀1)

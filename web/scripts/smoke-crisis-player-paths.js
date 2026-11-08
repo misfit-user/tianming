@@ -114,7 +114,8 @@ assert(gm.fiscal.regions.jiangnan.compliance > 0.42, 'lost authority restoration
 
 const levelBefore = gm.minxin.revolts[0].level;
 AC.tick({ turn: 24, monthRatio: 1 });
-assert(gm.minxin.revolts[0].level > levelBefore, 'low minxin revolt should upgrade before player response');
+// 五级梯冻住（同志 11-08 定，民变重做前止血）：掷骰必中、民心再低也不往上爬；玩家镇压照样要能落账。
+assert(gm.minxin.revolts[0].level === levelBefore, 'frozen ladder: a low-minxin revolt stays at its level until the revolt redesign');
 const troops = gm.minxin.revolts[0].scale * 3;
 assertOk(AC.handleCrisisAction({ type: 'revolt', action: 'suppress', revoltId: 'rv-shaanxi', troops: troops }), 'revolt suppression order');
 AC.tick({ turn: 25, monthRatio: 1 });

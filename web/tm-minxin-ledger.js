@@ -804,14 +804,15 @@
     var _t = Number(root.turn) || 0;
     // 复燃冷却：同链上一场民变结束后 12 回合内不自动补位——旧行为=镇压次回合原地复活成永动民变(2026-07-04 审查定罪)
     if (chain._lastSpawnTurn != null && (_t - chain._lastSpawnTurn) < CHAIN_RESPAWN_COOLDOWN) return null;
-    var scale = chain.level >= 4 ? 200000 : 30000;
+    // 起事最高到暴动（同志 11-08 定，民变重做前止血）：旧写法按链级起事，州民心 ≤16 一起事就是起义、≤8 就是改朝，
+    // 号称二十万——天启第一回合陕西十五股里就有起义 6 股、改朝 2 股。
     var revolt = {
       id: 'revolt-' + chain.id + '-t' + _t, // 带回合号唯一 id·旧写法复用同 id 令镇压 find 命中旧尸体(按 id 镇不掉复燃场)
       turn: chain.turn || root.turn || 0,
       region: chain.region || 'unknown',
       className: chain.className || '',
-      level: chain.level,
-      scale: scale,
+      level: Math.min(chain.level, 3),
+      scale: 30000,
       status: 'ongoing',
       cause: chain.cause,
       linkedIssue: chain.linkedIssue || '',

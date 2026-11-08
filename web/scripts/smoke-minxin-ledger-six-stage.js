@@ -305,4 +305,38 @@ const weavers = placeIdRevolts.filter(r => r.className === 'Weavers');
 assert(weavers.length === 1 && weavers[0].id === 'revolt-old' && weavers[0].region === 'River County',
   'an old revolt of the same class and place is adopted and renamed, not doubled: ' + JSON.stringify(weavers.map(r => r.id + '@' + r.region)));
 
+// 民变重做前止血（同志 11-08 定）：起事最高到暴动；五级梯冻住——不按民心掷骰往上爬、不扣皇权皇威、不兵临京师；
+// 「同起升一级」也停。天启实测：第一回合陕西就有起义、改朝，第八回合起爬到改朝剑指京师。
+const startGM = { turn: 40, minxin: { trueIndex: 50, perceivedIndex: 50, byClass: {}, sources: {}, revolts: [], uprisingCandidates: [],
+  byRegion: { zeta: { true: 5, regionName: 'Zeta County' } } } };
+ML.advanceUprisingChain(startGM, { turn: 40 });
+const zeta = ongoingOf(startGM).find(r => r.region === 'Zeta County');
+assert(zeta && zeta.level === 3 && zeta.scale === 30000, 'a revolt from a level-5 chain (local minxin 5) should start as a riot, level 3 / 30000: ' + JSON.stringify(zeta && { level: zeta.level, scale: zeta.scale }));
+
+const ladderCalls = [];
+sandbox.AuthorityEngines.adjustHuangquan = (src, d) => ladderCalls.push('huangquan ' + d);
+sandbox.AuthorityEngines.adjustHuangwei = (src, d) => ladderCalls.push('huangwei ' + d);
+const realRandom = Math.random;
+Math.random = () => 0; // 掷骰必中：旧写法这里一定往上爬
+try {
+  const climber = { id: 'climb', region: 'Mountain County', status: 'ongoing', level: 4, scale: 200000, turn: 1 };
+  const fresh = { id: 'fresh', region: 'Mountain County', status: 'ongoing', turn: 60 };
+  sandbox.GM = { turn: 60, minxin: { trueIndex: 0, perceivedIndex: 0, byRegion: {}, byClass: {}, sources: {}, uprisingCandidates: [], revolts: [climber, fresh] },
+    adminHierarchy: { player: { divisions: [{ id: 'mountain', name: 'Mountain County', minxin: 0, population: 100 }] } } };
+  sandbox.AuthorityComplete.tickRevoltUpgrade({ turn: 60 }, 1);
+  assert(climber.level === 4 && !climber._breachMarch && ladderCalls.length === 0,
+    'frozen ladder: no climb, no huangquan/huangwei hit, no march on the capital: ' + JSON.stringify({ level: climber.level, march: climber._breachMarch, calls: ladderCalls }));
+  assert(fresh.level === 3 && fresh.scale === 30000, 'a revolt without a level should start no higher than a riot even at local minxin 0: ' + JSON.stringify({ level: fresh.level, scale: fresh.scale }));
+  assert(sandbox.AuthorityComplete.REVOLT_LADDER_FROZEN === true, 'the freeze is exported for the other ladder path');
+
+  load('tm-authority-deep.js', sandbox);
+  const ra = { id: 'ra', region: 'Mountain County', status: 'ongoing', level: 3 };
+  const rb = { id: 'rb', region: 'River County', status: 'ongoing', level: 3 };
+  sandbox.GM = { turn: 61, minxin: { revolts: [ra, rb] } };
+  sandbox.PhaseF4.applyMultiRebellionInspiration({ turn: 61 }, 1);
+  assert(ra.level === 3 && rb.level === 3 && ra._multiInspiration > 1, 'multi-revolt inspiration should no longer bump levels while frozen: ' + ra.level + '/' + rb.level);
+} finally {
+  Math.random = realRandom;
+}
+
 console.log('[smoke-minxin-ledger-six-stage] PASS unified minxin six-stage implementation');

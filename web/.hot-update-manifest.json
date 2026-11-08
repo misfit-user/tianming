@@ -4626,13 +4626,13 @@
     },
     {
       "path": "tm-authority-complete.js",
-      "sha256": "95ae4c0e50a2604e8278c92091227752bf64df197ec1bf8b59af8ae940ceaa5c",
-      "size": 93544
+      "sha256": "5ab36727015687d2766d50c70445efea1149b532a1b1a28f1cd40ba6ad00904a",
+      "size": 94317
     },
     {
       "path": "tm-authority-deep.js",
-      "sha256": "a2c1dc8125871d89db0dcca3e974654d5608031fd294ab0c123a7e53e661d4e3",
-      "size": 25493
+      "sha256": "d4e0e56c61c5f649153ccfaeb139ecc9743df9f2c1ec6e44f7a45de7a194a187",
+      "size": 25993
     },
     {
       "path": "tm-authority-engines.js",
@@ -6141,8 +6141,8 @@
     },
     {
       "path": "tm-minxin-ledger.js",
-      "sha256": "752a90b38127643ad25995f06baab3e687eec84113eb0b6244833e0a5eb721d6",
-      "size": 50206
+      "sha256": "05f069cb2af81c2fd64d2286a319daf7bfb1136c88812ce8e549373a998b3c06",
+      "size": 50434
     },
     {
       "path": "tm-minxin-pressure-actions.js",
@@ -6561,13 +6561,13 @@
     },
     {
       "path": "tm-revolt-entity.js",
-      "sha256": "de9cf807b558f968ef54c51a220f66e064051fca6e833ab6b1cdfe54ea020e68",
-      "size": 18552
+      "sha256": "33c3b76b166e6b0c1897e57f2850ae912c16da0332133bbbc4d7ccea04f4027c",
+      "size": 18840
     },
     {
       "path": "tm-revolt-inference.js",
-      "sha256": "3f7b65fcd0f7c0dabd6019be339011420797674c04b2657bdf0a92c11799b674",
-      "size": 32351
+      "sha256": "6bec5f686f626c6a12d3275e7c381c67166a26786b5419d7b0b7f18431a1ef98",
+      "size": 32781
     },
     {
       "path": "tm-save-close-flush.js",
@@ -6676,7 +6676,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "1422425b9dc26e8cd6729787dde91e660f2e1c5d3a670aff294e623470f72348",
+      "sha256": "77a3472a5fd1aae30919820951a2da3e852700dbf86688078d361be76b4e44eb",
       "size": 140398
     },
     {

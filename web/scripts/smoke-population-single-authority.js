@@ -194,5 +194,53 @@ console.log('[smoke-population-single-authority]');
   ok(world.leaves[0].populationDetail.mouths !== firstMouths, 'failure injection occurred after an earlier region was mutated');
 }
 
+// 州负荷照剧本开局（与省一级同，同志 11-08 定）：剧本另给了州负荷的，开局 init 记下「口数 ÷ 上限」与它之比，过月后负荷仍从剧本的数起、
+// 随口数涨落；没给的就是口数 ÷ 上限。天启开封府口数 ÷ 上限 0.74、剧本写 1.08，旧写法过第一回合就改回 0.74。
+// 第一回合以后才见到的（旧档）比记作 1，旧档算法不动。剧本开局的州没有 environment，上限在 carryingCapacity.historicalCap。
+function authoredLoadWorld(turn) {
+  const world = makeWorld(true);
+  world.GM.turn = turn;
+  world.GM.population._inited = true;
+  const [dry, plain] = world.leaves;
+  delete dry.environment;
+  delete plain.environment;
+  dry.carryingCapacity = { historicalCap: Math.round(30000000 / 0.74), currentLoad: 1.08 };
+  plain.carryingCapacity = { historicalCap: 40000000 };
+  return world;
+}
+
+{
+  const world = authoredLoadWorld(1);
+  const [dry, plain] = world.leaves;
+  const ctx = createRuntime(world, true);
+  ctx.HujiEngine.init({});
+  ok(Math.abs(dry.carryingCapacity.authoredScale - 30000000 / dry.carryingCapacity.historicalCap / 1.08) < 1e-12
+    && plain.carryingCapacity.authoredScale === 1,
+  'opening init records the authored leaf load against people over cap, and 1 where the scenario gave none');
+  ctx.IntegrationBridge.migrateAndRebind({ strict: true });
+  const dryBefore = dry.populationDetail.mouths;
+  ctx.HujiEngine.tick({ turn: 1, monthRatio: 1, strict: true });
+  const dryAfter = dry.populationDetail.mouths;
+  const plainAfter = plain.populationDetail.mouths;
+  ok(dryAfter !== dryBefore && Math.abs(dry.carryingCapacity.currentLoad - 1.08 * dryAfter / dryBefore) < 1e-9,
+    'a month later the authored leaf load still starts from the scenario figure and follows its people: ' + dry.carryingCapacity.currentLoad);
+  ok(!dry.environment || Math.abs(dry.environment.currentLoad - dry.carryingCapacity.currentLoad) < 1e-12,
+    'the bridge environment mirror carries the same leaf load');
+  ok(Math.abs(plain.carryingCapacity.currentLoad - plainAfter / 40000000) < 1e-12,
+    'a leaf without an authored load stays people over cap');
+}
+
+{
+  const world = authoredLoadWorld(5);
+  const [dry] = world.leaves;
+  const ctx = createRuntime(world, true);
+  ctx.HujiEngine.init({});
+  ctx.IntegrationBridge.migrateAndRebind({ strict: true });
+  ctx.HujiEngine.tick({ turn: 5, monthRatio: 1, strict: true });
+  ok(dry.carryingCapacity.authoredScale === 1
+    && Math.abs(dry.carryingCapacity.currentLoad - dry.populationDetail.mouths / dry.carryingCapacity.historicalCap) < 1e-12,
+  'an old save past the opening turn keeps the old people-over-cap load');
+}
+
 console.log('\n[smoke-population-single-authority] ' + pass + ' passed / ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

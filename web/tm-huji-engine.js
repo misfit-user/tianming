@@ -597,6 +597,7 @@
       });
       _ensureDeepDemographics(G.population);
       _normalizePopulationBoundary(G, 'huji-existing-world', sc);
+      _anchorAuthoredLeafLoads(G);
       return;
     }
 
@@ -636,6 +637,7 @@
     };
     _ensureDeepDemographics(G.population);
     _normalizePopulationBoundary(G, 'huji-new-game', sc);
+    _anchorAuthoredLeafLoads(G);
   }
 
   function _inferDynasty(sc) {
@@ -1323,14 +1325,47 @@
     }
     var env = leaf.environment && typeof leaf.environment === 'object' ? leaf.environment : null;
     var carrying = leaf.carryingCapacity;
-    var cap = Number(env && env.carrying) ||
-      Number(carrying && typeof carrying === 'object' && carrying.historicalCap) ||
-      (typeof carrying === 'number' ? Number(carrying) : 0);
+    var cap = _leafLoadCap(leaf);
     if (cap > 0) {
-      var load = Math.max(0, Math.min(1.5, detail.mouths / cap));
+      _anchorAuthoredLeafLoad(leaf, detail.mouths);
+      var scale = carrying && typeof carrying === 'object' && Number(carrying.authoredScale) > 0 ? Number(carrying.authoredScale) : 1;
+      var load = Math.max(0, Math.min(1.5, detail.mouths / cap / scale));
       if (env) env.currentLoad = load;
       if (carrying && typeof carrying === 'object') carrying.currentLoad = load;
     }
+  }
+
+  // 州负荷照剧本开局（与省一级同，同志 11-08 定）：剧本另给了州负荷（carryingCapacity.currentLoad）的，记下开局「口数 ÷ 上限」
+  // 与它之比（authoredScale），此后负荷 = 口数 ÷ 上限 ÷ 该比，随口数涨落；没给的比为 1，就是口数 ÷ 上限。
+  // 天启作者按小冰期旱荒给河南、山西、陕西诸州加了负荷（开封府口数 ÷ 上限 0.74，剧本写 1.08），旧写法过第一回合就改回 0.74：
+  // 河南十一州的「过载」一个不剩，全国过载的州从一百二十四个落到六十八个。
+  // 开局 init 时记。第一回合以后才见到的（旧档、中途新立的州）比记作 1——旧档的负荷早已改写成口数 ÷ 上限，算法分毫不动。
+  // 没人或没上限的先不记，等有了再记。
+  function _leafLoadCap(leaf) {
+    var env = leaf.environment && typeof leaf.environment === 'object' ? leaf.environment : null;
+    var carrying = leaf.carryingCapacity;
+    return Number(env && env.carrying) ||
+      Number(carrying && typeof carrying === 'object' && carrying.historicalCap) ||
+      (typeof carrying === 'number' ? Number(carrying) : 0);
+  }
+
+  function _anchorAuthoredLeafLoad(leaf, mouths) {
+    var cc = leaf && leaf.carryingCapacity;
+    if (!cc || typeof cc !== 'object' || Number(cc.authoredScale) > 0) return;
+    var cap = _leafLoadCap(leaf);
+    if (!(mouths > 0) || !(cap > 0)) return;
+    var authored = Number(cc.currentLoad);
+    var opening = !(Number(global.GM && global.GM.turn) > 1);
+    cc.authoredScale = opening && authored > 0 ? mouths / cap / authored : 1;
+  }
+
+  function _anchorAuthoredLeafLoads(G) {
+    _factionLeafGroups(G).forEach(function(group) {
+      group.leaves.forEach(function(leaf) {
+        var pd = leaf && leaf.populationDetail;
+        _anchorAuthoredLeafLoad(leaf, Number(pd && pd.mouths) || 0);
+      });
+    });
   }
 
   function _legacyPopulationRowForLeaf(P, leaf) {

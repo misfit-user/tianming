@@ -5621,8 +5621,8 @@
     },
     {
       "path": "tm-huji-engine.js",
-      "sha256": "6eb2c3a7e3e9bc5bcefe12454232b5d278dd149ee065d84adcf2c513c7698c2b",
-      "size": 155687
+      "sha256": "d481a4f62796adf6598014f70f4126a29eec3ace537782ea61419670d68a7810",
+      "size": 157717
     },
     {
       "path": "tm-huji-governance-loop.js",
@@ -6676,7 +6676,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "b596bacb5b63bc8fd08bcd677779b369aa9282d4b9b4895e54318101b4dfc8b0",
+      "sha256": "d9c0cd6ca9a1813c9484cacdf8c3562b66b341a9e8f9ff77e5464bbfb83dd590",
       "size": 140398
     },
     {

@@ -4556,8 +4556,8 @@
     },
     {
       "path": "tm-authority-complete.js",
-      "sha256": "1f707ae61e5306d8e5801639ce8946bf91236859ce27cd3980f701635e7665ff",
-      "size": 94290
+      "sha256": "110b9bbcc3e1d7a495fdeba1a81442611ec730eafe5a358576b295445cad54c2",
+      "size": 94725
     },
     {
       "path": "tm-authority-deep.js",
@@ -6376,8 +6376,8 @@
     },
     {
       "path": "tm-prophecy.js",
-      "sha256": "60620ef41a72a1802fdaa01ef0f387c8287d6363602d56b1929e46b9d8a48add",
-      "size": 34773
+      "sha256": "d734f22b235365fe4c5d036019e0d66a6e3155386fc4bae130a8c1775dd34083",
+      "size": 33852
     },
     {
       "path": "tm-public-treasury.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "2c12c10191361dabf5a45db409ac3d1dab64b61c96dc755d2151d15effacd48e",
+      "sha256": "a6ca7d7071eea7277f9312a94426ea2a28854893010be5cddc54c4beafc06328",
       "size": 141013
     },
     {

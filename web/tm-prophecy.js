@@ -69,7 +69,11 @@
     return entry;
   }
 
-  /** 天人感应强化：若民心暴跌/大灾 → 必触发天象 */
+  /**
+   * 乱世谣言：民心暴跌、大灾、暴政时，谶纬童谣多起（人传的）。
+   * 原先这里一半机会还「强出一个凶兆」，天象跟着人事变，是玄幻因果；同志 11-09 定天象照天时出，
+   * 这里只起谶纬，概率与原先谶纬那一半相同。
+   */
   function _tianrenGanying(ctx, mr) {
     var G = global.GM;
     if (!G.minxin) return;
@@ -86,36 +90,8 @@
     if (criticalDisaster) ganyingIntensity += 0.3;
     if (G.huangwei && G.huangwei.tyrantSyndrome && G.huangwei.tyrantSyndrome.active) ganyingIntensity += 0.2;
     if (ganyingIntensity < 0.3) return;
-    // 按概率触发
-    if (Math.random() < ganyingIntensity * mr) {
-      if (Math.random() < 0.5) {
-        // 天象
-        var AC = global.AuthorityComplete;
-        if (AC && AC._tickHeavenSigns) {} // will trigger via natural tick
-        // 自己触发一次天象
-        _forceHeavenSign('bad');
-      } else {
-        // 谶纬
-        spawnProphecy(ctx);
-      }
-    }
-  }
-
-  function _forceHeavenSign(type) {
-    if (typeof global.AuthorityComplete === 'undefined') return;
-    var AC = global.AuthorityComplete;
-    var pool = type === 'good' ? AC.AUSPICIOUS_SIGNS : AC.HEAVEN_SIGNS;
-    if (!pool || !pool.length) return;
-    var sign = pool[Math.floor(Math.random() * pool.length)];
-    var G = global.GM;
-    if (!G.heavenSigns) G.heavenSigns = [];
-    G.heavenSigns.push({ id: sign.id, name: sign.name, type: sign.type, turn: G.turn });
-    if (typeof global.AuthorityEngines !== 'undefined') {
-      if (sign.minxinDelta) global.AuthorityEngines.adjustMinxin(sign.type === 'good' ? 'auspicious' : 'heavenSign', sign.minxinDelta, sign.name);
-      if (sign.hwDelta) global.AuthorityEngines.adjustHuangwei(sign.type === 'good' ? 'auspicious' : 'heavenlySign', sign.hwDelta, sign.name);
-    }
-    if (global.addEB) global.addEB(sign.type === 'good' ? '祥瑞' : '天象', sign.name + '（天人感应）');
-    _addFengwen({ type: sign.type === 'good' ? '瑞' : '象', text: sign.name, credibility: 0.7, turn: G.turn });
+    // 按概率起谶纬（原先触发后对半分给天象与谶纬，这里只留谶纬那一半）
+    if (Math.random() < ganyingIntensity * mr * 0.5) spawnProphecy(ctx);
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -615,6 +591,7 @@
     init: init,
     tick: tick,
     spawnProphecy: spawnProphecy,
+    tianrenGanying: _tianrenGanying,   // 单跑（smoke 核「乱世只起谶纬，不强出天象」）
     checkTyrantAwakening: _checkTyrantAwakening,
     checkDecreeFiveElements: checkDecreeFiveElements,
     invokeCounterStrategy: invokeCounterStrategy,

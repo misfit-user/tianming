@@ -1354,15 +1354,19 @@
   //  P1-13 · 天象/祥瑞/天人感应库
   // ═══════════════════════════════════════════════════════════════════
 
+  // 天象只留天上的（同志 11-09 定）：
+  //  - 地震、大水、大旱、蝗灾是实灾，原先在这里只扣全国民心皇威、没地点没伤亡不进灾害系统，算假事件，拿掉。
+  //    实灾走环境引擎的灾变表（tm-economy-engine CRISIS_EVENTS，落到省、有死伤毁田）和推演报的灾
+  //    （GM.activeDisasters，有地方、伤亡、历时，国库按灾种拨赈）。
+  //  - 日食、月食、彗星照天时出，不随民心多少（原先民心越低凶兆越多，是玄幻因果）；扣分调小，
+  //    主要落在皇威（朝野借天象议君德），民心只略动。
   var HEAVEN_SIGNS = [
-    { id:'solar_eclipse',  name:'日食',     type:'bad',  severity:'major',  minxinDelta:-5, hwDelta:-3 },
-    { id:'lunar_eclipse',  name:'月食',     type:'bad',  severity:'minor',  minxinDelta:-2, hwDelta:-1 },
-    { id:'comet',          name:'彗星',     type:'bad',  severity:'major',  minxinDelta:-6, hwDelta:-4 },
-    { id:'earthquake',     name:'地震',     type:'bad',  severity:'major',  minxinDelta:-8, hwDelta:-5 },
-    { id:'flood_major',    name:'大水',     type:'bad',  severity:'major',  minxinDelta:-6, hwDelta:-3 },
-    { id:'drought_major',  name:'大旱',     type:'bad',  severity:'major',  minxinDelta:-7, hwDelta:-3 },
-    { id:'locust',         name:'蝗灾',     type:'bad',  severity:'major',  minxinDelta:-8, hwDelta:-4 }
+    { id:'solar_eclipse',  name:'日食',     type:'bad',  severity:'major',  minxinDelta:-2, hwDelta:-2 },
+    { id:'lunar_eclipse',  name:'月食',     type:'bad',  severity:'minor',  minxinDelta:-1, hwDelta:-1 },
+    { id:'comet',          name:'彗星',     type:'bad',  severity:'major',  minxinDelta:-2, hwDelta:-2 }
   ];
+  // 每月出一次天象的机会：定值，等于旧算式在民心 50 时的概率
+  var HEAVEN_SIGN_MONTHLY_PROB = 0.01;
 
   var AUSPICIOUS_SIGNS = [
     { id:'qilin',     name:'麒麟现',    type:'good', severity:'major',  minxinDelta:8,  hwDelta:5 },
@@ -1374,11 +1378,11 @@
   ];
 
   function _tickHeavenSigns(ctx, mr) {
-    // 天象/祥瑞随机触发（天人感应：民心低 → 天象多；民心高 → 祥瑞多）
+    // 天象按定值概率出，不看民心；祥瑞（官员报上来的）仍随民心
     var G = global.GM;
     var mx = G.minxin;
     if (!mx) return;
-    var badProb = Math.max(0, (60 - mx.trueIndex) / 1000) * mr;
+    var badProb = HEAVEN_SIGN_MONTHLY_PROB * mr;
     var goodProb = Math.max(0, (mx.trueIndex - 60) / 1500) * mr;
     if (Math.random() < badProb) {
       var sign = HEAVEN_SIGNS[Math.floor(Math.random() * HEAVEN_SIGNS.length)];
@@ -1692,6 +1696,7 @@
     tickOfficeTenure: _tickOfficeTenure,
     tickMinxinSources: _tickMinxinAdditionalSources,   // 民心七源单跑（smoke 核「民变不宁只扰本省」）
     tickRevoltUpgrade: _tickRevoltUpgrade,             // 民变爬梯单跑（smoke 核「进行中的民变不被挤出列表」）
+    tickHeavenSigns: _tickHeavenSigns,                 // 天象单跑（smoke 核「只留天上的、不随民心」）
     refreshHuangquanDimensions: _tickHuangquanSubDims,
     detectPowerMinister: _detectPowerMinister,
     tickPowerMinister: _tickPowerMinister,

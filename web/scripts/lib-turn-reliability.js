@@ -2,6 +2,12 @@
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const ROOT = path.resolve(__dirname, '..');
 function load(c, file) { vm.runInContext(fs.readFileSync(path.join(ROOT, file), 'utf8'), c, { filename: file }); }
+// robustParseJSON 的正典在 tm-utils.js（tm-ai-infra-json.js 只调用不定义）；按名抽出供上下文，不整装 tm-utils。
+function loadUtilsFunctions(c, names) {
+  const { functionSource } = require('./lib-perf-round1');
+  const utils = fs.readFileSync(path.join(ROOT, 'tm-utils.js'), 'utf8');
+  names.forEach(name => vm.runInContext(functionSource(utils, name), c, { filename: 'tm-utils.js#' + name }));
+}
 function transport() {
   const timers = new Set();
   const c = { console: { log() {}, warn() {}, error() {} }, AbortController, AbortSignal, TextDecoder, TextEncoder, Headers, Response, URL, performance, Date,
@@ -11,6 +17,7 @@ function transport() {
     clearTimeout(timer) { timers.delete(timer); clearTimeout(timer); }
   };
   c.window = c; c.globalThis = c; vm.createContext(c);
+  loadUtilsFunctions(c, ['robustParseJSON']);
   ['tm-ai-infra-json.js','tm-ai-infra-retry.js','tm-ai-infra.js','tm-endturn-reliability.js'].forEach(file => load(c, file));
   return { c, timers, dispose() { for (const timer of timers) clearTimeout(timer); timers.clear(); },
     request(opts = {}, signal) { return c._aiFetchWithRetry('https://fixture.invalid/v1', { messages: [{ role: 'user', content: 'fixture prompt, never a real request' }], max_tokens: 32 }, signal, { maxRetries: 0, timeoutMs: 200, id: 'fixture', ...opts }); } };

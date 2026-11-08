@@ -1,0 +1,2 @@
+[run-smokes] 共 1185 个 smoke · 选中 1 · 跳过 0 · 并发 1 · 超时 120s
+[run-smokes] 独占执行硬时限用例（不改用例内部压力/期限）：smoke-start-game-data-integrity.js

@@ -1,0 +1,73 @@
+{
+  "node": "v24.14.0",
+  "baseHead": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+  "results": [
+    {
+      "name": "prior-counterexample",
+      "command": [
+        "node",
+        "docs\\npc-stable-candidate-20261021\\memory-producer-barrier-20261023\\counterexample.cjs"
+      ],
+      "environmentOverrides": {
+        "TM_REVIEW_SOURCE_OVERRIDE": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\docs\\npc-stable-candidate-20261021\\memory-producer-barrier-20261023\\prior-tm-emergency-recovery-review.js"
+      },
+      "exitCode": 1,
+      "log": "prior-counterexample.log",
+      "tail": [
+        "{\"pass\":0,\"fail\":1,\"total\":1}"
+      ]
+    },
+    {
+      "name": "candidate-counterexample",
+      "command": [
+        "node",
+        "docs\\npc-stable-candidate-20261021\\memory-producer-barrier-20261023\\counterexample.cjs"
+      ],
+      "environmentOverrides": {},
+      "exitCode": 0,
+      "log": "candidate-counterexample.log",
+      "tail": [
+        "{\"pass\":1,\"fail\":0,\"total\":1}"
+      ]
+    },
+    {
+      "name": "candidate-review",
+      "command": [
+        "node",
+        "web/scripts/smoke-emergency-recovery-review.js"
+      ],
+      "environmentOverrides": {},
+      "exitCode": 0,
+      "log": "candidate-review.log",
+      "tail": [
+        "{\"pass\":79,\"fail\":0,\"total\":79}"
+      ]
+    },
+    {
+      "name": "candidate-save-commit",
+      "command": [
+        "node",
+        "web/scripts/smoke-save-commit-boundary.js"
+      ],
+      "environmentOverrides": {},
+      "exitCode": 0,
+      "log": "candidate-save-commit.log",
+      "tail": [
+        "{\"pass\":36,\"fail\":0,\"total\":36}"
+      ]
+    },
+    {
+      "name": "candidate-runtime-save",
+      "command": [
+        "node",
+        "web/scripts/smoke-runtime-save-consistency.js"
+      ],
+      "environmentOverrides": {},
+      "exitCode": 0,
+      "log": "candidate-runtime-save.log",
+      "tail": [
+        "[smoke-runtime-save-consistency] 84 passed / 0 failed"
+      ]
+    }
+  ]
+}

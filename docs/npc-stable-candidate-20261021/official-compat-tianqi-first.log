@@ -1,0 +1,9 @@
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] 初始化失败: TimeoutError: 主存档数据库打开超时；未把等待失败当成空存档
+TimeoutError: 主存档数据库打开超时；未把等待失败当成空存档
+    at _storageWaitError (tm-storage.js:137:17)
+    at tm-storage.js:443:54
+    at Timeout.eval (eval at <anonymous> (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\check-other-officials.cjs:29:18), <anonymous>:65:106)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb

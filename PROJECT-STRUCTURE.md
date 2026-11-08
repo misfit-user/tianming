@@ -19,13 +19,13 @@ tianming/
 ├─ node_modules/                   依赖（electron / electron-builder / adm-zip / electron-updater）
 ├─ web/                            ⭐ 应用本体（本期未动，见待办①）
 ├─ scenarios/                      剧本目录（运行时读 APP_ROOT/scenarios）
-├─ release-hot/                    🔥 热更发布工作目录（已瘦身，见下）
+├─ release-hot/                    热更构建输出目录（release.js 写入·产物不入库·只留 .env.local.example）
 ├─ 启动天命.bat / dev-start.bat    启动脚本（正式 / dev 热重载）
 ├─ .vscode/ / .playwright-cli/     编辑器 · 测试工具配置
 └─ _archive/                       📦 归档区（四桶，见二）
 ```
 
-`release-hot/` 瘦身后保留：推送脚本 `push-*.py` + `manifests/`（13 个版本清单）+ `hot-latest.json` + 当前在服包 `tianming-hot-1.2.8.1.zip`。发增量热更必须用这套，勿动。
+`release-hot/` 2026-10-14 清空：1.2.x～1.3.4 时代的 SSH 推送/部署脚本（`push-*.py`、`deploy-*.py`、`heal.py` 等 70 件）已删；OTA 自 1.3.5.x 起停用，只发完整包与网页。目录只留 `.env.local.example`，构建产物（`manifests/`、zip、`hot-latest.json`）均 gitignored。
 
 ---
 
@@ -47,7 +47,7 @@ tianming/
 1. **加载方式**：纯原生 JS，零编译零模块（全仓 `import`/`export` 静态声明 = 0 处，2026-06-13 复测）。`web/index.html` 用 **310 个顺序 `<script>`**（2026-06-13 实测；上版 261）串起 **412 个平铺 .js**（含子目录约 660 个），全部挂 `window.*` 全局。
 2. **剧本**：运行时从 `APP_ROOT/scenarios` 读「bundled」剧本；打包只随包 2 个官方剧本（`天启七年·九月（官方）`、`绍宋·建炎元年八月（官方）`），白名单见 `package.json` build.files。
 3. **存档/用户数据**：`saves`、用户剧本、`turn-data` 实际落在 Electron 的 userData（AppData），**不是仓库根目录**——所以根目录那两份是测试遗留，已归 `reference/`。
-4. **热更**：`release-hot/` 的推送脚本经 SSH 把 zip 传到发布服务器、服务端做增量解包；`hot-latest.json` + `manifests/` 记录已发布状态；客户端还会从激活的热更包里取 bundled-scenarios（剧本改动也能热更）。
+4. **热更**：1.3.4.11 是最后一次 OTA，1.3.5.x 起只发完整包/网页（`release.js --full-installers` / `--web-only`）；旧 SSH 推送脚本已删。以下为历史口径：`hot-latest.json` + `manifests/` 记录已发布状态；客户端还会从激活的热更包里取 bundled-scenarios（剧本改动也能热更）。
 
 ---
 

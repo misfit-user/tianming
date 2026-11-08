@@ -1,0 +1,23 @@
+
+BRIDGE_CASE_START {"name":"locked-electron-runtime","at":"2026-10-23T07:44:15.331Z"}
+BRIDGE_CASE_PASS {"name":"locked-electron-runtime","elapsedMs":4}
+BRIDGE_CASE_START {"name":"production-webpreferences","at":"2026-10-23T07:44:15.335Z"}
+BRIDGE_CASE_PASS {"name":"production-webpreferences","elapsedMs":0}
+BRIDGE_CASE_START {"name":"real-bridge-and-ipc","at":"2026-10-23T07:44:15.335Z"}
+BRIDGE_CASE_PASS {"name":"real-bridge-and-ipc","elapsedMs":11}
+BRIDGE_CASE_START {"name":"production-test-exports-boundary","at":"2026-10-23T07:44:15.346Z"}
+BRIDGE_CASE_PASS {"name":"production-test-exports-boundary","elapsedMs":1}
+BRIDGE_CASE_START {"name":"legacy-and-hash-save-real-ipc-roundtrip","at":"2026-10-23T07:44:15.348Z"}
+BRIDGE_CASE_PASS {"name":"legacy-and-hash-save-real-ipc-roundtrip","elapsedMs":140}
+BRIDGE_CASE_START {"name":"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk","at":"2026-10-23T07:44:15.488Z"}
+BRIDGE_CASE_PASS {"name":"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk","elapsedMs":46}
+BRIDGE_CASE_START {"name":"manual-save-world-switch-barrier-and-late-real-ipc","at":"2026-10-23T07:44:15.534Z"}
+BRIDGE_CASE_PASS {"name":"manual-save-world-switch-barrier-and-late-real-ipc","elapsedMs":54}
+BRIDGE_CASE_START {"name":"atomic-export-real-ipc-failure-and-cancel","at":"2026-10-23T07:44:15.588Z"}
+BRIDGE_CASE_PASS {"name":"atomic-export-real-ipc-failure-and-cancel","elapsedMs":26}
+BRIDGE_CASE_START {"name":"real-worker-import-cancel-timeout-error-and-recovery","at":"2026-10-23T07:44:15.615Z"}
+BRIDGE_CASE_PASS {"name":"real-worker-import-cancel-timeout-error-and-recovery","elapsedMs":550}
+BRIDGE_CASE_START {"name":"workshop-overwrite-rollback-through-real-ipc","at":"2026-10-23T07:44:16.165Z"}
+BRIDGE_CASE_PASS {"name":"workshop-overwrite-rollback-through-real-ipc","elapsedMs":149}
+BRIDGE_EXIT_REQUESTED {"mode":"test-exports","at":"2026-10-23T07:44:16.315Z","code":0}
+BRIDGE_NODE_EXIT {"mode":"test-exports","at":"2026-10-23T07:44:16.317Z","code":0}

@@ -5,6 +5,7 @@
   TM.NPC = TM.NPC || {};
   var issued = new WeakSet();
   var inlineDeliveries = new WeakSet();
+  var meetingEventChoices = new WeakSet();
   var readIndex = null;
   var config = Object.freeze({ maxMaterials: 6, maxMaterialChars: 2400, dailyStarts: 1, dailySteps: 10, contactCooldownDays: 7, timeoutDays: 30, maxDeferrals: 2 });
   function game() { return root.GM; }
@@ -66,7 +67,7 @@
   function topicInfo(topicId) { return consultationTopics[text(topicId)] || null; }
   function plans(g) { return rows((g || game())._npcPlans).filter(isPlan); }
   function get(key, g) { var found = plans(g).filter(function (p) { return p.id === key; }); return found.length === 1 ? found[0] : null; }
-  function terminal(p) { return /^(done|rejected|cancelled|expired)$/.test(p.status); }
+  function terminal(p) { return /^(done|ended|rejected|cancelled|expired)$/.test(p.status); }
   function readState(g) { return (g || game())._npcActionState && (g || game())._npcActionState.localDaily; }
   function withIndex(fn) {
     var g = game(), previous = readIndex;
@@ -135,6 +136,15 @@
     });
     rows(ch._eventOpinions).forEach(function (o) { if (o.fromId) set.add(text(o.fromId)); else name(o.from); });
     Object.keys(ch._impressions || {}).forEach(name);
+    // Official startup already dispatches established relations to their owners.
+    // Knowing that contact does not reveal the relation's private description or
+    // grant access to the other person's materials, location or office powers.
+    Object.keys(ch.relations || {}).forEach(function (other) {
+      var r = ch.relations[other];
+      if (!r || r._fromScenario !== true || r.known === false) return;
+      if (r.characterId != null) relationshipIds({ characterId: r.characterId }, g).forEach(function (key) { set.add(key); });
+      else name(other);
+    });
     relationshipRefs(ch).forEach(function (ref) { relationshipIds(ref, g).forEach(function (key) { set.add(key); }); });
     rows(ch._memory).concat(rows(ch._memArchive)).forEach(function (m) { name(m.who); });
     plans(g).forEach(function (p) {
@@ -423,7 +433,7 @@
   }
   function commit(actor, unused, d) {
     if (!issued.has(d)) return result('blocked', 'ordinary_activity_requires_local_choice');
-    if (!game().running || game().busy || game()._endTurnBusy || game()._loadHydrationPending) return result('blocked', 'world_busy');
+    if (!game().running || game()._loadHydrationPending || (game().busy || game()._endTurnBusy) && !meetingEventChoices.has(d)) return result('blocked', 'world_busy');
     var p = d.planId ? get(d.planId) : null, key = id(actor), kind = p && p.localActivity.kind || d.activityKind;
     if (kind === 'meeting' && TM.NPC.Meetings) return TM.NPC.Meetings.commit(actor, d);
     if (!/^(greeting|introduction|assistance|consultation)$/.test(kind)) return result('blocked', 'unsupported_ordinary_activity');
@@ -638,9 +648,10 @@
     var existing = d.planId && get(d.planId);
     d = Object.assign({}, d, { activityKind: d.activityKind || existing && existing.localActivity.kind, actorId: id(ch), behaviorType: 'ordinary_interaction', source: 'daily-local' });
     issued.add(d);
+    if (options && options.meetingEvent && TM.NPC.Meetings && TM.NPC.Meetings.acceptsEventChoice(ch, d)) meetingEventChoices.add(d);
     if (options && options.inlineDelivery === true) inlineDeliveries.add(d);
     try { return root.NpcBehaviorRegistry.execute(ch, d, { _npcLease: ledger().capture() }); }
-    finally { issued.delete(d); inlineDeliveries.delete(d); }
+    finally { issued.delete(d); inlineDeliveries.delete(d); meetingEventChoices.delete(d); }
   }
   function afterVerifiedCommit(d, receipt) {
     if (d.activityKind === 'meeting' && TM.NPC.Meetings && TM.NPC.Meetings.afterVerifiedCommit) return TM.NPC.Meetings.afterVerifiedCommit(d, receipt);
@@ -823,6 +834,9 @@
     a.revision++; p.updatedTurn = game().turn;
     remember(to, from, p, m.id + ':received', '收到' + (from ? from.name : '递话人') + '的文书：' + m.content, m.kind === 'delivery' ? 'received_document' : 'received_claim');
     projectLetter(p, m);
+    if (typeof root._npcPlanningStepResult === 'function' && a.sourceGoalId) {
+      root._npcPlanningStepResult(p.actorId, a.sourceGoalId, { outcome: p.status === 'done' ? 'completed' : p.status === 'rejected' ? 'rejected' : p.status === 'cancelled' ? 'cancelled' : 'waiting', reason: 'actual_message_delivered', planningOwnerId: p.actorId, verified: p.status === 'done' });
+    }
   }
   function failedDelivery(p, m) {
     m.status = 'undeliverable'; m.failedTurn = game().turn;
@@ -835,6 +849,9 @@
     p.localActivity.revision++;
     remember(person(m.fromId), null, p, receipt.id, receipt.content, 'delivery_status');
     projectLetter(p, receipt);
+    if (typeof root._npcPlanningStepResult === 'function' && p.localActivity.sourceGoalId) {
+      root._npcPlanningStepResult(p.actorId, p.localActivity.sourceGoalId, { outcome: m.kind === 'cancel' ? 'cancelled' : 'waiting', reason: 'delivery_unavailable', planningOwnerId: p.actorId, verified: false });
+    }
   }
   function replyMayExpire(p) {
     // Coarse turns must not cancel accepted short work before the next safe processing point.
@@ -851,9 +868,9 @@
         !terminal(p) && (replyMayExpire(p) && g.turn > p.createdTurn && now >= a.expiresDay || p.status === 'deferred' && g.turn > a.retryTurn && now >= a.retryDay));
     });
   }
-  function advanceWithin() {
+  function advanceWithin(options) {
     var delivered = 0;
-    if (TM.NPC.Meetings && TM.NPC.Meetings.advanceWithin) TM.NPC.Meetings.advanceWithin();
+    if (TM.NPC.Meetings && TM.NPC.Meetings.advanceWithin) TM.NPC.Meetings.advanceWithin(options);
     plans().forEach(function (p) {
       var a = p.localActivity;
       if(!supportedDefinition(a) || a.kind === 'meeting')return;
@@ -874,6 +891,9 @@
           // Expiry is a pre-declared procedural deadline, not knowledge of another person's private reason.
           p.knowledge[key] = Object.assign({}, p.knowledge[key], { stage: 'expired' });
         });
+        if (typeof root._npcPlanningStepResult === 'function' && a.sourceGoalId) {
+          root._npcPlanningStepResult(p.actorId, a.sourceGoalId, { outcome: 'expired', reason: 'ordinary_activity_expired', planningOwnerId: p.actorId, verified: false });
+        }
       }
     });
     return delivered;

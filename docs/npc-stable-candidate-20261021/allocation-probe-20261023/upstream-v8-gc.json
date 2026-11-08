@@ -1,0 +1,51 @@
+{
+  "verifiedAt": "2026-10-23T06:13:07.629Z",
+  "runtimeObserved": "Electron33.4.11 / V8 13.0.245.25-electron.0",
+  "scope": "Upstream matching baseV8 tag, not proof of every Electron patch; diagnostic CDP default asks V8 to force GC",
+  "sources": [
+    {
+      "url": "https://github.com/v8/v8/blob/13.0.245.25/src/inspector/v8-heap-profiler-agent-impl.cc",
+      "ref": "13.0.245.25",
+      "blob": "b727d44e24ea02cb51c0b54299a97caa56d82cbc",
+      "sha256": "15ca114747d5fa8fa166ac95bbc0f1fb746ba24e089ec992136d35bfc9653b1b",
+      "matches": [
+        {
+          "line": 565,
+          "text": "  int flags = v8::HeapProfiler::kSamplingForceGC;"
+        },
+        {
+          "line": 573,
+          "text": "  profiler->StartSamplingHeapProfiler("
+        },
+        {
+          "line": 626,
+          "text": "      profiler->GetAllocationProfile());"
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/v8/v8/blob/13.0.245.25/src/profiler/sampling-heap-profiler.cc",
+      "ref": "13.0.245.25",
+      "blob": "43d05d39f273e8be657bbada91a04cc1d55f04b0",
+      "sha256": "b46b248fa5465061d35bad0bac22995b482b8a650f9733ee79b9ab8d62daafc7",
+      "matches": [
+        {
+          "line": 281,
+          "text": "v8::AllocationProfile* SamplingHeapProfiler::GetAllocationProfile() {"
+        },
+        {
+          "line": 282,
+          "text": "  if (flags_ & v8::HeapProfiler::kSamplingForceGC) {"
+        },
+        {
+          "line": 283,
+          "text": "    isolate_->heap()->CollectAllGarbage("
+        },
+        {
+          "line": 284,
+          "text": "        GCFlag::kNoFlags, GarbageCollectionReason::kSamplingProfiler);"
+        }
+      ]
+    }
+  ]
+}

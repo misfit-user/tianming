@@ -1,0 +1,93 @@
+{
+  "dump": "web\\dev-tools\\electron-bridge\\adeb3d79-5a89-4edc-abfc-edfc90f7633a\\crash-dumps\\reports\\c54c7c36-c3f7-4ff2-b0df-21cca6e39b21.dmp",
+  "version": "0xa793",
+  "streams": [
+    {
+      "type": "0x7",
+      "size": 56,
+      "offset": 164
+    },
+    {
+      "type": "0xf",
+      "size": 832,
+      "offset": 236
+    },
+    {
+      "type": "0x3",
+      "size": 1348,
+      "offset": 1068
+    },
+    {
+      "type": "0x18",
+      "size": 340,
+      "offset": 36912
+    },
+    {
+      "type": "0x6",
+      "size": 168,
+      "offset": 38704
+    },
+    {
+      "type": "0x4",
+      "size": 4540,
+      "offset": 40256
+    },
+    {
+      "type": "0x43500001",
+      "size": 64,
+      "offset": 49560
+    },
+    {
+      "type": "0x10",
+      "size": 788752,
+      "offset": 50560
+    },
+    {
+      "type": "0xc",
+      "size": 17104,
+      "offset": 839312
+    },
+    {
+      "type": "0x5",
+      "size": 2660,
+      "offset": 856792
+    },
+    {
+      "type": "0x4b6b0002",
+      "size": 48,
+      "offset": 859452
+    }
+  ],
+  "exception": {
+    "threadId": 3900,
+    "code": "0xe0000008",
+    "flags": "0x81",
+    "address": "0x7ff92709408a",
+    "parameters": [
+      "0x0",
+      "0x7179cd000",
+      "0x138be2000"
+    ]
+  },
+  "annotationsAndStackStrings": [
+    "v8-oom-location",
+    "discardable-memory-free",
+    "discardable-memory-allocated",
+    "[31040:1022/202314.166:ERROR:v8_initializer.cc(791)] V8 javascript OOM (CALL_AND_RETRY_LAST).",
+    "ch-device-memory"
+  ],
+  "dumpSha256": "564032589568f39acfd79e79d3148a21d8c69f6cfb4254aab16e8a584c06f382",
+  "v8OomLocation": "CALL_AND_RETRY_LAST",
+  "gcAndFatalEvidence": [
+    "[31040:1022/202314.166:ERROR:v8_initializer.cc(791)] V8 javascript OOM (CALL_AND_RETRY_LAST).",
+    " 2634.2 (2746.6) -> 2634.2 (2685.9) MB, pooled: 0 MB, 1029.0",
+    " = 0.795, current mu = 0.000) last resort; GC in old space requested",
+    "Compact (reduce) 2634.2 (2685.9)",
+    "ed: 0 MB, 1029.06 / 0.00 ms  (average mu = 0.795, current mu = 0.000) last resort; GC in old space requested",
+    "[31040:00003C74001BC000]   527885 ms: Mark-Compact (reduce) 2634.2 (2685.9) -> 2634.2 (2661.6) MB, pooled: 0 MB, 1012.98 / 0.00 ms  (average mu = 0.646, current mu = 0.000) last resort; GC in old space requested",
+    ".39 ms  (average mu = 0.901, current mu = 0.916) last resort; GC in old space requested",
+    "[31040:00003C74001BC000]   526872 ms: Mark-Compact (reduce) 2634.2 (2746.6) -> 2634.2 (2685.9) MB, pooled: 0 MB, 1029.06 / 0.00 ms  (average mu = 0.795, current mu = 0.000) last resort; GC in old space requested",
+    "[31040:00003C74001BC000]   527885 ms: Mark-Compact (reduce) 2634.2 (2685.9) -> 2634.2 (2661.6) MB, pooled: 0 MB, 1012.98 / 0.00 ms  (average mu = 0.646, current mu = 0.000) last resort; GC in old space requested"
+  ],
+  "conclusion": "Renderer reports reason=oom; dump exception 0xe0000008 and V8 CALL_AND_RETRY_LAST confirm JavaScript allocation exhaustion. The prior -36861 code alone did not establish this."
+}

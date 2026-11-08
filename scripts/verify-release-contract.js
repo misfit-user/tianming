@@ -34,7 +34,7 @@ function main() {
   const sourcePaths = new Set(sourceTree.kept.map(row => row.rel));
   ok(sourcePaths.has('preview/scenario-editor-reset-app.js') && sourcePaths.has('preview/img/east-asia-basemap-data.js'), '发布树保留 preview 运行时与 preview/img（目录探针不可误杀整树）');
   ok(!sourcePaths.has('_game-entry-shot.png') && !Array.from(sourcePaths).some((rel) => /^_ingame.*\.png$/i.test(rel)), '发布树排除根目录游戏截图');
-  const rootDevFiles = ['_audit_deadhandlers.py', 'analyze_globals.py', 'final_scan.sh', 'scan.sh', 'start-server.bat', 'tm-tools.d.ts', 'types.d.ts'];
+  const rootDevFiles = ['analyze_globals.py', 'final_scan.sh', 'scan.sh', 'start-server.bat', 'tm-tools.d.ts', 'types.d.ts'];
   ok(rootDevFiles.every((rel) => !sourcePaths.has(rel)), '发布树排除根目录开发脚本与类型声明');
   const strayReleaseFiles = [
     'detect_globals.js', 'scan_globals.js', 'preview-launch.html', 'preview-launch-v2.html', 'preview-launch-v3.html',

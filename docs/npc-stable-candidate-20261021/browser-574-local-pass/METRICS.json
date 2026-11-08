@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "runId": "ac0bfde1-8538-46be-b2cb-f3b17f95cc4a",
+  "scope": "Actual local formal run; runtime 574 plus named isolated-fixture patch. Timings are machine-specific; heap samples are not continuous maxima.",
+  "elapsedMs": 1724354,
+  "simulatedDays": 60,
+  "population": 513,
+  "activityCount": 15,
+  "activityKinds": {
+    "greeting": 13,
+    "assistance": 1,
+    "meeting": 1
+  },
+  "activityStatuses": {
+    "cancelled": 7,
+    "done": 8
+  },
+  "rendererHeap": {
+    "sampleCount": 408,
+    "maxObservedUsedBytes": 2739549728,
+    "lastObservedUsedBytes": 1382323210,
+    "limitBytes": 4294705152
+  },
+  "processMemory": {
+    "sampleCount": 329,
+    "maxObservedTabWorkingSetKiB": 4675964,
+    "lastTabWorkingSetKiB": 2751488
+  },
+  "modelAttempts": {
+    "transport": 97,
+    "categories": {
+      "other-direct-producer": 41,
+      "tagged-world-subcall": 45,
+      "routine-review": 6,
+      "npc-direction": 5
+    },
+    "ordinaryComposite": 0,
+    "externalNetwork": 0
+  },
+  "planning": {
+    "uniqueObserved": 495,
+    "finalStatusCounts": {
+      "no_change": 2,
+      "expired": 493
+    },
+    "finalPendingCount": 0
+  },
+  "desktopAutosave": {
+    "before": {
+      "recordedAt": "2026-10-23T08:32:46.565Z",
+      "runId": "ac0bfde1-8538-46be-b2cb-f3b17f95cc4a",
+      "path": "web/dev-tools/candidate-temp/tm-bridge-series-GrWHoZ/production/saves/__autosave__.json",
+      "bytes": 181390295,
+      "mtime": "2026-10-23T08:29:19.002Z",
+      "observedStage": "Second actual slot load at simulated day 37 has completed; third turn is in progress, before its final canonical commit",
+      "scope": "Whole desktop autosave file bytes, not NPC-only growth. Metadata only; no save contents copied."
+    },
+    "final": {
+      "recordedAt": "2026-10-23T08:40:25.193Z",
+      "bytes": 183259378,
+      "mtime": "2026-10-23T08:37:05.777Z",
+      "simulatedDay": 60
+    },
+    "deltaBytes": 1869083,
+    "scope": "Same actual desktop autosave file at two observed stages; includes all normal world changes, not NPC-only growth. Full save contents are not archived."
+  },
+  "economy": {
+    "turns": 3,
+    "systems": 3,
+    "provinceEconomy": 3,
+    "intervals": [
+      {
+        "ticketId": 1,
+        "beforeTurn": 1,
+        "afterTurn": 2,
+        "load": 0,
+        "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+        "timelineId": "tml_2eccbabd_b743_47c7_94da_ffa6bd592568",
+        "beforeDay": 0,
+        "afterDay": 30,
+        "days": 30
+      },
+      {
+        "ticketId": 4,
+        "beforeTurn": 2,
+        "afterTurn": 3,
+        "load": 1,
+        "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+        "timelineId": "tml_78985a8f_b125_4a2f_af9e_672391e1468c",
+        "beforeDay": 30,
+        "afterDay": 37,
+        "days": 7
+      },
+      {
+        "ticketId": 7,
+        "beforeTurn": 3,
+        "afterTurn": 4,
+        "load": 2,
+        "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+        "timelineId": "tml_61f12501_2ea4_40be_810d_ad41862f9258",
+        "beforeDay": 37,
+        "afterDay": 60,
+        "days": 23
+      }
+    ]
+  },
+  "profiling": {
+    "preciseMemory": true,
+    "heapSampling": false,
+    "protocolForcesGC": false,
+    "cpuProfile": false
+  }
+}

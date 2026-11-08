@@ -102,7 +102,6 @@ const RULES = {
 // ---------------------------------------------------------------------------
 const CORPUS_DIRS = ['', 'battle', 'modules/ai-change-applier', 'preview'];
 const CORPUS_EXCLUDE = new Set([
-  'tm-official-scenario-bundle.js',
   'preview/official-scenarios-bundle.js',
   'preview/scenario-editor-reset-data.js'
 ]);

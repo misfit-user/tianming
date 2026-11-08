@@ -523,14 +523,6 @@
         "editor-details.js"
       ]
     },
-    "escHtml": {
-      "owner": "tm-utils.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-utils.js",
-        "tm-chaoyi-changchao.js"
-      ]
-    },
     "execFullGen": {
       "owner": "tm-launch.js",
       "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
@@ -679,14 +671,6 @@
       "expectedOrder": [
         "tm-office-editor.js",
         "editor-details.js"
-      ]
-    },
-    "robustParseJSON": {
-      "owner": "tm-utils.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-utils.js",
-        "tm-ai-infra-json.js"
       ]
     },
     "showLoading": {

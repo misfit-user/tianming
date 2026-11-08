@@ -528,7 +528,12 @@
       var ids = Array.from(new Set(matches.map(function(c) { return c.id; })));
       return ids.length === 1 ? ids[0] : null;
     }
-    if (explicit) return null;
+    if (explicit) {
+      // AI 常写省名简称（「陕西」），区划真名是「陕西布政使司」：照写回同一规则，去后缀后相等再找一次
+      var pathUtils = global.TM && global.TM.AIChange && global.TM.AIChange.PathUtils;
+      var fuzzy = pathUtils && typeof pathUtils.findDivisionByNameFuzzy === 'function' ? pathUtils.findDivisionByNameFuzzy(G, explicit) : null;
+      return fuzzy && fuzzy.id ? String(fuzzy.id) : null;
+    }
     var aliases = {
       '江南': 'jiangnan',
       '山西': 'shanxi',

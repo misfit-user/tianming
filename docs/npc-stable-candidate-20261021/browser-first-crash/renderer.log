@@ -1,0 +1,104 @@
+2026-10-22T11:57:40.454Z 1 天命游戏脚本开始加载...
+2026-10-22T11:57:40.746Z 1 [TM.platform] TM.platform[electron] caps={"ipc":true,"fs":true,"nativeHttp":true,"hotUpdate":true,"online":true,"installerUpdate":true,"filePicker":true}
+2026-10-22T11:57:40.909Z 1 [debug-logger] 已启用·桌面落盘模式
+2026-10-22T11:57:50.161Z 1 [SaveDB] IndexedDB就绪 (v6)
+2026-10-22T11:57:50.165Z 1 [SaveDB] 存储: 0.01 MB / 3912.83 MB (0.0%)
+2026-10-22T11:57:50.167Z 1 [SaveDB] 持久化存储未获批·仍可正常使用(best-effort 模式)
+2026-10-22T11:57:57.552Z 1 [三系统联动] 事件总线钩子已连接
+2026-10-22T11:58:02.902Z 1 [corruption-p2] 已加载：25 条案件库 + lumpSum API + 风闻四类 + 新官标记
+2026-10-22T11:58:02.959Z 1 [corruption-p4] 已加载：模式调节 / 轮换副作用 / 卖官 / AI增强 / 地图热力 / 编辑器面板
+2026-10-22T11:58:03.134Z 1 [guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设
+2026-10-22T11:58:03.324Z 1 [neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链
+2026-10-22T11:58:03.326Z 1 [neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向
+2026-10-22T11:58:03.505Z 1 [charEcon] 引擎已加载：6 资源 + 14×14 收支 + 8 阶层 + 家族共财 + 抄家 + 字系统
+2026-10-22T11:58:03.563Z 1 [historical] 加载 27 条历史人物档案
+2026-10-22T11:58:03.614Z 1 [historical-wave-01] 加载 60 条
+2026-10-22T11:58:03.663Z 1 [historical-wave-02] 加载 46 条
+2026-10-22T11:58:03.724Z 1 [historical-wave-03] 加载 44 条
+2026-10-22T11:58:03.785Z 1 [historical-wave-04] 加载 40 条
+2026-10-22T11:58:03.854Z 1 [historical-wave-05] 加载 37 条
+2026-10-22T11:58:03.897Z 1 [historical-wave-06] 加载 36 条
+2026-10-22T11:58:03.930Z 1 [historical-wave-07] 加载 29 条
+2026-10-22T11:58:03.981Z 1 [historical-wave-08] 加载 38 条
+2026-10-22T11:58:04.029Z 1 [historical-wave-09] 加载 30 条
+2026-10-22T11:58:04.079Z 1 [historical-wave-10] 加载 36 条
+2026-10-22T11:58:04.135Z 1 [historical-wave-11] 加载 36 条
+2026-10-22T11:58:04.185Z 1 [historical-wave-12] 加载 49 条
+2026-10-22T11:58:04.377Z 1 [charEcon-ui] 角色资源 UI 已加载：6 资源展示 + 抄家 + 派员
+2026-10-22T11:58:04.491Z 1 [econLinkage] 已加载：层层剥夺+区域财政树+下拨生命周期+俸禄流+贪腐流+抄家触发+事件总线
+2026-10-22T11:58:09.873Z 1 [TMZhi] formal 人物图志 入口已接管
+2026-10-22T11:58:15.607Z 1 [scenario] 绍宋·建炎元年八月——亳州明道宫，九龙井醒 已注册 (id=sc-jianyan1-1127-shaosong)
+2026-10-22T11:58:15.613Z 2 [startGame] scenario validation warnings: 玩家角色"赵构(穿越者赵玖)"不在角色列表中，将自动创建,军队"熙河·秦凤诸军"统帅"（诸路帅臣）"不在角色列表中,军队"江淮水军"统帅"（行在水军统制）"不在角色列表中,军队"两浙·福建路屯驻"统帅"（诸州兵马）"不在角色列表中,军队"荆湖·川峡屯驻"统帅"（诸路兵马）"不在角色列表中,军队"建康水军·别部"统帅"（行在水军）"不在角色列表中,军队"福建路屯驻"统帅"（路分都监）"不在角色列表中,军队"广南屯驻·摧锋军"统帅"（广东帅司）"不在角色列表中,军队"金·韩常燕京戍兵"统帅"（韩常，未列传）"不在角色列表中,军队"高丽·二军六卫"统帅"（二军上将军·拓俊京流配后未详）"不在角色列表中
+2026-10-22T11:58:21.666Z 2 [StartRuntimePrime] [object Object]
+2026-10-22T11:58:22.731Z 1 [三系统扩展] 完成·势力+ 39 ·党派+ 8 ·军队+ 103 ·角色+ 513
+2026-10-22T11:58:22.896Z 2 [StartRuntimePrime] [object Object]
+2026-10-22T11:58:22.977Z 1 [enterGame] economyBase 初始化 670 个 division
+2026-10-22T11:58:22.978Z 1 [enterGame] 官职公库初始化完成
+2026-10-22T11:58:22.985Z 1 [enterGame] 角色私产初始化完成
+2026-10-22T11:58:23.012Z 1 [enterGame] 角色公库镜像刷新完成
+2026-10-22T11:58:23.013Z 1 [enterGame] FixedExpense.preview 完成(只算不扣)·本回合支出: 银 248 万 · 粮 46 万石 · 布 1 万匹
+2026-10-22T11:58:23.014Z 1   俸禄: 银 0 万 · 米 0 万石
+2026-10-22T11:58:23.015Z 1   宗禄: 银 2 万 · 米 3 万石
+2026-10-22T11:58:23.016Z 1   军饷: 银 244 万 · 粮 42 万石
+2026-10-22T11:58:23.016Z 1   宫廷: 银 2 万
+2026-10-22T11:58:23.022Z 1 [CharFullSchema] 初始化 513 位角色完整字段
+2026-10-22T11:58:23.023Z 1 [CurrencyEngine] 初始化 朝代=宋
+2026-10-22T11:58:23.024Z 1 [CentralLocalEngine] 初始化 预设=song_zhuanyun
+2026-10-22T11:58:23.026Z 1 [EconomyGapFill] 补完模块就绪（12 项）
+2026-10-22T11:58:23.027Z 1 [HujiEngine] sc.populationConfig: 存在 initial.nationalMouths=50000000
+2026-10-22T11:58:23.027Z 1 [HujiEngine] 初始化后 GM.population.national: [object Object]
+2026-10-22T11:58:23.028Z 1 [EnvCapacityEngine] 初始化 技术朝代=明
+2026-10-22T11:58:23.037Z 1 [HujiDeepFill] 深化模块就绪（阶层+封建+F30）
+2026-10-22T11:58:23.037Z 1 [EdictComplete] 诏令补完就绪（P1+11 反向触发）
+2026-10-22T11:58:23.039Z 1 [AuthorityEngines] 皇威/皇权/民心 + 联动矩阵就绪
+2026-10-22T11:58:23.086Z 1 [AuthorityComplete] 补完就绪（16 项 P0+P1+P2）
+2026-10-22T11:58:23.089Z 1 [HistoricalPresets] 历史数据库就绪
+2026-10-22T11:58:23.099Z 1 [enterGame-T1] GM.adminHierarchy 结构: 键=player,fac_jin,fac_hebei_yijun,fac_xixia,fac_dali,fac_tubo,fac_guge,fac_kham,fac_karakhan_east,fac_karakhan_west,fac_qocho,fac_caoyuan,fac_kereit,fac_merkit,fac_mongol,fac_tatar,fac_qongirat,fac_ongud,fac_goryeo,fac_daiviet,fac_pagan,fac_xinan_tribes,fac_jianchang,fac_nw_yunnan,fac_wumeng,fac_jinchi,fac_japan,fac_nanhai,fac_liuqiu,fac_mai,fac_visayas,fac_butuan,fac_beihai,fac_luodian,fac_ziqi·player.divisions 长度=28
+2026-10-22T11:58:23.162Z 1 [enterGame-T1] 聚合后 GM.population.national: [object Object]
+2026-10-22T11:58:23.162Z 1 [enterGame-兜底] 剧本 populationConfig.initial: [object Object]
+2026-10-22T11:58:23.163Z 1 [enterGame-兜底] 当前 GM.population.national: [object Object]
+2026-10-22T11:58:23.164Z 1 [enterGame-兜底] 户口正常·无需兜底 (当前 65458000 >= 剧本 25000000)
+2026-10-22T11:58:23.269Z 1 [startGame] _facIndex 构建完成·势力数=39 · source=enterGame
+2026-10-22T11:58:25.015Z 1 [三系统扩展] 完成·势力+ 39 ·党派+ 8 ·军队+ 103 ·角色+ 513
+2026-10-22T12:00:26.154Z 1 [SaveDB] 存档压缩: 151232.6KB -> gzip Blob
+2026-10-22T12:00:33.856Z 1 [pipeline] step 1/7 prep ok 1346ms
+2026-10-22T12:00:33.878Z 1 [pipeline] step 2/7 plan-prefetch ok 1ms
+2026-10-22T12:00:34.587Z 1 [情节弧] 已更新 0/12 位 NPC @ T1
+2026-10-22T12:00:38.147Z 2 [SC1.tokenBudget] 捕获: [SC1] prompt warn·estimated 178020 tokens·budget 196608 (256K context)
+2026-10-22T12:00:38.149Z 2   Error: [SC1] prompt warn·estimated 178020 tokens·budget 196608 (256K context)
+      at file:///C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011/web/tm-endturn-ai.js?v=20260928-release1353:3446:80
+      at checkPromptTokenBudget (file:///C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011/web/tm-ai-infra.js?v=20260930-context-detection:503:11)
+2026-10-22T12:00:38.151Z 2 [TokenBudget] warn estimated=178020 budget=196608 contextK=256
+2026-10-22T12:00:38.226Z 2 [TokenBudget] warn estimated=182392 budget=196608 contextK=256
+2026-10-22T12:00:38.293Z 1 [ai-validator][subcall1] 通过（15 已知字段，1 条目）
+2026-10-22T12:00:38.566Z 1 [ai-validator][subcall1b] 通过（4 已知字段，0 条目）
+2026-10-22T12:00:38.879Z 1 [ai-validator][subcall1c] 通过（9 已知字段，0 条目）
+2026-10-22T12:01:17.675Z 1 [TurnReview] investigating calls=1 tokens=14320 limit=unlimited sources=0/12 核查检验器与回合遗漏（与后续推演并行）
+2026-10-22T12:01:17.705Z 1 [TurnReview] prepared calls=1 tokens=14320 limit=unlimited sources=12/12 复核方案已形成，等待后续推演结束后核对并落账
+2026-10-22T12:01:20.200Z 2 [TokenBudget] warn estimated=180744 budget=196608 contextK=256
+2026-10-22T12:01:28.120Z 2 [TurnReview] pending; main turn continues: 主回合先提交，复核在后台继续
+2026-10-22T12:01:28.139Z 1 [pipeline] step 3/7 ai ok 54243ms
+2026-10-22T12:01:28.183Z 1 [pipeline] step 4/7 post-ai-edict ok 2ms
+2026-10-22T12:01:36.707Z 2 [endTurn systems] slow stage: 系统结算总耗时 8500ms 
+2026-10-22T12:01:36.721Z 1 [pipeline] step 5/7 systems ok 8516ms
+2026-10-22T12:01:42.306Z 2 [robustParseJSON] 所有修复层级失败，使用纯文本回退
+2026-10-22T12:02:09.204Z 1 [pipeline] step 6/7 render-and-finalize ok 32471ms
+2026-10-22T12:02:09.204Z 1 [pipeline] step 7/7 prepare-commit-barrier ok 0ms
+2026-10-22T12:02:09.205Z 1 [EndturnTiming] total=1.61m status=done [object Object]
+2026-10-22T12:02:09.206Z 1 [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+2026-10-22T12:02:20.639Z 2 [map-render-skip] shell=false stage=false visible=true
+2026-10-22T12:02:38.729Z 2 [EndturnAI] call failed: sc_memwrite NPC记忆回写 读取期间存档已改变，旧请求结果已丢弃 
+2026-10-22T12:02:38.871Z 2 [AutoSave] 端回合 snapshot 耗 28763ms·考虑 A-2
+2026-10-22T12:02:39.183Z 2 [robustParseJSON] 主 JSON 已可解·丢弃尾随可解析片段（疑似截断后多嘴）
+2026-10-22T12:02:39.218Z 2 [robustParseJSON] 主 JSON 已可解·丢弃尾随可解析片段（疑似截断后多嘴）
+2026-10-22T12:03:04.012Z 1 [TurnReview] investigating calls=2 tokens=32120 limit=unlimited sources=12/27 核查检验器与回合遗漏（与后续推演并行）
+2026-10-22T12:03:57.137Z 1 [TurnReview] prepared calls=2 tokens=32120 limit=unlimited sources=27/27 复核方案已形成，等待后续推演结束后核对并落账
+2026-10-22T12:03:57.139Z 1 [TurnReview] verified calls=2 tokens=32120 limit=unlimited sources=27/27 完整原文、实际修改和修改后的正确性均已核验
+2026-10-22T12:06:35.109Z 1 [saveToSlot] 保存到: slot_1 IDB available: true
+2026-10-22T12:07:01.222Z 1 [SaveDB] 存档压缩: 164192.6KB -> gzip Blob
+2026-10-22T12:07:01.333Z 1 [saveToSlot] 保存结果: true
+2026-10-22T12:07:01.916Z 1 [loadFromSlot] 尝试加载: slot_1 IDB available: true
+2026-10-22T12:07:07.967Z 1 [loadFromSlot] 加载结果: 有数据, keys:id,type,name,timestamp,turn,scenarioName,eraName,date,dynastyPhase,snapshotId,commitState,campaignId,timelineId,gameState
+2026-10-22T12:07:09.461Z 2 [findScenarioById] scenarioById 不是 Map，重建索引
+2026-10-22T12:07:14.048Z 1 [三系统扩展] 完成·势力+ 39 ·党派+ 35 ·军队+ 103 ·角色+ 513
+2026-10-22T12:07:55.061Z 1 [SaveDB] 存档压缩: 164839.7KB -> gzip Blob

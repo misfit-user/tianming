@@ -852,25 +852,6 @@ function quickEditRegion(regionId) {
   });
 }
 
-// 获取势力颜色（行政区划模块专用）
-function getAdminFactionColor(factionId) {
-  if (factionId === 'player') {
-    return '#4CAF50';
-  }
-
-  const faction = scriptData.factions?.find(f => f.id === factionId);
-  if (faction && faction.color) {
-    return faction.color;
-  }
-
-  // 生成随机颜色
-  var _rnd = typeof random === 'function' ? random : Math.random;
-  const hue = Math.floor(_rnd() * 360);
-  const saturation = 60 + Math.floor(_rnd() * 20);
-  const lightness = 50 + Math.floor(_rnd() * 10);
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-}
-
 // ====== CK3-style interactive tree visualization (identical to government tree) ======
 
 function renderAdminTree() {

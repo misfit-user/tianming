@@ -1,0 +1,6 @@
+[
+  {
+    "text": "收起进度",
+    "html": "<button type=\"button\" data-recovery-collapse=\"true\" aria-expanded=\"true\" aria-controls=\"tm-recovery-progress-details\">收起进度</button>"
+  }
+]

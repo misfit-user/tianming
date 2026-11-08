@@ -66,11 +66,19 @@ module.exports = async function({ win, js, until, click, test }) {
     await fresh('choice'); const r=await read(); assert.equal(r.round,2); assert(r.packets.every(p=>p.native)); assert.equal(r.packets[1].choice,undefined); assert.equal(r.status,'completed'); assert.equal(r.live.labels.length,0); assert.equal(r.draft.labels.length,1);
   });
   await test('real UI full catalog and usage-only relay repair complete editing, approval and saved readback',async()=>{
+    // 协商路径：关掉「实时显示」时首问不带 stream，空候选后协商一次、之后沿用已证实的流式（国师重做 S4 起实时显示默认开，这里显式关掉）
+    await js(`localStorage.setItem('tm_aa_stream','0')`);
+    try {
     await fresh('usage-only');const r=await read();assert.equal(r.round,3,'one negotiation, then reuse the proven stream transport');assert.equal(r.status,'completed');assert.equal(r.draft.labels.length,1);assert.equal(r.live.labels.length,0);
     assert.equal(await js(`__recoveryRelay.fullCatalog===true && __recoveryRelay.streamResults===2 && !TM_AuthoringAgentUI._ui.els.log.textContent.includes('tool-not-authorized')`),true);
     await click(`TM_AuthoringAgentUI._ui.els.apply`);
     const saved=await js(`(async()=>{const a=TM_SCENARIO_EDITOR_RESET_APP,p=await a.saveProjectSnapshot('空流修复隔离案卷');await a.loadProjectSnapshot(p.id);return a.state.scenario;})()`);
     assert.deepEqual(saved.labels,[{name:'once',text:'已生成草稿'}]);assert.equal(saved.customPrompt,'保留手工输入');
+    } finally { await js(`localStorage.removeItem('tm_aa_stream')`); }
+  });
+  await test('usage-only relay with live display on streams from the first request and needs no negotiation',async()=>{
+    await fresh('usage-only');const r=await read();assert.equal(r.round,2,'stream from the start: no empty non-stream probe');assert.equal(r.status,'completed');assert.equal(r.draft.labels.length,1);assert.equal(r.live.labels.length,0);
+    assert.equal(await js(`__recoveryRelay.streamResults===2 && !TM_AuthoringAgentUI._ui.els.log.textContent.includes('tool-not-authorized')`),true);
   });
   await test('real Stop during native continuation aborts HTTP; Continue resumes paired history and saves once',async()=>{
     await fresh('cancel-native',false);await until(`__recoveryRelay.waiting`);await click(`TM_AuthoringAgentUI._ui.els.go`);

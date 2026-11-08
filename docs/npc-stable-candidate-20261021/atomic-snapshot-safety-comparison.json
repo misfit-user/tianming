@@ -1,0 +1,24 @@
+{
+  "node": "v24.14.0",
+  "method": "actual structuredClone vs native JSON bytes plus descriptor/type/shared-reference eligibility scan; no runtime optimization retained",
+  "results": [
+    {
+      "name": "synthetic",
+      "bytes": 3151180,
+      "originalCloneMs": 73.9389000000001,
+      "jsonSafetyCheckMs": 155.5299,
+      "jsonSerializeMs": 39.71050000000014,
+      "checkedLazyCaptureMs": 195.24040000000014,
+      "eligible": true
+    },
+    {
+      "name": "official-independent-P",
+      "bytes": 136383976,
+      "originalCloneMs": 2871.5984,
+      "jsonSafetyCheckMs": 3014.8023000000003,
+      "jsonSerializeMs": 1374.4745999999996,
+      "checkedLazyCaptureMs": 4389.2769,
+      "eligible": true
+    }
+  ]
+}

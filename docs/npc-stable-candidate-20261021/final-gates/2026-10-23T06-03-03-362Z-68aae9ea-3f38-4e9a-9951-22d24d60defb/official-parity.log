@@ -1,0 +1,48 @@
+[official-sync] parity PASS · sources=3 artifacts=10
+  ok·preview/reset artifacts registered
+  ok·no second seeder bundle: the builtins are the only shipped copy
+  ok·tianqi7 builtin embeds the complete lossless root expression
+  ok·tianqi7 builtin remains reviewable compact output
+  ok·tianqi7 builtin feeds the standalone registry (desktop seeder/preview/tests)
+  ok·tianqi7 editor preview adapter maps the builtin id to its key
+  ok·tianqi7 editor preview no longer embeds a second data copy
+  ok·editor reset embeds the complete Tianqi root JSON (embedded=15553126/9b580652a0a644c59f561e5e208b619b2ea618933f7e681fe48837c558fccc3f, root=15553126/9b580652a0a644c59f561e5e208b619b2ea618933f7e681fe48837c558fccc3f, differingKeys=)
+  ok·tianqi7 bundled JSON is byte-identical to root JSON
+  ok·shaosong builtin embeds the complete lossless root expression
+  ok·shaosong builtin remains reviewable compact output
+  ok·shaosong builtin feeds the standalone registry (desktop seeder/preview/tests)
+  ok·shaosong editor preview adapter maps the builtin id to its key
+  ok·shaosong editor preview no longer embeds a second data copy
+  ok·shaosong bundled JSON is byte-identical to root JSON
+  ok·tang840 builtin embeds the complete lossless root expression
+  ok·tang840 builtin remains reviewable compact output
+  ok·tang840 builtin feeds the standalone registry (desktop seeder/preview/tests)
+  ok·tang840 editor preview adapter maps the builtin id to its key
+  ok·tang840 editor preview no longer embeds a second data copy
+  ok·tang840 bundled JSON is byte-identical to root JSON
+  ok·manifest.js equals manifest.json
+  ok·tianqi7 metadata exists
+  ok·tianqi7 metadata script sha256 is correct
+  ok·tianqi7 metadata script bytes is correct
+  ok·tianqi7 metadata source sha256 is correct
+  ok·tianqi7 metadata source bytes is correct
+  ok·tianqi7 metadata loader path is correct
+  ok·tianqi7 metadata counts are correct
+  ok·shaosong metadata exists
+  ok·shaosong metadata script sha256 is correct
+  ok·shaosong metadata script bytes is correct
+  ok·shaosong metadata source sha256 is correct
+  ok·shaosong metadata source bytes is correct
+  ok·shaosong metadata loader path is correct
+  ok·shaosong metadata counts are correct
+  ok·tang840 metadata exists
+  ok·tang840 metadata script sha256 is correct
+  ok·tang840 metadata script bytes is correct
+  ok·tang840 metadata source sha256 is correct
+  ok·tang840 metadata source bytes is correct
+  ok·tang840 metadata loader path is correct
+  ok·tang840 metadata counts are correct
+  ok·builtin all executed values and object isolation verified
+  ok·game all executed values and object isolation verified
+  ok·preview all executed values and object isolation verified
+PASS assertions=46

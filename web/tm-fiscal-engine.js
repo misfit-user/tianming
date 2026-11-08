@@ -218,6 +218,7 @@
       Object.keys(source).forEach(function(key) {
         var item = source[key];
         if (item && typeof item === 'object') out[key] = clone(item);
+        else if (typeof item === 'boolean') out[key] = item ? { enabled: true, authorEnabled: true } : { enabled: false, authorDisabled: true }; // 2026-10-17：编辑器存的布尔开关原先在此被丢弃，作者关掉的税种照征；开也记来源（复审 F6）
       });
     }
     return out;
@@ -266,6 +267,8 @@
     return result;
   }
 
+  // 合规率读侧归一（2026-10-16）：全仓口径是 0..1 比例；旧版 MinxinHardLinks 非统一分支曾写成百分数（85）→ splitCascadeAmount 乘上解额放大百倍（E.B 自建剧本真档 1.41 亿/回合）。>1.5 不可能是比例，按百分数折回（四位小数）并夹 0..1。
+  function _complianceRatio(v, fallback) { var n = Number(v); if (v == null || v === '' || !isFinite(n)) return fallback; if (n > 1.5) n = Math.round(n * 100) / 10000; return Math.max(0, Math.min(1, n)); }
   function _ensureRegionFiscal(region, parentRegion, seen) {
     if (!region || typeof region !== 'object') return region;
 
@@ -306,7 +309,7 @@
     f.remittedToCenter = remitted;
     f.retainedBudget = retained;
     if (f.annualTax === undefined) f.annualTax = actual;
-    if (f.compliance === undefined) f.compliance = fd && fd.compliance !== undefined ? fd.compliance : 0.85;
+    f.compliance = _complianceRatio(f.compliance !== undefined ? f.compliance : (fd && fd.compliance !== undefined ? fd.compliance : 0.85), 0.85); // 2026-10-16：合规率统一按比例·旧档百分数在此折回
     if (f.skimmingRate === undefined) f.skimmingRate = fd && fd.skimmingRate !== undefined ? fd.skimmingRate : 0.1;
     if (f.autonomyLevel === undefined) f.autonomyLevel = fd && fd.autonomyLevel !== undefined ? fd.autonomyLevel : 0.3;
     if (!f.peasantBurden) f.peasantBurden = { claimed: 0, actual: 0 };
@@ -611,9 +614,13 @@
     var override = cfg.factionOverrides && (cfg.factionOverrides[fac.id] || cfg.factionOverrides[fac.name]);
     if (override) copyFields(cfg, override);
     if (fac.fiscalConfig) copyFields(cfg, fac.fiscalConfig);
+    var taxSwitches = {}, FS = global.FiscalStatement; // 作者税种开关按层单独收集（2026-10-17）：GM 层 taxesEnabled 已被 enableTaxesByDynasty 整理成对象表，上面整字段覆盖会盖掉 P/剧本里的布尔开关。
+    if (FS && FS.taxSwitches) [sc && sc.fiscalConfig, global.P && global.P.fiscalConfig, G && G.fiscalConfig, global.scriptData && global.scriptData.fiscalConfig, override, fac.fiscalConfig].forEach(function(layer) { if (layer) FS.taxSwitches(layer.taxesEnabled, taxSwitches); });
+    Object.defineProperty(cfg, '_taxSwitches', { value: taxSwitches, writable: true, configurable: true }); // 不可枚举：不进快照与存档
     if (cfg.productionTaxVersion && G && !(G.fiscalConfig && G.fiscalConfig.productionTaxVersion) && G._isFreshNewGame !== true) {
       var oldLayers = [cfg.legacyTaxConfig, global.P && global.P.fiscalConfig, G.fiscalConfig, global.scriptData && global.scriptData.fiscalConfig, fac.fiscalConfig];
       var saved = Object.assign.apply(Object, [{}].concat(oldLayers.filter(function(c) { return c && !c.productionTaxVersion; })));
+      cfg._taxSwitches = {}; [cfg.legacyTaxConfig || (global.P && global.P.fiscalConfig)].concat([global.P && global.P.fiscalConfig, G.fiscalConfig, global.scriptData && global.scriptData.fiscalConfig, override, fac.fiscalConfig].filter(function(c) { return c && !c.productionTaxVersion; })).forEach(function(layer) { if (layer && FS && FS.taxSwitches) FS.taxSwitches(layer.taxesEnabled, cfg._taxSwitches); }); // 旧档的税种开关同样按旧税配置收集，与国库旧入口 sourceFiscalConfig 同源（2026-10-17·二次复审 R2-4：原来仍按新模板外层开关，有无财政引擎结果不同；三次复审 R3-5：补回 factionOverrides 层；不带生产税版本的层本身就是旧格式，照样生效，与上面 saved 筛税表同一口径）
       ['taxList','taxes','customTaxes','centralLocalRules'].forEach(function(k) { if (saved[k] != null) cfg[k] = saved[k]; else delete cfg[k]; });
       delete cfg.productionTaxVersion;
     }
@@ -717,7 +724,7 @@
         var adjust = cfg.annualFuyi && Number(cfg.annualFuyi.taxRateAdjust);
         var fuyi = tax.annual && isFinite(adjust) ? 1 + Math.max(-0.5, Math.min(0.5, adjust)) : 1;
         var nominal = fiscalRound(Math.max(0, rawTaxAmount(div, tax) * yf * fuyi));
-        var eligible=computeTaxAmount(div,tax,ctx),collected=fiscalRound(eligible*Math.max(0,Math.min(1,safeNumber(div.fiscal.compliance,1))));
+        var eligible=computeTaxAmount(div,tax,ctx),collected=fiscalRound(eligible*_complianceRatio(div.fiscal.compliance,1));
         var split = unifiedSplit(div, tax, collected, ctx), r = rec.resources[kind];
         var collection=global.FiscalStatement.collectionTax({nominal:nominal,eligible:eligible,collected:collected,skimmed:split.skimmed,config:Object.assign({},cfg.collection,div.fiscal.collection,tax.collection)});
         global.FiscalStatement.addCollection(rec.collection[kind],collection);global.FiscalStatement.addCollection(totals.collection[kind],collection);
@@ -1323,7 +1330,14 @@
     var encourage = !!(global.GM && global.GM.policies && global.GM.policies.encourageFarming);
     var reclaimRate = Math.max(0, 1 - carryingLoad) * 0.015 * (encourage ? 2.5 : 1);
     var reclaimGain = Math.round(before * reclaimRate * turnFrac);
-    var cap = Math.max(historicalCap || 0, ccArable * 1.2 || 0, before);
+    // 2026-10-14：carryingCapacity.arable / historicalCap 的单位是「口」（tm-region-enrich：每亩养 0.3 口；编辑器 historicalCap = mouths×1.3），
+    // farmland 的单位是「亩」。原来拿口数直接给亩数封顶，口数只有亩数的三成，中原各府开局就被判「已开满」，
+    // 劝农/屯田诏在中原一亩不涨（bot 10-13 实测：官方天启本只有云贵几十府在涨，晚唐一府不涨）。
+    // 按同一换算把口数折回亩；没有承载力数据的府州按开局田亩的两成封顶（与原「ccArable×1.2」的本意一致）。
+    var MU_PER_MOUTH = 1 / 0.3;
+    if (typeof eb._farmlandBaseline !== 'number' || !isFinite(eb._farmlandBaseline)) eb._farmlandBaseline = before;
+    var capMu = Math.max(historicalCap || 0, ccArable * 1.2 || 0) * MU_PER_MOUTH;
+    var cap = Math.max(capMu, eb._farmlandBaseline * 1.2, before);
     if (reclaimGain > 0 && eb.farmland < cap) {
       reclaimGain = Math.min(reclaimGain, Math.max(0, cap - eb.farmland));
       eb.farmland += reclaimGain;
@@ -1418,15 +1432,6 @@
       taxes = DEFAULT_TAXES.map(function(t) { return clone(t); });
     }
 
-    var enabled = fc && fc.taxesEnabled;
-    if (enabled && typeof enabled === 'object' && !Array.isArray(enabled)) {
-      taxes = taxes.filter(function(t) {
-        if (enabled[t.id] === false) return false;
-        if (enabled[t.sourceTag] === false) return false;
-        return true;
-      });
-    }
-
     if (Array.isArray(fc && fc.customTaxes)) {
       fc.customTaxes.forEach(function(ct) {
         if (!ct || !ct.id || !ct.formulaType) return;
@@ -1481,6 +1486,9 @@
         if (converted) taxes.push(converted);
       });
     }
+    // 作者税种开关（2026-10-17）：按 id、标签、国库大类三层认「关」，自定义税合并之后统一过滤（复审 F4）；朝代推断的 enabled:false 不算（见 FiscalStatement.taxSwitches）。
+    var FS = global.FiscalStatement, switches = (fc && fc._taxSwitches) || (FS && FS.taxSwitches ? FS.taxSwitches(fc && fc.taxesEnabled) : {});
+    if (Object.keys(switches).length) taxes = taxes.filter(function(t) { return switches[t.id] !== false && switches[t.sourceTag] !== false && switches[FS && FS.taxCategory ? FS.taxCategory(t.sourceTag) : t.sourceTag] !== false; });
     if (fc && fc.productionTaxVersion) taxes.forEach(function(t) { t._productionTaxScope = true; });
     return taxes;
   }
@@ -1619,7 +1627,7 @@
       qiyun = Math.max(qiyun, 0.95);
       cunliu = Math.max(0, 1 - qiyun);
     }
-    var compliance = div.fiscal && div.fiscal.compliance != null ? safeNumber(div.fiscal.compliance, 0.85) : 0.85;
+    var compliance = _complianceRatio(div.fiscal && div.fiscal.compliance, 0.85); // 2026-10-16：比例口径·百分数折回·上解乘数不可能 >1
     var qiyunGross = amount * qiyun;
     var cunliuAmount = amount * cunliu;
     var qiyunNet = qiyunGross * compliance;
@@ -2891,7 +2899,7 @@
     ATOMIC_TAX_TYPES_19: ATOMIC_TAX_TYPES_19,
     EXPENDITURE_EFFECTS_14: EXPENDITURE_EFFECTS_14,
     resolveDynasty: resolveDynasty,
-    enableTaxesByDynasty: enableTaxesByDynasty,
+    enableTaxesByDynasty: enableTaxesByDynasty, authorTaxSwitches: function(G) { return getFiscalConfig(G)._taxSwitches || {}; }, // 国库旧税表分支与征税过滤共用的分层作者开关（2026-10-17·复审 F9）
     _ensureRegionFiscal: _ensureRegionFiscal,
     splitTaxByAllocation: splitTaxByAllocation,
     executeLocalAction: executeLocalAction,

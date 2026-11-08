@@ -1,0 +1,419 @@
+2026-10-23T07:44:09.566Z (async()=>{await new Promise(r=>setTimeout(r,650));const b=document.querySelector('#tm-changelog-ov .tm-cl-close');if(b)b.click();await TMOfficialScenarioLoader
+2026-10-23T07:44:13.126Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.getElementById('tm-op-enter'));if(result)return resolve(true);if
+2026-10-23T07:44:13.275Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-op-enter");if(!e)return false;e
+2026-10-23T07:44:13.403Z (async()=>{const e=document.querySelector("#tm-op-enter");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>se
+2026-10-23T07:44:13.470Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:28.421Z new Promise((resolve,reject)=>{const end=Date.now()+35000;(function poll(){let result=(GM.running&&GM.sid==='sc-jianyan1-1127-shaosong');if(result)return resolv
+2026-10-23T07:44:28.432Z _tmAwaitLoadBarrier()
+2026-10-23T07:44:28.434Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:28.690Z void(window.__compositeWaits=(function installCompositeWaits(root, deadlineAt, clock) {
+  if (!Number.isFinite(deadlineAt)) throw Error('composite suite deadlin
+2026-10-23T07:44:28.692Z !!document.querySelector('#tm-firstturn-guide button')
+2026-10-23T07:44:28.692Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-firstturn-guide button:last-chi
+2026-10-23T07:44:28.699Z (async()=>{const e=document.querySelector("#tm-firstturn-guide button:last-child");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'}
+2026-10-23T07:44:28.741Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:28.825Z !!document.querySelector('#tm-nokey-banner button')
+2026-10-23T07:44:28.826Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-nokey-banner button:last-child"
+2026-10-23T07:44:28.827Z (async()=>{const e=document.querySelector("#tm-nokey-banner button:last-child");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});a
+2026-10-23T07:44:28.875Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:28.963Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:44:28.964Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:44:28.965Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:44:28.966Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:44:28.967Z ({body:document.body.className,turn:document.querySelector('#endturn .et-big')?.outerHTML,save:document.querySelector('#save-btn')?.outerHTML,buttons:Array.from
+2026-10-23T07:44:29.652Z (()=>{
+    const trace=(phase,event)=>console.info('COMPOSITE_STAGE '+JSON.stringify({phase,event,turn:GM.turn,day:TM.SimTime.now(GM),load:window._tmLoadGen||0,
+2026-10-23T07:44:29.657Z (()=>{window.__compositeResponseFor=(function responseFor(kind, prompt) {
+  kind = String(kind || ''); prompt = String(prompt || '');
+  var summary = '确定性测试响应未增
+2026-10-23T07:44:29.660Z (()=>{
+    const venue=GM.mapData.regions.find(r=>r.id==='ssr-0007');venue.public=true;
+    P.time.daysPerTurn=30;if(GM.time)GM.time.daysPerTurn=30;
+    window.
+2026-10-23T07:44:29.661Z void((function installCompositeEconomyObservers(root, calls) {
+  function state() {
+    const g = root.GM;
+    return { turn: Number(g.turn), day: Number(root.T
+2026-10-23T07:44:29.662Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:44:29.664Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return false;e.
+2026-10-23T07:44:29.666Z (async()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>set
+2026-10-23T07:44:29.707Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:29.894Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel
+2026-10-23T07:44:29.896Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details").open
+2026-10-23T07:44:29.898Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-23T07:44:29.900Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details > summary");if(!e)return{missing:true};e.scroll
+2026-10-23T07:44:29.942Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:30.041Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] #daily-target");if(!e)throw Error('missing select');e.value="c
+2026-10-23T07:44:30.044Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:30.126Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-23T07:44:30.130Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-compose] details > summary");if(!e)return{mis
+2026-10-23T07:44:30.173Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:30.266Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-23T07:44:30.270Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] input[data-daily-material=\"new\"][value=\"0\"]");if(!e)r
+2026-10-23T07:44:30.312Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:30.396Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-23T07:44:30.402Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-new=\"assistance\"]");if(!e)return{missing:tr
+2026-10-23T07:44:30.445Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:44.549Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:44:44.555Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:44:44.556Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:44:44.557Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:44:44.561Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"]").textContent
+2026-10-23T07:44:44.597Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:44:44.609Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:44:45.006Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:44:47.037Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:44:47.040Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-23T07:44:47.044Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-answer=\"satisfied\"]");if(!e)return{missing:
+2026-10-23T07:44:47.088Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:52.986Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:44:52.989Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:44:52.990Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:44:52.993Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:44:52.995Z !!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')
+2026-10-23T07:44:52.997Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay button[da
+2026-10-23T07:44:52.998Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay button[data-close-bridge]");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:44:53.042Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:53.131Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:44:53.134Z ({turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-23T07:44:53.134Z __compositeWaits.arm('turn')
+2026-10-23T07:44:53.135Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#endturn .et-big");if(!e)return fal
+2026-10-23T07:44:53.136Z (async()=>{const e=document.querySelector("#endturn .et-big");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r
+2026-10-23T07:44:53.178Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:53.273Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.querySelector('#cet-ok'));if(result)return resolve(true);if(Date
+2026-10-23T07:44:53.274Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#cet-ok");if(!e)return false;e.scro
+2026-10-23T07:44:53.275Z (async()=>{const e=document.querySelector("#cet-ok");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>setTime
+2026-10-23T07:44:53.318Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:44:53.411Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector('#post-turn-court-prompt button[onclick="_postTu
+2026-10-23T07:44:53.412Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#post-turn-court-prompt button[oncl
+2026-10-23T07:44:53.413Z (async()=>{const e=document.querySelector("#post-turn-court-prompt button[onclick=\"_postTurnCourtChoose(false)\"]");if(!e)return{missing:true};e.scrollIntoView
+2026-10-23T07:44:53.456Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:45:05.108Z __compositeWaits.wait(1)
+2026-10-23T07:46:05.641Z ({busy:!!(GM.busy||GM._endTurnBusy),pending:!!GM._endTurnCommitPending,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-23T07:46:15.494Z Array.from(document.querySelectorAll('button')).filter(b=>/关闭|继续|返回|收起/.test(b.textContent)&&b.getBoundingClientRect().width).map(b=>({text:b.textContent,html:b
+2026-10-23T07:46:30.731Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:46:46.081Z ({active:TM.RecoveryReview.status(),cancels:__compositeCalls.reviewCancels.length})
+2026-10-23T07:46:46.166Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > aside:nth-of-type(2) > butto
+2026-10-23T07:46:46.202Z (async()=>{const e=document.querySelector("body > aside:nth-of-type(2) > button:nth-of-type(1)");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:46:46.245Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:46:52.472Z __compositeCalls.reviewCancels.length
+2026-10-23T07:46:56.583Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:00.245Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > aside:nth-of-type(2) > butto
+2026-10-23T07:47:00.283Z (async()=>{const e=document.querySelector("body > aside:nth-of-type(2) > button:nth-of-type(2)");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:47:00.352Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:00.437Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:00.445Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(28) > div:nt
+2026-10-23T07:47:00.450Z (async()=>{const e=document.querySelector("body > div:nth-of-type(28) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-23T07:47:00.504Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:04.308Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:04.314Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(27) > div:nt
+2026-10-23T07:47:04.316Z (async()=>{const e=document.querySelector("body > div:nth-of-type(27) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-23T07:47:04.360Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:04.445Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:04.449Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(26) > div:nt
+2026-10-23T07:47:04.451Z (async()=>{const e=document.querySelector("body > div:nth-of-type(26) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-23T07:47:04.495Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:04.580Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:04.583Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(25) > div:nt
+2026-10-23T07:47:04.585Z (async()=>{const e=document.querySelector("body > div:nth-of-type(25) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-23T07:47:04.628Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:04.712Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:04.716Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(24) > div:nt
+2026-10-23T07:47:04.717Z (async()=>{const e=document.querySelector("body > div:nth-of-type(24) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-23T07:47:04.761Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:04.844Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:04.847Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(23) > div:nt
+2026-10-23T07:47:04.849Z (async()=>{const e=document.querySelector("body > div:nth-of-type(23) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-23T07:47:04.891Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:04.975Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:04.978Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(22) > div:nt
+2026-10-23T07:47:04.980Z (async()=>{const e=document.querySelector("body > div:nth-of-type(22) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-23T07:47:05.023Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:05.107Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:05.110Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(21) > div:nt
+2026-10-23T07:47:05.112Z (async()=>{const e=document.querySelector("body > div:nth-of-type(21) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-23T07:47:05.154Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:05.238Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:05.242Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(20) > div:nt
+2026-10-23T07:47:05.244Z (async()=>{const e=document.querySelector("body > div:nth-of-type(20) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-23T07:47:05.287Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:05.372Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:05.376Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(8) > div:nth
+2026-10-23T07:47:05.378Z (async()=>{const e=document.querySelector("body > div:nth-of-type(8) > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > button:nth-of-type(2)");if
+2026-10-23T07:47:05.421Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:05.506Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:05.508Z (()=>{const b=document.querySelector('#turn-modal button[onclick*="closeTurnResult"]');if(!b)return false;const r=b.getBoundingClientRect(),hit=document.element
+2026-10-23T07:47:05.509Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:47:05.511Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:47:05.511Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:47:05.516Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:47:05.518Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:05.521Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return false;e.
+2026-10-23T07:47:05.524Z (async()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>set
+2026-10-23T07:47:05.567Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:05.740Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel
+2026-10-23T07:47:05.741Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details").open
+2026-10-23T07:47:05.742Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] #daily-target");if(!e)throw Error('missing select');e.value="c
+2026-10-23T07:47:05.744Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:05.827Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] #daily-consultation-topic");if(!e)throw Error('missing select'
+2026-10-23T07:47:05.829Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:05.910Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] #daily-meeting-location");if(!e)throw Error('missing select');
+2026-10-23T07:47:05.914Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:05.995Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-23T07:47:06.001Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-new=\"meeting\"]");if(!e)return{missing:true}
+2026-10-23T07:47:06.043Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:16.131Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:47:16.133Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:47:16.134Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:47:16.139Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:47:16.321Z (()=>{const p=GM._npcPlans.filter(p=>p.localActivity?.kind==='meeting').slice(-1)[0];return p&&{id:p.id,status:p.status};})()
+2026-10-23T07:47:16.323Z !!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626051:4\"] [data-daily-answer=\"d
+2026-10-23T07:47:16.324Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-23T07:47:16.325Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626051:4\"] [data
+2026-10-23T07:47:16.371Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:22.375Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:47:23.950Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:47:23.951Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:47:23.959Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:47:23.965Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:47:23.966Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:47:23.966Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:47:23.970Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:47:23.977Z void(window.__compositeOldButton=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626
+2026-10-23T07:47:23.978Z !!window.__compositeOldButton
+2026-10-23T07:47:23.979Z !!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')
+2026-10-23T07:47:23.980Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay button[da
+2026-10-23T07:47:23.981Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay button[data-close-bridge]");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:47:24.022Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:24.114Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-pause-fab");if(!e)return false;
+2026-10-23T07:47:24.115Z (async()=>{const e=document.querySelector("#tm-pause-fab");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>s
+2026-10-23T07:47:24.156Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:24.245Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#pause-bg button[onclick=\"closePau
+2026-10-23T07:47:24.247Z (async()=>{const e=document.querySelector("#pause-bg button[onclick=\"closePause();openSaveManager()\"]");if(!e)return{missing:true};e.scrollIntoView({block:'ce
+2026-10-23T07:47:24.289Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:24.381Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector('#save-manager-overlay button[onclick="saveToSlo
+2026-10-23T07:47:24.382Z __compositeWaits.arm('save',1)
+2026-10-23T07:47:24.383Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#save-manager-overlay button[onclic
+2026-10-23T07:47:24.401Z (async()=>{const e=document.querySelector("#save-manager-overlay button[onclick=\"saveToSlot(1)\"]");if(!e)return{missing:true};e.scrollIntoView({block:'center'
+2026-10-23T07:47:24.444Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:24.535Z (()=>{const e=document.querySelector('body > div:last-child input');if(!e)throw Error('save naming prompt missing');e.value="赴约途中";e.dispatchEvent(new Event('in
+2026-10-23T07:47:24.537Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:last-child button.bt.bp"
+2026-10-23T07:47:24.540Z (async()=>{const e=document.querySelector("body > div:last-child button.bt.bp");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});a
+2026-10-23T07:47:24.583Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:24.670Z __compositeWaits.wait(2)
+2026-10-23T07:47:33.887Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector('#save-manager-overlay button[onclick="loadSaveS
+2026-10-23T07:47:33.888Z (()=>{window.__compositeOldWorld=GM;return{load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:GM.playerCharacterId,plans:JSON.stringify((GM._npcPlans||[]).
+2026-10-23T07:47:33.895Z __compositeWaits.arm('load',1)
+2026-10-23T07:47:33.896Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#save-manager-overlay button[onclic
+2026-10-23T07:47:33.897Z (async()=>{const e=document.querySelector("#save-manager-overlay button[onclick=\"loadSaveSlot(1)\"]");if(!e)return{missing:true};e.scrollIntoView({block:'cente
+2026-10-23T07:47:33.939Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:34.020Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector(".rice-paper-confirm #_rpc_ok");if(!
+2026-10-23T07:47:34.021Z (async()=>{const e=document.querySelector(".rice-paper-confirm #_rpc_ok");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await n
+2026-10-23T07:47:34.063Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:34.149Z __compositeWaits.wait(3)
+2026-10-23T07:47:42.239Z new Promise((resolve,reject)=>{const end=Date.now()+45000;(function poll(){let result=(GM!==window.__compositeOldWorld&&GM.running&&!document.querySelector('#sa
+2026-10-23T07:47:42.357Z _tmAwaitLoadBarrier()
+2026-10-23T07:47:42.466Z ({load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:GM.playerCharacterId,plans:JSON.stringify((GM._npcPlans||[]).filter(p=>p.localActivity&&p.localActivit
+2026-10-23T07:47:42.740Z P.ai.url==='https://composite-fixture.invalid/v1'&&P.ai.key==='composite-fixture'
+2026-10-23T07:47:42.752Z !!window.__compositeOldButton
+2026-10-23T07:47:42.753Z window.__compositeOldButton.click()
+2026-10-23T07:47:42.764Z JSON.stringify((GM._npcPlans||[]).filter(p=>p.localActivity&&p.localActivity.kind==='meeting'))
+2026-10-23T07:47:42.765Z (()=>{delete window.__compositeOldWorld;delete window.__compositeOldButton;return true;})()
+2026-10-23T07:47:42.765Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:47:42.767Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:47:42.768Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:47:42.773Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:47:42.782Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:42.785Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return false;e.
+2026-10-23T07:47:42.789Z (async()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>set
+2026-10-23T07:47:42.832Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:42.965Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel
+2026-10-23T07:47:42.966Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details").open
+2026-10-23T07:47:42.967Z !!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626051:4\"] [data-daily-exchange=\
+2026-10-23T07:47:42.967Z !!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')
+2026-10-23T07:47:42.968Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay button[da
+2026-10-23T07:47:42.969Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay button[data-close-bridge]");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:47:43.011Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:43.101Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:47:43.104Z ({turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-23T07:47:43.105Z __compositeWaits.arm('turn')
+2026-10-23T07:47:43.106Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#endturn .et-big");if(!e)return fal
+2026-10-23T07:47:43.108Z (async()=>{const e=document.querySelector("#endturn .et-big");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r
+2026-10-23T07:47:43.151Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:43.259Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.querySelector('#cet-ok'));if(result)return resolve(true);if(Date
+2026-10-23T07:47:43.260Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#cet-ok");if(!e)return false;e.scro
+2026-10-23T07:47:43.262Z (async()=>{const e=document.querySelector("#cet-ok");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>setTime
+2026-10-23T07:47:43.304Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:43.397Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector('#post-turn-court-prompt button[onclick="_postTu
+2026-10-23T07:47:43.398Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#post-turn-court-prompt button[oncl
+2026-10-23T07:47:43.399Z (async()=>{const e=document.querySelector("#post-turn-court-prompt button[onclick=\"_postTurnCourtChoose(false)\"]");if(!e)return{missing:true};e.scrollIntoView
+2026-10-23T07:47:43.441Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:47:58.580Z __compositeWaits.wait(4)
+2026-10-23T07:49:05.328Z ({busy:!!(GM.busy||GM._endTurnBusy),pending:!!GM._endTurnCommitPending,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-23T07:49:09.772Z Array.from(document.querySelectorAll('button')).filter(b=>/关闭|继续|返回|收起/.test(b.textContent)&&b.getBoundingClientRect().width).map(b=>({text:b.textContent,html:b
+2026-10-23T07:49:23.258Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:49:40.199Z ({active:TM.RecoveryReview.status(),cancels:__compositeCalls.reviewCancels.length})
+2026-10-23T07:49:40.289Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > aside:nth-of-type(2) > butto
+2026-10-23T07:49:40.305Z (async()=>{const e=document.querySelector("body > aside:nth-of-type(2) > button:nth-of-type(1)");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:49:40.349Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:40.432Z __compositeCalls.reviewCancels.length
+2026-10-23T07:49:40.432Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:49:40.435Z JSON.stringify({events:GM.triggeredHistoryEvents||{},choices:(GM.biannianItems||[]).filter(x=>x.type==='history_event')})
+2026-10-23T07:49:40.435Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(20) > div:nt
+2026-10-23T07:49:40.437Z (async()=>{const e=document.querySelector("body > div:nth-of-type(20) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)");if(!e)return{missing:t
+2026-10-23T07:49:40.480Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:40.565Z JSON.stringify({events:GM.triggeredHistoryEvents||{},choices:(GM.biannianItems||[]).filter(x=>x.type==='history_event')})
+2026-10-23T07:49:40.565Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:49:40.568Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(8) > div:nth
+2026-10-23T07:49:40.571Z (async()=>{const e=document.querySelector("body > div:nth-of-type(8) > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > button:nth-of-type(2)");if
+2026-10-23T07:49:40.613Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:40.698Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:49:40.700Z (()=>{const b=document.querySelector('#turn-modal button[onclick*="closeTurnResult"]');if(!b)return false;const r=b.getBoundingClientRect(),hit=document.element
+2026-10-23T07:49:40.702Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:49:40.703Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:49:40.704Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:49:40.709Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:49:40.720Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:49:40.722Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return false;e.
+2026-10-23T07:49:40.723Z (async()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>set
+2026-10-23T07:49:40.765Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:40.934Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel
+2026-10-23T07:49:40.935Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details").open
+2026-10-23T07:49:40.936Z !!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626051:4\"] [data-daily-exchange=\
+2026-10-23T07:49:40.937Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-23T07:49:40.938Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626051:4\"] [data
+2026-10-23T07:49:40.982Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:45.144Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:49:45.148Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:49:45.149Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:49:45.158Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:49:45.237Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:49:45.325Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:49:45.328Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:49:45.337Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:49:45.354Z void(window.__compositeOldButton=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626
+2026-10-23T07:49:45.356Z !!window.__compositeOldButton
+2026-10-23T07:49:45.532Z !!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')
+2026-10-23T07:49:45.552Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay button[da
+2026-10-23T07:49:45.559Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay button[data-close-bridge]");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:49:45.729Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:45.894Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-pause-fab");if(!e)return false;
+2026-10-23T07:49:45.895Z (async()=>{const e=document.querySelector("#tm-pause-fab");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>s
+2026-10-23T07:49:45.938Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:46.020Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#pause-bg button[onclick=\"closePau
+2026-10-23T07:49:46.021Z (async()=>{const e=document.querySelector("#pause-bg button[onclick=\"closePause();openSaveManager()\"]");if(!e)return{missing:true};e.scrollIntoView({block:'ce
+2026-10-23T07:49:46.063Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:46.154Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector('#save-manager-overlay button[onclick="saveToSlo
+2026-10-23T07:49:46.155Z __compositeWaits.arm('save',2)
+2026-10-23T07:49:46.156Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#save-manager-overlay button[onclic
+2026-10-23T07:49:46.175Z (async()=>{const e=document.querySelector("#save-manager-overlay button[onclick=\"saveToSlot(2)\"]");if(!e)return{missing:true};e.scrollIntoView({block:'center'
+2026-10-23T07:49:46.218Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:46.310Z (()=>{const e=document.querySelector('body > div:last-child input');if(!e)throw Error('save naming prompt missing');e.value="现场问题待答";e.dispatchEvent(new Event('
+2026-10-23T07:49:46.312Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:last-child button.bt.bp"
+2026-10-23T07:49:46.315Z (async()=>{const e=document.querySelector("body > div:last-child button.bt.bp");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});a
+2026-10-23T07:49:46.358Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:49:46.444Z __compositeWaits.wait(5)
+2026-10-23T07:50:56.841Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector('#save-manager-overlay button[onclick="loadSaveS
+2026-10-23T07:50:56.884Z (()=>{window.__compositeOldWorld=GM;return{load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:GM.playerCharacterId,plans:JSON.stringify((GM._npcPlans||[]).
+2026-10-23T07:50:56.887Z __compositeWaits.arm('load',2)
+2026-10-23T07:50:56.888Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#save-manager-overlay button[onclic
+2026-10-23T07:50:56.889Z (async()=>{const e=document.querySelector("#save-manager-overlay button[onclick=\"loadSaveSlot(2)\"]");if(!e)return{missing:true};e.scrollIntoView({block:'cente
+2026-10-23T07:51:04.374Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:51:10.212Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector(".rice-paper-confirm #_rpc_ok");if(!
+2026-10-23T07:51:10.249Z (async()=>{const e=document.querySelector(".rice-paper-confirm #_rpc_ok");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await n
+2026-10-23T07:51:10.322Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:51:10.405Z __compositeWaits.wait(6)
+2026-10-23T07:51:22.678Z new Promise((resolve,reject)=>{const end=Date.now()+45000;(function poll(){let result=(GM!==window.__compositeOldWorld&&GM.running&&!document.querySelector('#sa
+2026-10-23T07:51:22.828Z _tmAwaitLoadBarrier()
+2026-10-23T07:51:22.990Z ({load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:GM.playerCharacterId,plans:JSON.stringify((GM._npcPlans||[]).filter(p=>p.localActivity&&p.localActivit
+2026-10-23T07:51:23.320Z P.ai.url==='https://composite-fixture.invalid/v1'&&P.ai.key==='composite-fixture'
+2026-10-23T07:51:23.323Z !!window.__compositeOldButton
+2026-10-23T07:51:23.324Z window.__compositeOldButton.click()
+2026-10-23T07:51:23.334Z JSON.stringify((GM._npcPlans||[]).filter(p=>p.localActivity&&p.localActivity.kind==='meeting'))
+2026-10-23T07:51:23.335Z (()=>{delete window.__compositeOldWorld;delete window.__compositeOldButton;return true;})()
+2026-10-23T07:51:23.336Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:51:23.337Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:51:23.339Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:51:23.343Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:51:23.364Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:51:23.367Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:51:23.368Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:51:23.372Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:51:23.397Z !!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')
+2026-10-23T07:51:23.399Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:51:23.406Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > aside:nth-of-type(2) > butto
+2026-10-23T07:51:23.408Z (async()=>{const e=document.querySelector("body > aside:nth-of-type(2) > button:nth-of-type(2)");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:51:23.453Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:51:23.540Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:51:23.544Z ({turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-23T07:51:23.545Z __compositeWaits.arm('turn')
+2026-10-23T07:51:23.546Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#endturn .et-big");if(!e)return fal
+2026-10-23T07:51:23.547Z (async()=>{const e=document.querySelector("#endturn .et-big");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r
+2026-10-23T07:51:23.592Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:51:23.693Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.querySelector('#cet-ok'));if(result)return resolve(true);if(Date
+2026-10-23T07:51:23.695Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#cet-ok");if(!e)return false;e.scro
+2026-10-23T07:51:23.697Z (async()=>{const e=document.querySelector("#cet-ok");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>setTime
+2026-10-23T07:51:23.741Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:51:23.825Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector('#post-turn-court-prompt button[onclick="_postTu
+2026-10-23T07:51:23.841Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#post-turn-court-prompt button[oncl
+2026-10-23T07:51:23.857Z (async()=>{const e=document.querySelector("#post-turn-court-prompt button[onclick=\"_postTurnCourtChoose(false)\"]");if(!e)return{missing:true};e.scrollIntoView
+2026-10-23T07:51:23.902Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:51:41.353Z __compositeWaits.wait(7)
+2026-10-23T07:52:57.617Z ({busy:!!(GM.busy||GM._endTurnBusy),pending:!!GM._endTurnCommitPending,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-23T07:53:03.479Z Array.from(document.querySelectorAll('button')).filter(b=>/关闭|继续|返回|收起/.test(b.textContent)&&b.getBoundingClientRect().width).map(b=>({text:b.textContent,html:b
+2026-10-23T07:53:18.293Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:53:37.226Z ({active:TM.RecoveryReview.status(),cancels:__compositeCalls.reviewCancels.length})
+2026-10-23T07:53:37.245Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > aside:nth-of-type(2) > butto
+2026-10-23T07:53:37.329Z (async()=>{const e=document.querySelector("body > aside:nth-of-type(2) > button:nth-of-type(1)");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:53:37.375Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:53:37.456Z __compositeCalls.reviewCancels.length
+2026-10-23T07:53:37.457Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:53:37.461Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(8) > div:nth
+2026-10-23T07:53:37.463Z (async()=>{const e=document.querySelector("body > div:nth-of-type(8) > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > button:nth-of-type(2)");if
+2026-10-23T07:53:37.507Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:53:37.592Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:53:37.594Z (()=>{const b=document.querySelector('#turn-modal button[onclick*="closeTurnResult"]');if(!b)return false;const r=b.getBoundingClientRect(),hit=document.element
+2026-10-23T07:53:37.595Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:53:37.598Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:53:37.598Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:53:37.602Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:53:37.620Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:53:37.622Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:53:37.622Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:53:37.627Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:53:37.650Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:53:37.653Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:53:37.654Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:53:37.659Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:53:37.682Z ['char_jianyan1_01','char_jianyan1_16'].map(id=>({id,location:TM.NPC.DailyActivities.exactLocation(GM.chars.find(c=>c.id===id),GM)}))
+2026-10-23T07:53:37.683Z GM.chars.find(c=>c.id==='char_jianyan1_01')._lifeExp||[]
+2026-10-23T07:53:37.684Z GM.chars.filter(c=>['char_jianyan1_01','char_jianyan1_16'].includes(c.id)).map(c=>({id:c.id,entries:(c._memory||[]).concat(c._memArchive||[]).filter(m=>String(m
+2026-10-23T07:53:37.686Z __compositeWaits.snapshot()
+2026-10-23T07:53:37.687Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:53:37.688Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:53:37.689Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:53:37.695Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-23T07:53:37.720Z (async function waitForCompositeBackground(root, deadlineAt, observedSince, clock) {
+  clock = clock || { now: () => Date.now(), setTimeout: (fn, ms) => root.se
+2026-10-23T07:54:59.655Z !!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')
+2026-10-23T07:54:59.656Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:54:59.659Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > aside:nth-of-type(2) > butto
+2026-10-23T07:54:59.661Z (async()=>{const e=document.querySelector("body > aside:nth-of-type(2) > button:nth-of-type(2)");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-23T07:54:59.703Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:54:59.787Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay'),history=host&&h
+2026-10-23T07:54:59.790Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return false;e.
+2026-10-23T07:54:59.791Z (async()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>set
+2026-10-23T07:54:59.833Z new Promise(r=>setTimeout(r,80))
+2026-10-23T07:55:00.008Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel
+2026-10-23T07:55:00.009Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details").open
+2026-10-23T07:55:00.009Z (()=>{const card=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626051:4\"]");if(!c
+2026-10-23T07:55:00.010Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626051:4\"] > details:nth-of-type(2)
+2026-10-23T07:55:00.011Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-23T07:55:02.666Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626051:4\"] > details:
+2026-10-23T07:55:02.837Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792741626051:4\"] > details:
+2026-10-23T07:55:02.838Z __compositeCalls
+2026-10-23T07:55:02.840Z __compositeWaits.snapshot()
+2026-10-23T07:55:02.843Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-23T07:55:02.845Z window.__compositeWaits?window.__compositeWaits.snapshot():[]
+2026-10-23T07:55:02.846Z (()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.pending||[]).map(q=>({id:q.id,actorId:q.actorId,kind:q.kind,
+2026-10-23T07:55:02.850Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe

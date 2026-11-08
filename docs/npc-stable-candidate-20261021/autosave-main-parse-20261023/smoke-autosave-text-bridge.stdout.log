@@ -1,0 +1,25 @@
+PASS text capability exposed by actual preload
+PASS text and object paths produce identical JSON persistence envelopes
+PASS malformed/non-object text is rejected without changing the real main disk or session: {broken
+PASS malformed/non-object text is rejected without changing the real main disk or session: null
+PASS malformed/non-object text is rejected without changing the real main disk or session: []
+PASS malformed/non-object text is rejected without changing the real main disk or session: 1
+PASS malformed/non-object text is rejected without changing the real main disk or session: "text"
+PASS malformed/non-object text is rejected without changing the real main disk or session: null
+PASS malformed/non-object text is rejected without changing the real main disk or session: [object Object]
+PASS initial malformed text cannot create a main session or touch the canonical directory
+PASS real main queue parses a second text only after the first write and rename complete
+PASS queued malformed text still rejects after rotation and cannot overwrite the prior disk
+PASS rotation before queue dispatch rejects a valid obsolete text with no disk write
+PASS the actual main write failure preserves disk, renderer bookkeeping and a later retry
+PASS rotation during atomic rename cannot certify the old envelope or advance success time
+PASS an ambiguous or incorrectly typed transport cannot choose a weaker interpretation
+PASS IPC negative result and rejection remain observable
+PASS session comes from preload, not JSON metadata
+PASS renderer selects text transport without changing committed world or live state
+PASS old shell keeps existing transport and frequency guards
+PASS JSON failure is not retried through the object bridge and in-flight state resets
+PASS text: failed write never advances success clock/turn, retry still succeeds
+PASS legacy: failed write never advances success clock/turn, retry still succeeds
+PASS late IPC does not mark the replacement world saved; overlapping call does not write twice
+autosave text bridge: 24 PASS, 0 FAIL

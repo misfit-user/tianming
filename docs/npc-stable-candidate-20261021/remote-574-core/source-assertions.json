@@ -1,0 +1,9 @@
+{
+  "source": "scripts/electron/desktop-cases.cjs",
+  "implementation": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+  "sourceSha256": "ae16e02fb1a988b98a6a59c48c1789db07e6dac08ab0f6c230f45e784b0c9031",
+  "startLine": 41,
+  "endLine": 59,
+  "excerpt": "  await check('autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk', async () => {\n    assert.equal(await js(\"typeof tianming.autoSaveJson\"), 'function');\n    const data = { gameState: { turn: 8, _campaignId: 'text_fixture', _timelineId: 'tml_text_fixture', note: '中文 😀 e\\u0301' } };\n    assert.equal((await call('autoSave', data)).success, true);\n    const file = path.join(saveDir, '__autosave__.json');\n    const objectEnvelope = JSON.parse(fs.readFileSync(file, 'utf8'));\n    assert.equal((await call('autoSaveJson', JSON.stringify(data))).success, true);\n    const text = fs.readFileSync(file), envelope = JSON.parse(text.toString('utf8'));\n    assert.deepEqual(envelope.data, objectEnvelope.data);\n    assert.equal(envelope.sessionToken, objectEnvelope.sessionToken);\n    assert.equal(envelope.__tmAutoSaveEnvelope, 1);\n    assert(text.toString('utf8').startsWith('{\"__tmDesktopSaveGeneration\":'));\n    const sessionBefore=await call('getAutoSaveSessionToken');\n    for (const invalid of ['{bad', 'null', '[]']) {\n      await assert.rejects(call('autoSaveJson', invalid));\n      assert.deepEqual(fs.readFileSync(file), text, 'invalid text must not alter the committed file');\n      assert.equal(await call('getAutoSaveSessionToken'),sessionBefore,'main validation failure must not rotate the current preload session');\n    }\n  });",
+  "proof": "Fresh 574 candidate Git source and identical CI tree; the whole named case passed in both current production and test-exports modes. Not inherited from d31 and no separate per-assertion runtime log claimed."
+}

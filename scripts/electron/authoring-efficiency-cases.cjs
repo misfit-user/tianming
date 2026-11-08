@@ -17,7 +17,32 @@ module.exports=async function({win,root,check}){
   assert(r.calls<20);assert.equal(r.tools,r.expectedTools.length);assert.equal(r.source,'原');assert.equal(r.draft,'原');assert.equal(r.metrics.httpRequests,r.calls);assert.equal(r.metrics.inputTokens,r.calls*10);assert.match(r.usage,/服务商已报告/);observations.push({kind:'controlled-spin',...r,status:undefined,usage:undefined});
  });
  await check('real manual compression retains long user instructions across repeated compression',async()=>{
-  const r=await js(`(async()=>{const aa=TM.AuthoringAgent,raw='保留设定'.repeat(600)+'末段硬约束：不删除任何人物。';window.fetch=async()=>new Response(JSON.stringify({choices:[{message:{tool_calls:[{id:'s',function:{name:'submitSummary',arguments:JSON.stringify({summary:'已核查部分字段，仍须遵守全部用户约束。'.repeat(20)})}}]},finish_reason:'tool_calls'}]}));let conv=[{role:'user',text:raw,userInstruction:raw},...Array.from({length:8},()=>({role:'assistant',text:'进度'}))];for(let i=0;i<2;i++){const r=await aa.compactConversation(conv,{name:'原'},{keepTail:2});if(!r.ok||!r.conversation[0].text.includes(raw))return false;conv=r.conversation.concat(Array.from({length:4},()=>({role:'assistant',text:'后续'})));}return true;})()`);assert(r);
+  const rounds=await js(`(async()=>{
+   const aa=TM.AuthoringAgent,raw='保留设定'.repeat(600)+'末段硬约束：不删除任何人物。',draft={name:'原'},rounds=[];
+   window.fetch=async()=>new Response(JSON.stringify({choices:[{message:{tool_calls:[{id:'s',function:{name:'submitSummary',arguments:JSON.stringify({summary:'已核查部分字段，仍须遵守全部用户约束。'.repeat(20)})}}]},finish_reason:'tool_calls'}]}));
+   // User instructions stay verbatim; assistant history provides the reducible context.
+   let conv=[{role:'user',text:raw,userInstruction:raw},...Array.from({length:8},(_,i)=>({role:'assistant',text:('进度'+i).repeat(1000)}))];
+   for(let i=0;i<2;i++){
+    const before=JSON.stringify(conv),beforeDraft=JSON.stringify(draft),r=await aa.compactConversation(conv,draft,{keepTail:2});
+    if(!r.ok)throw Error('compression failed: '+r.reason);
+    rounds.push({tokensBefore:r.tokensBefore,tokensAfter:r.tokensAfter,retained:r.conversation[0].text.includes(raw),originals:r.conversation[0].userInstructions.length===1&&r.conversation[0].userInstructions[0]===raw,unchanged:JSON.stringify(conv)===before&&JSON.stringify(draft)===beforeDraft});
+    conv=r.conversation.concat(Array.from({length:4},()=>({role:'assistant',text:'后续'.repeat(1000)})));
+   }
+   return rounds;
+  })()`);
+  assert.equal(rounds.length,2);rounds.forEach(r=>{assert(r.tokensAfter<r.tokensBefore);assert(r.retained&&r.originals&&r.unchanged);});
+  observations.push({kind:'controlled-manual-compression',rounds});
+ });
+ await check('real manual compression rejects non-reducing summaries without replacing conversation or draft',async()=>{
+  const r=await js(`(async()=>{
+   const aa=TM.AuthoringAgent,raw='保留设定'.repeat(600)+'末段硬约束：不删除任何人物。',draft={name:'原'};
+   window.fetch=async()=>new Response(JSON.stringify({choices:[{message:{tool_calls:[{id:'s',function:{name:'submitSummary',arguments:JSON.stringify({summary:'已核查部分字段，仍须遵守全部用户约束。'.repeat(20)})}}]},finish_reason:'tool_calls'}]}));
+   const conv=[{role:'user',text:raw,userInstruction:raw},...Array.from({length:8},()=>({role:'assistant',text:'进度'}))],before=JSON.stringify(conv),beforeDraft=JSON.stringify(draft);
+   const r=await aa.compactConversation(conv,draft,{keepTail:2});
+   return{ok:r.ok,reason:r.reason,tokensBefore:r.tokensBefore,tokensAfter:r.tokensAfter,noReplacement:r.conversation===undefined,unchanged:JSON.stringify(conv)===before&&JSON.stringify(draft)===beforeDraft};
+  })()`);
+  assert.equal(r.ok,false);assert.equal(r.reason,'no-reduction');assert(r.tokensAfter>=r.tokensBefore);assert(r.noReplacement&&r.unchanged);
+  observations.push({kind:'controlled-non-reducing-compression',...r});
  });
  const sid=process.env.TM_RELIEF_SCENARIO || 'sc-tianqi7-1627';
  const files=fs.readdirSync(path.join(root,'scenarios')).filter(f=>f.endsWith('（官方）.json')&&JSON.parse(fs.readFileSync(path.join(root,'scenarios',f),'utf8')).id===sid);

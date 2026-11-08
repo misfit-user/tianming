@@ -1,0 +1,143 @@
+2026-10-22T13:53:48.308Z 1 天命游戏脚本开始加载...
+2026-10-22T13:53:48.901Z 1 [TM.platform] TM.platform[electron] caps={"ipc":true,"fs":true,"nativeHttp":true,"hotUpdate":true,"online":true,"installerUpdate":true,"filePicker":true}
+2026-10-22T13:53:48.953Z 1 [debug-logger] 已启用·桌面落盘模式
+2026-10-22T13:53:49.395Z 1 [三系统联动] 事件总线钩子已连接
+2026-10-22T13:53:49.401Z 1 [SaveDB] IndexedDB就绪 (v6)
+2026-10-22T13:53:49.404Z 1 [SaveDB] 存储: 0.00 MB / 32076.56 MB (0.0%)
+2026-10-22T13:53:49.405Z 1 [SaveDB] 持久化存储未获批·仍可正常使用(best-effort 模式)
+2026-10-22T13:53:49.575Z 1 [corruption-p2] 已加载：25 条案件库 + lumpSum API + 风闻四类 + 新官标记
+2026-10-22T13:53:49.577Z 1 [corruption-p4] 已加载：模式调节 / 轮换副作用 / 卖官 / AI增强 / 地图热力 / 编辑器面板
+2026-10-22T13:53:49.583Z 1 [guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设
+2026-10-22T13:53:49.588Z 1 [neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链
+2026-10-22T13:53:49.588Z 1 [neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向
+2026-10-22T13:53:49.593Z 1 [charEcon] 引擎已加载：6 资源 + 14×14 收支 + 8 阶层 + 家族共财 + 抄家 + 字系统
+2026-10-22T13:53:49.595Z 1 [historical] 加载 27 条历史人物档案
+2026-10-22T13:53:49.598Z 1 [historical-wave-01] 加载 60 条
+2026-10-22T13:53:49.602Z 1 [historical-wave-02] 加载 46 条
+2026-10-22T13:53:49.604Z 1 [historical-wave-03] 加载 44 条
+2026-10-22T13:53:49.606Z 1 [historical-wave-04] 加载 40 条
+2026-10-22T13:53:49.608Z 1 [historical-wave-05] 加载 37 条
+2026-10-22T13:53:49.610Z 1 [historical-wave-06] 加载 36 条
+2026-10-22T13:53:49.612Z 1 [historical-wave-07] 加载 29 条
+2026-10-22T13:53:49.614Z 1 [historical-wave-08] 加载 38 条
+2026-10-22T13:53:49.616Z 1 [historical-wave-09] 加载 30 条
+2026-10-22T13:53:49.618Z 1 [historical-wave-10] 加载 36 条
+2026-10-22T13:53:49.620Z 1 [historical-wave-11] 加载 36 条
+2026-10-22T13:53:49.622Z 1 [historical-wave-12] 加载 49 条
+2026-10-22T13:53:49.626Z 1 [charEcon-ui] 角色资源 UI 已加载：6 资源展示 + 抄家 + 派员
+2026-10-22T13:53:49.633Z 1 [econLinkage] 已加载：层层剥夺+区域财政树+下拨生命周期+俸禄流+贪腐流+抄家触发+事件总线
+2026-10-22T13:53:49.886Z 1 [TMZhi] formal 人物图志 入口已接管
+2026-10-22T13:53:52.816Z 1 [scenario] 绍宋·建炎元年八月——亳州明道宫，九龙井醒 已注册 (id=sc-jianyan1-1127-shaosong)
+2026-10-22T13:53:52.819Z 2 [startGame] scenario validation warnings: 玩家角色"赵构(穿越者赵玖)"不在角色列表中，将自动创建,军队"熙河·秦凤诸军"统帅"（诸路帅臣）"不在角色列表中,军队"江淮水军"统帅"（行在水军统制）"不在角色列表中,军队"两浙·福建路屯驻"统帅"（诸州兵马）"不在角色列表中,军队"荆湖·川峡屯驻"统帅"（诸路兵马）"不在角色列表中,军队"建康水军·别部"统帅"（行在水军）"不在角色列表中,军队"福建路屯驻"统帅"（路分都监）"不在角色列表中,军队"广南屯驻·摧锋军"统帅"（广东帅司）"不在角色列表中,军队"金·韩常燕京戍兵"统帅"（韩常，未列传）"不在角色列表中,军队"高丽·二军六卫"统帅"（二军上将军·拓俊京流配后未详）"不在角色列表中
+2026-10-22T13:53:57.264Z 2 [StartRuntimePrime] [object Object]
+2026-10-22T13:53:57.909Z 1 [三系统扩展] 完成·势力+ 39 ·党派+ 8 ·军队+ 103 ·角色+ 513
+2026-10-22T13:53:58.047Z 2 [StartRuntimePrime] [object Object]
+2026-10-22T13:53:58.125Z 1 [enterGame] economyBase 初始化 670 个 division
+2026-10-22T13:53:58.126Z 1 [enterGame] 官职公库初始化完成
+2026-10-22T13:53:58.132Z 1 [enterGame] 角色私产初始化完成
+2026-10-22T13:53:58.157Z 1 [enterGame] 角色公库镜像刷新完成
+2026-10-22T13:53:58.157Z 1 [enterGame] FixedExpense.preview 完成(只算不扣)·本回合支出: 银 248 万 · 粮 46 万石 · 布 1 万匹
+2026-10-22T13:53:58.157Z 1   俸禄: 银 0 万 · 米 0 万石
+2026-10-22T13:53:58.158Z 1   宗禄: 银 2 万 · 米 3 万石
+2026-10-22T13:53:58.158Z 1   军饷: 银 244 万 · 粮 42 万石
+2026-10-22T13:53:58.158Z 1   宫廷: 银 2 万
+2026-10-22T13:53:58.168Z 1 [CharFullSchema] 初始化 513 位角色完整字段
+2026-10-22T13:53:58.169Z 1 [CurrencyEngine] 初始化 朝代=宋
+2026-10-22T13:53:58.169Z 1 [CentralLocalEngine] 初始化 预设=song_zhuanyun
+2026-10-22T13:53:58.171Z 1 [EconomyGapFill] 补完模块就绪（12 项）
+2026-10-22T13:53:58.171Z 1 [HujiEngine] sc.populationConfig: 存在 initial.nationalMouths=50000000
+2026-10-22T13:53:58.171Z 1 [HujiEngine] 初始化后 GM.population.national: [object Object]
+2026-10-22T13:53:58.172Z 1 [EnvCapacityEngine] 初始化 技术朝代=明
+2026-10-22T13:53:58.185Z 1 [HujiDeepFill] 深化模块就绪（阶层+封建+F30）
+2026-10-22T13:53:58.185Z 1 [EdictComplete] 诏令补完就绪（P1+11 反向触发）
+2026-10-22T13:53:58.185Z 1 [AuthorityEngines] 皇威/皇权/民心 + 联动矩阵就绪
+2026-10-22T13:53:58.230Z 1 [AuthorityComplete] 补完就绪（16 项 P0+P1+P2）
+2026-10-22T13:53:58.234Z 1 [HistoricalPresets] 历史数据库就绪
+2026-10-22T13:53:58.241Z 1 [enterGame-T1] GM.adminHierarchy 结构: 键=player,fac_jin,fac_hebei_yijun,fac_xixia,fac_dali,fac_tubo,fac_guge,fac_kham,fac_karakhan_east,fac_karakhan_west,fac_qocho,fac_caoyuan,fac_kereit,fac_merkit,fac_mongol,fac_tatar,fac_qongirat,fac_ongud,fac_goryeo,fac_daiviet,fac_pagan,fac_xinan_tribes,fac_jianchang,fac_nw_yunnan,fac_wumeng,fac_jinchi,fac_japan,fac_nanhai,fac_liuqiu,fac_mai,fac_visayas,fac_butuan,fac_beihai,fac_luodian,fac_ziqi·player.divisions 长度=28
+2026-10-22T13:53:58.310Z 1 [enterGame-T1] 聚合后 GM.population.national: [object Object]
+2026-10-22T13:53:58.310Z 1 [enterGame-兜底] 剧本 populationConfig.initial: [object Object]
+2026-10-22T13:53:58.311Z 1 [enterGame-兜底] 当前 GM.population.national: [object Object]
+2026-10-22T13:53:58.311Z 1 [enterGame-兜底] 户口正常·无需兜底 (当前 65458000 >= 剧本 25000000)
+2026-10-22T13:53:58.393Z 1 [startGame] _facIndex 构建完成·势力数=39 · source=enterGame
+2026-10-22T13:53:59.816Z 1 [三系统扩展] 完成·势力+ 39 ·党派+ 8 ·军队+ 103 ·角色+ 513
+2026-10-22T13:54:47.685Z 2 [GroupMarkerNotSet(crbug.com/242999)!:A0303C0094590000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content.
+2026-10-22T13:54:50.724Z 2 [.WebGL-00005F141E14E300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+2026-10-22T13:55:21.733Z 1 [SaveDB] 存档压缩: 151232.7KB -> gzip Blob
+2026-10-22T13:55:25.311Z 1 [pipeline] step 1/7 prep ok 851ms
+2026-10-22T13:55:25.311Z 1 [pipeline] step 2/7 plan-prefetch ok 1ms
+2026-10-22T13:55:25.614Z 1 [情节弧] 已更新 0/12 位 NPC @ T1
+2026-10-22T13:55:25.616Z 2 [map-render-skip] shell=false stage=false visible=true
+2026-10-22T13:55:27.874Z 2 [.WebGL-00005F141E14E300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+2026-10-22T13:55:28.697Z 2 [SC1.tokenBudget] 捕获: [SC1] prompt warn·estimated 178024 tokens·budget 196608 (256K context)
+2026-10-22T13:55:28.698Z 2   Error: [SC1] prompt warn·estimated 178024 tokens·budget 196608 (256K context)
+      at file:///D:/a/tianming/tianming/web/tm-endturn-ai.js?v=20260928-release1353:3446:80
+      at checkPromptTokenBudget (file:///D:/a/tianming/tianming/web/tm-ai-infra.js?v=20260930-context-detection:503:11)
+2026-10-22T13:55:28.698Z 2 [TokenBudget] warn estimated=178024 budget=196608 contextK=256
+2026-10-22T13:55:28.862Z 2 [TokenBudget] warn estimated=182390 budget=196608 contextK=256
+2026-10-22T13:55:28.890Z 1 [ai-validator][subcall1] 通过（15 已知字段，1 条目）
+2026-10-22T13:55:29.175Z 1 [ai-validator][subcall1b] 通过（4 已知字段，0 条目）
+2026-10-22T13:55:29.486Z 1 [ai-validator][subcall1c] 通过（9 已知字段，0 条目）
+2026-10-22T13:55:55.485Z 1 [TurnReview] investigating calls=1 tokens=14320 limit=unlimited sources=0/12 核查检验器与回合遗漏（与后续推演并行）
+2026-10-22T13:55:55.503Z 1 [TurnReview] prepared calls=1 tokens=14320 limit=unlimited sources=12/12 复核方案已形成，等待后续推演结束后核对并落账
+2026-10-22T13:55:56.987Z 2 [TokenBudget] warn estimated=180748 budget=196608 contextK=256
+2026-10-22T13:56:03.847Z 2 [TurnReview] pending; main turn continues: 主回合先提交，复核在后台继续
+2026-10-22T13:56:03.851Z 1 [pipeline] step 3/7 ai ok 38540ms
+2026-10-22T13:56:03.853Z 1 [pipeline] step 4/7 post-ai-edict ok 1ms
+2026-10-22T13:56:05.641Z 2 [perf.threshold] 捕获: [perf] guoku.tick 超阈值: 972.30ms > 800ms
+2026-10-22T13:56:05.641Z 2   Error: [perf] guoku.tick 超阈值: 972.30ms > 800ms
+      at _defaultThresholdHandler (file:///D:/a/tianming/tianming/web/tm-perf.js?v=20260928-release1353:225:9)
+      at _checkThreshold (file:///D:/a/tianming/tianming/web/tm-perf.js?v=20260928-release1353:217:7)
+2026-10-22T13:56:09.091Z 2 [endTurn systems] slow stage: 系统结算总耗时 5236ms 
+2026-10-22T13:56:09.096Z 1 [pipeline] step 5/7 systems ok 5243ms
+2026-10-22T13:56:13.803Z 2 [robustParseJSON] 所有修复层级失败，使用纯文本回退
+2026-10-22T13:56:31.791Z 1 [pipeline] step 6/7 render-and-finalize ok 22695ms
+2026-10-22T13:56:31.791Z 1 [pipeline] step 7/7 prepare-commit-barrier ok 0ms
+2026-10-22T13:56:31.792Z 1 [EndturnTiming] total=1.12m status=done [object Object]
+2026-10-22T13:56:31.792Z 1 [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+2026-10-22T13:56:51.577Z 2 [EndturnAI] call failed: sc_memwrite NPC记忆回写 读取期间存档已改变，旧请求结果已丢弃 
+2026-10-22T13:56:51.696Z 2 [AutoSave] 端回合 snapshot 耗 19412ms·考虑 A-2
+2026-10-22T13:56:51.851Z 2 [robustParseJSON] 主 JSON 已可解·丢弃尾随可解析片段（疑似截断后多嘴）
+2026-10-22T13:56:51.851Z 2 [robustParseJSON] 主 JSON 已可解·丢弃尾随可解析片段（疑似截断后多嘴）
+2026-10-22T13:56:58.415Z 2 [.WebGL-00005F141E14E300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+2026-10-22T13:57:04.682Z 1 [TurnReview] investigating calls=2 tokens=32111 limit=unlimited sources=12/27 核查检验器与回合遗漏（与后续推演并行）
+2026-10-22T13:57:41.228Z 1 [TurnReview] prepared calls=2 tokens=32111 limit=unlimited sources=27/27 复核方案已形成，等待后续推演结束后核对并落账
+2026-10-22T13:57:41.228Z 1 [TurnReview] verified calls=2 tokens=32111 limit=unlimited sources=27/27 完整原文、实际修改和修改后的正确性均已核验
+2026-10-22T13:58:28.640Z 2 [.WebGL-00005F141E14E300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+2026-10-22T13:59:19.460Z 1 [saveToSlot] 保存到: slot_1 IDB available: true
+2026-10-22T13:59:28.320Z 1 [SaveDB] 存档压缩: 164158.0KB -> gzip Blob
+2026-10-22T13:59:28.476Z 1 [saveToSlot] 保存结果: true
+2026-10-22T13:59:28.986Z 1 [loadFromSlot] 尝试加载: slot_1 IDB available: true
+2026-10-22T13:59:32.582Z 1 [loadFromSlot] 加载结果: 有数据, keys:id,type,name,timestamp,turn,scenarioName,eraName,date,dynastyPhase,snapshotId,commitState,campaignId,timelineId,gameState
+2026-10-22T13:59:33.487Z 2 [findScenarioById] scenarioById 不是 Map，重建索引
+2026-10-22T13:59:36.634Z 1 [三系统扩展] 完成·势力+ 39 ·党派+ 35 ·军队+ 103 ·角色+ 513
+2026-10-22T14:00:08.059Z 1 [SaveDB] 存档压缩: 164805.1KB -> gzip Blob
+2026-10-22T14:00:11.881Z 1 [pipeline] step 1/7 prep ok 908ms
+2026-10-22T14:00:11.881Z 1 [pipeline] step 2/7 plan-prefetch ok 0ms
+2026-10-22T14:00:15.474Z 2 [SC1.tokenBudget] 捕获: [SC1] prompt warn·estimated 182293 tokens·budget 196608 (256K context)
+2026-10-22T14:00:15.475Z 2   Error: [SC1] prompt warn·estimated 182293 tokens·budget 196608 (256K context)
+      at file:///D:/a/tianming/tianming/web/tm-endturn-ai.js?v=20260928-release1353:3446:80
+      at checkPromptTokenBudget (file:///D:/a/tianming/tianming/web/tm-ai-infra.js?v=20260930-context-detection:503:11)
+2026-10-22T14:00:15.475Z 2 [TokenBudget] warn estimated=182293 budget=196608 contextK=256
+2026-10-22T14:00:15.719Z 2 [TokenBudget] warn estimated=186661 budget=196608 contextK=256
+2026-10-22T14:00:15.781Z 1 [ai-validator][subcall1] 通过（15 已知字段，1 条目）
+2026-10-22T14:00:16.115Z 1 [ai-validator][subcall1b] 通过（4 已知字段，0 条目）
+2026-10-22T14:00:16.457Z 1 [ai-validator][subcall1c] 通过（9 已知字段，0 条目）
+2026-10-22T14:00:39.417Z 1 [TurnReview] investigating calls=1 tokens=15117 limit=unlimited sources=0/12 核查检验器与回合遗漏（与后续推演并行）
+2026-10-22T14:00:39.518Z 1 [TurnReview] prepared calls=1 tokens=15117 limit=unlimited sources=12/12 复核方案已形成，等待后续推演结束后核对并落账
+2026-10-22T14:00:41.767Z 2 [TokenBudget] warn estimated=183963 budget=196608 contextK=256
+2026-10-22T14:00:48.424Z 2 [TurnReview] pending; main turn continues: 主回合先提交，复核在后台继续
+2026-10-22T14:00:48.429Z 1 [pipeline] step 3/7 ai ok 36547ms
+2026-10-22T14:00:48.430Z 1 [pipeline] step 4/7 post-ai-edict ok 1ms
+2026-10-22T14:00:49.882Z 2 [perf.threshold] 捕获: [perf] guoku.tick 超阈值: 1042.90ms > 800ms
+2026-10-22T14:00:49.883Z 2   Error: [perf] guoku.tick 超阈值: 1042.90ms > 800ms
+      at _defaultThresholdHandler (file:///D:/a/tianming/tianming/web/tm-perf.js?v=20260928-release1353:225:9)
+      at _checkThreshold (file:///D:/a/tianming/tianming/web/tm-perf.js?v=20260928-release1353:217:7)
+2026-10-22T14:00:54.135Z 2 [endTurn systems] slow stage: 系统结算总耗时 5705ms 
+2026-10-22T14:00:54.138Z 1 [pipeline] step 5/7 systems ok 5708ms
+2026-10-22T14:00:59.466Z 2 [robustParseJSON] 所有修复层级失败，使用纯文本回退
+2026-10-22T14:01:23.324Z 1 [pipeline] step 6/7 render-and-finalize ok 29185ms
+2026-10-22T14:01:23.324Z 1 [pipeline] step 7/7 prepare-commit-barrier ok 0ms
+2026-10-22T14:01:23.324Z 1 [EndturnTiming] total=1.21m status=done [object Object]
+2026-10-22T14:01:23.325Z 1 [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+2026-10-22T14:01:49.446Z 2 [AutoSave] 端回合 snapshot 耗 25689ms·考虑 A-2
+2026-10-22T14:02:08.939Z 1 [TurnReview] investigating calls=2 tokens=32789 limit=unlimited sources=12/25 核查检验器与回合遗漏（与后续推演并行）

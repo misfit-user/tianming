@@ -1,0 +1,54 @@
+{
+  "recordedAt": "2026-10-23T05:38:39.018Z",
+  "source": "web/dev-tools/ci-39904863206-composite/93affced-3b75-48a7-8281-34f59de88f59",
+  "rows": [
+    {
+      "source": "web/dev-tools/ci-39904863206-composite/93affced-3b75-48a7-8281-34f59de88f59/report.json",
+      "file": "report.json",
+      "sourceBytes": 3320,
+      "sourceSha256": "41ec381ba71a8d83d09534a8d1858d136481adcc8fb39c8150d67e47f306aae5",
+      "storedBytes": 3320,
+      "storedSha256": "41ec381ba71a8d83d09534a8d1858d136481adcc8fb39c8150d67e47f306aae5",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39904863206-composite/93affced-3b75-48a7-8281-34f59de88f59/composite-timeline.json",
+      "file": "composite-timeline.json",
+      "sourceBytes": 3260670,
+      "sourceSha256": "69cbbb8850a75aeb6e0e88e3ec7dc88573345c6a68a8c4d37b8510380ff3e627",
+      "storedBytes": 1933652,
+      "storedSha256": "a3a5b6ac8dc286bd7ff1785ec14793e3870578ba9a351e3c306b4fc238ab25aa",
+      "transform": "Whitespace-only JSON compaction; every parsed field retained"
+    },
+    {
+      "source": "web/dev-tools/ci-39904863206-composite/93affced-3b75-48a7-8281-34f59de88f59/renderer.log",
+      "file": "renderer.log",
+      "sourceBytes": 23820,
+      "sourceSha256": "7f89e07d2132e3eed7e1be17382eeca769dc94648c95be2a2d88f17b16eaa913",
+      "storedBytes": 23820,
+      "storedSha256": "7f89e07d2132e3eed7e1be17382eeca769dc94648c95be2a2d88f17b16eaa913",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39904863206-composite/93affced-3b75-48a7-8281-34f59de88f59/process-memory.jsonl",
+      "file": "process-memory.jsonl",
+      "sourceBytes": 122845,
+      "sourceSha256": "2b860cd78d6c276aa4bf5ab73ff36bca845d9f7046c32a28f8786ba44b0a266e",
+      "storedBytes": 122845,
+      "storedSha256": "2b860cd78d6c276aa4bf5ab73ff36bca845d9f7046c32a28f8786ba44b0a266e",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39904863206-composite/93affced-3b75-48a7-8281-34f59de88f59/renderer-heap.jsonl",
+      "file": "renderer-heap.jsonl",
+      "sourceBytes": 68363,
+      "sourceSha256": "0338f9187da8a2a02d0196671fcd217bed4e95fd95e500bd1e034f6c82487f0b",
+      "storedBytes": 68363,
+      "storedSha256": "0338f9187da8a2a02d0196671fcd217bed4e95fd95e500bd1e034f6c82487f0b",
+      "transform": "byte-identical copy"
+    }
+  ],
+  "excluded": [
+    "crash-dumps: remain in original tool artifact, not copied into delivery docs"
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 2,
+  "recordedAt": "2026-10-23T08:46:55.474Z",
+  "head": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+  "runtimeFeatureCommit": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+  "branch": "codex/npc-composite-r123-20261011",
+  "includedMain": "b0c80e5ae005912effbc947af027d021505c1dbd",
+  "pr": {
+    "number": 105,
+    "url": "https://github.com/misfit-user/tianming/pull/105",
+    "state": "open",
+    "merged": false
+  },
+  "phase": "Functional runtime frozen; normal local and remote composite independently passed; final fixture and evidence commit awaiting fresh required CI before authorized merge",
+  "localGates": {
+    "head": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+    "sourcePatch": "web/scripts/smoke-turn-capture-work-count.js",
+    "patchSha256": "489a946ea40e64054185e01258cb428c5ec1930f90892910e3a4e9e76361a733",
+    "status": "passed",
+    "selected": 67,
+    "session": 58369,
+    "run": "5a8bdda1-7a3f-4c36-9f31-ca1d757c2815",
+    "evidence": "final-gates/2026-10-23T07-57-29-186Z-5a8bdda1-7a3f-4c36-9f31-ca1d757c2815/SUMMARY.json",
+    "elapsedMs": 599178,
+    "inputSha256": "bbce0d44c14a150e8c3893867469f0cc0cd501887ccdfdcf11eca21988b7819d"
+  },
+  "localBrowser": {
+    "head": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+    "status": "passed",
+    "sourcePatch": "web/scripts/smoke-turn-capture-work-count.js",
+    "patchSha256": "489a946ea40e64054185e01258cb428c5ec1930f90892910e3a4e9e76361a733",
+    "session": 69110,
+    "heapSampling": false,
+    "cpuProfile": false,
+    "preciseMemory": true,
+    "launch": "browser-574-local-launch/",
+    "entry": "node scripts/verify-electron-bridge.js --npc-composite",
+    "run": "ac0bfde1-8538-46be-b2cb-f3b17f95cc4a",
+    "raw": "web/dev-tools/electron-bridge/ac0bfde1-8538-46be-b2cb-f3b17f95cc4a",
+    "elapsedMs": 1724354,
+    "evidence": "browser-574-local-pass/summary.json",
+    "archive": "browser-574-local-pass/ARCHIVE.json",
+    "metrics": "browser-574-local-pass/METRICS.json"
+  },
+  "remote": {
+    "head": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+    "checkout": "481eea15eecc348e11b4cad28fd655208df21a83",
+    "tree": "e0aa6115fed7238a1adc72e64badcb4995f9f363",
+    "status": "completed_with_isolated_fixture_failure",
+    "heapSampling": false,
+    "run": 39919665284,
+    "url": "https://github.com/misfit-user/tianming/actions/runs/39919665284",
+    "composite": {
+      "status": "passed",
+      "job": 120301568125,
+      "evidence": "browser-574-remote-pass/summary.json",
+      "elapsedMs": 657452
+    },
+    "core": {
+      "status": "passed",
+      "evidence": "remote-574-core/SUMMARY.json"
+    },
+    "guards": {
+      "status": "failed",
+      "pass": 1185,
+      "fail": 1,
+      "waived": 2,
+      "evidence": "remote-574-guards/SUMMARY.json"
+    }
+  },
+  "priorEvidence": {
+    "normalLocal923": "browser-923-local-pass/summary.json; old final visible result assertion incomplete",
+    "normalRemote923": "browser-923-remote-oom/summary.json; explicit renderer OOM",
+    "diagnostic8a": "browser-8a-diagnostic/summary.json; CDP implicitly forces GC, not ordinary acceptance",
+    "localF435": "final-gates/2026-10-23T06-11-20-025Z-641d560d-e44c-4955-ac92-0e1559bd43ab/SUMMARY.json; separate older candidate"
+  },
+  "limits": [
+    "no paid models",
+    "no version/deploy/package",
+    "other two official scenarios headless compatibility only",
+    "M3 formal local and remote passed independently; M4 final delivery commit required CI still pending at this document freeze",
+    "Large official world remains expensive: local normal complete run 1724.354s; not a low-memory or all-platform certification"
+  ],
+  "cleanup": "Automatic approval review rejected deletion of old disposable Temp profile; original profile left intact, no bypass",
+  "priorLocalGates": {
+    "head": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+    "status": "passed",
+    "selected": 67,
+    "session": 31742,
+    "run": "897c28fa-8d7e-4b70-a76f-4562a7444d66",
+    "evidence": "final-gates/2026-10-23T06-57-56-916Z-897c28fa-8d7e-4b70-a76f-4562a7444d66/SUMMARY.json",
+    "elapsedMs": 598521,
+    "inputSha256": "0c40111b20fba67ce08b1631502c6b5b7ffbbff681d7a979b6bbb8cf2cba03f8"
+  },
+  "priorLocalBrowser": {
+    "head": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+    "status": "interrupted",
+    "session": 35808,
+    "run": "819f0e52-1eef-48dc-a85d-0219b0760d45",
+    "entry": "node scripts/verify-electron-bridge.js --npc-composite",
+    "heapSampling": false,
+    "preciseMemory": true,
+    "cpuProfile": false,
+    "temp": "web/dev-tools/candidate-temp",
+    "launch": "browser-d31-local-launch/",
+    "elapsedSeconds": 831.0012561,
+    "reason": "Root stopped old candidate before the next source fix after diagnosed same-tree remote final-background OOM; not a local crash or PASS"
+  },
+  "priorRemote": {
+    "head": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+    "run": 39914633560,
+    "status": "completed",
+    "heapSampling": false,
+    "url": "https://github.com/misfit-user/tianming/actions/runs/39914633560",
+    "guardsJob": 120285295358,
+    "compositeJob": 120285295521,
+    "guards": "1186 PASS /0 FAIL /2 existing WAIVED /1188",
+    "core": "success; remote-d31-core/SUMMARY.json",
+    "composite": "failed: explicit renderer OOM during final background",
+    "evidence": "browser-d31-remote-oom/summary.json"
+  },
+  "nativeTransportEvidence": "autosave-main-parse-20261023/evidence.json",
+  "memoryProducerEvidence": "memory-producer-barrier-20261023/evidence.json",
+  "closureDiagnostic": "save-closure-diagnostic-d31/README.md (explicit GC, diagnostic only)",
+  "first574LocalGates": {
+    "status": "failed_single_fixture",
+    "pass": 66,
+    "fail": 1,
+    "evidence": "final-gates/2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/SUMMARY.json"
+  }
+}

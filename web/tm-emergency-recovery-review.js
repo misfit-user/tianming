@@ -25,13 +25,35 @@
     });
     return v;
   }
-  function snapshot(g){var out={};Object.keys(g).forEach(function(k){if(!forbidden.test(k)&&typeof g[k]!=='function')out[k]=g[k];});out=copy(out);if(g===root.GM&&root.P)playerSnapshots.set(out,snapshot(root.P));return out;}
+  function frozenRoot(json,key){
+    var value,parsed=false;
+    return function(){if(!parsed){value=JSON.parse(json)[key];parsed=true;json=null;}return value;};
+  }
+  function snapshot(g){
+    var values={},out={};
+    Object.keys(g).forEach(function(k){if(!forbidden.test(k)&&typeof g[k]!=='function')values[k]=g[k];});
+    // Capture every root before serialization, as the former whole-world JSON
+    // copy did. Freeze all JSON facts synchronously; never defer reading live.
+    if('toJSON' in Object.prototype||typeof values.toJSON==='function')out=copy(values);
+    else Object.keys(values).forEach(function(k){
+      // A single-key wrapper preserves nested toJSON's actual property key.
+      // Its null prototype avoids a new inherited root hook between fields.
+      var wrapper=Object.create(null);wrapper[k]=values[k];
+      var json=JSON.stringify(wrapper);
+      if(json!=='{}')Object.defineProperty(out,k,{enumerable:true,get:frozenRoot(json,k)});
+    });
+    // Unread maps/scenarios stay frozen strings. Reading a root materializes it
+    // once and releases its string; no getter retains GM, P or captured values.
+    if(g===root.GM&&root.P)playerSnapshots.set(out,snapshot(root.P));
+    return out;
+  }
+  function releaseBasis(s){if(s.basis)playerSnapshots.delete(s.basis);s.basis=null;}
   function progress(s,phase,detail){
     s.status.phase=phase;s.status.detail=detail;s.status.calls=s.calls;s.status.steps=s.steps;s.status.repairs=s.repairs;
     if(root.console&&root.console.info)root.console.info('[TurnReview] '+phase+' calls='+s.calls+' tokens='+(s.status.estimatedTokens||0)+' limit='+(s.config.reviewMaxTokens||'unlimited')+' sources='+s.paper.seen.size+'/'+s.paper.required.size+' '+detail);
     if(root.dispatchEvent&&root.CustomEvent)root.dispatchEvent(new root.CustomEvent('tm-emergency-recovery',{detail:copy(s.status)}));
   }
-  function cleanup(s){clearTimeout(s.timer);clearTimeout(s.startTimer);s.run.dispose();if(s.ctx.signal)s.ctx.signal.removeEventListener('abort',s.external);if(sessions.get(s.ctx)===s)sessions.delete(s.ctx);live.delete(s.id);}
+  function cleanup(s){clearTimeout(s.timer);clearTimeout(s.startTimer);s.run.dispose();if(s.ctx.signal)s.ctx.signal.removeEventListener('abort',s.external);releaseBasis(s);s.reads=null;s.record=null;if(sessions.get(s.ctx)===s)sessions.delete(s.ctx);live.delete(s.id);}
   function cancel(ctx){if(ctx && typeof ctx==='object')queued.delete(ctx);var s=typeof ctx==='string'?live.get(ctx):sessions.get(ctx);if(s){s.controller.abort(fault('AI_ABORTED','回合复核已取消'));cleanup(s);}}
   function assert(s){
     if(s.controller.signal.aborted)throw s.controller.signal.reason||fault('AI_ABORTED');
@@ -89,7 +111,6 @@
   }
   function markDelivered(s,rows){rows.forEach(function(r){var id=s.paper.canonical.get(r.id);if(id){s.paper.seen.add(id);s.paper.pending.delete(id);}});}
   function coverage(s){var unread=Array.from(s.paper.required).filter(function(id){return !s.paper.seen.has(id)||s.paper.pending.has(id);});return {complete:unread.length===0,read:Array.from(s.paper.required).filter(function(id){return s.paper.seen.has(id)&&!s.paper.pending.has(id);}).length,required:s.paper.required.size,unread:unread};}
-  function quoteOkay(s,e){var text=s.sources[e&&e.source];return typeof text==='string'&&typeof e.quote==='string'&&e.quote.length>=Math.min(8,text.length)&&!!e.quote.length&&text.includes(e.quote);}
   function conditionPaths(op){
     if(!Array.isArray(op.postconditions)||!op.postconditions.length)throw fault('REVIEW_POSTCONDITION','每个修改必须声明预期结果 postconditions，不能仅凭工具返回成功');
     op.postconditions.forEach(function(c){
@@ -164,7 +185,10 @@
 
   function makeBasis(s){
     if(s.background&&s.recordTarget)recordKeys.forEach(function(k){var value=s.recordTarget[savedRecordKeys[k]||k];if(typeof value==='string')s.ctx.record[k]=value;});
-    assert(s);s.basis=snapshot(s.g);s.reads=new Map();s.record=copy(s.ctx.record||{});
+    // A new plan supersedes the old proposal or follows its completed conflict
+    // check/write. Retire its read copies before allocating another full world.
+    assert(s);releaseBasis(s);s.reads=null;s.record=null;
+    s.basis=snapshot(s.g);s.reads=new Map();s.record=copy(s.ctx.record||{});
     if(!s.materialsInitialized){collectGenerated(s,'main');s.materialsInitialized=true;}
     s.sources=Object.assign(Object.create(null),s.paper.texts,{edicts:JSON.stringify(s.ctx.input&&s.ctx.input.edicts||{}),'turn-start':JSON.stringify(s.ctx.input&&s.ctx.input.oldVars||{}),
       'typed-actions':sourceJson(s,s.batch),receipts:JSON.stringify({edict:s.g._edictExecutionReport,transfers:(s.g.transferOrders||[]).slice(-40),applied:s.result.applied,report:(s.g._turnReport||[]).slice(-80)}),
@@ -221,6 +245,7 @@
   instructions+='【充分修改权限】edit_world 可创建、修改或删除当前世界业务数据，包括新党派、人物、势力、阶层、军队和检验器未覆盖的自定义状态。不可因旧 set_field 白名单或开局名册缺项便放弃，应查询 edit_world 的完整参数并实际执行。修复失败主批次时，可先用世界编辑补齐必要依赖，再用 retry_main 重放；所有操作仍须对照生成原文、实际读回和后置条件验证。';
   async function plan(s,phase){
     phase=phase||'scan';
+    try{
     makeBasis(s);
     var defs=writer().defs().map(function(d){return {name:d.name,description:d.description,parameters:d.parameters};});
     var brief=defs.map(function(d){return {name:d.name,args:Object.keys(d.parameters&&d.parameters.properties||{}),description:d.description.slice(0,105)};});
@@ -263,6 +288,11 @@
       }
     }
     throw fault('REVIEW_BUDGET','回合复核达到调用或工具预算，尚未完成');
+    }finally{
+      // certify copied every conflict dependency into reads; commit also uses
+      // the detached record. Neither needs the planning world's GM/P copies.
+      releaseBasis(s);
+    }
   }
   function start(result,batch,ctx,mainBatch){
     if(sessions.has(ctx))return;
@@ -400,7 +430,7 @@
     }catch(error){cancel(ctx);return deferred(ctx,error);}
   }
   var savedRecordKeys={shiluText:'shilu',hourenXishuo:'houren'};
-  function publishBackground(s,status,error){
+  function publishBackground(s,status,error,skipSave){
     if(root.GM!==s.g||root.P!==s.p||root._tmLoadGen!==s.generation||s.g.turn!==s.turn||s.g._endTurnCommitPending)return;
     var row=s.recordTarget;
     if(row&&(s.g.shijiHistory||[]).includes(row)){
@@ -415,7 +445,17 @@
         row.html=s.originalHtml+'<section class="turn-review-correction"><h3>本回合复核修订</h3>'+Array.from(new Set(changed.map(function(c){return c.path;}))).map(function(k){return '<h4>'+escape(labels[k]||k)+'</h4><p style="white-space:pre-wrap">'+escape(s.ctx.record[k])+'</p>';}).join('')+'</section>'; // arch-ok: safely escaped presentation of the review-owned record patch.
       }
     }
-    if(typeof root.requestBackgroundAutosave==='function')Promise.resolve(root.requestBackgroundAutosave({reason:'turn-review-'+status,expectedTurn:s.turn})).catch(function(e){console.warn('[TurnReview] 补正保存待处理:',e.message);});
+    if(!skipSave&&typeof root.requestBackgroundAutosave==='function')return Promise.resolve(root.requestBackgroundAutosave({reason:'turn-review-'+status,expectedTurn:s.turn})).catch(function(e){console.warn('[TurnReview] 补正保存待处理:',e.message);return {ok:false,error:e};});
+  }
+  function waitForBackgroundOwner(promise,signal){
+    return new Promise(function(resolve,reject){
+      var settled=false;
+      function finish(error,value){if(settled)return;settled=true;signal.removeEventListener('abort',aborted);if(error)reject(error);else resolve(value);}
+      function aborted(){finish(signal.reason||fault('AI_ABORTED','后台复核已取消'));}
+      if(signal.aborted){aborted();return;}
+      signal.addEventListener('abort',aborted,{once:true});
+      Promise.resolve(promise).then(function(value){finish(null,value);},function(error){finish(error);});
+    });
   }
   function afterCommit(outer){
     live.forEach(function(s){
@@ -428,9 +468,31 @@
       // The pipeline's source record is separate from the persisted history object.
       if(s.recordTarget)recordKeys.forEach(function(k){var v=s.recordTarget[savedRecordKeys[k]||k];if(typeof v==='string')s.ctx.record[k]=v;});
       function begin(){
-        try{assert(s);if(s.g.busy){s.startTimer=setTimeout(begin,50);return;}s.waitingIdle=false;publishBackground(s,'pending');
-          s.backgroundPromise=join(s.ctx).catch(function(error){deferred(s.ctx,error);publishBackground(s,'pending',error);});
-        }catch(error){deferred(s.ctx,error);cleanup(s);}
+        var joined=false,pendingSaveRequested=false;
+        try{assert(s);if(s.g.busy){s.startTimer=setTimeout(begin,50);return;}
+          if(typeof root.requestBackgroundAutosave!=='function'||typeof root._tmAwaitBackgroundAutosaves!=='function')throw fault('REVIEW_SAVE_BARRIER','复核待办的正式保存入口不可用');
+          // Persist the pending sources before allocating another frozen review
+          // basis. Both operations used to hold full GM/P copies concurrently.
+          // The existing save queue owns its writes/retries; no world transaction
+          // is held while waiting, and a changed/cancelled world never resumes.
+          // A producer failure must itself be saved once. After a pending save
+          // has been requested, its failure never starts a fresh retry budget.
+          s.waitingIdle=false;
+          s.backgroundPromise=(async function(){
+            var memoryOwner=outer.meta.postTurnMemorySavePromise;
+            if(!memoryOwner||typeof memoryOwner.then!=='function')throw fault('REVIEW_MEMORY_BARRIER','缺少本回合已启动的后台记忆保存凭据');
+            var memory=await waitForBackgroundOwner(memoryOwner,s.controller.signal);assert(s);
+            if(!memory||memory.ok!==true)throw fault(memory&&memory.code||'REVIEW_MEMORY_BARRIER','后台记忆保存尚未完成：'+String(memory&&memory.reason||'未取得完成回执'));
+            pendingSaveRequested=true;var requested=await publishBackground(s,'pending');assert(s);
+            if(!requested||requested.ok!==true||requested.scheduled!==true)throw requested&&requested.error||fault('REVIEW_SAVE_BARRIER','复核待办未进入正式保存队列：'+String(requested&&requested.reason||'未取得排队回执'));
+            var saved=await waitForBackgroundOwner(root._tmAwaitBackgroundAutosaves(),s.controller.signal);
+            s.waitingIdle=false;assert(s);
+            if(!saved||saved.ok!==true){
+              throw saved&&saved.error||fault('REVIEW_SAVE_BARRIER','复核待办尚未完成正式保存：'+String(saved&&saved.reason||'未取得保存回执'));
+            }
+            joined=true;return join(s.ctx);
+          })().catch(function(error){deferred(s.ctx,error);if(joined)publishBackground(s,'pending',error);else{if(!s.controller.signal.aborted)publishBackground(s,'pending',error,pendingSaveRequested);s.controller.abort(error);cleanup(s);}});
+        }catch(error){deferred(s.ctx,error);if(!s.controller.signal.aborted)publishBackground(s,'pending',error,true);s.controller.abort(error);cleanup(s);}
       }
       s.startTimer=setTimeout(begin,0);
     });

@@ -21,7 +21,7 @@ assert.strictEqual(manifest.scriptCount, scriptNames.length, 'startup manifest s
 assert.deepStrictEqual(manifest.scripts.map((row) => row.script), scriptNames, 'startup manifest order should match index.html exactly');
 assert.strictEqual(manifest.version, 2, 'startup manifest should use the explicit feature-boundary schema');
 assert.strictEqual(manifest.deferredChangesApproved, 9, 'the original six, two relief providers and pure realm layout form the complete deferred set');
-const nativeModules=['tm-start-contracts.js','libs/polygon-clipping-0.15.7.min.js','tm-map-workbench.js','tm-map-workbench-client.js','tm-start-compiler.js','tm-start-world.js','tm-native-fiscal-adapter.js','tm-native-scope.js','tm-native-fiscal-ui.js','tm-start-preparation-document.js','tm-start-preparation.js','tm-start-commit.js','tm-start-selector.js','tm-save-world-validation.js'];
+const nativeModules=['tm-start-contracts.js','libs/polygon-clipping-0.15.7.min.js','tm-map-workbench.js','tm-map-workbench-client.js','tm-start-compiler.js','tm-start-world.js','tm-native-fiscal-adapter.js','tm-native-scope.js','tm-native-fiscal-ui.js','tm-start-preparation-document.js','tm-start-preparation.js','tm-start-commit.js','tm-start-selector.js','tm-save-stable-id-migration.js','tm-save-world-validation.js'];
 const fiscalModules=['tm-char-economy-ledger.js','tm-fiscal-statements.js','tm-public-treasury.js','tm-military-arrears.js','tm-command-authority.js'];
 const recoveryModules=['tm-memory-adaptive.js','tm-memory-long-term.js','tm-memory-hybrid.js','tm-memory-mode-bridge.js','tm-endturn-reliability.js','tm-endturn-response-recovery.js','tm-endturn-recovery-vault.js','tm-endturn-save-reconcile.js'];
 recoveryModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
@@ -61,8 +61,23 @@ const travelModules=['tm-npc-travel.js'];
 travelModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-map-route-days.js'),'travel domain follows its route provider');});
 const tenureModules=['tm-office-tenure.js'];
 tenureModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-npc-decision-ai-driven.js'),'tenure adapter loads after the NPC registry');});
+// 事的容器（甲1a）：只读把旧账整理成案单；过回合时挂在诏令登记之后，紧跟 tm-edict-outcomes.js 装载
+const mattersModules=['tm-matters.js'];
+mattersModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-edict-outcomes.js'),'matters ledger loads after edict outcomes');});
+// 文风设置：提示词各处与设置页都只在运行时取 TM.Wenfeng，紧跟提示词组装器装载即可
+const wenfengModules=['tm-wenfeng.js'];
+wenfengModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-prompt-composer.js'),'style setting loads after the prompt composer');});
+// 本回合账目实变：只读，史官成文时才调用；与诏令成效的叙事依据同处装载
+const ledgerFactsModules=['tm-turn-ledger-facts.js'];
+ledgerFactsModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-edict-outcomes.js'),'ledger facts load after edict outcomes');assert(scriptNames.indexOf(name)<scriptNames.indexOf('tm-endturn-ai.js'),'ledger facts load before the end-turn AI pipeline');});
+// 人物实体（人1）：问对等各处取人物各块的唯一入口，须在问对之前装载
+const personModules=['tm-person.js'];
+personModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)<scriptNames.indexOf('tm-wendui.js'),'person entity loads before the audience module');});
+// 断处续：中转掐断的 JSON 回答接着写；只做文本与请求体，回合推演调用期取用，紧跟 AI 基础设施装载
+const continuationModules=['tm-ai-continuation.js'];
+continuationModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-ai-infra-model-detect.js'),'continuation loads after the AI infrastructure split');assert(scriptNames.indexOf(name)<scriptNames.indexOf('tm-endturn-ai.js'),'continuation loads before the end-turn AI pipeline');});
 assert(scriptNames.indexOf('tm-map-circuits.js')<scriptNames.indexOf('phase8-formal-map-dossier.js'),'circuit data layer precedes the map dossier that reads it');
-assert.strictEqual(manifest.scriptCount,417+dailyModules.length+politicalModules.length+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length+mapDataModules.length+timeModules.length+travelModules.length+tenureModules.length,'retain every prior script and every explicitly registered runtime addition');
+assert.strictEqual(manifest.scriptCount,417+dailyModules.length+politicalModules.length+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length+mapDataModules.length+timeModules.length+travelModules.length+tenureModules.length+mattersModules.length+wenfengModules.length+personModules.length+ledgerFactsModules.length+continuationModules.length,'retain every prior script and every explicitly registered runtime addition');
 fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-fiscal-statements.js')<scriptNames.indexOf('tm-fiscal-engine.js'),'shared statements precede the fiscal engine');
 assert(scriptNames.indexOf('tm-public-treasury.js')<scriptNames.indexOf('tm-military-arrears.js'),'public treasury precedes army liabilities');
@@ -70,6 +85,7 @@ nativeModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===nam
 assert(!scriptNames.includes('tm-start-preparation-runtime.js'),'the opaque initializer must not run in the live game window');
 assert(scriptNames.indexOf('tm-start-contracts.js')<scriptNames.indexOf('tm-start-compiler.js'),'native contracts precede their compiler');
 assert(scriptNames.indexOf('tm-start-compiler.js')<scriptNames.indexOf('tm-start-selector.js'),'native compiler precedes the chooser');
+assert.strictEqual(scriptNames.indexOf('tm-save-stable-id-migration.js')+1,scriptNames.indexOf('tm-save-world-validation.js'),'stable-ID migration stays adjacent before world validation');
 assert.strictEqual(scriptNames.indexOf('tm-save-world-validation.js')+1,scriptNames.indexOf('tm-save-lifecycle.js'),'the preserved save-validation family stays adjacent');
 assert.strictEqual(scriptNames.indexOf('tm-military.js')+1,scriptNames.indexOf('tm-battle-contract.js'),'shared battle contract immediately follows its canonical writer');
 assert.strictEqual(scriptNames.filter(name=>name==='tm-battle-contract.js').length,1,'battle contract loads exactly once');

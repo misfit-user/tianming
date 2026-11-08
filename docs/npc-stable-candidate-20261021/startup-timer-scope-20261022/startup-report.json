@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "complete": true,
+  "runId": "b5ffb892-c95f-4805-90f2-640ec4d2edff",
+  "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "expected": [
+    "smoke-start-game-data-integrity.js"
+  ],
+  "generatedAt": "2026-10-22T17:38:08.960Z",
+  "args": [
+    "--all",
+    "--no-retry",
+    "--jobs",
+    "1",
+    "--run-id",
+    "b5ffb892-c95f-4805-90f2-640ec4d2edff",
+    "--report",
+    "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\docs\\npc-stable-candidate-20261021\\startup-timer-scope-20261022\\startup-report.json",
+    "--grep",
+    "smoke-start-game-data-integrity.js"
+  ],
+  "scheduling": {
+    "parallelJobs": 1,
+    "resourceIsolated": [
+      "smoke-start-game-data-integrity.js"
+    ]
+  },
+  "summary": {
+    "selected": 1,
+    "pass": 0,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "clusters": [
+    {
+      "sig": "（超时）",
+      "names": [
+        "smoke-start-game-data-integrity.js"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": -1,
+      "ms": 120319,
+      "timedOut": true,
+      "waivers": [],
+      "output": "[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[native-save-codec] PASS gzip Blob and exact production roundtrip\n[smoke-start-game-data-integrity] stale-map-choice-is-ignored PASS {\"chars\":217,\"facs\":22,\"vars\":21,\"mapRegions\":307,\"guokuMoney\":850000,\"neitangMoney\":2500000,\"populationMouths\":94530000,\"corruptionIndex\":61.08148869142071,\"minxinIndex\":47.688629842378084,\"huangquanIndex\":75,\"huangweiIndex\":70,\"useAIGeo\":false,\"entered\":true,\"aiDeepRead\":true,\"aiPlan\":true,\"aiMatrix\":true,\"aiFirstTurn\":true}\n[startup-timer-scope] {\"case\":\"stale-map-choice-is-ignored\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":5,\"intervals\":5,\"immediates\":0,\"frames\":0}}\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[native-save-codec] PASS gzip Blob and exact production roundtrip\n[smoke-start-game-data-integrity] fresh-ai-geography-choice-is-honored PASS {\"chars\":217,\"facs\":22,\"vars\":21,\"mapRegions\":307,\"guokuMoney\":850000,\"neitangMoney\":2500000,\"populationMouths\":94530000,\"corruptionIndex\":61.08148869142071,\"minxinIndex\":47.688629842378084,\"huangquanIndex\":75,\"huangweiIndex\":70,\"useAIGeo\":true,\"entered\":true,\"aiDeepRead\":true,\"aiPlan\":true,\"aiMatrix\":true,\"aiFirstTurn\":true}\n[startup-timer-scope] {\"case\":\"fresh-ai-geography-choice-is-honored\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":5,\"intervals\":5,\"immediates\":0,\"frames\":0}}\n[smoke-start-game-data-integrity] fast-start-skips-artificial-and-model-waits PASS\n[startup-timer-scope] {\"case\":\"runFastStartGateCase\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":26,\"intervals\":5,\"immediates\":0,\"frames\":1}}\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] latest-start-request-wins PASS\n[startup-timer-scope] {\"case\":\"runStartRequestRaceCase\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":11,\"intervals\":5,\"immediates\":0,\"frames\":0}}\n[smoke-start-game-data-integrity] lazy-load-failure-unlocks-and-retries PASS\n[startup-timer-scope] {\"case\":\"runLazyLoadFailureUnlockCase\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":26,\"intervals\":5,\"immediates\":0,\"frames\":1}}\n[smoke-start-game-data-integrity] strict-history-fast-path-preserved PASS\n[startup-timer-scope] {\"case\":\"runStrictHistoryFastPathCase\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":26,\"intervals\":5,\"immediates\":0,\"frames\":1}}\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] first-turn-candidates-before-memorials PASS\n[startup-timer-scope] {\"case\":\"runMemorialCandidateOrderingCase\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":6,\"intervals\":5,\"immediates\":0,\"frames\":0}}\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] player-body-edit-blocks-late-initial-memorials PASS\n[startup-timer-scope] {\"case\":\"runMemorialInteractionGuardCase\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":5,\"intervals\":5,\"immediates\":0,\"frames\":0}}\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] scenario-source-isolation PASS\n[startup-timer-scope] {\"case\":\"runScenarioSourceIsolationCase\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":7,\"intervals\":6,\"immediates\":0,\"frames\":1}}\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] background-prewarm-nonblocking-and-stale-safe PASS\n[startup-timer-scope] {\"case\":\"runBackgroundPrewarmCase\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":5,\"intervals\":5,\"immediates\":0,\"frames\":0}}\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] deepread-config-is-immutable PASS\n[startup-timer-scope] {\"case\":\"runDeepReadImmutableConfigCase\",\"assertionsCompleted\":true,\"remaining\":{\"timeouts\":5,\"intervals\":5,\"immediates\":0,\"frames\":0}}\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n"
+    }
+  ],
+  "skipped": []
+}

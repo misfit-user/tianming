@@ -8,9 +8,18 @@
 // 这是 mock 行为（非真智能），用于验 UI 流程渲染（进度清单 / 两官报告 / diff / 应用审）。
 //
 // 用法：node scripts/mock-llm-guoshi.js   （监听 127.0.0.1:8799），再开 demo-guoshi.html。
+//
+// 演示剧本（2026-10-15 国师重做时补，只认需求里的关键字，别的照旧）：
+//   「演示」  查人 → 改袁崇焕官职 + 补两位文官 → 校验 → 收尾，每轮带一句旁白
+//   「请教」  先问你两个问题（askClarification）
+//   「长文」  收尾说明很长（标题、列表、表格、代码），看排版
+//   「报错」  回 401，看错误卡
+// 环境变量 MOCK_DELAY_MS=毫秒：每次回复前等一会儿，好截「运行中」。
+// 请求带 stream:true 时回 OpenAI 事件流（带想法 reasoning_content），MOCK_STREAM_MS 调吐字快慢。
 
 const http = require('http');
 const PORT = 8799;
+const DELAY = Math.max(0, Number(process.env.MOCK_DELAY_MS || 0) || 0);
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': '*' };
 const CORS_JSON = Object.assign({ 'Content-Type': 'application/json' }, CORS);
@@ -24,6 +33,14 @@ function decide(messages, toolNames, allText, userText) {
   const aTurns = messages.filter(function (m) { return m.role === 'assistant'; }).length;
   const didMutate = messages.some(function (m) { return m.role === 'assistant' && /applyPush|applyEdit|multiEdit|bulkAdd/.test(JSON.stringify(m.tool_calls || [])); });
 
+  // ── 连通性自检 / 会话起名（设置里「测试连接」、跑完自动起标题）──
+  if (has('ping')) return [tc('ping', { ok: true })];
+  if (has('setTitle')) {
+    const req = (/玩家需求：([^\n]*)/.exec(userText) || [])[1] || '';
+    const t = req.replace(/^(演示|请教|长文|报错)[：:]\s*/, '').replace(/[，。,.!！?？].*$/, '').slice(0, 12);
+    return [tc('setTitle', { title: t || '剧本编辑' })];
+  }
+
   // ── 审阅模式（史官 / 谏官 / 通用体检）──
   if (has('submitReview')) {
     if (/史官/.test(allText)) return [tc('submitReview', { summary: '（mock·史官）史实大体可考，一处纪年需复核', findings: [{ dimension: '史实合理性', severity: '中', location: '新增人物', issue: '任职年份与设定时代纪年可能错位', suggestion: '核对正史纪年；拿不准改保守措辞并标存疑' }] })];
@@ -35,6 +52,13 @@ function decide(messages, toolNames, allText, userText) {
   if (has('proposePlan')) return [tc('proposePlan', { summary: '（mock）改动计划', steps: ['第一步（mock）', '第二步（mock）'] })];
 
   // ── 作者模式 ──
+  // 演示剧本只看这一句话之后的回合（同一段对话里接着说时，前面几轮不算）
+  var lastUser = -1; messages.forEach(function (m, i) { if (m.role === 'user') lastUser = i; });
+  const turnsSince = messages.slice(lastUser + 1).filter(function (m) { return m.role === 'assistant'; }).length;
+  const d = demo(messages.slice(lastUser + 1), has, turnsSince, userText);
+  if (d) return d;
+  const m = mapDemo(messages.slice(lastUser + 1), has, turnsSince, userText);
+  if (m) return m;
   // 会审修订阶段
   if (/三堂会审[··].*修订|据.*意见.*修订/.test(userText)) {
     if (!didMutate && has('applyEdit')) return [tc('applyEdit', { path: 'worldSettings.note', value: '（mock）已据史官·谏官意见修订：纪年改保守措辞、新势力资源下调一档' })];
@@ -63,8 +87,60 @@ function decide(messages, toolNames, allText, userText) {
   return out.length ? out : [tc('finish', { summary: '（mock）暂无可改' })];
 }
 
+// 演示剧本：返回 tool_calls 数组（可带 .content 旁白）或 null
+// 地图编辑器的国师（需求里带「地图：」）：检索地块 → （要改名就）改第一块 → 收尾
+function mapDemo(messages, has, aTurns, userText) {
+  if (!has('mapEditorOverview') || !/地图[：:]/.test(userText)) return null;
+  let divs = [];
+  for (let i = 0; i < messages.length; i++) {   // 取这句话之后第一次检索的结果（改名前的名字）
+    if (messages[i].role !== 'tool') continue;
+    try { const o = JSON.parse(messages[i].content); if (o && Array.isArray(o.divisions)) { divs = o.divisions; break; } } catch (e) {}
+  }
+  const rename = /改名为([^\s，。,.]+)/.exec(userText);
+  if (aTurns === 0) return Object.assign([tc('mapEditorOverview', { limit: 20 })], { content: '先看看这张图上有哪些地块。' });
+  if (rename && has('mapEditorEdit') && aTurns === 1 && divs.length) {
+    return Object.assign([tc('mapEditorEdit', { edits: [{ id: divs[0].id, patch: { name: rename[1] } }] })], { content: '第一块是「' + divs[0].name + '」，照你说的改名。' });
+  }
+  const names = divs.slice(0, 12).map(function (x) { return x.name; }).filter(Boolean);
+  return [tc('finish', { summary: rename
+    ? '把「' + ((divs[0] && divs[0].name) || '第一块地') + '」改名为「' + rename[1] + '」，其余属性没动。'
+    : (names.length ? '这张图上有 ' + divs.length + ' 块：' + names.join('、') + (divs.length > 12 ? ' 等' : '') + '。' : '这张图上还没有地块。') })];
+}
+
+function demo(messages, has, aTurns, userText) {
+  function say(text, calls) { calls = calls || []; calls.content = text; return calls; }
+  if (/报错/.test(userText)) return { error: 401 };
+  if (/请教/.test(userText) && aTurns === 0 && has('askClarification')) {
+    return say('这事有两种改法，先问清楚再动手。', [tc('askClarification', { questions: ['新补的文官要放在中枢（六部、内阁）还是地方（布政司、府州）？', '要不要沿用东林、浙党这样的派系标签？'] })]);
+  }
+  if (/长文/.test(userText)) {
+    return [tc('finish', { summary: '## 开局格局\n\n天启七年九月，**新君初立**，权阉当国。玩家要在三条线上同时用力：\n\n1. 内廷：魏忠贤一党把持司礼监与东厂；\n2. 外朝：东林余脉散在南北，阉党占着要津；\n3. 边事：辽东宁锦一线，后金虎视。\n\n### 几个关键数字\n\n| 项 | 数 | 说明 |\n|---|---:|---|\n| 太仓存银 | 80 万两 | 一年辽饷就要 500 万 |\n| 九边兵额 | 88 万 | 实额远低于此 |\n| 内帑 | 200 万两 | 可调，但要皇帝点头 |\n\n### 上手建议\n\n- 先稳住内廷，别急着动魏忠贤；\n- 辽东用人看`袁崇焕`、`孙承宗`两条线；\n- 财政先查**辽饷**与**矿税**。\n\n```json\n{ "startYear": 1627, "turnUnit": "月" }\n```' })];
+  }
+  if (!/演示/.test(userText)) return null;
+  var toolMsgs = messages.filter(function (m) { return m.role === 'tool'; });
+  var seen = toolMsgs.map(function (m) { return typeof m.content === 'string' ? m.content : JSON.stringify(m.content); }).join('\n');
+  if (aTurns === 0 && has('searchEntities')) {
+    return say('先看看袁崇焕眼下是什么官，再看主角势力里有哪些文官。', [tc('searchEntities', { collection: 'characters', query: '袁崇焕' }), tc('searchEntities', { collection: 'characters', query: '侍郎' })]);
+  }
+  if (aTurns === 1) {
+    var first = toolMsgs[0] ? (typeof toolMsgs[0].content === 'string' ? toolMsgs[0].content : JSON.stringify(toolMsgs[0].content)) : '';
+    var m = first.match(/"index":\s*(\d+)/) || seen.match(/characters\[(\d+)\]/);
+    var idx = m ? +m[1] : 0;
+    var calls = [];
+    if (has('applyEdit')) calls.push(tc('applyEdit', { path: 'characters.' + idx + '.officialTitle', value: '兵部尚书兼右副都御史，督师蓟辽' }));
+    if (has('applyPush')) {
+      calls.push(tc('applyPush', { path: 'characters', value: { name: '文震孟', zi: '文起', faction: '明朝廷', officialTitle: '左春坊左中允', age: 53, gender: '男', birthplace: '苏州长洲', party: '东林', desc: '天启二年状元，以直谏忤魏忠贤，削籍归里，士林重其风节。', aiPersona: '刚直敢言，重名节，遇事必争，不善周旋。', wuchangOverride: { '仁': 68, '义': 74, '礼': 80, '智': 70, '信': 72 } } }));
+      calls.push(tc('applyPush', { path: 'characters', value: { name: '郑三俊', zi: '用章', faction: '明朝廷', officialTitle: '南京户部右侍郎', age: 53, gender: '男', birthplace: '池州建德', party: '东林', desc: '为官清慎，留心钱谷，阉党当国时引疾不出。', aiPersona: '持重清廉，长于理财，不轻易表态。', wuchangOverride: { '仁': 76, '义': 66, '礼': 78, '智': 68, '信': 74 } } }));
+    }
+    if (has('flagUncertain')) calls.push(tc('flagUncertain', { path: 'characters.' + idx + '.officialTitle', reason: '加衔与督师的确切月份需核《崇祯长编》' }));
+    return say('袁崇焕的官职按崇祯元年的任命改；文官补文震孟、郑三俊两位，都是东林一脉。', calls);
+  }
+  if (aTurns === 2 && has('validateDraft')) return say('改完自查一遍引用。', [tc('validateDraft', {})]);
+  return [tc('finish', { summary: '改了三处：\n\n- **袁崇焕**：官职改为「兵部尚书兼右副都御史，督师蓟辽」（月份待核，已标出）；\n- 新增 **文震孟**（左春坊左中允，东林）；\n- 新增 **郑三俊**（南京户部右侍郎，东林）。\n\n两位新人的籍贯、表字、性格都按正史填了。' })];
+}
+
 function reply(res, toolCalls) {
-  const msg = { role: 'assistant', content: '' };
+  const msg = { role: 'assistant', content: (toolCalls && toolCalls.content) || '' };
   if (toolCalls && toolCalls.length) msg.tool_calls = toolCalls;
   res.writeHead(200, CORS_JSON);
   res.end(JSON.stringify({
@@ -72,6 +148,43 @@ function reply(res, toolCalls) {
     choices: [{ index: 0, message: msg, finish_reason: (toolCalls && toolCalls.length) ? 'tool_calls' : 'stop' }],
     usage: { prompt_tokens: 100, completion_tokens: 60, total_tokens: 160 }
   }));
+}
+
+// 流式（国师重做 S4）：请求带 stream:true 时按 OpenAI 事件流一小段一小段吐——先想法（reasoning_content），
+//   再旁白，再工具名与参数；末尾 finish_reason、用量、[DONE]。MOCK_STREAM_MS 调每段间隔（默认 25ms）。
+const STREAM_MS = Math.max(0, Number(process.env.MOCK_STREAM_MS || 25) || 0);
+function _thought(calls) {
+  const names = (calls || []).map(function (c) { return c.function.name; });
+  if (names.indexOf('finish') >= 0) return '都改完、校验也过了。收尾要把改了什么、为什么这么改讲清楚：袁崇焕那条点明月份待核；两位新人说清出身和派系，免得读的人以为是随手编的。';
+  if (names.indexOf('applyPush') >= 0 || names.indexOf('applyEdit') >= 0) return '查到了：袁崇焕眼下挂的还是旧衔。崇祯元年四月起复，加兵部尚书兼右副都御史、督师蓟辽——但确切月份各书说法不一，改完得标个待核。\n\n补文官要挑这一年真在朝或刚起复的东林人：文震孟、郑三俊都合适，得有表字、籍贯、性格和五常，不能是空壳。';
+  if (names.indexOf('validateDraft') >= 0) return '改了一处、加了两人，自查一遍引用和必填字段。';
+  if (names.indexOf('askClarification') >= 0) return '「再补几位文官」太宽了：补几位、哪一派、什么品级都没说。先问清楚再动手，免得白写。';
+  if (names.indexOf('mapEditorEdit') >= 0) return '找到了要改的那块。地名照你说的改，势力归属、边界这些都不动。';
+  if (names.indexOf('mapEditorOverview') >= 0) return '先把这张图上的地块列出来，拿到稳定的编号再动手——同名的地块不能凭名字猜。';
+  if (names.indexOf('searchEntities') >= 0) return '先看剧本里现在是什么样，别凭印象改。袁崇焕在不在、挂的什么官；朝廷里已经有哪些文官，免得重名。';
+  return '想一想从哪里下手。';
+}
+function _pieces(str, n) { const out = []; const a = Array.from(str || ''); for (let i = 0; i < a.length; i += n) out.push(a.slice(i, i + n).join('')); return out; }
+function streamReply(res, toolCalls, body) {
+  const id = 'mock-' + (++_seq), frames = [];
+  const frame = function (delta, finish) { return 'data: ' + JSON.stringify({ id: id, object: 'chat.completion.chunk', model: 'mock-guoshi', choices: [{ index: 0, delta: delta, finish_reason: finish || null }] }) + '\n\n'; };
+  frames.push(frame({ role: 'assistant', content: '' }));
+  _pieces(_thought(toolCalls), 3).forEach(function (p) { frames.push(frame({ reasoning_content: p })); });
+  _pieces((toolCalls && toolCalls.content) || '', 2).forEach(function (p) { frames.push(frame({ content: p })); });
+  (toolCalls || []).forEach(function (c, i) {
+    frames.push(frame({ tool_calls: [{ index: i, id: c.id, type: 'function', function: { name: c.function.name, arguments: '' } }] }));
+    _pieces(c.function.arguments, 6).forEach(function (p) { frames.push(frame({ tool_calls: [{ index: i, function: { arguments: p } }] })); });
+  });
+  frames.push(frame({}, (toolCalls && toolCalls.length) ? 'tool_calls' : 'stop'));
+  if (body && body.stream_options && body.stream_options.include_usage) frames.push('data: ' + JSON.stringify({ id: id, object: 'chat.completion.chunk', choices: [], usage: { prompt_tokens: 100, completion_tokens: 60, total_tokens: 160 } }) + '\n\n');
+  frames.push('data: [DONE]\n\n');
+  res.writeHead(200, Object.assign({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' }, CORS));
+  let k = 0;
+  (function next() {
+    if (k >= frames.length) { res.end(); return; }
+    res.write(frames[k++]);
+    setTimeout(next, STREAM_MS);
+  })();
 }
 
 http.createServer(function (req, res) {
@@ -90,7 +203,14 @@ http.createServer(function (req, res) {
     let calls;
     try { calls = decide(messages, toolNames, allText, userText); }
     catch (e) { calls = [tc('finish', { summary: '（mock）decide 出错：' + (e && e.message) })]; }
-    reply(res, calls);
+    setTimeout(function () {
+      if (calls && calls.error) {
+        res.writeHead(calls.error, CORS_JSON);
+        res.end(JSON.stringify({ error: { message: '（mock）Incorrect API key provided. 你填的 Key 不对或已失效。', type: 'invalid_request_error', code: 'invalid_api_key' } }));
+        return;
+      }
+      if (body.stream === true) streamReply(res, calls, body); else reply(res, calls);
+    }, DELAY);
   });
 }).listen(PORT, '127.0.0.1', function () {
   console.log('[mock-llm-guoshi] listening on http://127.0.0.1:' + PORT + '/v1  · 国师 demo 可直接本地跑（Ctrl+C 停）');

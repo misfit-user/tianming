@@ -70,15 +70,17 @@ const stage = (ctx) => ctx.TM.Endturn.AI.apply.stages._applyCore_reconcile;
     ctx.GM = baseGM([{ name: '孙传庭', alive: true, faction: '明朝廷', resources: {} },
                      { name: '王安', position: '巡抚', officialTitle: '巡抚', alive: true, faction: '明朝廷', resources: {} }]);
     ctx.P = { playerInfo: { factionName: '明朝廷' }, adminHierarchy: {} };
-    let rejected = false;
+    // 2026-11-06 主写回改逐条落账：裸死亡不再让整批撤回，而是这一条不落、记进未落地清单待复核
+    let rejected = null;
     try {
       await stage(ctx)({ results: { sc1: { shizhengji: '王安伏诛，朝野称快。' } } });   // 主叙事·无 character_deaths·无源
     } catch (e) {
-      rejected = /AI 主写回未能原子提交/.test(String(e && e.message || e));
+      rejected = e;
     }
-    ok(rejected, 'T1a 真stage链·validator 经 narrative 键扫到主叙事裸死亡并拒绝整批提交');
+    const unlanded = JSON.stringify(ctx.GM._unappliedChanges || []);
+    ok(!rejected && /王安|伏诛|死/.test(unlanded), 'T1a 真stage链·validator 经 narrative 键扫到主叙事裸死亡：不撤整批，记进未落地清单' + (rejected ? '（抛错：' + (rejected.message || rejected) + '）' : ''));
     ok(ctx._deathCalls.indexOf('王安') < 0 && ctx.GM.chars.find(c => c.name === '王安').alive === true, 'T1b 无源→不落库(未死·未走死亡 sink)');
-    ok(hints(ctx.GM).indexOf('王安') < 0, 'T1c 原子回滚后 GM 不留未提交的弱提示');
+    ok((ctx.GM._unappliedChanges || []).every(r => r && r.source), 'T1c 未落地条目带来源，供复核与下回合读');
   }
   {
     const ctx = makeCtx();

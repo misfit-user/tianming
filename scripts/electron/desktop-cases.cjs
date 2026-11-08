@@ -50,9 +50,11 @@ module.exports = async function({ win, root, temp, mode, controls, check }) {
     assert.equal(envelope.sessionToken, objectEnvelope.sessionToken);
     assert.equal(envelope.__tmAutoSaveEnvelope, 1);
     assert(text.toString('utf8').startsWith('{"__tmDesktopSaveGeneration":'));
+    const sessionBefore=await call('getAutoSaveSessionToken');
     for (const invalid of ['{bad', 'null', '[]']) {
       await assert.rejects(call('autoSaveJson', invalid));
       assert.deepEqual(fs.readFileSync(file), text, 'invalid text must not alter the committed file');
+      assert.equal(await call('getAutoSaveSessionToken'),sessionBefore,'main validation failure must not rotate the current preload session');
     }
   });
   await check('manual-save-world-switch-barrier-and-late-real-ipc', async () => {

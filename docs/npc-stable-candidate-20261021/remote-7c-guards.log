@@ -1,0 +1,730 @@
+﻿2026-10-22T12:15:01.8020888Z Current runner version: '2.338.0'
+2026-10-22T12:15:01.8046236Z ##[group]Runner Image Provisioner
+2026-10-22T12:15:01.8047151Z Hosted Compute Agent
+2026-10-22T12:15:01.8047871Z Version: 20261015.610
+2026-10-22T12:15:01.8048531Z Commit: 267fdb4e8bbec4ab5ea31367f3a00d5c480c7656
+2026-10-22T12:15:01.8049662Z Build Date: 2026-10-14T17:06:54Z
+2026-10-22T12:15:01.8050485Z Worker ID: {824b38e0-73f3-4d95-9931-15a0e01cf98d}
+2026-10-22T12:15:01.8051210Z Region: westus
+2026-10-22T12:15:01.8051829Z Cloud: Azure
+2026-10-22T12:15:01.8052376Z ##[endgroup]
+2026-10-22T12:15:01.8054237Z ##[group]Operating System
+2026-10-22T12:15:01.8055098Z Ubuntu
+2026-10-22T12:15:01.8055635Z 24.04.5
+2026-10-22T12:15:01.8056200Z LTS
+2026-10-22T12:15:01.8056729Z ##[endgroup]
+2026-10-22T12:15:01.8057279Z ##[group]Runner Image
+2026-10-22T12:15:01.8058003Z Image: ubuntu-24.04
+2026-10-22T12:15:01.8058580Z Version: 20261018.339.1
+2026-10-22T12:15:01.8060167Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261018.339/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-22T12:15:01.8061794Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261018.339
+2026-10-22T12:15:01.8062857Z ##[endgroup]
+2026-10-22T12:15:01.8064021Z ##[group]GITHUB_TOKEN Permissions
+2026-10-22T12:15:01.8065974Z Contents: read
+2026-10-22T12:15:01.8066609Z Metadata: read
+2026-10-22T12:15:01.8067288Z ##[endgroup]
+2026-10-22T12:15:01.8069774Z Secret source: Actions
+2026-10-22T12:15:01.8071021Z Cache mode: write
+2026-10-22T12:15:01.8071775Z Prepare workflow directory
+2026-10-22T12:15:01.8447462Z Prepare all required actions
+2026-10-22T12:15:01.8521135Z Getting action download info
+2026-10-22T12:15:02.2283554Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-22T12:15:02.3325195Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-22T12:15:02.4306973Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-22T12:15:02.6443764Z Complete job name: guards
+2026-10-22T12:15:02.7271537Z ##[group]Run actions/checkout@v4
+2026-10-22T12:15:02.7272409Z with:
+2026-10-22T12:15:02.7272864Z   repository: misfit-user/tianming
+2026-10-22T12:15:02.7276631Z   token: ***
+2026-10-22T12:15:02.7277059Z   ssh-strict: true
+2026-10-22T12:15:02.7277494Z   ssh-user: git
+2026-10-22T12:15:02.7277933Z   persist-credentials: true
+2026-10-22T12:15:02.7278411Z   clean: true
+2026-10-22T12:15:02.7278856Z   sparse-checkout-cone-mode: true
+2026-10-22T12:15:02.7279588Z   fetch-depth: 1
+2026-10-22T12:15:02.7280018Z   fetch-tags: false
+2026-10-22T12:15:02.7280462Z   show-progress: true
+2026-10-22T12:15:02.7280904Z   lfs: false
+2026-10-22T12:15:02.7281319Z   submodules: false
+2026-10-22T12:15:02.7281774Z   set-safe-directory: true
+2026-10-22T12:15:02.7282283Z   allow-unsafe-pr-checkout: false
+2026-10-22T12:15:02.7283060Z ##[endgroup]
+2026-10-22T12:15:02.8321083Z Syncing repository: misfit-user/tianming
+2026-10-22T12:15:02.8323743Z ##[group]Getting Git version info
+2026-10-22T12:15:02.8324964Z Working directory is '/home/runner/work/tianming/tianming'
+2026-10-22T12:15:02.8326613Z [command]/usr/bin/git version
+2026-10-22T12:15:02.8393288Z git version 2.55.0
+2026-10-22T12:15:02.8518112Z ##[endgroup]
+2026-10-22T12:15:02.8532420Z Temporarily overriding HOME='/home/runner/work/_temp/416661c1-ba22-4981-b462-e872481dc4c0' before making global git config changes
+2026-10-22T12:15:02.8534842Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-22T12:15:02.8536895Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tianming/tianming
+2026-10-22T12:15:02.8540856Z Deleting the contents of '/home/runner/work/tianming/tianming'
+2026-10-22T12:15:02.8542916Z ##[group]Initializing the repository
+2026-10-22T12:15:02.8544208Z [command]/usr/bin/git init /home/runner/work/tianming/tianming
+2026-10-22T12:15:02.8671041Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-22T12:15:02.8673481Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-22T12:15:02.8675141Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-22T12:15:02.8676584Z hint: call:
+2026-10-22T12:15:02.8677275Z hint:
+2026-10-22T12:15:02.8678450Z hint: 	git config --global init.defaultBranch <name>
+2026-10-22T12:15:02.8679931Z hint:
+2026-10-22T12:15:02.8681355Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-22T12:15:02.8683421Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-22T12:15:02.8685014Z hint:
+2026-10-22T12:15:02.8685859Z hint: 	git branch -m <name>
+2026-10-22T12:15:02.8686729Z hint:
+2026-10-22T12:15:02.8687871Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-22T12:15:02.8689916Z Initialized empty Git repository in /home/runner/work/tianming/tianming/.git/
+2026-10-22T12:15:02.8692945Z [command]/usr/bin/git remote add origin https://github.com/misfit-user/tianming
+2026-10-22T12:15:02.8753444Z ##[endgroup]
+2026-10-22T12:15:02.8755288Z ##[group]Disabling automatic garbage collection
+2026-10-22T12:15:02.8761873Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-22T12:15:02.8827166Z ##[endgroup]
+2026-10-22T12:15:02.8828869Z ##[group]Setting up auth
+2026-10-22T12:15:02.8830768Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T12:15:02.8877054Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-22T12:15:02.9411814Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T12:15:02.9472221Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-22T12:15:02.9721933Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T12:15:02.9767542Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-22T12:15:03.0016500Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-22T12:15:03.0078122Z ##[endgroup]
+2026-10-22T12:15:03.0079820Z ##[group]Fetching the repository
+2026-10-22T12:15:03.0089146Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +cdb4b4d279ffe26018acb31288bc1bb818a4b2f9:refs/remotes/pull/105/merge
+2026-10-22T12:15:22.9818763Z From https://github.com/misfit-user/tianming
+2026-10-22T12:15:22.9820396Z  * [new ref]         cdb4b4d279ffe26018acb31288bc1bb818a4b2f9 -> pull/105/merge
+2026-10-22T12:15:22.9832032Z ##[endgroup]
+2026-10-22T12:15:22.9833096Z ##[group]Determining the checkout info
+2026-10-22T12:15:22.9834227Z ##[endgroup]
+2026-10-22T12:15:22.9835225Z [command]/usr/bin/git sparse-checkout disable
+2026-10-22T12:15:22.9912195Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-22T12:15:22.9953763Z ##[group]Checking out the ref
+2026-10-22T12:15:22.9957649Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/105/merge
+2026-10-22T12:15:24.0083119Z Updating files:  50% (2452/4872)
+2026-10-22T12:15:24.0153626Z Updating files:  51% (2485/4872)
+2026-10-22T12:15:24.0228263Z Updating files:  52% (2534/4872)
+2026-10-22T12:15:24.0283133Z Updating files:  53% (2583/4872)
+2026-10-22T12:15:24.0354602Z Updating files:  54% (2631/4872)
+2026-10-22T12:15:24.0450997Z Updating files:  55% (2680/4872)
+2026-10-22T12:15:24.0496596Z Updating files:  56% (2729/4872)
+2026-10-22T12:15:24.0584212Z Updating files:  57% (2778/4872)
+2026-10-22T12:15:24.0690037Z Updating files:  58% (2826/4872)
+2026-10-22T12:15:24.4262764Z Updating files:  59% (2875/4872)
+2026-10-22T12:15:24.4302753Z Updating files:  60% (2924/4872)
+2026-10-22T12:15:24.4336009Z Updating files:  61% (2972/4872)
+2026-10-22T12:15:24.4372434Z Updating files:  62% (3021/4872)
+2026-10-22T12:15:24.4419765Z Updating files:  63% (3070/4872)
+2026-10-22T12:15:24.4468903Z Updating files:  64% (3119/4872)
+2026-10-22T12:15:24.4526628Z Updating files:  65% (3167/4872)
+2026-10-22T12:15:24.4579236Z Updating files:  66% (3216/4872)
+2026-10-22T12:15:24.4634818Z Updating files:  67% (3265/4872)
+2026-10-22T12:15:24.4672039Z Updating files:  68% (3313/4872)
+2026-10-22T12:15:24.4711069Z Updating files:  69% (3362/4872)
+2026-10-22T12:15:24.4746611Z Updating files:  70% (3411/4872)
+2026-10-22T12:15:24.4783132Z Updating files:  71% (3460/4872)
+2026-10-22T12:15:24.4817744Z Updating files:  72% (3508/4872)
+2026-10-22T12:15:24.4854926Z Updating files:  73% (3557/4872)
+2026-10-22T12:15:24.4890602Z Updating files:  74% (3606/4872)
+2026-10-22T12:15:24.4927192Z Updating files:  75% (3654/4872)
+2026-10-22T12:15:24.4956694Z Updating files:  76% (3703/4872)
+2026-10-22T12:15:24.4991282Z Updating files:  77% (3752/4872)
+2026-10-22T12:15:24.5030056Z Updating files:  78% (3801/4872)
+2026-10-22T12:15:24.5067184Z Updating files:  79% (3849/4872)
+2026-10-22T12:15:24.5102853Z Updating files:  80% (3898/4872)
+2026-10-22T12:15:24.5139955Z Updating files:  81% (3947/4872)
+2026-10-22T12:15:24.5174601Z Updating files:  82% (3996/4872)
+2026-10-22T12:15:24.5210990Z Updating files:  83% (4044/4872)
+2026-10-22T12:15:24.5256306Z Updating files:  84% (4093/4872)
+2026-10-22T12:15:24.5292970Z Updating files:  85% (4142/4872)
+2026-10-22T12:15:24.5330127Z Updating files:  86% (4190/4872)
+2026-10-22T12:15:24.5365922Z Updating files:  87% (4239/4872)
+2026-10-22T12:15:24.5405595Z Updating files:  88% (4288/4872)
+2026-10-22T12:15:24.5484312Z Updating files:  89% (4337/4872)
+2026-10-22T12:15:24.5575039Z Updating files:  90% (4385/4872)
+2026-10-22T12:15:24.5665143Z Updating files:  91% (4434/4872)
+2026-10-22T12:15:24.5780309Z Updating files:  92% (4483/4872)
+2026-10-22T12:15:24.5862435Z Updating files:  93% (4531/4872)
+2026-10-22T12:15:24.5943957Z Updating files:  94% (4580/4872)
+2026-10-22T12:15:24.6015276Z Updating files:  95% (4629/4872)
+2026-10-22T12:15:24.6100522Z Updating files:  96% (4678/4872)
+2026-10-22T12:15:24.6183758Z Updating files:  97% (4726/4872)
+2026-10-22T12:15:24.6305082Z Updating files:  98% (4775/4872)
+2026-10-22T12:15:24.7605034Z Updating files:  99% (4824/4872)
+2026-10-22T12:15:24.7605749Z Updating files: 100% (4872/4872)
+2026-10-22T12:15:24.7606257Z Updating files: 100% (4872/4872), done.
+2026-10-22T12:15:24.7653980Z Note: switching to 'refs/remotes/pull/105/merge'.
+2026-10-22T12:15:24.7654498Z 
+2026-10-22T12:15:24.7654924Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-22T12:15:24.7655850Z changes and commit them, and you can discard any commits you make in this
+2026-10-22T12:15:24.7656717Z state without impacting any branches by switching back to a branch.
+2026-10-22T12:15:24.7657241Z 
+2026-10-22T12:15:24.7657599Z If you want to create a new branch to retain commits you create, you may
+2026-10-22T12:15:24.7658536Z do so (now or later) by using -c with the switch command. Example:
+2026-10-22T12:15:24.7659029Z 
+2026-10-22T12:15:24.7659537Z   git switch -c <new-branch-name>
+2026-10-22T12:15:24.7659877Z 
+2026-10-22T12:15:24.7660056Z Or undo this operation with:
+2026-10-22T12:15:24.7660361Z 
+2026-10-22T12:15:24.7660526Z   git switch -
+2026-10-22T12:15:24.7660761Z 
+2026-10-22T12:15:24.7661155Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-22T12:15:24.7661748Z 
+2026-10-22T12:15:24.7662405Z HEAD is now at cdb4b4d Merge 7c6525075d3f07ab435562e21a8d3d74c0e9b413 into 0b4012e07aedb14ac81df3ab529ff96c0f249cf6
+2026-10-22T12:15:24.7751707Z ##[endgroup]
+2026-10-22T12:15:24.7802553Z [command]/usr/bin/git log -1 --format=%H
+2026-10-22T12:15:24.7845820Z cdb4b4d279ffe26018acb31288bc1bb818a4b2f9
+2026-10-22T12:15:24.8145060Z ##[group]Run actions/setup-node@v4
+2026-10-22T12:15:24.8145379Z with:
+2026-10-22T12:15:24.8145802Z   node-version: 22
+2026-10-22T12:15:24.8146009Z   cache: npm
+2026-10-22T12:15:24.8146207Z   always-auth: false
+2026-10-22T12:15:24.8146423Z   check-latest: false
+2026-10-22T12:15:24.8148864Z   token: ***
+2026-10-22T12:15:24.8149078Z ##[endgroup]
+2026-10-22T12:15:24.9695242Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+2026-10-22T12:15:24.9700885Z (node:2309) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-22T12:15:24.9702172Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-22T12:15:24.9704636Z ##[group]Environment details
+2026-10-22T12:15:25.3988074Z node: v22.23.3
+2026-10-22T12:15:25.3988601Z npm: 10.9.9
+2026-10-22T12:15:25.3988964Z yarn: 1.22.22
+2026-10-22T12:15:25.3991528Z ##[endgroup]
+2026-10-22T12:15:25.4018618Z [command]/opt/hostedtoolcache/node/22.23.3/x64/bin/npm config get cache
+2026-10-22T12:15:25.5340468Z /home/runner/.npm
+2026-10-22T12:15:25.7936546Z Cache hit for: node-cache-Linux-x64-npm-569b4b4363ff527d4d8a85f9a198edce35e20d223459a81b72665ca76f431ce6
+2026-10-22T12:15:25.8043293Z (node:2309) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-22T12:15:27.0775379Z Received 4194304 of 95418344 (4.4%), 4.0 MBs/sec
+2026-10-22T12:15:27.8279053Z Received 95418344 of 95418344 (100.0%), 52.0 MBs/sec
+2026-10-22T12:15:27.8279961Z Cache Size: ~91 MB (95418344 B)
+2026-10-22T12:15:27.8307484Z [command]/usr/bin/tar -xf /home/runner/work/_temp/09369817-70fa-4487-857a-b5e1295972d1/cache.tzst -P -C /home/runner/work/tianming/tianming --use-compress-program unzstd
+2026-10-22T12:15:28.0408185Z Cache restored successfully
+2026-10-22T12:15:28.0457414Z Cache restored from key: node-cache-Linux-x64-npm-569b4b4363ff527d4d8a85f9a198edce35e20d223459a81b72665ca76f431ce6
+2026-10-22T12:15:28.0804175Z ##[group]Run git rev-parse HEAD
+2026-10-22T12:15:28.0804610Z [36;1mgit rev-parse HEAD[0m
+2026-10-22T12:15:28.0804908Z [36;1mgit status --short[0m
+2026-10-22T12:15:28.0805409Z [36;1mnode -p 'JSON.stringify({node:process.version,platform:process.platform,arch:process.arch})'[0m
+2026-10-22T12:15:28.1007211Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:15:28.1007576Z ##[endgroup]
+2026-10-22T12:15:28.1135493Z cdb4b4d279ffe26018acb31288bc1bb818a4b2f9
+2026-10-22T12:15:28.7384631Z {"node":"v22.23.3","platform":"linux","arch":"x64"}
+2026-10-22T12:15:28.7474453Z ##[group]Run npm ci --ignore-scripts
+2026-10-22T12:15:28.7474828Z [36;1mnpm ci --ignore-scripts[0m
+2026-10-22T12:15:28.7530928Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:15:28.7531234Z ##[endgroup]
+2026-10-22T12:15:31.4823448Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2026-10-22T12:15:31.5100599Z npm warn deprecated @npmcli/move-file@2.0.1: This functionality has been moved to @npmcli/fs
+2026-10-22T12:15:31.5182649Z npm warn deprecated npmlog@6.0.2: This package is no longer supported.
+2026-10-22T12:15:31.5362945Z npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+2026-10-22T12:15:31.5469971Z npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2026-10-22T12:15:31.5840525Z npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2026-10-22T12:15:31.5917865Z npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+2026-10-22T12:15:31.6543235Z npm warn deprecated are-we-there-yet@3.0.1: This package is no longer supported.
+2026-10-22T12:15:31.8263633Z npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+2026-10-22T12:15:31.8469805Z npm warn deprecated gauge@4.0.4: This package is no longer supported.
+2026-10-22T12:15:32.2642751Z npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-10-22T12:15:33.1019762Z 
+2026-10-22T12:15:33.1020482Z added 417 packages in 4s
+2026-10-22T12:15:33.1020869Z 
+2026-10-22T12:15:33.1021534Z 64 packages are looking for funding
+2026-10-22T12:15:33.1022383Z   run `npm fund` for details
+2026-10-22T12:15:33.1778602Z ##[group]Run npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org
+2026-10-22T12:15:33.1779796Z [36;1mnpm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org[0m
+2026-10-22T12:15:33.1833596Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:15:33.1833880Z ##[endgroup]
+2026-10-22T12:15:33.6279077Z found 0 vulnerabilities
+2026-10-22T12:15:33.6404158Z ##[group]Run node web/scripts/sync-official-scenarios.js
+2026-10-22T12:15:33.6404632Z [36;1mnode web/scripts/sync-official-scenarios.js[0m
+2026-10-22T12:15:33.6457539Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:15:33.6457820Z ##[endgroup]
+2026-10-22T12:15:41.2302118Z [official-sync] wrote web/bundled-scenarios/天启七年·九月（官方）.json
+2026-10-22T12:15:41.5513526Z [official-sync] wrote web/bundled-scenarios/绍宋·建炎元年八月（官方）.json
+2026-10-22T12:15:41.7337575Z [official-sync] wrote web/bundled-scenarios/晚唐·开成五年（官方）.json
+2026-10-22T12:15:41.7928751Z [official-sync] sync PASS · sources=3 artifacts=10
+2026-10-22T12:15:41.9627276Z ##[group]Run git diff --exit-code
+2026-10-22T12:15:41.9627828Z [36;1mgit diff --exit-code[0m
+2026-10-22T12:15:41.9696843Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:15:41.9697283Z ##[endgroup]
+2026-10-22T12:15:41.9923807Z ##[group]Run node web/scripts/verify-official-scenario-parity.js
+2026-10-22T12:15:41.9924338Z [36;1mnode web/scripts/verify-official-scenario-parity.js[0m
+2026-10-22T12:15:41.9976383Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:15:41.9976696Z ##[endgroup]
+2026-10-22T12:15:50.5630250Z [official-sync] parity PASS · sources=3 artifacts=10
+2026-10-22T12:15:50.5634029Z   ok·preview/reset artifacts registered
+2026-10-22T12:15:50.5635018Z   ok·no second seeder bundle: the builtins are the only shipped copy
+2026-10-22T12:15:50.8937754Z   ok·tianqi7 builtin embeds the complete lossless root expression
+2026-10-22T12:15:50.8981611Z   ok·tianqi7 builtin remains reviewable compact output
+2026-10-22T12:15:50.8993699Z   ok·tianqi7 builtin feeds the standalone registry (desktop seeder/preview/tests)
+2026-10-22T12:15:51.0976203Z   ok·tianqi7 editor preview adapter maps the builtin id to its key
+2026-10-22T12:15:51.1066812Z   ok·tianqi7 editor preview no longer embeds a second data copy
+2026-10-22T12:15:51.1641608Z   ok·editor reset embeds the complete Tianqi root JSON (embedded=15553126/9b580652a0a644c59f561e5e208b619b2ea618933f7e681fe48837c558fccc3f, root=15553126/9b580652a0a644c59f561e5e208b619b2ea618933f7e681fe48837c558fccc3f, differingKeys=)
+2026-10-22T12:15:51.1883162Z   ok·tianqi7 bundled JSON is byte-identical to root JSON
+2026-10-22T12:15:53.9569788Z   ok·shaosong builtin embeds the complete lossless root expression
+2026-10-22T12:15:53.9804791Z   ok·shaosong builtin remains reviewable compact output
+2026-10-22T12:15:53.9897368Z   ok·shaosong builtin feeds the standalone registry (desktop seeder/preview/tests)
+2026-10-22T12:15:55.8748135Z   ok·shaosong editor preview adapter maps the builtin id to its key
+2026-10-22T12:15:55.9716101Z   ok·shaosong editor preview no longer embeds a second data copy
+2026-10-22T12:15:56.5024866Z   ok·shaosong bundled JSON is byte-identical to root JSON
+2026-10-22T12:15:57.7672149Z   ok·tang840 builtin embeds the complete lossless root expression
+2026-10-22T12:15:57.7816573Z   ok·tang840 builtin remains reviewable compact output
+2026-10-22T12:15:57.7860848Z   ok·tang840 builtin feeds the standalone registry (desktop seeder/preview/tests)
+2026-10-22T12:15:58.5519716Z   ok·tang840 editor preview adapter maps the builtin id to its key
+2026-10-22T12:15:58.6064813Z   ok·tang840 editor preview no longer embeds a second data copy
+2026-10-22T12:15:58.7512978Z   ok·tang840 bundled JSON is byte-identical to root JSON
+2026-10-22T12:15:58.7526220Z   ok·manifest.js equals manifest.json
+2026-10-22T12:15:58.7526782Z   ok·tianqi7 metadata exists
+2026-10-22T12:15:58.9594110Z   ok·tianqi7 metadata script sha256 is correct
+2026-10-22T12:15:58.9595112Z   ok·tianqi7 metadata script bytes is correct
+2026-10-22T12:15:58.9918922Z   ok·tianqi7 metadata source sha256 is correct
+2026-10-22T12:15:58.9920127Z   ok·tianqi7 metadata source bytes is correct
+2026-10-22T12:15:58.9920740Z   ok·tianqi7 metadata loader path is correct
+2026-10-22T12:15:58.9921321Z   ok·tianqi7 metadata counts are correct
+2026-10-22T12:15:58.9921845Z   ok·shaosong metadata exists
+2026-10-22T12:15:59.0680768Z   ok·shaosong metadata script sha256 is correct
+2026-10-22T12:15:59.0681981Z   ok·shaosong metadata script bytes is correct
+2026-10-22T12:15:59.4542920Z   ok·shaosong metadata source sha256 is correct
+2026-10-22T12:15:59.4543566Z   ok·shaosong metadata source bytes is correct
+2026-10-22T12:15:59.4544254Z   ok·shaosong metadata loader path is correct
+2026-10-22T12:15:59.4544756Z   ok·shaosong metadata counts are correct
+2026-10-22T12:15:59.4545192Z   ok·tang840 metadata exists
+2026-10-22T12:15:59.4777281Z   ok·tang840 metadata script sha256 is correct
+2026-10-22T12:15:59.4778048Z   ok·tang840 metadata script bytes is correct
+2026-10-22T12:15:59.6056460Z   ok·tang840 metadata source sha256 is correct
+2026-10-22T12:15:59.6057161Z   ok·tang840 metadata source bytes is correct
+2026-10-22T12:15:59.6057758Z   ok·tang840 metadata loader path is correct
+2026-10-22T12:15:59.6058312Z   ok·tang840 metadata counts are correct
+2026-10-22T12:16:09.9638015Z   ok·builtin all executed values and object isolation verified
+2026-10-22T12:16:20.0335450Z   ok·game all executed values and object isolation verified
+2026-10-22T12:16:30.0064381Z   ok·preview all executed values and object isolation verified
+2026-10-22T12:16:30.0065020Z PASS assertions=46
+2026-10-22T12:16:30.1232794Z ##[group]Run node scripts/verify-release-contract.js
+2026-10-22T12:16:30.1233235Z [36;1mnode scripts/verify-release-contract.js[0m
+2026-10-22T12:16:30.1285054Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:16:30.1285359Z ##[endgroup]
+2026-10-22T12:16:30.1694774Z   ok·release-excludes schema
+2026-10-22T12:16:30.1696500Z   ok·canonical 热更基线是发布树 required file
+2026-10-22T12:16:30.1697206Z   ok·release-excludes 无重复
+2026-10-22T12:16:30.1697806Z   ok·安全排除项 _archive
+2026-10-22T12:16:30.1698314Z   ok·安全排除项 backups
+2026-10-22T12:16:30.1698829Z   ok·安全排除项 _screenshots
+2026-10-22T12:16:30.1700319Z   ok·安全排除项 test-results
+2026-10-22T12:16:30.1701308Z   ok·安全排除项 _codex_tmp
+2026-10-22T12:16:30.1701756Z   ok·安全排除项 dev-tools
+2026-10-22T12:16:30.1703643Z   ok·安全排除项 docs
+2026-10-22T12:16:30.1704182Z   ok·安全排除项 scripts
+2026-10-22T12:16:30.1704511Z   ok·安全排除项 tools
+2026-10-22T12:16:30.1705076Z   ok·安全排除项 godot
+2026-10-22T12:16:30.1705756Z   ok·安全排除项 .git
+2026-10-22T12:16:30.1706250Z   ok·安全排除项 node_modules
+2026-10-22T12:16:30.1706601Z   ok·安全排除项 .playwright-cli
+2026-10-22T12:16:30.1706919Z   ok·安全排除项 .cache
+2026-10-22T12:16:30.1707199Z   ok·安全排除项 .tmp
+2026-10-22T12:16:30.1707463Z   ok·安全排除项 tmp
+2026-10-22T12:16:30.1707725Z   ok·安全排除项 dist
+2026-10-22T12:16:30.1707992Z   ok·安全排除项 build
+2026-10-22T12:16:30.1708265Z   ok·安全排除项 release
+2026-10-22T12:16:30.1710882Z   ok·安全排除项 coverage
+2026-10-22T12:16:30.1711654Z   ok·安全排除项 .hot-update-staging
+2026-10-22T12:16:30.1712321Z   ok·安全排除项 _pw-scratch
+2026-10-22T12:16:30.1712917Z   ok·安全排除项 generated_images
+2026-10-22T12:16:30.1713500Z   ok·安全排除项 .vscode
+2026-10-22T12:16:30.1713840Z   ok·安全排除项 .bak-
+2026-10-22T12:16:30.1714127Z   ok·安全排除项 _codex
+2026-10-22T12:16:30.1714421Z   ok·安全排除项 .git-defunct-
+2026-10-22T12:16:30.1714758Z   ok·安全排除项 _yan_harness.html
+2026-10-22T12:16:30.1715076Z   ok·安全排除项 **/*.bak*
+2026-10-22T12:16:30.1715365Z   ok·安全排除项 **/*.original
+2026-10-22T12:16:30.1715782Z   ok·安全排除项 **/*.entity-creation-whitespace-original
+2026-10-22T12:16:30.1716566Z   ok·安全排除项 **/*.log
+2026-10-22T12:16:30.1716853Z   ok·安全排除项 **/*.yml
+2026-10-22T12:16:30.1717144Z   ok·安全排除项 **/*.save.json
+2026-10-22T12:16:30.1717469Z   ok·安全排除项 **/_game-entry-shot.png
+2026-10-22T12:16:30.1717783Z   ok·安全排除项 **/_ingame*.png
+2026-10-22T12:16:30.1718048Z   ok·安全排除项 .claude/**
+2026-10-22T12:16:30.1718298Z   ok·安全排除项 output/**
+2026-10-22T12:16:30.1718558Z   ok·安全排除项 analyze_globals.py
+2026-10-22T12:16:30.1718847Z   ok·安全排除项 detect_globals.js
+2026-10-22T12:16:30.1719131Z   ok·安全排除项 scan_globals.js
+2026-10-22T12:16:30.1719748Z   ok·安全排除项 final_scan.sh
+2026-10-22T12:16:30.1720016Z   ok·安全排除项 scan.sh
+2026-10-22T12:16:30.1720266Z   ok·安全排除项 start-server.bat
+2026-10-22T12:16:30.1720546Z   ok·安全排除项 tm-tools.d.ts
+2026-10-22T12:16:30.1720806Z   ok·安全排除项 types.d.ts
+2026-10-22T12:16:30.1721053Z   ok·安全排除项 maps/**
+2026-10-22T12:16:30.1721451Z   ok·安全排除项 data/maps/tianqi-ming2/tianqi-ming2.preview-data.js
+2026-10-22T12:16:30.1721875Z   ok·安全排除项 preview-launch*.html
+2026-10-22T12:16:30.1722235Z   ok·安全排除项 preview-launch-assets/**
+2026-10-22T12:16:30.1722713Z   ok·安全排除项 assets/ui/home/home-menu-imperial-study-v1-ambient.gif
+2026-10-22T12:16:30.1723126Z   ok·安全排除项 preview/shots/**
+2026-10-22T12:16:30.1723445Z   ok·安全排除项 preview/**/*verify*.png
+2026-10-22T12:16:30.1723793Z   ok·安全排除项 preview/home-ui-concepts/**
+2026-10-22T12:16:30.1724158Z   ok·安全排除项 preview/workshop-ui-concepts/**
+2026-10-22T12:16:30.2099696Z   ok·web 运行时引用/required files 未被误排：
+2026-10-22T12:16:30.2100515Z   ok·web 源体积/文件数在闸内：
+2026-10-22T12:16:30.2100998Z   ok·发布树保留 preview 运行时与 preview/img（目录探针不可误杀整树）
+2026-10-22T12:16:30.2101587Z   ok·发布树排除根目录游戏截图
+2026-10-22T12:16:30.2102221Z   ok·发布树排除根目录开发脚本与类型声明
+2026-10-22T12:16:30.2102794Z   ok·发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF
+2026-10-22T12:16:30.2103403Z   ok·发布树明确排除本机开发产物:.claude/launch.json
+2026-10-22T12:16:30.2104061Z   ok·发布树明确排除本机开发产物:output/playwright/shot.png
+2026-10-22T12:16:30.2104709Z   ok·发布树明确排除本机开发产物:maps/asia-map.png
+2026-10-22T12:16:30.2105275Z   ok·发布树明确排除本机开发产物:preview-launch-assets/hero-bg.png
+2026-10-22T12:16:30.2106198Z   ok·发布树不误杀运行资产:preview/img/topbar-imperial-rail.png
+2026-10-22T12:16:30.2106855Z   ok·发布树不误杀运行资产:battle/assets/models/unit_lod.glb
+2026-10-22T12:16:30.2107572Z   ok·发布树不误杀运行资产:vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx
+2026-10-22T12:16:30.2127630Z   ok·package-lock 根版本两处与 package.json 同版
+2026-10-22T12:16:30.2128429Z   ok·tracked mobile canonical version 与 buildVersion 同版
+2026-10-22T12:16:30.2129409Z   ok·electron-builder 消费 dir:_archive
+2026-10-22T12:16:30.2130162Z   ok·electron-builder 消费 dir:backups
+2026-10-22T12:16:30.2130785Z   ok·electron-builder 消费 dir:_screenshots
+2026-10-22T12:16:30.2131452Z   ok·electron-builder 消费 dir:test-results
+2026-10-22T12:16:30.2132109Z   ok·electron-builder 消费 dir:_codex_tmp
+2026-10-22T12:16:30.2132740Z   ok·electron-builder 消费 dir:dev-tools
+2026-10-22T12:16:30.2133362Z   ok·electron-builder 消费 dir:docs
+2026-10-22T12:16:30.2133973Z   ok·electron-builder 消费 dir:scripts
+2026-10-22T12:16:30.2134916Z   ok·electron-builder 消费 dir:tools
+2026-10-22T12:16:30.2135509Z   ok·electron-builder 消费 dir:godot
+2026-10-22T12:16:30.2136075Z   ok·electron-builder 消费 dir:.git
+2026-10-22T12:16:30.2136682Z   ok·electron-builder 消费 dir:node_modules
+2026-10-22T12:16:30.2137378Z   ok·electron-builder 消费 dir:.playwright-cli
+2026-10-22T12:16:30.2138039Z   ok·electron-builder 消费 dir:.cache
+2026-10-22T12:16:30.2138636Z   ok·electron-builder 消费 dir:.tmp
+2026-10-22T12:16:30.2139502Z   ok·electron-builder 消费 dir:tmp
+2026-10-22T12:16:30.2140106Z   ok·electron-builder 消费 dir:dist
+2026-10-22T12:16:30.2140699Z   ok·electron-builder 消费 dir:build
+2026-10-22T12:16:30.2141108Z   ok·electron-builder 消费 dir:release
+2026-10-22T12:16:30.2141491Z   ok·electron-builder 消费 dir:coverage
+2026-10-22T12:16:30.2141916Z   ok·electron-builder 消费 dir:.hot-update-staging
+2026-10-22T12:16:30.2142361Z   ok·electron-builder 消费 dir:_pw-scratch
+2026-10-22T12:16:30.2142782Z   ok·electron-builder 消费 dir:generated_images
+2026-10-22T12:16:30.2143204Z   ok·electron-builder 消费 dir:.vscode
+2026-10-22T12:16:30.2143613Z   ok·electron-builder 消费 prefix file:.bak-
+2026-10-22T12:16:30.2144028Z   ok·electron-builder 消费 prefix dir:.bak-
+2026-10-22T12:16:30.2144440Z   ok·electron-builder 消费 prefix file:_codex
+2026-10-22T12:16:30.2144861Z   ok·electron-builder 消费 prefix dir:_codex
+2026-10-22T12:16:30.2145300Z   ok·electron-builder 消费 prefix file:.git-defunct-
+2026-10-22T12:16:30.2145773Z   ok·electron-builder 消费 prefix dir:.git-defunct-
+2026-10-22T12:16:30.2146434Z   ok·electron-builder 消费 glob:_yan_harness.html
+2026-10-22T12:16:30.2147179Z   ok·electron-builder 消费 glob:**/*.bak*
+2026-10-22T12:16:30.2147822Z   ok·electron-builder 消费 glob:**/*.original
+2026-10-22T12:16:30.2148697Z   ok·electron-builder 消费 glob:**/*.entity-creation-whitespace-original
+2026-10-22T12:16:30.2149738Z   ok·electron-builder 消费 glob:**/*.log
+2026-10-22T12:16:30.2150350Z   ok·electron-builder 消费 glob:**/*.yml
+2026-10-22T12:16:30.2150982Z   ok·electron-builder 消费 glob:**/*.save.json
+2026-10-22T12:16:30.2151994Z   ok·electron-builder 消费 glob:**/_game-entry-shot.png
+2026-10-22T12:16:30.2152755Z   ok·electron-builder 消费 glob:**/_ingame*.png
+2026-10-22T12:16:30.2153414Z   ok·electron-builder 消费 glob:.claude/**
+2026-10-22T12:16:30.2154044Z   ok·electron-builder 消费 glob:output/**
+2026-10-22T12:16:30.2154715Z   ok·electron-builder 消费 glob:analyze_globals.py
+2026-10-22T12:16:30.2155422Z   ok·electron-builder 消费 glob:detect_globals.js
+2026-10-22T12:16:30.2156113Z   ok·electron-builder 消费 glob:scan_globals.js
+2026-10-22T12:16:30.2156780Z   ok·electron-builder 消费 glob:final_scan.sh
+2026-10-22T12:16:30.2157415Z   ok·electron-builder 消费 glob:scan.sh
+2026-10-22T12:16:30.2158069Z   ok·electron-builder 消费 glob:start-server.bat
+2026-10-22T12:16:30.2158744Z   ok·electron-builder 消费 glob:tm-tools.d.ts
+2026-10-22T12:16:30.2159652Z   ok·electron-builder 消费 glob:types.d.ts
+2026-10-22T12:16:30.2160322Z   ok·electron-builder 消费 glob:maps/**
+2026-10-22T12:16:30.2161252Z   ok·electron-builder 消费 glob:data/maps/tianqi-ming2/tianqi-ming2.preview-data.js
+2026-10-22T12:16:30.2162224Z   ok·electron-builder 消费 glob:preview-launch*.html
+2026-10-22T12:16:30.2162704Z   ok·electron-builder 消费 glob:preview-launch-assets/**
+2026-10-22T12:16:30.2163298Z   ok·electron-builder 消费 glob:assets/ui/home/home-menu-imperial-study-v1-ambient.gif
+2026-10-22T12:16:30.2163854Z   ok·electron-builder 消费 glob:preview/shots/**
+2026-10-22T12:16:30.2164293Z   ok·electron-builder 消费 glob:preview/**/*verify*.png
+2026-10-22T12:16:30.2164761Z   ok·electron-builder 消费 glob:preview/home-ui-concepts/**
+2026-10-22T12:16:30.2165268Z   ok·electron-builder 消费 glob:preview/workshop-ui-concepts/**
+2026-10-22T12:16:30.2165723Z   ok·electron-builder 消费 previewMockup 例外
+2026-10-22T12:16:30.2166075Z   ok·installer 固定携带热更新发布者公钥
+2026-10-22T12:16:30.2166379Z   ok·installer 携带回合分卷两阶段提交模块
+2026-10-22T12:16:30.2166681Z   ok·热更新固定公钥类型为 Ed25519
+2026-10-22T12:16:30.2167048Z   ok·三平台构建统一走受检 build-electron wrapper
+2026-10-22T12:16:30.2167418Z   ok·Windows builder 强制签名、编辑签名与更新发布者验证
+2026-10-22T12:16:30.2167989Z   ok·Windows 构建缺发布者/证书时 fail-closed
+2026-10-22T12:16:30.2168659Z   ok·Windows 保留仓主输出目录并锁定发布者/证书身份
+2026-10-22T12:16:30.2169183Z   ok·mac 使用平台本地可移植输出目录
+2026-10-22T12:16:30.2169829Z   ok·linux 使用平台本地可移植输出目录
+2026-10-22T12:16:30.2170306Z   ok·所有官方 JSON 均登记进统一生成器
+2026-10-22T12:16:30.2170910Z   ok·electron installer 包含官方剧本 天启七年·九月（官方）.json
+2026-10-22T12:16:30.2171617Z   ok·electron installer 包含官方剧本 晚唐·开成五年（官方）.json
+2026-10-22T12:16:30.2172333Z   ok·electron installer 包含官方剧本 绍宋·建炎元年八月（官方）.json
+2026-10-22T12:16:30.2172973Z   ok·hot builder 消费共享 release-tree
+2026-10-22T12:16:30.2173558Z   ok·hot builder 收集战斗模型与本地语义模型扩展名
+2026-10-22T12:16:30.2174125Z   ok·新扩展名自动携带旧壳阻断所需 minAppVersion
+2026-10-22T12:16:30.2174708Z   ok·内容 OTA 构建器不再收集 main/preload 主进程代码
+2026-10-22T12:16:30.2175314Z   ok·热更新 manifest/feed 强制 Ed25519 发布者签名
+2026-10-22T12:16:30.2175930Z   ok·桌面壳层放行 collector 会发出的运行资产扩展名
+2026-10-22T12:16:30.2176490Z   ok·本地模型完整性探针包含 ONNX 主体，拒绝半包误判
+2026-10-22T12:16:30.2177029Z   ok·Capgo/APK 消费共享 release-tree
+2026-10-22T12:16:30.2177674Z   ok·Capgo/APK staging 先生成官方剧本派生物
+2026-10-22T12:16:30.2178187Z   ok·Capacitor 只读取派生 www
+2026-10-22T12:16:30.2178802Z   ok·npm sync 强制 stage→cap sync→native hash verify
+2026-10-22T12:16:30.2179643Z   ok·open/run 不可绕过 sync gate
+2026-10-22T12:16:30.2180205Z   ok·native 仅容忍 Capacitor 两个注入文件
+2026-10-22T12:16:30.2180855Z   ok·native extra allowlist 仅放两项，其余仍 fail-closed
+2026-10-22T12:16:30.2181245Z   ok·派生目录已 ignore
+2026-10-22T12:16:30.2181529Z   ok·web canonical 热更基线未被 ignore
+2026-10-22T12:16:30.2192649Z   ok·canonical 热更基线存在且与 buildVersion 同版
+2026-10-22T12:16:30.2194819Z   ok·canonical 热更基线不含 main/preload 可执行桥
+2026-10-22T12:16:30.2195536Z   ok·canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产
+2026-10-22T12:16:30.2196174Z   ok·canonical 基线不夹带开发产物、旧设计稿与无引用大文件
+2026-10-22T12:16:31.1145856Z   ok·canonical 基线逐路径/hash/size 对齐当前 production hot tree：PASS canonical hot baseline files=801 version=1.3.5.3（容忍 595 条本 checkout 缺席的未跟踪资产条目）
+2026-10-22T12:16:31.1147004Z   ok·installer 携带受限制作制品导出模块
+2026-10-22T12:16:31.1147823Z   ok·staging 拒绝清空 web 源码子目录
+2026-10-22T12:16:31.1150899Z   ok·staging 拒绝清空已有普通目录
+2026-10-22T12:16:31.1151656Z   ok·staging 仅放行已知 mobile/www 派生目录
+2026-10-22T12:16:31.1160334Z   ok·publish 在上传 installer 前复验 Authenticode 发布者与时间戳
+2026-10-22T12:16:31.1167964Z   ok·release.js 显式 prepare/publish 两阶段
+2026-10-22T12:16:31.1168912Z   ok·prepare 要求 clean 短命分支与新版本
+2026-10-22T12:16:31.1181485Z   ok·只有 prepare 盖戳并刷新 tracked 基线
+2026-10-22T12:16:31.1182219Z   ok·prepare 无任何发布外写
+2026-10-22T12:16:31.1182765Z   ok·publish 构建前/上传前双重仓库闸
+2026-10-22T12:16:31.1183272Z   ok·publish 只消费已盖戳版本并复验基线
+2026-10-22T12:16:31.1183854Z   ok·publish 不修改 tracked 版本/基线
+2026-10-22T12:16:31.1184362Z   ok·最终仓库闸先于 GitHub 上传
+2026-10-22T12:16:31.1184829Z   ok·--no-upload 硬关闭 release 与 autodeploy 外写
+2026-10-22T12:16:31.1185253Z   ok·release tag 锁定已验证 main HEAD
+2026-10-22T12:16:31.1185633Z   ok·publish 拒绝 dirty/非 main/未同步
+2026-10-22T12:16:31.1185994Z   ok·prepare/publish 只信官方 origin
+2026-10-22T12:16:31.1186427Z   ok·prepare 基线写入复用 production manifest collector
+2026-10-22T12:16:31.1187145Z   ok·正式外写前验证 gh 当前账号为仓库 owner
+2026-10-22T12:16:31.1187480Z   ok·prepare 拒绝 main 与陈旧分支
+2026-10-22T12:16:31.1187791Z   ok·offline 不能绕过正式发布线上闸
+2026-10-22T12:16:31.1188111Z   ok·版本扇出采用只读规划、全量验证和原子应用三阶段
+2026-10-22T12:16:31.1188466Z   ok·版本文件与备份均经同目录 fsync+rename 原子提交
+2026-10-22T12:16:31.1188882Z   ok·版本扇出深层失败抛错并逆序恢复原字节，不以 process.exit 绕过回滚
+2026-10-22T12:16:31.1190265Z   ok·Pages 无 release/tag 触发（改 workflow_dispatch/main）
+2026-10-22T12:16:31.1190873Z   ok·publish 以仓主身份自触发 Pages（workflow_dispatch·ref=main）
+2026-10-22T12:16:31.1191346Z   ok·Pages 门禁·workflow_dispatch:
+2026-10-22T12:16:31.1191700Z   ok·Pages 门禁·fetch-depth: 0
+2026-10-22T12:16:31.1192081Z   ok·Pages 门禁·npm ci --ignore-scripts
+2026-10-22T12:16:31.1192534Z   ok·Pages 门禁·github.actor == github.repository_owner
+2026-10-22T12:16:31.1193061Z   ok·Pages 门禁·git merge-base --is-ancestor HEAD origin/main
+2026-10-22T12:16:31.1193622Z   ok·Pages 门禁·node web/scripts/sync-official-scenarios.js
+2026-10-22T12:16:31.1194127Z   ok·Pages 门禁·git diff --exit-code
+2026-10-22T12:16:31.1194632Z   ok·Pages 门禁·node web/scripts/verify-official-scenario-parity.js
+2026-10-22T12:16:31.1195138Z   ok·Pages 门禁·node scripts/verify-release-contract.js
+2026-10-22T12:16:31.1195607Z   ok·Pages 门禁·node web/scripts/verify-hot-builder-gates.js
+2026-10-22T12:16:31.1196035Z   ok·Pages 门禁·node scripts/lint-arch-all.js
+2026-10-22T12:16:31.1196411Z   ok·Pages 门禁·node scripts/ci-smokes.js
+2026-10-22T12:16:31.1196794Z   ok·Pages 门禁·node scripts/stage-web-release.js
+2026-10-22T12:16:31.1197220Z   ok·Pages 门禁·node scripts/verify-pages-artifact.js
+2026-10-22T12:16:31.1197628Z   ok·Pages 门禁·actions/deploy-pages@v4
+2026-10-22T12:16:31.1197954Z   ok·Pages 完整门禁严格先于部署
+2026-10-22T12:16:31.1198302Z   ok·deploy 只 checkout dispatch 指定的 ref（默认 main）
+2026-10-22T12:16:31.1198658Z   ok·CONTRIBUTING 记录两阶段发版
+2026-10-22T12:16:31.1198940Z   ok·CLAUDE 协作约定记录两阶段发版
+2026-10-22T12:16:31.1199470Z PASS assertions=40
+2026-10-22T12:16:31.1199794Z   ok·两阶段 release/Pages 静态契约
+2026-10-22T12:16:31.1497713Z   ok·verify-release-web-only.js: PASS web-only source release: locked tag, owner gates, pinned Pages, no OTA or archive commands
+2026-10-22T12:16:31.1499502Z 
+2026-10-22T12:16:31.1953173Z   ok·verify-release-full-installers.js: PASS full-installer completion: prepared version/code, immutable full tag, runtime/shell fingerprint and both archive hashes
+2026-10-22T12:16:31.1954594Z 
+2026-10-22T12:16:31.2404708Z   ok·verify-shanhe-release.js: PASS shanhe formal release: default entry, unchanged interaction contract, C1 resources and licenses (10 files)
+2026-10-22T12:16:31.2405370Z 
+2026-10-22T12:16:31.2719054Z   ok·verify-changelog-release.js: PASS changelog release selection: 5 cases
+2026-10-22T12:16:31.2719778Z 
+2026-10-22T12:16:31.2720012Z PASS assertions=176 files=810 bytes=387197697
+2026-10-22T12:16:31.2826823Z ##[group]Run node web/scripts/verify-hot-builder-gates.js
+2026-10-22T12:16:31.2827647Z [36;1mnode web/scripts/verify-hot-builder-gates.js[0m
+2026-10-22T12:16:31.2885125Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:16:31.2885596Z ##[endgroup]
+2026-10-22T12:16:31.3905465Z   ok·A·健康树全量构建通过（exit 0）
+2026-10-22T12:16:31.3908151Z   ok·A·feed 版本正确
+2026-10-22T12:16:31.3909896Z   ok·A·清单含 index.html
+2026-10-22T12:16:31.3910464Z   ok·A·清单含 a.js
+2026-10-22T12:16:31.3911176Z   ok·A·清单含 b.js
+2026-10-22T12:16:31.3911874Z   ok·A·清单含 styles.css
+2026-10-22T12:16:31.3912676Z   ok·A·清单含 changelog.json
+2026-10-22T12:16:31.3913388Z   ok·A·清单含 version.json
+2026-10-22T12:16:31.3914313Z   ok·A·清单含 bundled-scenarios/合成（官方）.json
+2026-10-22T12:16:31.3916590Z   ok·A·草案/自用剧本不进入热更
+2026-10-22T12:16:31.4582455Z   ok·A2·GLB 运行资产可进入热更
+2026-10-22T12:16:31.4583056Z   ok·A2·GLB 自动要求 1.3.4.10 壳层
+2026-10-22T12:16:31.5196677Z   ok·A2·低于 ONNX 壳层能力的同版热更被 GATE-7 拒绝
+2026-10-22T12:16:31.5842014Z   ok·A2·1.3.4.12 可发布 ONNX 运行资产
+2026-10-22T12:16:31.5842506Z   ok·A2·ONNX 自动要求 1.3.4.12 壳层
+2026-10-22T12:16:31.6247568Z   ok·B·GATE-0 拦 --files 部分包
+2026-10-22T12:16:31.6819446Z   ok·B·危险旗标放行（调试用）
+2026-10-22T12:16:31.7400306Z   ok·C·GATE-2 拦 index 引用缺失（1.3.3.4 病灶类）
+2026-10-22T12:16:31.7954631Z   ok·D·GATE-2 拦必含文件缺失
+2026-10-22T12:16:31.8586054Z   ok·E·首次构建通过
+2026-10-22T12:16:31.9001636Z   ok·E·GATE-3 拦相同版本重发
+2026-10-22T12:16:31.9432923Z   ok·E·GATE-3 拦更低版本
+2026-10-22T12:16:32.0071491Z   ok·E·更高版本放行
+2026-10-22T12:16:32.0510554Z   ok·F·GATE-5 拦 version.json 戳不一致
+2026-10-22T12:16:32.1113577Z   ok·F·--skip-stamp-check 放行（调试用）
+2026-10-22T12:16:32.1553321Z   ok·F·GATE-5 拦 meta 缺失
+2026-10-22T12:16:32.1554538Z   ok·G·GATE-4 zip↔manifest 对账在构建路径上
+2026-10-22T12:16:32.1555064Z PASS assertions=27
+2026-10-22T12:16:32.1659783Z ##[group]Run node scripts/lint-arch-all.js
+2026-10-22T12:16:32.1660183Z [36;1mnode scripts/lint-arch-all.js[0m
+2026-10-22T12:16:32.1711127Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:16:32.1711399Z ##[endgroup]
+2026-10-22T12:16:34.1757763Z [lint-arch-all] PASS  lint-gm-writes (2.0s)
+2026-10-22T12:16:34.8146731Z [lint-arch-all] PASS  lint-dep-graph (0.6s)
+2026-10-22T12:16:39.0998468Z [lint-arch-all] PASS  lint-global-providers (4.3s)
+2026-10-22T12:16:39.1434067Z [lint-arch-all] PASS  lint-feature-boundaries (0.0s)
+2026-10-22T12:16:39.2776635Z [lint-arch-all] PASS  lint-runtime-template-immutability (0.1s)
+2026-10-22T12:16:43.5391129Z [lint-arch-all] PASS  lint-renderer-writeback-boundaries (4.3s)
+2026-10-22T12:16:43.7951587Z [lint-arch-all] PASS  lint-renderer-module-boundaries (0.3s)
+2026-10-22T12:16:43.9369053Z [lint-arch-all] PASS  lint-file-size (0.1s)
+2026-10-22T12:16:44.0497065Z [lint-arch-all] PASS  lint-control-bytes (0.1s)
+2026-10-22T12:16:44.0819850Z [lint-arch-all] PASS  lint-split-contracts (0.0s)
+2026-10-22T12:16:44.1143404Z [lint-arch-all] PASS  lint-split-stamps (0.0s)
+2026-10-22T12:16:44.3989855Z [lint-arch-all] PASS  lint-smoke-family-order (0.3s)
+2026-10-22T12:16:47.0569721Z [lint-arch-all] PASS  lint-scenario-data (2.7s)
+2026-10-22T12:16:47.6152041Z [lint-arch-all] PASS  lint-design-tokens (0.6s)
+2026-10-22T12:16:48.2696219Z [lint-arch-all] PASS  ref-check (0.7s)
+2026-10-22T12:16:48.2696649Z 
+2026-10-22T12:16:48.2697207Z [lint-arch-all] PASS — 架构守卫全绿
+2026-10-22T12:16:48.2770597Z ##[group]Run node scripts/ci-smokes.js --jobs 2
+2026-10-22T12:16:48.2771016Z [36;1mnode scripts/ci-smokes.js --jobs 2[0m
+2026-10-22T12:16:48.2821487Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:16:48.2821756Z ##[endgroup]
+2026-10-22T12:16:48.3210749Z [ci-smokes] run=06d38fc1-7b34-46dc-a930-77976ba28dff HEAD=cdb4b4d279ffe26018acb31288bc1bb818a4b2f9 report=/home/runner/work/tianming/tianming/web/dev-tools/arch-guard/ci-mK9Sdg/smoke-report.json
+2026-10-22T12:16:48.3564160Z [run-smokes] 共 1181 个 smoke · 选中 1181 · 跳过 0 · 并发 2 · 超时 120s
+2026-10-22T12:16:49.0079700Z   [25/1181] PASS    smoke-agent-mode-s12.js (0.0s)
+2026-10-22T12:16:50.1097352Z   [50/1181] PASS    smoke-ai-institution-lifecycle-actions.js (0.1s)
+2026-10-22T12:16:52.4071766Z   [75/1181] PASS    smoke-army-pressure.js (0.0s)
+2026-10-22T12:17:00.1456575Z   [100/1181] PASS    smoke-authoring-completion-recovery.js (0.2s)
+2026-10-22T12:17:02.6196464Z   [125/1181] PASS    smoke-battle-deterministic.js (0.0s)
+2026-10-22T12:17:09.0048666Z   [150/1181] PASS    smoke-border-risk.js (0.0s)
+2026-10-22T12:17:13.4568402Z   [175/1181] PASS    smoke-changchao-line-salvage.js (0.0s)
+2026-10-22T12:18:11.1616927Z   [200/1181] PASS    smoke-circuit-governor-effects-tianqi.js (13.1s)
+2026-10-22T12:18:18.7247776Z   [225/1181] PASS    smoke-class-roving-coalesce.js (0.0s)
+2026-10-22T12:18:20.0380229Z   [250/1181] PASS    smoke-corruption-pardon-and-restore.js (0.0s)
+2026-10-22T12:18:22.3101862Z   [275/1181] PASS    smoke-declared-currency-ledger.js (0.0s)
+2026-10-22T12:18:24.4936959Z   [300/1181] PASS    smoke-disband-editor.js (0.0s)
+2026-10-22T12:18:40.5916747Z   [325/1181] PASS    smoke-edict-office-tree-writeback.js (0.2s)
+2026-10-22T12:18:51.6534546Z   [350/1181] PASS    smoke-endturn-callai.js (0.0s)
+2026-10-22T12:18:53.6793525Z   [375/1181] PASS    smoke-endturn-systems-tail-guards.js (0.0s)
+2026-10-22T12:18:56.2745915Z   [400/1181] PASS    smoke-faction-index-e2e.js (0.3s)
+2026-10-22T12:19:00.7028396Z   [425/1181] PASS    smoke-family-mode-e3.js (0.0s)
+2026-10-22T12:19:02.5495091Z   [450/1181] PASS    smoke-fixed-fit-modern-viewport-units.js (0.0s)
+2026-10-22T12:19:03.2689065Z   [475/1181] PASS    smoke-globalrules-build.js (0.0s)
+2026-10-22T12:19:05.2048869Z   [500/1181] PASS    smoke-guoshi-memskills.js (0.1s)
+2026-10-22T12:19:08.0295012Z   [525/1181] PASS    smoke-huji-governance-loop.js (0.1s)
+2026-10-22T12:19:09.9147634Z   [550/1181] PASS    smoke-keyi-open-atomicity.js (0.0s)
+2026-10-22T12:19:36.2767105Z   [575/1181] PASS    smoke-map-editor-scenario-library.js (4.0s)
+2026-10-22T12:19:42.8884763Z   [600/1181] PASS    smoke-memory-boundary-upgrade.js (0.2s)
+2026-10-22T12:19:44.1230777Z   [625/1181] PASS    smoke-memory-governance-live-chain.js (0.1s)
+2026-10-22T12:19:46.3549761Z   [650/1181] PASS    smoke-memory-sc1-precontext-trace.js (0.0s)
+2026-10-22T12:19:53.8011005Z   [675/1181] PASS    smoke-memory-workshop-audit-filters.js (0.1s)
+2026-10-22T12:19:55.3744681Z   [700/1181] PASS    smoke-minxin-hard-links.js (0.1s)
+2026-10-22T12:19:57.9220641Z   [725/1181] PASS    smoke-neitang-inner-treasury-compat.js (0.0s)
+2026-10-22T12:20:04.5044645Z   [750/1181] PASS    smoke-npc-family-tier-behavior-effects.js (0.1s)
+2026-10-22T12:20:14.7310855Z   [775/1181] PASS    smoke-office-duty-evidence.js (0.1s)
+2026-10-22T12:20:57.5318574Z   [800/1181] PASS    smoke-official-scenario-lazy-loader.js (0.6s)
+2026-10-22T12:21:12.1114431Z   [825/1181] PASS    smoke-party-class-drift-bidirectional.js (0.0s)
+2026-10-22T12:21:22.5454710Z   [850/1181] PASS    smoke-phase8-listener-lifecycle.js (0.0s)
+2026-10-22T12:21:41.8653810Z   [875/1181] PASS    smoke-personnel-dismissal-official.js (22.0s)
+2026-10-22T12:21:43.6932002Z   [900/1181] PASS    smoke-public-treasury-custody.js (0.3s)
+2026-10-22T12:21:55.5670506Z   [925/1181] PASS    smoke-renli-corvee-demand-baseline.js (0.0s)
+2026-10-22T12:21:56.5901459Z   [950/1181] PASS    smoke-renwu-relations-role.js (0.1s)
+2026-10-22T12:21:58.6871468Z   [975/1181] PASS    smoke-round20-performance-isolation.js (1.0s)
+2026-10-22T12:22:36.9254358Z   [1000/1181] PASS    smoke-sc1-family-refactor.js (0.1s)
+2026-10-22T12:22:58.0417980Z   [1025/1181] PASS    smoke-security-trust-boundary.js (0.6s)
+2026-10-22T12:22:59.9583364Z   [1050/1181] PASS    smoke-sovereign-address-sensing.js (0.0s)
+2026-10-22T12:23:02.1560794Z   [1075/1181] PASS    smoke-talent-cohorts.js (0.0s)
+2026-10-22T12:23:09.5310378Z   [1100/1181] PASS    smoke-tier3-supplement.js (0.0s)
+2026-10-22T12:23:25.1041263Z   [1125/1181] PASS    smoke-turn-runtime-cycle-boundary.js (0.5s)
+2026-10-22T12:23:26.3907011Z   [1150/1181] PASS    smoke-wentian-workorder.js (0.0s)
+2026-10-22T12:23:31.3398479Z [run-smokes] 独占执行硬时限用例（不改用例内部压力/期限）：smoke-deploy-manifest-atomicity.js, smoke-full-turn-flow.js, smoke-perf-save-preparation.js, smoke-production-dependencies.js, smoke-start-game-data-integrity.js, smoke-tang840-opening-ledgers.js, smoke-workshop-lock-recovery.js
+2026-10-22T12:23:36.4879543Z   [1175/1181] PASS    smoke-deploy-manifest-atomicity.js (5.1s)
+2026-10-22T12:28:12.3305694Z   [1181/1181] PASS    smoke-workshop-lock-recovery.js (0.8s)
+2026-10-22T12:28:12.3321180Z 
+2026-10-22T12:28:12.3322765Z [run-smokes] 完成：1179 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 1181 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 1083s(并行墙钟更短)
+2026-10-22T12:28:12.3323584Z 
+2026-10-22T12:28:12.3323909Z --- 最慢 Top 10 ---
+2026-10-22T12:28:12.3324436Z   131.4s  smoke-perf-save-preparation.js
+2026-10-22T12:28:12.3325084Z   58.8s  smoke-start-game-data-integrity.js
+2026-10-22T12:28:12.3325716Z   54.6s  smoke-full-turn-flow.js
+2026-10-22T12:28:12.3326272Z   54.4s  smoke-npc-composite-official.js
+2026-10-22T12:28:12.3326881Z   40.5s  smoke-map-circuit-book-shaosong.js
+2026-10-22T12:28:12.3327499Z   34.9s  smoke-office-seat-dept-prefix.js
+2026-10-22T12:28:12.3328132Z   34.1s  smoke-circuit-governance-shaosong.js
+2026-10-22T12:28:12.3328745Z   30.5s  smoke-edict-data-writeback.js
+2026-10-22T12:28:12.3329466Z   29.9s  smoke-circuit-governor-effects-tang.js
+2026-10-22T12:28:12.3329914Z   29.8s  smoke-tang840-opening-ledgers.js
+2026-10-22T12:28:12.3493523Z 
+2026-10-22T12:28:12.3494471Z [run-smokes] 报告 → dev-tools/arch-guard/ci-mK9Sdg/smoke-report.json
+2026-10-22T12:28:12.3713955Z [ci-smokes] PASS gate {"pass":1179,"fail":0,"skip":0,"waived":2,"waivedChecks":7,"total":1181}
+2026-10-22T12:28:12.3715173Z [ci-smokes] 缺席资产检查已明确豁免；其余断言全部执行。
+2026-10-22T12:28:12.3795285Z ##[group]Run node web/scripts/audit-repro.cjs --repo "$GITHUB_WORKSPACE" --expect-clean
+2026-10-22T12:28:12.3795965Z [36;1mnode web/scripts/audit-repro.cjs --repo "$GITHUB_WORKSPACE" --expect-clean[0m
+2026-10-22T12:28:12.3847939Z shell: /usr/bin/bash -e {0}
+2026-10-22T12:28:12.3848236Z ##[endgroup]
+2026-10-22T12:28:12.4280103Z CONTROL_PASS CONTROL-01 stable keys and turn validation reject known aliases
+2026-10-22T12:28:12.4280924Z   {"ok":true,"rejected":[true,true,true,true,true]}
+2026-10-22T12:28:12.4396286Z CONTROL_PASS CONTROL-02 same turn transaction publish is idempotent
+2026-10-22T12:28:12.4396763Z   {"ok":true,"recovered":true}
+2026-10-22T12:28:12.4498117Z NOT_REPRODUCED TM-AUD-01 different timelines overwrite the same per-turn bundle
+2026-10-22T12:28:12.4499008Z   {"defect":false,"sameFinalPath":false,"branchAtOriginalPath":"A","oldRecoveryError":null}
+2026-10-22T12:28:12.4564869Z NOT_REPRODUCED TM-AUD-02 workshop overwrite loses old package when copying fails
+2026-10-22T12:28:12.4566005Z   {"defect":false,"error":"Injected copy ENOSPC","oldPreserved":true,"partialNewTree":false,"indexWritten":false}
+2026-10-22T12:28:12.4588076Z NOT_REPRODUCED TM-AUD-03a stale account/me combines a new token with old account identity
+2026-10-22T12:28:12.4588954Z   {"defect":false,"tokenOwner":"B","displayedUser":"B"}
+2026-10-22T12:28:12.4601652Z NOT_REPRODUCED TM-AUD-03b late login response restores session after logout completed
+2026-10-22T12:28:12.4602707Z   {"defect":false,"loggedOutBeforeReply":true,"loggedInAfterStaleReply":false}
+2026-10-22T12:28:12.4623719Z NOT_REPRODUCED TM-AUD-04 manual save callback mutates a different live world
+2026-10-22T12:28:12.4624795Z   {"defect":false,"liveWorld":"world-B","liveSaveName":"SAVE-FOR-B","enterGameCalls":0}
+2026-10-22T12:28:12.4649964Z NOT_REPRODUCED TM-AUD-05 legacy save string loads but list-style object is rejected
+2026-10-22T12:28:12.4650973Z   {"defect":false,"stringReferenceWorks":true,"objectReferenceError":null}
+2026-10-22T12:28:12.4666415Z NOT_REPRODUCED TM-AUD-06a CI accepts an empty report after runner failure
+2026-10-22T12:28:12.4667552Z   {"defect":false,"exitCode":1,"messages":["Cannot read properties of undefined (reading 'slice')"]}
+2026-10-22T12:28:12.4677501Z NOT_REPRODUCED TM-AUD-06b CI waives an unrelated syntax failure by file name
+2026-10-22T12:28:12.4678636Z   {"defect":false,"exitCode":1,"messages":["Cannot read properties of undefined (reading 'slice')"]}
+2026-10-22T12:28:12.4774524Z NOT_REPRODUCED TM-AUD-07 network predicate misses hexadecimal IPv4-mapped loopback
+2026-10-22T12:28:12.4775739Z   {"defect":false,"dottedMappedBlocked":true,"hexMappedBlocked":true,"literalV4Blocked":true,"scope":"predicate only; no DNS/TLS/Electron exploitation attempted"}
+2026-10-22T12:28:12.4810875Z NOT_REPRODUCED TM-AUD-08 export write failure destroys an existing backup payload
+2026-10-22T12:28:12.4811761Z   {"defect":false,"reportedFailure":true,"originalPreserved":true,"resultingBytes":21}
+2026-10-22T12:28:12.4826789Z NOT_REPRODUCED TM-AUD-09 saveToSlot loses both success and failure return values
+2026-10-22T12:28:12.4827571Z   {"defect":false,"successResult":"true","failureResult":"false"}
+2026-10-22T12:28:12.4870525Z 
+2026-10-22T12:28:12.4871228Z SUMMARY {"probes":11,"defectsPresent":0,"controlsPassed":2,"harnessErrors":0}
+2026-10-22T12:28:12.5057128Z ##[group]Run actions/upload-artifact@v4
+2026-10-22T12:28:12.5057454Z with:
+2026-10-22T12:28:12.5057758Z   name: audit-evidence-cdb4b4d279ffe26018acb31288bc1bb818a4b2f9
+2026-10-22T12:28:12.5058392Z   path: web/dev-tools/arch-guard/ci-*/smoke-report.json
+web/dev-tools/audit-2026-09-05/repro-adapted-results.json
+
+2026-10-22T12:28:12.5058940Z   if-no-files-found: warn
+2026-10-22T12:28:12.5059449Z   retention-days: 30
+2026-10-22T12:28:12.5059702Z   compression-level: 6
+2026-10-22T12:28:12.5059931Z   overwrite: false
+2026-10-22T12:28:12.5060151Z   include-hidden-files: false
+2026-10-22T12:28:12.5060396Z ##[endgroup]
+2026-10-22T12:28:12.6845147Z (node:30992) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-22T12:28:12.6846237Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-22T12:28:12.6951598Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-22T12:28:12.6954604Z The least common ancestor is /home/runner/work/tianming/tianming/web/dev-tools. This will be the root directory of the artifact
+2026-10-22T12:28:12.6955613Z With the provided path, there will be 2 files uploaded
+2026-10-22T12:28:12.6960570Z Artifact name is valid!
+2026-10-22T12:28:12.6961573Z Root directory input is valid!
+2026-10-22T12:28:13.0548949Z Beginning upload of artifact content to blob storage
+2026-10-22T12:28:13.1037017Z (node:30992) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-22T12:28:13.7331607Z Uploaded bytes 342070
+2026-10-22T12:28:13.8143792Z Finished uploading artifact content to blob storage!
+2026-10-22T12:28:13.8145649Z SHA256 digest of uploaded artifact zip is 55f7aebabfca7f98d06c651d8fe9e071864538b268e5788e6d7474252dbc3f1b
+2026-10-22T12:28:13.8146964Z Finalizing artifact upload
+2026-10-22T12:28:14.2575113Z Artifact audit-evidence-cdb4b4d279ffe26018acb31288bc1bb818a4b2f9.zip successfully finalized. Artifact ID 12425826034
+2026-10-22T12:28:14.2578623Z Artifact audit-evidence-cdb4b4d279ffe26018acb31288bc1bb818a4b2f9 has been successfully uploaded! Final size is 342070 bytes. Artifact ID is 12425826034
+2026-10-22T12:28:14.2582682Z Artifact download URL: https://github.com/misfit-user/tianming/actions/runs/39776781157/artifacts/12425826034
+2026-10-22T12:28:14.2813171Z Post job cleanup.
+2026-10-22T12:28:14.4045332Z (node:31004) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-22T12:28:14.4046510Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-22T12:28:14.4050510Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-569b4b4363ff527d4d8a85f9a198edce35e20d223459a81b72665ca76f431ce6, not saving cache.
+2026-10-22T12:28:14.4203737Z Post job cleanup.
+2026-10-22T12:28:14.5122675Z [command]/usr/bin/git version
+2026-10-22T12:28:14.5183983Z git version 2.55.0
+2026-10-22T12:28:14.5243472Z Temporarily overriding HOME='/home/runner/work/_temp/8e99669f-5d00-4500-91d7-32ee90f4e328' before making global git config changes
+2026-10-22T12:28:14.5245186Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-22T12:28:14.5251090Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tianming/tianming
+2026-10-22T12:28:14.5303620Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T12:28:14.5376316Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-22T12:28:14.5728332Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T12:28:14.5766254Z http.https://github.com/.extraheader
+2026-10-22T12:28:14.5781622Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-22T12:28:14.5832959Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-22T12:28:14.6228415Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T12:28:14.6260793Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-22T12:28:14.6693437Z Cleaning up orphan processes
+2026-10-22T12:28:14.7396960Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

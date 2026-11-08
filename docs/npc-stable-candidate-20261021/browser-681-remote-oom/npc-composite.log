@@ -1,0 +1,19 @@
+
+BRIDGE_CASE_START {"name":"locked-electron-runtime","at":"2026-10-23T06:28:29.744Z"}
+BRIDGE_CASE_PASS {"name":"locked-electron-runtime","elapsedMs":3}
+BRIDGE_CASE_START {"name":"production-webpreferences","at":"2026-10-23T06:28:29.747Z"}
+BRIDGE_CASE_PASS {"name":"production-webpreferences","elapsedMs":0}
+BRIDGE_CASE_START {"name":"real-bridge-and-ipc","at":"2026-10-23T06:28:29.747Z"}
+BRIDGE_CASE_PASS {"name":"real-bridge-and-ipc","elapsedMs":7}
+BRIDGE_CASE_START {"name":"production-test-exports-boundary","at":"2026-10-23T06:28:29.754Z"}
+BRIDGE_CASE_PASS {"name":"production-test-exports-boundary","elapsedMs":0}
+BRIDGE_CASE_START {"name":"official Shaosong population, current player, map and real formal entry are preserved","at":"2026-10-23T06:28:48.721Z"}
+BRIDGE_CASE_PASS {"name":"official Shaosong population, current player, map and real formal entry are preserved","elapsedMs":1013}
+BRIDGE_CASE_START {"name":"formal assistance creates the source, NPC independently receives and responds","at":"2026-10-23T06:29:05.391Z"}
+BRIDGE_CASE_PASS {"name":"formal assistance creates the source, NPC independently receives and responds","elapsedMs":8593}
+BRIDGE_CASE_START {"name":"formal departure has a real route, and the travel save actually loads a new world","at":"2026-10-23T06:31:48.788Z"}
+BRIDGE_CASE_PASS {"name":"formal departure has a real route, and the travel save actually loads a new world","elapsedMs":20012}
+BRIDGE_CASE_START {"name":"onsite player question uses a current UI ticket and awaits an independent answer","at":"2026-10-23T06:34:31.099Z"}
+BRIDGE_CASE_PASS {"name":"onsite player question uses a current UI ticket and awaits an independent answer","elapsedMs":110072}
+BRIDGE_EXIT_REQUESTED {"mode":"npc-composite","at":"2026-10-23T06:38:06.534Z","code":1}
+BRIDGE_NODE_EXIT {"mode":"npc-composite","at":"2026-10-23T06:38:06.537Z","code":1}

@@ -1,0 +1,91 @@
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:135:7)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:146:7)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:155:7)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:171:7)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:203:7)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:240:9)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:240:9)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:240:9)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:240:9)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:240:9)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:240:9)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:240:9)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:240:9)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:240:9)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at expectStepFailureRollback (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:115:7)
+    at async main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:250:3)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at expectStepFailureRollback (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:115:7)
+    at async main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:259:3)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at expectStepFailureRollback (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:115:7)
+    at async main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:266:3)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at expectStepFailureRollback (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:115:7)
+    at async main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:275:3)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:295:7)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:308:7)
+[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable
+    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)
+    at _tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)
+    at GM._pendingShijiModal.deferredPhase5 (evalmachine.<anonymous>:776:78)
+    at async expectFailure (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:82:9)
+    at async main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-endturn-transaction-failures.js:368:6)
+[smoke-endturn-transaction-failures] PASS assertions=56

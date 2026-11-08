@@ -1,0 +1,75 @@
+{
+  "version": 2,
+  "complete": true,
+  "runId": "948da2a7-d733-4a59-a843-2afcf92bc240",
+  "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "expected": [
+    "smoke-full-turn-flow.js",
+    "smoke-start-game-data-integrity.js"
+  ],
+  "generatedAt": "2026-10-22T17:17:20.285Z",
+  "args": [
+    "--all",
+    "--no-retry",
+    "--jobs",
+    "1",
+    "--run-id",
+    "948da2a7-d733-4a59-a843-2afcf92bc240",
+    "--report",
+    "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\docs\\npc-stable-candidate-20261021\\native-codec-fixture-2026-10-22T17-15-22-695Z\\two-integration-report.json",
+    "--grep",
+    "smoke-full-turn-flow.js",
+    "--grep",
+    "smoke-start-game-data-integrity.js"
+  ],
+  "scheduling": {
+    "parallelJobs": 1,
+    "resourceIsolated": [
+      "smoke-full-turn-flow.js",
+      "smoke-start-game-data-integrity.js"
+    ]
+  },
+  "summary": {
+    "selected": 2,
+    "pass": 0,
+    "fail": 2,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "clusters": [
+    {
+      "sig": "TypeError: Cannot read properties of undefined (reading 'tiers')",
+      "names": [
+        "smoke-full-turn-flow.js",
+        "smoke-start-game-data-integrity.js"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "smoke-full-turn-flow.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": 1,
+      "ms": 3276,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[native-save-codec] PASS gzip Blob and exact production roundtrip\ntm-keju-runtime.js:134\r\n  if (!P.keju.tiers) P.keju.tiers = [];\r\n              ^\r\n\r\nTypeError: Cannot read properties of undefined (reading 'tiers')\r\n    at initKejuSystem (tm-keju-runtime.js:134:15)\r\n    at doActualStart (tm-patches-start.js:2218:3)\r\n    at evalmachine.<anonymous>:5:5\r\n    at Script.runInContext (node:vm:149:12)\r\n    at Object.runInContext (node:vm:301:6)\r\n    at main (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-full-turn-flow.js:471:6)\r\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": 1,
+      "ms": 7162,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[native-save-codec] PASS gzip Blob and exact production roundtrip\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\ntm-keju-runtime.js:134\r\n  if (!P.keju.tiers) P.keju.tiers = [];\r\n              ^\r\n\r\nTypeError: Cannot read properties of undefined (reading 'tiers')\r\n    at initKejuSystem (tm-keju-runtime.js:134:15)\r\n    at doActualStart (tm-patches-start.js:2218:3)\r\n    at evalmachine.<anonymous>:1:1\r\n    at Script.runInContext (node:vm:149:12)\r\n    at Object.runInContext (node:vm:301:6)\r\n    at runCase (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-start-game-data-integrity.js:241:6)\r\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\r\n    at async main (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-start-game-data-integrity.js:743:3)\r\n\r\nNode.js v24.14.0\r\n"
+    }
+  ],
+  "skipped": []
+}

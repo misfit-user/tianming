@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-23T07:22:24.5370832Z",
+  "pid": 24868,
+  "status": "interrupted",
+  "run": "819f0e52-1eef-48dc-a85d-0219b0760d45",
+  "head": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+  "reason": "Root stopped owned old candidate after same-tree remote final-background OOM was diagnosed, before runtime changes. Local run is incomplete, not a local OOM or PASS."
+}

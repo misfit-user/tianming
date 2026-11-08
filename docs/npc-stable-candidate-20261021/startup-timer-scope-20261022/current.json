@@ -1,0 +1,10 @@
+{
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "docs/npc-stable-candidate-20261021/startup-timer-scope-20261022/test-timer-scope.cjs"
+  ],
+  "exitCode": 0,
+  "elapsedMs": 353,
+  "source": "working startup fixture",
+  "startupSha256": "313fb24cf7709ce1bf11692ae847a49b4ff54691ffbb6667dbe9c7edd2c7e676"
+}

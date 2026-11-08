@@ -1,0 +1,23 @@
+PASS an issued but undelivered leave decision does not permit departure
+PASS a new permission binds the actual appointment identity
+PASS no office is distinct from an incomplete rule or failed query
+PASS configured duties need a unique post and organization identity before departure
+PASS same post IDs in distinct organizations retain separate lawful arrangements
+PASS resident private leave permits travel outside public jurisdiction and actual return
+PASS both appointments need actual permits; a relaxed hint cannot hide either one
+PASS permit scope, real return deadline, and appointment binding cannot be borrowed
+PASS field assignment is not a private exemption, but a real private arrangement works
+PASS required handoff needs delivered acceptance, scope, place and expiry
+PASS a delegate cannot lend an unrelated, narrow, short or travelling handoff
+PASS an accepted onsite delegation constrains the delegate without granting all the post
+PASS saved permits and retries keep their evidence and do not grant a new appointment
+PASS the actual return follows the duty site, and conflicting return duties stay explicit
+PASS a future departure permit waits until its date; standing private rules need no extra approver
+PASS the accepted target resumes locally after its real leave decision arrives
+PASS field duties inside their scope do not lose the original private-trip check on arrival
+PASS malformed appointment dates remain unknown instead of becoming unlimited
+PASS an invalid effective permit date cannot fall back to a superseded mirror
+PASS unknown active delegation dates do not erase the duty; expired and revoked mandates do
+{"fixture":"resident-composite-with-two-permits","sourcePlanId":"plan:office-composite:source","permitPlanIds":["office-leave-plan:office-leave:npc-fixture:1","office-leave-plan:office-leave:npc-fixture:4"],"meetingPlanId":"plan:office-composite:meeting","startedDay":12,"resultDay":12.5,"endDay":14,"actorReturnDay":14.2,"resultId":"meeting-discussion:plan:office-composite:meeting:1","modelAttempts":0}
+PASS two real resident permits cover sourced onsite discussion and the actual return
+{"suite":"npc-meeting-office","passed":21,"failed":0}

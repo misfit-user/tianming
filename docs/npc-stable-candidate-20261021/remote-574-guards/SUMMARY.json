@@ -1,0 +1,269 @@
+{
+  "recordedAt": "2026-10-23T08:06:33.621Z",
+  "workflowRun": 39919665284,
+  "job": 120301567542,
+  "url": "https://github.com/misfit-user/tianming/actions/runs/39919665284/job/120301567542",
+  "status": "failed",
+  "scope": "Fresh actual 574 remote guards result; no local tests run, no source changes or inherited passing totals.",
+  "identity": {
+    "implementation": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+    "actualCheckout": "481eea15eecc348e11b4cad28fd655208df21a83",
+    "actualTree": "e0aa6115fed7238a1adc72e64badcb4995f9f363",
+    "localTree": "e0aa6115fed7238a1adc72e64badcb4995f9f363",
+    "treesEqual": true,
+    "parents": [
+      "b0c80e5ae005912effbc947af027d021505c1dbd",
+      "574fcf05447d6daf0e6a99f64ea4a70b119a496e"
+    ]
+  },
+  "environment": {
+    "os": "Ubuntu 24.04.5",
+    "node": "v22.23.3",
+    "platform": "linux",
+    "arch": "x64",
+    "source": "job.log operating-system and Record tested checkout identity output"
+  },
+  "artifact": {
+    "id": 12486099154,
+    "name": "audit-evidence-481eea15eecc348e11b4cad28fd655208df21a83",
+    "reportedZipBytes": 346574,
+    "githubDigest": "sha256:e6ba9b6bbe51b6450ac734470c1ab8cd87f40e45304a9fcabb1076de4ea62da9",
+    "digestScope": "GitHub metadata for archive; extracted report independently hashed"
+  },
+  "smoke": {
+    "runId": "e977171a-0420-471f-b6b0-2c9340bec7fe",
+    "complete": true,
+    "summary": {
+      "selected": 1188,
+      "pass": 1185,
+      "fail": 1,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "args": [
+      "--all",
+      "--no-retry",
+      "--run-id",
+      "e977171a-0420-471f-b6b0-2c9340bec7fe",
+      "--report",
+      "/home/runner/work/tianming/tianming/web/dev-tools/arch-guard/ci-TUNmsS/smoke-report.json",
+      "--jobs",
+      "2"
+    ],
+    "scheduling": {
+      "parallelJobs": 2,
+      "resourceIsolated": [
+        "smoke-deploy-manifest-atomicity.js",
+        "smoke-full-turn-flow.js",
+        "smoke-npc-composite-official.js",
+        "smoke-office-seat-dept-prefix.js",
+        "smoke-official-bundle-parity.js",
+        "smoke-perf-save-preparation.js",
+        "smoke-production-dependencies.js",
+        "smoke-start-game-data-integrity.js",
+        "smoke-tang840-opening-ledgers.js",
+        "smoke-workshop-lock-recovery.js"
+      ]
+    },
+    "report": "smoke-report.json",
+    "reportSha256": "6ca4208983e6356e6e77465c5fb2b5202894343a40b9078279a18b1c9892a09d",
+    "failures": [
+      {
+        "name": "smoke-turn-capture-work-count.js",
+        "pass": false,
+        "flaky": false,
+        "suspect": false,
+        "exit": 1,
+        "ms": 25,
+        "timedOut": false,
+        "waivers": [],
+        "output": "ReferenceError: _endTurn_startPostTurnMemorySave is not defined\n    at Object._endTurn_saveSnapshot (round20-turn-capture-production-boundaries.js:291:3)\n    at main (/home/runner/work/tianming/tianming/web/scripts/smoke-turn-capture-work-count.js:101:36)\n    at Object.<anonymous> (/home/runner/work/tianming/tianming/web/scripts/smoke-turn-capture-work-count.js:122:3)\n    at Module._compile (node:internal/modules/cjs/loader:1781:14)\n    at Object..js (node:internal/modules/cjs/loader:1913:10)\n    at Module.load (node:internal/modules/cjs/loader:1505:32)\n    at Function._load (node:internal/modules/cjs/loader:1309:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)\n    at node:internal/main/run_main_module:36:49\n"
+      }
+    ],
+    "waived": [
+      {
+        "name": "smoke-audio-bgm.js",
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/tianming-hegui.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/gucheng-junqi.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/changhe-zhangu.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/yunkai-wanli.mp3"
+          }
+        ]
+      },
+      {
+        "name": "smoke-mapeditor-ui.js",
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/MaShanZheng-Regular.ttf"
+          }
+        ]
+      }
+    ],
+    "allowlistChangedFromD31": false
+  },
+  "classification": {
+    "onlyFailedSmoke": "smoke-turn-capture-work-count.js",
+    "type": "isolated fixture missing newly extracted production helper",
+    "sourceEvidence": "failure-source-analysis.json",
+    "fixedInThisCollection": false,
+    "preserveAssertions": true
+  },
+  "jobSteps": [
+    {
+      "name": "Set up job",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:43:20Z",
+      "completedAt": "2026-10-23T07:43:21Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:43:21Z",
+      "completedAt": "2026-10-23T07:43:35Z"
+    },
+    {
+      "name": "Run actions/setup-node@v4",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:43:35Z",
+      "completedAt": "2026-10-23T07:43:41Z"
+    },
+    {
+      "name": "Record tested checkout identity",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:43:41Z",
+      "completedAt": "2026-10-23T07:43:41Z"
+    },
+    {
+      "name": "Install release-gate dependencies",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:43:41Z",
+      "completedAt": "2026-10-23T07:43:45Z"
+    },
+    {
+      "name": "Audit production dependencies",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:43:45Z",
+      "completedAt": "2026-10-23T07:43:46Z"
+    },
+    {
+      "name": "Regenerate official scenario products",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:43:46Z",
+      "completedAt": "2026-10-23T07:43:51Z"
+    },
+    {
+      "name": "Reject stale generated products",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:43:51Z",
+      "completedAt": "2026-10-23T07:43:51Z"
+    },
+    {
+      "name": "Official scenario parity",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:43:51Z",
+      "completedAt": "2026-10-23T07:44:18Z"
+    },
+    {
+      "name": "Cross-release contract",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:44:18Z",
+      "completedAt": "2026-10-23T07:44:19Z"
+    },
+    {
+      "name": "Hot-update builder fixture",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:44:19Z",
+      "completedAt": "2026-10-23T07:44:20Z"
+    },
+    {
+      "name": "Architecture guards (8/8)",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:44:20Z",
+      "completedAt": "2026-10-23T07:44:30Z"
+    },
+    {
+      "name": "Full smoke suite",
+      "conclusion": "failure",
+      "startedAt": "2026-10-23T07:44:30Z",
+      "completedAt": "2026-10-23T07:52:18Z"
+    },
+    {
+      "name": "Audit checkout probes",
+      "conclusion": "skipped",
+      "startedAt": "2026-10-23T07:52:18Z",
+      "completedAt": "2026-10-23T07:52:18Z"
+    },
+    {
+      "name": "Preserve audit evidence",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:52:18Z",
+      "completedAt": "2026-10-23T07:52:19Z"
+    },
+    {
+      "name": "Stage main preview artifact",
+      "conclusion": "skipped",
+      "startedAt": "2026-10-23T07:52:19Z",
+      "completedAt": "2026-10-23T07:52:19Z"
+    },
+    {
+      "name": "Verify main preview artifact",
+      "conclusion": "skipped",
+      "startedAt": "2026-10-23T07:52:19Z",
+      "completedAt": "2026-10-23T07:52:19Z"
+    },
+    {
+      "name": "Run actions/upload-artifact@v4",
+      "conclusion": "skipped",
+      "startedAt": "2026-10-23T07:52:19Z",
+      "completedAt": "2026-10-23T07:52:19Z"
+    },
+    {
+      "name": "Post Run actions/setup-node@v4",
+      "conclusion": "skipped",
+      "startedAt": "2026-10-23T07:52:19Z",
+      "completedAt": "2026-10-23T07:52:19Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:52:19Z",
+      "completedAt": "2026-10-23T07:52:19Z"
+    },
+    {
+      "name": "Complete job",
+      "conclusion": "success",
+      "startedAt": "2026-10-23T07:52:19Z",
+      "completedAt": "2026-10-23T07:52:19Z"
+    }
+  ],
+  "boundaries": [
+    "Full smoke actually executed 1188 cases: 1185 PASS, 1 FAIL, 2 WAIVED; flaky/suspect/skipped all zero.",
+    "Architecture, official generation/parity and release contracts succeeded before full smoke. Audit checkout probes were skipped after failure.",
+    "This failure remains recorded; a later helper-fixture correction needs its own rerun.",
+    "Composite success is independently collected by the root agent and cannot turn this failed guards job into success.",
+    "No current local67 result is inferred or overwritten."
+  ]
+}

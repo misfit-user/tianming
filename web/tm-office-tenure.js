@@ -116,6 +116,22 @@
   function player(g) { var rows = chars(g).filter(function (c) { return c && (c.isPlayer || c.playerControlled || c.controlledBy === 'player'); }); return rows.length === 1 ? rows[0] : null; }
   function controlled(ch, g) { return TM.PoliticalActions && TM.PoliticalActions.controlled ? TM.PoliticalActions.controlled(ch, g) : !!(ch && ch.isPlayer); }
   function ensurePlans(g) { if (!Array.isArray(g._npcPlans)) g._npcPlans = []; return g._npcPlans; }
+  // A delivered office notice is the knowledge source for direction
+  // planning.  It is a normal ActionLedger matter, so transport, save/load
+  // and visibility use the same message boundary as other notices.
+  function notifyOfficeChange(g, recipient, change) {
+    g = g || G(); if (!g || !recipient || !recipient.id) return null;
+    var seq = Number(g._npcOfficeNoticeSequence || 0) + 1; g._npcOfficeNoticeSequence = seq;
+    var id = 'office-notice:' + String(g.sid || 'world') + ':' + String(g.turn || 0) + ':' + seq;
+    var data = Object.assign({ planningRequired: true, important: true, officeChange: true, sourceVersion: Number(g.turn || 0) }, copy(change || {}));
+    var deliveryTurn = n(g.turn, 0) + 1;
+    var p = { version: 2, id: id, type: 'office_notice', actorId: 'office-system', actor: '官署', targetId: key(recipient.id), target: recipient.name || '',
+      intent: data.intent || '任职或差遣已有变化', createdTurn: n(g.turn, 0), updatedTurn: n(g.turn, 0), progress: 0,
+      task: { kind: 'notice', requestKind: 'office-change' }, messages: [], steps: [], knowledge: {}, status: 'in_transit', nextActorId: '', nextTurn: deliveryTurn, revision: 1, termsVersion: 1 };
+    var m = { id: id + ':message', sourceId: id, fromId: 'office-system', toId: key(recipient.id), kind: 'request',
+      content: data.content || '官署通知：你的任职或差遣已有变化，请按收到的现行安排重新考虑后续。', data: data, sentTurn: n(g.turn, 0), deliveryTurn: deliveryTurn, status: 'in_transit' };
+    p.messages.push(m); ensurePlans(g).push(p); return { plan: p, message: m };
+  }
   function pushMessage(g, p, from, to, kind, content, data, deliveryTurn) {
     var m = { id: nextId(g, 'office-message'), sourceId: p.id, fromId: key(from && from.id), toId: key(to && to.id), kind: kind,
       content: s(content), data: copy(data || {}), sentTurn: n(g.turn, 0), deliveryTurn: n(deliveryTurn, n(g.turn, 0) + 1), status: 'in_transit' };
@@ -184,6 +200,135 @@
     if (c.jurisdictionIds.length && region && c.jurisdictionIds.indexOf(region) < 0 && opts.requireJurisdiction !== false) return { ok: false, reason: 'jurisdiction_scope_denied', assignment: a, position: pos };
     return { ok: true, actor: ch, position: pos, assignment: a, delegated: false, authorityRef: a.appointmentId || key(pos.pos.id), basis: 'current_office' };
   }
+  function appointmentDatesKnown(a) {
+    var p = a && a.pos || {}, h = a && a.holder || {};
+    return [h.appointedTurn, p.appointedTurn, h.expiresTurn, p.expiresTurn].every(function (v) {
+      return v == null || (typeof v === 'number' || typeof v === 'string' && v.trim() !== '') && Number.isFinite(Number(v));
+    });
+  }
+  function currentAppointment(g, a) {
+    var p = a && a.pos || {}, h = a && a.holder || {}, turn = n(g && g.turn, 0);
+    return !!a && appointmentDatesKnown(a) && p.enabled !== false && p.status !== 'abolished' &&
+      turn >= n(h.appointedTurn, n(p.appointedTurn, -Infinity)) &&
+      turn < n(h.expiresTurn, Infinity) && turn < n(p.expiresTurn, Infinity);
+  }
+  // Private travel reads the principal's obligations, including those retained
+  // while a delegate acts. It does not ask whether the traveller can exercise
+  // public authority at the destination. Old unconfigured posts remain marked
+  // as such; no new historical leave rule is inferred from their titles.
+  function privateTravelDuties(g, actor) {
+    g = g || G(); var ch = findChar(g, actor && actor.id || actor);
+    if (!ch || !alive(ch)) return { status: 'unknown', reason: 'actor_identity_unresolved', rows: [] };
+    if (!HS || typeof HS.assignments !== 'function') return { status: 'unknown', reason: 'office_constraint_unavailable', rows: [] };
+    try {
+      var assigned = HS.assignments(g, ch);
+      if (!Array.isArray(assigned)) return { status: 'unknown', reason: 'office_constraint_invalid_query', rows: [] };
+      var positions = HS.positions(g);
+      if (!Array.isArray(positions)) return { status: 'unknown', reason: 'office_constraint_invalid_query', rows: [] };
+      var scoped = Object.create(null), organizations = Object.create(null), political = TM.PoliticalActions;
+      positions.forEach(function (row) {
+        var pid = key(row.pos && row.pos.id), org = key(row.organizationId), compound = org + '\u0000' + pid;
+        if (pid && org) (scoped[compound] || (scoped[compound] = [])).push(row.pos);
+      });
+      function identityKnown(row) {
+        var pid = key(row.pos && row.pos.id), org = key(row.organizationId), matches = scoped[org + '\u0000' + pid];
+        if (!pid || !org || !matches || matches.length !== 1 || matches[0] !== row.pos) return false;
+        if (!Object.prototype.hasOwnProperty.call(organizations, org)) organizations[org] = political && typeof political.resolve === 'function' ? political.resolve('organization', { id: org }, g) : null;
+        return !!organizations[org];
+      }
+      var uncertain = assigned.find(function (a) { return !a.delegated && key(a.principalCharacterId) === key(ch.id) && a.pos.enabled !== false && a.pos.status !== 'abolished' && !appointmentDatesKnown(a); });
+      if (uncertain) return { status: 'unknown', reason: 'meeting_office_assignment_time_unknown', positionId: key(uncertain.pos.id), organizationId: key(uncertain.organizationId), rows: [] };
+      var unidentified = assigned.find(function (a) {
+        return !a.delegated && key(a.principalCharacterId) === key(ch.id) && currentAppointment(g, a) &&
+          (a.pos.officeTenure || a.pos.tenure || a.pos.dutyRules || a.pos.dutyConfig) && !identityKnown(a);
+      });
+      if (unidentified) return { status: 'unknown', reason: 'meeting_office_assignment_identity_unknown', positionId: key(unidentified.pos.id), organizationId: key(unidentified.organizationId), rows: [] };
+      var out = assigned.filter(function (a) { return !a.delegated && key(a.principalCharacterId) === key(ch.id) && currentAppointment(g, a); }).map(function (a) {
+        var c = cfg(a.pos), raw = a.pos.officeTenure || a.pos.tenure || a.pos.dutyRules || a.pos.dutyConfig;
+        return { positionId: key(a.pos.id), positionName: s(a.pos.name), organizationId: key(a.organizationId), appointmentId: key(a.appointmentId),
+          appointmentStartedTurn: n(a.holder && a.holder.appointedTurn, n(a.pos.appointedTurn, null)),
+          dutyMode: c.dutyMode, usualDutyLocationId: c.usualDutyLocationId, returnLocationId: c.returnLocationId,
+          jurisdictionIds: c.jurisdictionIds.slice(), configured: !!raw,
+          configurationStatus: !raw ? 'legacy_unspecified' : c.dutyMode === 'resident' && !c.usualDutyLocationId || c.dutyMode === 'field' && !c.usualDutyLocationId && !c.jurisdictionIds.length || !/^(resident|field)$/.test(c.dutyMode) ? 'incomplete' : 'configured' };
+      });
+      positions.forEach(function (pos) {
+        var st = state(pos, false), c = cfg(pos), now = day(g);
+        A(st && st.delegations).forEach(function (d) {
+          if (!d || key(d.delegateId) !== key(ch.id) || !d.active || d.status !== 'active' ||
+              !c.onsiteActions.some(function (action) { return A(d.scope).indexOf(action) >= 0; })) return;
+          // Read this actual post before relying on its ID: a malformed or
+          // duplicated ID must not silently remove an accepted mandate.
+          var principal = findChar(g, d.grantorId), grants = principal ? HS.assignments(g, principal, { organizationId: pos.organizationId }).filter(function (a) { return a.pos === pos.pos && !a.delegated && key(a.appointmentId) === key(d.appointmentId); }) : [];
+          var grant = grants.length === 1 ? grants[0] : null;
+          if (!currentAppointment(g, grant) || key(grant.appointmentId) !== key(d.appointmentId)) return;
+          var start = typeof d.startDay === 'number' || typeof d.startDay === 'string' ? n(d.startDay, NaN) : NaN;
+          var end = typeof d.endDay === 'number' || typeof d.endDay === 'string' ? n(d.endDay, NaN) : NaN;
+          var reversed = isFinite(start) && isFinite(end) && end <= start;
+          // A real expiry/revocation releases the obligation. Missing dates
+          // on an otherwise active accepted mandate cannot do the same thing.
+          if (!reversed && (isFinite(start) && now < start || isFinite(end) && now >= end)) return;
+          var datesKnown = isFinite(start) && isFinite(end) && !reversed;
+          var identityOk = identityKnown(pos);
+          out.push({ positionId: key(pos.pos.id), positionName: s(pos.pos.name), organizationId: key(pos.organizationId), appointmentId: key(d.appointmentId), delegationId: d.id,
+            dutyMode: 'resident', usualDutyLocationId: c.usualDutyLocationId, returnLocationId: c.usualDutyLocationId,
+            jurisdictionIds: c.jurisdictionIds.slice(), configured: true, configurationStatus: identityOk && datesKnown && c.usualDutyLocationId ? 'configured' : 'incomplete',
+            configurationReason: !identityOk ? 'meeting_office_assignment_identity_unknown' : datesKnown ? '' : 'meeting_office_delegation_time_unknown' });
+        });
+      });
+      return { status: 'resolved', rows: out };
+    } catch (_) { return { status: 'unknown', reason: 'office_constraint_query_failed', rows: [] }; }
+  }
+  function permissionIdentity(leave, ch, pos, a) {
+    if (!leave || key(leave.holderId) !== key(ch.id) || key(leave.positionId) !== key(pos.pos.id) || key(leave.organizationId) !== key(pos.organizationId)) return false;
+    // A legacy permit without an appointment identity cannot be rebound to a
+    // subsequently identified appointment. Completed history is not rewritten.
+    if (key(leave.appointmentId) !== key(a.appointmentId)) return false;
+    var appointed = n(a.holder && a.holder.appointedTurn, n(a.pos.appointedTurn, null));
+    return leave.appointmentStartedTurn == null ? appointed == null : Number(leave.appointmentStartedTurn) === appointed;
+  }
+  function privateHandoff(g, ch, pos, leave, until) {
+    var c = cfg(pos); if (!c.leave.delegateRequired) return { ok: true };
+    var d = findDelegation(pos, leave.delegationId), p = leavePlan(g, leave), now = day(g);
+    if (!d || d.leaveId !== leave.id || key(d.grantorId) !== key(ch.id) || key(d.positionId) !== key(pos.pos.id) ||
+        key(d.organizationId) !== key(pos.organizationId) || key(d.appointmentId) !== key(leave.appointmentId) ||
+        !d.active || d.status !== 'active' || now < n(d.startDay, Infinity) || until > n(d.endDay, -Infinity)) return { ok: false, reason: 'meeting_office_handoff_required' };
+    var recipient = findChar(g, d.delegateId), notice = p && p.messages.some(function (m) { return m.kind === 'delegation_offer' && m.toId === d.delegateId && m.status === 'delivered' && m.data && m.data.delegationId === d.id; });
+    if (!alive(recipient) || !notice || c.delegation.requiresAcceptance && d.acceptedDay == null) return { ok: false, reason: 'meeting_office_handoff_not_received' };
+    if (c.onsiteActions.some(function (action) { return A(d.scope).indexOf(action) < 0; })) return { ok: false, reason: 'meeting_office_handoff_scope_incomplete' };
+    if (c.usualDutyLocationId && currentRegion(recipient) !== c.usualDutyLocationId || recipient._localTravelRef || recipient._officeJourney && recipient._officeJourney.status === 'in_transit') return { ok: false, reason: 'meeting_office_delegate_not_present' };
+    if (HS.availability(g, recipient, {}, now).capacity <= 0) return { ok: false, reason: 'meeting_office_delegate_unavailable' };
+    return { ok: true, delegationId: d.id };
+  }
+  function privateTravelPermission(opts) {
+    opts = opts || {}; var g = opts.world || G(), ch = findChar(g, opts.actorId), pos = position(g, opts.positionId, opts.organizationId), now = day(g);
+    var a = ch && pos && assignment(g, ch, pos);
+    if (!a || a.delegated || !currentAppointment(g, a) || key(opts.appointmentId) !== key(a.appointmentId)) return { ok: false, reason: 'meeting_office_assignment_changed' };
+    var c = cfg(pos), st = state(pos, false), leaves = st ? A(st.leaves) : [], failure = 'meeting_office_leave_required';
+    for (var i = 0; i < leaves.length; i++) {
+      var leave = leaves[i], terms = leave && leave.terms || {};
+      if (!permissionIdentity(leave, ch, pos, a) || !/^(approved|active|at_destination)$/.test(leave.status)) continue;
+      if ((leave.kind || terms.kind) !== 'private') { failure = 'meeting_office_private_purpose_required'; continue; }
+      var p = leavePlan(g, leave), known = p && p.knowledge && p.knowledge[ch.id];
+      var receivedDecision = p && p.messages.some(function (m) { return m.kind === 'leave_response' && m.toId === ch.id && m.status === 'delivered' && m.data && Number(m.data.termsVersion) === Number(leave.termsVersion) && /^(approve|conditions)$/.test(m.data.decision); });
+      var ownRule = leave.approvalBasis === 'standing_rule' && leave.deciderId === ch.id && A(leave.steps).some(function (step) { return step.phase === 'approve' && step.actorId === ch.id; });
+      var informed = leave.approvalReceivedDay != null && n(leave.approvalReceivedDay, Infinity) <= now && known && Number(known.termsVersion) === Number(leave.termsVersion) && (receivedDecision || ownRule);
+      if (!informed) { failure = 'meeting_office_leave_not_received'; continue; }
+      if (key(terms.destinationId || leave.destinationId) !== key(opts.destinationId)) { failure = 'meeting_office_leave_destination_mismatch'; continue; }
+      // A missing legacy terms field may use its old mirror. An explicit
+      // malformed effective term is unknown, never permission to use an older
+      // deadline. Empty strings/null are not dates and cannot become day zero.
+      var start = n(Object.prototype.hasOwnProperty.call(terms, 'startDay') ? terms.startDay : leave.startDay, NaN);
+      var end = n(Object.prototype.hasOwnProperty.call(terms, 'latestReturnDay') ? terms.latestReturnDay : leave.latestReturnDay, NaN);
+      if (!isFinite(start) || !isFinite(end) || !Number.isFinite(opts.departureDay) || !Number.isFinite(opts.returnDay)) { failure = 'meeting_office_leave_time_unknown'; continue; }
+      if (opts.departureDay < start || now >= end || opts.returnDay > end) { failure = 'meeting_office_leave_window_insufficient'; continue; }
+      var returnLocation = key(leave.returnLocationId || c.returnLocationId || c.usualDutyLocationId);
+      if (!returnLocation || returnLocation !== key(opts.returnLocationId)) { failure = 'meeting_office_return_location_mismatch'; continue; }
+      var handoff = privateHandoff(g, ch, pos, leave, opts.returnDay);
+      if (!handoff.ok) { failure = handoff.reason; continue; }
+      return { ok: true, leaveId: leave.id, delegationId: handoff.delegationId || '', returnLocationId: returnLocation, latestNeeded: opts.returnDay };
+    }
+    return { ok: false, reason: failure };
+  }
   function makePlan(g, leave, applicant, approver, actionId) {
     var p = { version: 2, id: 'office-leave-plan:' + leave.id, type: 'office_leave', actorId: applicant.id, actor: applicant.name,
       targetId: approver.id, target: approver.name, intent: leave.reason || '申请离任', createdTurn: g.turn, updatedTurn: g.turn,
@@ -203,7 +348,7 @@
   }
   function request(g, actor, d) {
     var pos = position(g, d.positionId, d.organizationId), a = assignment(g, actor, pos), c = cfg(pos), now = day(g);
-    if (!pos || !a) return result('blocked', 'current_assignment_required');
+    if (!pos || !a || a.delegated || !currentAppointment(g, a)) return result('blocked', 'current_assignment_required');
     if (c.dutyMode === 'unconfigured') return result('blocked', 'position_tenure_not_configured');
     var destination = key(d.destinationId), resolved = resolveRegion(destination);
     if (!destination || !resolved || resolved.status !== 'resolved') return result('blocked', 'leave_destination_unresolved');
@@ -217,8 +362,10 @@
     if (authority && authority.unresolved) return result('waiting', authority.reason, [{ kind: 'plan', id: 'office-tenure:' + pos.pos.id }]);
     if (!alive(authority)) return result('waiting', 'leave_authority_unavailable', [{ kind: 'plan', id: 'office-tenure:' + pos.pos.id }]);
     var st = state(pos, true), leave = { id: d.leaveId || nextId(g, 'office-leave'), positionId: key(pos.pos.id), organizationId: key(pos.organizationId), holderId: key(actor.id),
+      appointmentId: key(a.appointmentId), appointmentStartedTurn: n(a.holder && a.holder.appointedTurn, n(pos.pos.appointedTurn, null)),
       kind: d.kind || 'private', reason: s(d.reason || '个人事务'), destinationId: destination, startDay: start, latestReturnDay: end,
       requestedDay: now, termsVersion: 1, status: c.leave.requiresApproval ? 'requested' : 'approved', deciderId: authority.id,
+      approvalBasis: c.leave.requiresApproval ? 'decision' : 'standing_rule',
       authorityRef: c.leave.authorityRef || c.leave.decisionPositionId, terms: { destinationId: destination, startDay: start, latestReturnDay: end, kind: d.kind || 'private', reason: s(d.reason || '') },
       travelHistory: [], steps: [], returnLocationId: c.returnLocationId, autoReturn: d.autoReturn === true };
     st.leaves.push(leave);
@@ -238,6 +385,8 @@
   function decide(g, actor, d) {
     var pos = position(g, d.positionId, d.organizationId), leave = findLeave(pos, d.leaveId), p = leavePlan(g, leave), now = day(g);
     if (!pos || !leave || !p) return result('blocked', 'leave_request_unknown');
+    var applicantAssignment = assignment(g, findChar(g, leave.holderId), pos);
+    if (!currentAppointment(g, applicantAssignment) || !permissionIdentity(leave, findChar(g, leave.holderId), pos, applicantAssignment)) return result('blocked', 'leave_appointment_changed');
     var authority = authorityTarget(g, pos); if (!authority || authority.id !== actor.id) return result('blocked', 'leave_decision_authority_required');
     if (leave.status !== 'requested') return result('noop', 'leave_request_already_decided');
     if (!deliveredTo(p, actor.id)) return result('waiting', 'leave_request_not_received', [{ kind: 'plan', id: p.id }]);
@@ -260,13 +409,14 @@
     var pos = position(g, d.positionId, d.organizationId), leave = findLeave(pos, d.leaveId), c = cfg(pos), now = day(g);
     if (!pos || !leave) return result('blocked', 'leave_request_unknown');
     if (leave.status !== 'approved') return result('blocked', 'leave_must_be_approved_before_delegation');
-    var a = assignment(g, actor, pos); if (!a || key(actor.id) !== leave.holderId) return result('blocked', 'original_holder_delegation_required');
+    var a = assignment(g, actor, pos); if (!a || a.delegated || !currentAppointment(g, a) || !permissionIdentity(leave, actor, pos, a)) return result('blocked', 'original_holder_delegation_required');
     if (!c.delegation.allowed) return result('blocked', 'delegation_not_granted_for_position');
     var delegate = findChar(g, d.delegateId); if (!alive(delegate) || delegate.id === actor.id) return result('blocked', 'delegate_identity_invalid');
     if (c.delegation.allowedPositionIds.length && !HS.activeAssignments(g, delegate, { organizationId: pos.organizationId }).some(function (x) { return c.delegation.allowedPositionIds.indexOf(key(x.positionId)) >= 0; })) return result('blocked', 'delegate_position_out_of_scope');
     var scope = A(d.scope || ['document_transfer']).map(s).filter(function (x) { return SCOPES.indexOf(x) >= 0 && c.delegation.allowedActions.indexOf(x) >= 0; });
     if (!scope.length || scope.length !== A(d.scope || ['document_transfer']).length) return result('blocked', 'delegation_scope_out_of_bounds');
     var st = state(pos, true), rec = { id: d.delegationId || nextId(g, 'office-delegation'), leaveId: leave.id, positionId: pos.pos.id, grantorId: actor.id,
+      organizationId: key(pos.organizationId), appointmentId: key(a.appointmentId),
       delegateId: delegate.id, scope: scope, regionId: d.regionId || pos.pos.jurisdictionId || '', startDay: now, endDay: Math.min(leave.latestReturnDay, now + c.delegation.maxDays),
       active: c.delegation.requiresAcceptance !== true, status: c.delegation.requiresAcceptance ? 'offered' : 'active', sourceActionId: d.actionId };
     st.delegations.push(rec); leave.delegateId = delegate.id; leave.delegationId = rec.id;
@@ -371,6 +521,9 @@
       if (doc) { doc.status = 'delivered'; doc.deliveredDay = day(g); doc.deliveryRef = m.deliveryRef; note(g, findChar(g, doc.recipientId), findChar(g, doc.authorId), '收到代理文书：' + doc.content, doc.id, 'received_claim'); }
       p.status = 'awaiting_feedback';
     }
+    if (typeof root._npcPlanningObserveDeliveredMessage === 'function') {
+      try { root._npcPlanningObserveDeliveredMessage(p, m, g); } catch (_) {}
+    }
     addPlayerLetter(g, p, m, findChar(g, m.fromId), findChar(g, m.toId));
     return true;
   }
@@ -428,6 +581,7 @@
   function uiReport(positionId, leaveId) { var g = G(), ch = player(g), r = submit(ch, { actionId: 'ui:report:' + leaveId + ':' + g.turn, behaviorType: 'office_tenure', phase: 'report', actorId: ch.id, positionId: positionId, leaveId: leaveId, content: '已归任并交代在途事务' }, true); if (root.toast) root.toast(r.reason); if (root.renderOfficeTree) root.renderOfficeTree(true); return r; }
 
   var API = { version: VERSION, config: cfg, state: state, view: view, presence: presence, canAct: canAct, authorityTarget: authorityTarget,
+    privateTravelDuties: privateTravelDuties, privateTravelPermission: privateTravelPermission,
     requestLeave: function (actor, d, human) { return submit(actor, Object.assign({}, d, { behaviorType: 'office_tenure', phase: 'request', actorId: actor && actor.id, leaveKind: d && d.kind }), human === true); },
     decideLeave: function (actor, d, human) { return submit(actor, Object.assign({}, d, { behaviorType: 'office_tenure', phase: 'decide', actorId: actor && actor.id }), human === true); },
     appointDelegate: function (actor, d, human) { return submit(actor, Object.assign({}, d, { behaviorType: 'office_tenure', phase: 'delegate', actorId: actor && actor.id }), human === true); },
@@ -436,7 +590,7 @@
     returnLeave: function (actor, d, human) { return submit(actor, Object.assign({}, d, { behaviorType: 'office_tenure', phase: 'return', actorId: actor && actor.id }), human === true); },
     receiveReturnReport: function (actor, d, human) { return submit(actor, Object.assign({}, d, { behaviorType: 'office_tenure', phase: 'report', actorId: actor && actor.id }), human === true); },
     performDelegatedDocument: function (actor, d, human) { return submit(actor, Object.assign({}, d, { behaviorType: 'office_tenure', phase: 'perform_document', actorId: actor && actor.id }), human === true); },
-    execute: execute, verifyEvidence: verifyEvidence, onMessageDelivered: onMessageDelivered, advancePlans: advancePlans, tick: tick, renderPanel: renderPanel, uiRequest: uiRequest, uiReport: uiReport,
+    execute: execute, verifyEvidence: verifyEvidence, notifyOfficeChange: notifyOfficeChange, onMessageDelivered: onMessageDelivered, advancePlans: advancePlans, tick: tick, renderPanel: renderPanel, uiRequest: uiRequest, uiReport: uiReport,
     SCOPES: SCOPES };
   TM.OfficeTenure = API;
   if (root.NpcBehaviorRegistry && typeof root.NpcBehaviorRegistry.register === 'function') root.NpcBehaviorRegistry.register('office_tenure', function (actor, target, d) { return execute(actor, target, d); });

@@ -1,0 +1,43 @@
+{
+  "recordedAt": "2026-10-23T06:21:58.080Z",
+  "scope": "Diagnostic run with CDP sampling and implicit GC; not ordinary acceptance",
+  "rows": [
+    {
+      "source": "web/dev-tools/ci-39907873427-composite/c758790a-f00f-4416-bcb7-25e8ac538975/report.json",
+      "file": "report.json",
+      "sourceBytes": 88184,
+      "sourceSha256": "d065cb9d722a6b36c9ecb7d30c0f7259a6073bbaa1b60a9b0d225383e6e83660",
+      "storedBytes": 88184,
+      "storedSha256": "d065cb9d722a6b36c9ecb7d30c0f7259a6073bbaa1b60a9b0d225383e6e83660",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39907873427-composite/c758790a-f00f-4416-bcb7-25e8ac538975/composite-timeline.json",
+      "file": "composite-timeline.json",
+      "sourceBytes": 5079532,
+      "sourceSha256": "33ed9e30b545d31686498445ab58bbc401c2d6fa38816e551d63432e112043c6",
+      "storedBytes": 3000029,
+      "storedSha256": "1903039fa9b5747fb268b28c51d93f520fa0613c15615b85ff57ccba4997f229",
+      "transform": "JSON whitespace compaction, all parsed fields retained"
+    },
+    {
+      "source": "web/dev-tools/ci-39907873427-composite/c758790a-f00f-4416-bcb7-25e8ac538975/04-completed-return.png",
+      "file": "04-completed-return.png",
+      "sourceBytes": 537110,
+      "sourceSha256": "e2a2bdbeda6a0721b4c3cdbb3174a49ebc3326688deabacaa3739ce4d616474b",
+      "storedBytes": 537110,
+      "storedSha256": "e2a2bdbeda6a0721b4c3cdbb3174a49ebc3326688deabacaa3739ce4d616474b",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39907873427-composite/c758790a-f00f-4416-bcb7-25e8ac538975/renderer.log",
+      "file": "renderer.log",
+      "sourceBytes": 323263,
+      "sourceSha256": "48bd394114bd1dcfc7af20ef7445da3a5f8e1e515aaf95b690ed07b6c58e4e18",
+      "storedBytes": 323263,
+      "storedSha256": "48bd394114bd1dcfc7af20ef7445da3a5f8e1e515aaf95b690ed07b6c58e4e18",
+      "transform": "byte-identical copy"
+    }
+  ],
+  "excluded": "All97 allocation profiles and crash-dumps remain in the original artifact. No bulk copy."
+}

@@ -1,0 +1,21 @@
+PASS full committed world is saved once with no data loss and no remaining timeout
+PASS never-returning native write has a bounded local wait without a false success
+PASS repeated and replacement-world writes cannot overtake an unconfirmed native request
+PASS close flush waits only to the bounded deadline and never calls unknown work drained
+PASS late success releases the native lock but cannot advance the saved clock or lite mirror
+PASS late rejection is handled once and permits a later explicit retry
+PASS world changed before dispatch never sends the earlier snapshot with a new session
+PASS a turn starting before dispatch defers the old idle write rather than serializing live state
+PASS a changed bridge instance cannot publish a successful old response into idle bookkeeping
+PASS old success and stale failure cannot replace the current preload session
+PASS session rotation back to the original value cannot authorize a late token adoption
+PASS foreign success receipt is rejected and cannot change success time or session
+PASS same-turn new committed memory is saved even without new input; unchanged snapshots stay skipped
+PASS ordinary rejection does not poison later retries or fall back to a second transport
+PASS old shells keep the object path and are subject to the same wait and locking rules
+PASS serialization failure sends nothing and does not leave a false native lock
+PASS a late stale success cannot satisfy the current world close flush
+PASS status is bounded and cannot leak or mutate payloads and session tokens
+PASS world change during JSON encoding prevents the native call
+PASS the complete close coordinator refuses an unconfirmed native write
+{"pass":20,"fail":0,"total":20}

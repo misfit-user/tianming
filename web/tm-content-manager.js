@@ -191,14 +191,10 @@
     return state.defaultFeedUrl || '';
   }
 
-  function saveFeedUrl() {}
-
   function loadHotFeedUrl() {
     try { localStorage.removeItem('tm_hot_update_feed_url'); } catch(e) {}
     return state.defaultHotFeedUrl || '';
   }
-
-  function saveHotFeedUrl() {}
 
   function loadCatalogUrl() {
     try { return localStorage.getItem('tm_workshop_catalog_url') || state.defaultCatalogUrl || ''; } catch(e) { return state.defaultCatalogUrl || ''; }
@@ -542,39 +538,6 @@
     return evt.message || evt.error || '';
   }
 
-  function packRow(p) {
-    var enabled = p.enabled !== false;
-    var bad = !p.installed ? ' · 文件缺失' : '';
-    return '<div style="border:1px solid var(--bdr);background:rgba(0,0,0,.18);padding:.65rem;margin-bottom:.5rem;">' +
-      '<div style="display:flex;justify-content:space-between;gap:.6rem;align-items:flex-start;">' +
-        '<div style="min-width:0;">' +
-          '<div style="font-weight:700;color:var(--gold);">' + esc(p.title || p.id) + '</div>' +
-          '<div style="font-size:.72rem;color:var(--txt-d);margin-top:.15rem;">' + esc(p.id) + ' · ' + (p.version ? 'v' + esc(p.version) : '版本未提供') + ' · ' + esc(p.type || 'content') + bad + '</div>' +
-          (p.description ? '<div style="font-size:.76rem;color:var(--txt);line-height:1.5;margin-top:.35rem;">' + esc(p.description) + '</div>' : '') +
-        '</div>' +
-        '<div style="display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;">' +
-          btn(enabled ? '停用' : '启用', 'TMContentManager.togglePack(\'' + esc(p.id) + '\',' + (!enabled) + ')') +
-          btn('卸载', 'TMContentManager.uninstallPack(\'' + esc(p.id) + '\')', 'bt bd bsm') +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }
-
-  function catalogPackRow(p) {
-    return '<div style="border:1px solid var(--bdr);background:rgba(0,0,0,.12);padding:.65rem;margin-bottom:.5rem;">' +
-      '<div style="display:flex;justify-content:space-between;gap:.65rem;align-items:flex-start;">' +
-        '<div style="min-width:0;">' +
-          '<div style="font-weight:700;color:var(--gold);">' + esc(p.title || p.id) + '</div>' +
-          '<div style="font-size:.72rem;color:var(--txt-d);margin-top:.15rem;">' + esc(p.id) + ' · ' + (p.version ? 'v' + esc(p.version) : '版本未提供') + ' · ' + esc(p.author || '未署名') + '</div>' +
-          (p.description ? '<div style="font-size:.76rem;color:var(--txt);line-height:1.5;margin-top:.35rem;">' + esc(p.description) + '</div>' : '') +
-        '</div>' +
-        '<div style="display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;">' +
-          btn('在线安装', 'TMContentManager.installCatalogPack(\'' + esc(p.packageUrl) + '\',\'' + esc(p.sha256 || '') + '\')', 'bt bp bsm') +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }
-
   function jsArg(value) {
     return JSON.stringify(String(value == null ? '' : value)).replace(/"/g, '&quot;');
   }
@@ -590,44 +553,6 @@
         '<input class="tm-input" id="' + id + '" type="password" autocomplete="' + (ac || 'current-password') + '" placeholder="' + esc(placeholder || '至少 8 位') + '">' +
         '<button type="button" class="tm-pw-toggle" aria-label="显示或隐藏密码" onclick="TMContentManager.togglePw(\'' + id + '\',this)">显示</button>' +
       '</div></div>';
-  }
-
-  function featureCard(title, enabled, desc) {
-    return '<div class="tm-feat">' +
-      '<div class="tm-feat-h">' +
-        '<span class="tm-dot ' + (enabled ? 'on' : 'off') + '"></span>' +
-        '<b>' + esc(title) + '</b>' +
-        pill(enabled ? '可用' : '未启用', enabled ? 'good' : 'off') +
-      '</div>' +
-      '<div class="tm-copy">' + esc(desc) + '</div>' +
-    '</div>';
-  }
-
-  function renderWebUpdateNotice() {
-    var ver = (state.onlineStatus && state.onlineStatus.version) || '';
-    return '' +
-      '<div class="tm-grid-2">' +
-        '<section class="tm-panel">' +
-          '<h4>游戏更新</h4>' +
-          '<div class="tm-copy">网页版始终运行服务器上的最新在线版本，<b style="color:#f2d487;">无需手动更新</b>。前端热更新与安装包更新是桌面客户端专属功能。</div>' +
-          '<div class="tm-status">想要离线游玩、自动热更、本地落盘装包，可下载桌面客户端；网页版与桌面版共用同一套在线工坊与账号体系。</div>' +
-          '<div class="tm-actions">' +
-            action('进入创意工坊', 'TMContentManager.switchTab(\'workshop\')', 'primary') +
-            action('账号登录', 'TMContentManager.switchTab(\'account\')') +
-          '</div>' +
-        '</section>' +
-        '<aside class="tm-panel">' +
-          '<h4>版本信息</h4>' +
-          '<div class="tm-kv">' +
-            kv('运行模式', '网页在线版') +
-            kv('更新方式', '随服务器自动最新') +
-            kv('在线服务版本', ver || '未连接') +
-            kv('离线策略', '本地游戏可离线运行') +
-          '</div>' +
-          '<div class="tm-status">公告与版本说明见「联网总览」与游戏内邸报。</div>' +
-        '</aside>' +
-      '</div>' +
-      '<section class="tm-panel" style="margin-top:.8rem;"><h4>游戏公告摘要</h4><div class="tm-pack-list">' + changelogSummary(3) + '</div></section>';
   }
 
   function packRowV2(p) {

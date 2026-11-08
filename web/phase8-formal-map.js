@@ -754,15 +754,6 @@
     _regionChildIdxCache = { ref: map, byParent: byParent, byId: byId };
     return _regionChildIdxCache;
   }
-  function regionChildren(map, parentRegion){
-    if (!parentRegion) return [];
-    var pid = parentRegion.id || parentRegion.name;
-    return (pid && regionChildIndex(map).byParent[pid]) || [];
-  }
-  function regionParent(map, childRegion){
-    if (!childRegion || !childRegion.parentId) return null;
-    return regionChildIndex(map).byId[childRegion.parentId] || null;
-  }
 
   // perf round7: 原版每地块全扫 GM._provinceToFaction 的 Object.keys·逐省 = renderFormalMap 主峰之一(111ms)。
   // 同法:Phase2 一次建 normKey->{key,seq} 索引(首现胜)·取 seq 最小(=Object.keys 序首个 normKey∈wanted 的键)·

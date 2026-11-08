@@ -107,6 +107,23 @@ function ok(cond, msg) {
       { name: '省', divisions: [{ name: 'A', population: { mouths: 70 } }] }
     ] } } };
     ok(AA.validateDraft(dPunknown, 'admin-population').ok, '父人口未知时跳过比较·不误报');
+    const dPInvalid = { adminHierarchy: { 明: { divisions: [
+      { name: '省', population: { mouths: '0' }, divisions: [{ name: 'A', population: { mouths: 70 } }] }
+    ] } } };
+    ok(AA.validateDraft(dPInvalid, 'admin-population').ok, '非运行时数值人口字段不当作 0·未知父级跳过');
+    const dPRuntime = { adminHierarchy: { 明: { divisions: [
+      { name: '省', populationDetail: { mouths: 0 }, population: { total: 200 }, children: [{ name: 'A', population: { mouths: 150 } }] }
+    ] } } };
+    ok(AA.validateDraft(dPRuntime, 'admin-population').ok, 'population.total 可作为运行时人口·不被 detail.mouths=0 遮盖');
+    dPRuntime.adminHierarchy.明.divisions[0].population.total = 100;
+    ok(!AA.validateDraft(dPRuntime, 'admin-population').ok, 'population.total 真实小于子级时仍拦截');
+    const lateTangOfficial = require(path.join(__dirname, '..', '..', 'scenarios', '晚唐·开成五年（官方）.json'));
+    const lateTangPopulation = AA.validateDraft(lateTangOfficial, 'admin-population');
+    ok(lateTangPopulation.ok, '官方晚唐非玩家行政包装节点的 population=0 视为未汇总·不再制造 56 项假问题');
+    const lateTangPlayer = AA.makeDraft(lateTangOfficial);
+    lateTangPlayer.adminHierarchy.player.divisions[0].population.mouths = 0;
+    lateTangPlayer.adminHierarchy.player.divisions[0].populationDetail.mouths = 0;
+    ok(!AA.validateDraft(lateTangPlayer, 'admin-population').ok, '玩家行政分支的真实人口归零仍严格拦截');
 
     console.log('— 校验器：faction-refs（势力引用合法）—');
     const dF = {
@@ -125,6 +142,22 @@ function ok(cond, msg) {
     };
     const rr = AA.validateDraft(dR, 'region-coverage');
     ok(!rr.ok && /保定府/.test(rr.violations[0]), '孤儿末级区划「保定府」被抓');
+
+    console.log('— 校验器：稳定问题键/显式地图 ID 不回退同名 —');
+    const dStablePop = { adminHierarchy: { 明: { divisions: [
+      { id: 'div-hainan', name: '海南', populationDetail: { mouths: 0 }, children: [
+        { id: 'div-qiongya', name: '琼崖', populationDetail: { mouths: 90000 } }
+      ] }
+    ] } } };
+    const stablePopA = AA.validateDraft(dStablePop, 'admin-population').results['admin-population'];
+    dStablePop.adminHierarchy.明.divisions[0].populationDetail.mouths = 1;
+    const stablePopB = AA.validateDraft(dStablePop, 'admin-population').results['admin-population'];
+    ok(Object.keys(stablePopA.issueMap || {})[0] === Object.keys(stablePopB.issueMap || {})[0], '人口问题键按父级稳定 ID 保持不变·人口数字变化不换问题');
+    const dExplicitId = { map: { regions: [{ id: 'reg-qiongya', name: '琼崖' }] }, adminHierarchy: { 明: { divisions: [
+      { name: '海南', children: [{ name: '琼崖', mapRegionId: 'stale-id' }] }
+    ] } } };
+    const explicitCoverage = AA.validateDraft(dExplicitId, 'region-coverage');
+    ok(!explicitCoverage.ok && /stale-id/.test(explicitCoverage.violations.join('')), '显式 mapRegionId 失效时拒绝回退同名地块');
 
     console.log('— validateDraft 聚合 —');
     const rAll = AA.validateDraft(dF);
@@ -188,7 +221,7 @@ function ok(cond, msg) {
         { claim: '张居正卒于1582年', verdict: '确信' },
         { claim: '其门生某谋士的确切生卒', verdict: '不确定', note: '正史无载' }
       ] } }] },
-      { toolCalls: [{ name: 'applyPush', input: { path: 'characters', value: { name: '张居正', faction: '明', bio: '万历首辅' } } }] },
+      { toolCalls: [{ name: 'applyPush', input: { path: 'characters', value: { name: '张居正', faction: '明', isPlayer: true, bio: '万历首辅' } } }] },
       { toolCalls: [{ name: 'flagUncertain', input: { path: 'characters.张居正.bio', reason: '生平细节部分靠推测' } }] },
       { toolCalls: [{ name: 'finish', input: { summary: '加入张居正，存疑处已标注' } }] }
     ]);
@@ -326,7 +359,7 @@ function ok(cond, msg) {
     console.log('— S3: 违规挡 finish → agent 自修 → finish —');
     const draftH = AA.makeDraft({ factions: [{ name: '明' }], characters: [] });
     const callerH = scriptedCaller([
-      { toolCalls: [{ name: 'applyPush', input: { path: 'characters', value: { name: '张', faction: '清' } } }] }, // 非法势力引用
+      { toolCalls: [{ name: 'applyPush', input: { path: 'characters', value: { name: '张', faction: '清', isPlayer: true } } }] }, // 非法势力引用
       { toolCalls: [{ name: 'finish', input: { summary: '试图结束' } }] },                                           // 应被挡
       { toolCalls: [{ name: 'applyEdit', input: { path: 'characters.张.faction', value: '明' } }] },                 // 自修
       { toolCalls: [{ name: 'finish', input: { summary: '修好了' } }] }                                              // 通过
@@ -338,8 +371,10 @@ function ok(cond, msg) {
     ok(resH.iterations === 4, '共 4 轮(改→挡→修→finish)');
 
     console.log('— S3: maxFinishAttempts 放弃 —');
-    const draftI = AA.makeDraft({ factions: [{ name: '明' }], characters: [{ name: '张', faction: '清' }] });
-    const alwaysFinish = () => Promise.resolve({ toolCalls: [{ name: 'finish', input: {} }] });
+    const draftI = AA.makeDraft({ factions: [{ name: '明' }], characters: [] });
+    const alwaysFinish = () => draftI.characters.length
+      ? Promise.resolve({ toolCalls: [{ name: 'finish', input: {} }] })
+      : Promise.resolve({ toolCalls: [{ name: 'applyPush', input: { path: 'characters', value: { name: '张', faction: '清', isPlayer: true } } }] });
     const resI = await AA.runAuthoringLoop(draftI, 'x', { caller: alwaysFinish, maxFinishAttempts: 3 });
     ok(resI.finishAttempts === 3 && resI.stopReason === 'finishBlocked' && !resI.finished, '一直不修·3 次后放弃(finishBlocked·不死循环)');
 

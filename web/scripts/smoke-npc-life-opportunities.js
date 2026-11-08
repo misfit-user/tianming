@@ -337,4 +337,27 @@ test('leaving a concrete follow-up creates a real bounded next exchange', () => 
   assert.equal(p.localActivity.result.followUp.response.choice, 'answer');
 });
 
+test('startup-dispatched personal relations supply contacts without publishing people or copying private details', () => {
+  const c = setup(), D = c.TM.NPC.DailyActivities;
+  const a = c.add('known:a', '甲'), b = c.add('known:b', '乙'), stranger = c.add('known:c', '丙');
+  [a,b,stranger].forEach(x=>{delete x.publicIdentity;delete x.visibility;});
+  c.GM.affinityMap = {};
+  a.relations = { '乙': { _fromScenario: true, desc: '只由本人持有的关系说明', affinity: 70 } };
+  const before = JSON.stringify(c.GM);
+  assert(D.knownIds(a).has(b.id));
+  assert(D.withIndex(()=>D.knownIds(a).has(b.id)));
+  assert(!D.knownIds(stranger).has(b.id));
+  assert.equal(JSON.stringify(c.GM), before, 'the read cannot initialize a new relationship or public identity');
+  a.relations['乙'].characterId = 'missing-explicit-id';
+  assert(!D.knownIds(a).has(b.id),'a wrong explicit ID cannot fall back to the relation name');
+  delete a.relations['乙'].characterId;
+  const request = D.submitNPC(a,{actionId:'official-known-contact',activityKind:'greeting',targetId:b.id});
+  assert.equal(request.outcome,'submitted',request.reason);
+  assert(!JSON.stringify(D.get(request.planId).messages).includes('只由本人持有的关系说明'));
+  c.add('known:b2','乙');
+  assert(!D.knownIds(stranger).has(b.id));
+  const clean = c.add('known:d','丁');clean.relations = { '乙': {_fromScenario:true} };
+  assert(!D.knownIds(clean).has(b.id),'ambiguous legacy names are not guessed');
+});
+
 console.log('PASS ' + passed + ' life opportunity groups');

@@ -1,0 +1,63 @@
+{
+  "kind": "read-only comparison; original evidence unchanged",
+  "testedHead": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "runId": "ad379252-a0c9-473d-a003-bdda4a7bdae1",
+  "samePolicy": true,
+  "sameEnvironment": true,
+  "sameScheduling": true,
+  "changedInputs": [
+    ".github/workflows/ci.yml",
+    "docs/npc-stable-candidate-20261021/run-final-gates.cjs",
+    "scripts/electron/bridge-main.cjs",
+    "scripts/electron/npc-composite-cases.cjs",
+    "scripts/electron/npc-composite-waits.cjs",
+    "web/.hot-update-manifest.json",
+    "web/scripts/smoke-emergency-recovery-review.js",
+    "web/scripts/smoke-npc-composite-waits.js",
+    "web/scripts/smoke-npc-meeting-events-boundaries.js",
+    "web/scripts/smoke-npc-meeting-events.js",
+    "web/tm-emergency-recovery-review.js",
+    "web/tm-npc-travel.js",
+    "web/tm-start-runtime-manifest.json"
+  ],
+  "tests": [
+    {
+      "name": "smoke-full-turn-flow.js",
+      "current": {
+        "exit": -1,
+        "ms": 120415,
+        "timedOut": true,
+        "outputChars": 0,
+        "lastLine": null
+      },
+      "previous": {
+        "exit": 0,
+        "ms": 68588,
+        "outputChars": 3934
+      }
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "current": {
+        "exit": -1,
+        "ms": 120494,
+        "timedOut": true,
+        "outputChars": 3283,
+        "lastLine": "[smoke-start-game-data-integrity] deepread-config-is-immutable PASS"
+      },
+      "previous": {
+        "exit": 0,
+        "ms": 98189,
+        "outputChars": 3557
+      }
+    }
+  ],
+  "control": {
+    "file": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/full-turn-151a-control/control.json",
+    "exit": 1,
+    "elapsedMs": 13719,
+    "bothRuntimeSourcesActuallyInjected": true,
+    "sourceUnchanged": true,
+    "classification": "original 10000ms VM startup limit; no causal attribution"
+  }
+}

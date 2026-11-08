@@ -1,0 +1,13 @@
+
+BRIDGE_CASE_START {"name":"locked-electron-runtime","at":"2026-10-23T06:57:51.695Z"}
+BRIDGE_CASE_PASS {"name":"locked-electron-runtime","elapsedMs":5}
+BRIDGE_CASE_START {"name":"production-webpreferences","at":"2026-10-23T06:57:51.700Z"}
+BRIDGE_CASE_PASS {"name":"production-webpreferences","elapsedMs":0}
+BRIDGE_CASE_START {"name":"real-bridge-and-ipc","at":"2026-10-23T06:57:51.700Z"}
+BRIDGE_CASE_PASS {"name":"real-bridge-and-ipc","elapsedMs":32}
+BRIDGE_CASE_START {"name":"production-test-exports-boundary","at":"2026-10-23T06:57:51.732Z"}
+BRIDGE_CASE_PASS {"name":"production-test-exports-boundary","elapsedMs":1}
+BRIDGE_CASE_START {"name":"canonical-receipt-and-folio-recover-after-real-process-exit","at":"2026-10-23T06:57:51.734Z"}
+BRIDGE_CASE_PASS {"name":"canonical-receipt-and-folio-recover-after-real-process-exit","elapsedMs":59}
+BRIDGE_EXIT_REQUESTED {"mode":"restart","at":"2026-10-23T06:57:51.793Z","code":0}
+BRIDGE_NODE_EXIT {"mode":"restart","at":"2026-10-23T06:57:51.796Z","code":0}

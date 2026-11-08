@@ -1718,17 +1718,6 @@
           });
         }
 
-        // ★2026-07-01 W2b硬版·记忆确定性影响办事:信重之臣(对朕好感≥40且心绪不恶)判逾期时多给1回合宽限(benefit of the doubt)。
-        //   仅正向(绝不缩短任何人的宽限=对谁都不会更严·安全无平衡风险)·点亮零调用的 getImpression/getMood·让记忆真正影响办事判定。
-        var _tmCommitGrace = function(npcName){
-          if (!npcName || typeof NpcMemorySystem === 'undefined') return 0;
-          var _pn = (typeof P !== 'undefined' && P.playerInfo && P.playerInfo.characterName) || '';
-          var _fv = (_pn && NpcMemorySystem.getImpression) ? NpcMemorySystem.getImpression(npcName, _pn) : 0;
-          var _md = NpcMemorySystem.getMood ? NpcMemorySystem.getMood(npcName) : '';
-          var _bad = (_md === '怒' || _md === '恨' || _md === '惧' || _md === '怨');
-          return (_fv >= 40 && !_bad) ? 1 : 0;
-        };
-
         // Codex修·MED:承诺履成的 canonical 结构化后果(query降腐败/intel入情报/finance提实征率)抽为共享·commitment_update 与 dialogue_commitment_feedback 两条完成路径都调·_canonFired 防双计。
         // Completion requires a task-bound receipt; no blanket finance/corruption bonuses.
         function _fireCommitCanon(found, foundNpc) {
@@ -2544,6 +2533,9 @@
                           if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.markAsRecentAppointment) {
                             CorruptionEngine.markAsRecentAppointment(ch);
                           }
+                          if (window.TM && TM.OfficeTenure && typeof TM.OfficeTenure.notifyOfficeChange === 'function') {
+                            TM.OfficeTenure.notifyOfficeChange(GM, ch, { kind: 'appointment', positionId: pos.id || '', organizationId: node.id || node.organizationId || '', appointmentId: pos.appointmentId || '', intent: '任职已有变化', content: '官署通知：你已被任用' + oc.dept + oc.position + '，请按收到的现行安排重新考虑后续。' });
+                          }
                         }
                         // 单一真相源·让位:仅单编制座位自动腾退被顶替的现任(多编制靠 vacancy 容纳)·robust 按座撤衔治 ghost
                         var _estab1 = (pos.establishedCount || pos.headCount || 1) <= 1;
@@ -2725,6 +2717,9 @@
                           if (_isRetire) dch.title = '致仕';
                           else if (!_dchVacated && typeof _offRemoveCharOfficeTitle !== 'function' && !_isMoveExit) dch.title = '';
                           if (typeof recordCharacterArc === 'function') recordCharacterArc(dismissed, _isRetire ? 'retirement' : (_isMoveExit ? 'transfer' : 'dismissal'), (_isRetire ? '\u6069\u51C6\u81F4\u4ED5' : (_isMoveExit ? '\u8F6C\u4EFB\u5378\u804C' : '\u88AB\u514D\u53BB')) + oc.dept + oc.position + (oc.reason ? '：' + oc.reason : ''));
+                          if (typeof TM !== 'undefined' && TM.OfficeTenure && typeof TM.OfficeTenure.notifyOfficeChange === 'function') {
+                            TM.OfficeTenure.notifyOfficeChange(GM, dch, { kind: 'dismissal', positionId: pos.id || '', organizationId: node.id || node.organizationId || '', intent: '任职已有变化', content: '官署通知：你已离开' + oc.dept + oc.position + '，请按收到的现行安排重新考虑后续。' });
+                          }
                           }
                           // 同步PostSystem
                           if (typeof PostTransfer !== 'undefined') PostTransfer.cascadeVacate(dismissed);

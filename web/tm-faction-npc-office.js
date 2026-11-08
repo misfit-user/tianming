@@ -118,52 +118,6 @@
     return actions;
   }
 
-  function _applyAction(action, fac, ruler) {
-    var c = action.target;
-    var posBefore = c.position || c.role || c.title || '';
-    var posAfter = posBefore;
-    var loyaltyDelta = 0;
-    var reason = '';
-
-    if (action.kind === 'promote') {
-      // Phase D3·按 paradigm 适配头衔·后金提"议政大臣" 蒙古"那颜" 朝鲜"判书" 等
-      var paradigm = (global.TM && global.TM.FactionParadigm && global.TM.FactionParadigm.detect && fac && fac.name) ? global.TM.FactionParadigm.detect(fac.name, fac) : 'generic';
-      var PROMO_BY_PARADIGM = {
-        central_empire:    ['内阁参议', '翰林学士', '吏部侍郎', '都察院佥都御史', '通政司参议'],
-        manchu_empire:     ['议政大臣', '内国史院学士', '内秘书院学士', '镶黄旗都统', '议政王'],
-        mongol_tribe:      ['左翼那颜', '右翼那颜', '万户长', '千户长'],
-        tributary_kingdom: ['领议政', '左议政', '右议政', '兵曹判书', '吏曹判书'],
-        european_outpost:  ['Ouvidor (高级法官)', 'Capitão-mor (司令)', 'Vereador (议员)', 'Provedor (财务官)'],
-        maritime_merchant: ['二爷', '把舵', '账房总管', '副帅'],
-        native_chieftain:  ['副土司', '土目', '把总', '族长'],
-        rebellion:         ['副元帅', '军师', '左丞相', '右丞相'],
-        military_jiedushi: ['留后', '行军司马', '判官', '都虞候'],
-        remnant_dynasty:   ['辅臣', '亲卫军统领', '宗正'],
-        generic:           ['首席大臣', '副将']
-      };
-      var promotions = PROMO_BY_PARADIGM[paradigm] || PROMO_BY_PARADIGM.generic;
-      var newTitle = promotions[Math.floor(Math.random() * promotions.length)];
-      posAfter = newTitle;
-      c.position = newTitle;
-      loyaltyDelta = 5;
-      reason = '勤勉可嘉·提拔为' + newTitle;
-    } else if (action.kind === 'demote') {
-      posAfter = '(罢免)';
-      c.position = posAfter;
-      loyaltyDelta = -10;
-      reason = '不职·罢撤·' + (c.loyalty < 35 ? '失忠诚' : '异议甚多');
-    }
-    c.loyalty = _clamp(_safeNum(c.loyalty) + loyaltyDelta, 0, 100);
-
-    return {
-      action: action.kind,
-      target: c.name,
-      ruler: ruler.name,
-      reason: reason,
-      effect: { positionFrom: posBefore, positionTo: posAfter, loyaltyDelta: loyaltyDelta }
-    };
-  }
-
   function generateNpcOfficeActions() {
     var boundary=global.TM&&TM.PoliticalActions;
     return boundary?boundary.localCandidates('office_change'):{actions:0,issued:0,run:0,generated:0,reason:'political_boundary_unavailable'};

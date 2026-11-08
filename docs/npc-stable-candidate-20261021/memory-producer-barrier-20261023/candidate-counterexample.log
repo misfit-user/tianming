@@ -1,0 +1,2 @@
+PASS an already saved pending receipt cannot bypass the unresolved original memory producer
+{"pass":1,"fail":0,"total":1}

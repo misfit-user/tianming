@@ -2,6 +2,7 @@
 (function (root) {
   'use strict';
   var TM = root.TM = root.TM || {};
+  var eventRead = null;
   function fail(reason) { var e = new Error(reason); e.code = 'WORLD_TIME_INVALID'; throw e; }
   function configuredDays() {
     var t = root.P && root.P.time || {}, d = Number(t.daysPerTurn);
@@ -25,7 +26,17 @@
   }
   function now(g) {
     g = g || root.GM; var s = read(g);
+    if (eventRead && eventRead.world === g) return eventRead.day;
     return s ? s.currentDay : Math.max(0, Number(g && g.turn || 1) - 1) * configuredDays();
+  }
+  // A synchronous read scope for an event inside an already committed interval.
+  // It never rewinds the world clock or grants permission to write an action.
+  function atCommittedEvent(g, day, fn) {
+    var s = read(g), p = s && s.pending;
+    if (!p || p.status !== 'committed' || !Number.isFinite(day) || day < p.fromDay || day > p.toDay || typeof fn !== 'function') return false;
+    var previous = eventRead; eventRead = { world: g, day: day };
+    try { var value = fn(); if (value && typeof value.then === 'function') fail('async_simulation_event_forbidden'); return value; }
+    finally { eventRead = previous; }
   }
   function dayAtTurn(g, turn) {
     g = g || root.GM; var s = read(g), t = Number(turn || 1);
@@ -48,8 +59,11 @@
     g = g || root.GM; var s = ensure(g), t = Number(g.turn || 1);
     if (s.turn !== t) fail('simulation_turn_clock_mismatch');
     if (s.pending && s.pending.status === 'prepared') return s.pending;
-    var days = configuredDays();
-    s.pending = { id: 'time:' + t, fromTurn: t, toTurn: t + 1, fromDay: s.currentDay, toDay: s.currentDay + days, days: days, status: 'prepared' };
+    var requestedEnd = s.continuationEndDay > s.currentDay ? s.continuationEndDay : s.currentDay + configuredDays();
+    var meetings = TM.NPC && TM.NPC.Meetings;
+    var boundary = meetings && meetings.nextPlayerBoundary ? meetings.nextPlayerBoundary(s.currentDay, requestedEnd) : null;
+    var toDay = boundary ? boundary.day : requestedEnd, days = toDay - s.currentDay;
+    s.pending = { id: 'time:' + t, fromTurn: t, toTurn: t + 1, fromDay: s.currentDay, toDay: toDay, days: days, status: 'prepared', requestedEndDay: requestedEnd, choiceBoundary: boundary };
     return s.pending;
   }
   function commit(g, interval) {
@@ -60,6 +74,8 @@
     var last = s.segments[s.segments.length - 1];
     if (last.daysPerTurn !== p.days) s.segments.push({ startTurn: p.fromTurn, startDay: p.fromDay, daysPerTurn: p.days });
     s.currentDay = p.toDay; s.turn = p.toTurn; p.status = 'committed';
+    if (p.requestedEndDay > p.toDay) s.continuationEndDay = p.requestedEndDay;
+    else delete s.continuationEndDay;
     s.receipts[p.id] = { id: p.id, fromTurn: p.fromTurn, toTurn: p.toTurn, fromDay: p.fromDay, toDay: p.toDay, days: p.days };
     return { ok: true, interval: s.receipts[p.id] };
   }
@@ -69,6 +85,6 @@
     delete s.pending; return true;
   }
   TM.SimTime = { version: 1, read: read, ensure: ensure, now: now, dayAtTurn: dayAtTurn, prepare: prepare, commit: commit,
-    discardPrepared: discardPrepared, lockedDays: lockedDays, configuredDays: configuredDays };
+    discardPrepared: discardPrepared, lockedDays: lockedDays, configuredDays: configuredDays, atCommittedEvent: atCommittedEvent };
   if (root.GameHooks) root.GameHooks.on('enterGame:after', function () { if (root.GM) ensure(root.GM); }, 5);
 })(typeof window !== 'undefined' ? window : globalThis);

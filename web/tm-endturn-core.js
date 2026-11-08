@@ -741,28 +741,13 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
       ctx.meta.canonicalWorldSnapshot,
       ctx.meta.canonicalWorldSnapshotMeta || { turn: GM.turn, transactionId: ctx.meta.transactionId, takeOwnership: true }
     ); } catch (adoptionError) { _tmReportEndTurnBoundaryError(adoptionError, 'desktop autosave baseline'); }
+    if (adopted === true) ctx.meta.committedSnapshotAdopted = true;
     if (adopted !== true) {
       _tmReportEndTurnBoundaryError(new Error('canonical committed snapshot adoption failed'), 'desktop autosave baseline');
     }
     ctx.meta.canonicalWorldSnapshot = null;
     ctx.meta.canonicalWorldSnapshotMeta = null;
   }
-  // 提交之后，事务里的几份整局拷贝就用不上了：回滚拷贝（txn.gm、txn.p）、推演前恢复点、定稿、
-  // 存档文字包（整局 JSON 字符串和压缩件），以及只在存档写入未确认时才用的核对入口（它的闭包连着定稿和文字包）。
-  // 回滚（_tmRollbackEndTurnTransaction）和存档核对（TM.Endturn.SaveReconcile）都只在提交前用得到。
-  // 回合后台待办的闭包连着推演上下文和事务，要留到下一回合推演中途才清；这几份不放，就跟着留下来
-  // （绍宋一回合约 1.2GB），下一回合又拷一套，推演峰值叠到 3.7GB，页面撑爆。已提交的基线另有归属，不在这里。
-  txn.gm = null;
-  txn.p = null;
-  if (txn.captureSession) {
-    txn.captureSession.rollbackCapture = null;
-    txn.captureSession.preEndturnState = null;
-    txn.captureSession.preEndturnPayload = null;
-    txn.captureSession.finalCanonicalState = null;
-    txn.captureSession.finalPayload = null;
-  }
-  ctx.meta.canonicalWorldPayload = null;
-  ctx.meta.acceptReconciledCommit = null;
   try {
     if (typeof _endTurn_publishStagedTurnData === 'function') await _endTurn_publishStagedTurnData(ctx);
   } catch (publishError) {
@@ -770,6 +755,30 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
     ctx.results.turnDataPublishError = publishError;
     try { if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(publishError, 'endTurn] turn-data publish'); } catch (_) {}
     try { if (typeof toast === 'function') toast('回合已安全保存；分卷将在下次读档时自动补发。'); } catch (_) {}
+  }
+  // A settled canonical commit has a new immutable autosave owner. Retire only
+  // the obsolete transaction captures; live background reviews still use this
+  // ctx's input/results/record and transaction identity, never a rollback copy.
+  // Unconfirmed writes, failed adoption and unfinished publication retain all
+  // recovery material. SaveReconcile reaches this same boundary after readback.
+  var committedReceipt = txn && txn.canonicalSaveReceipt;
+  if (txn && txn.committed === true && !txn.rolledBack && !txn.saveWriteUnconfirmed
+      && !ctx.meta.saveWriteUnconfirmed && ctx.meta.committedSnapshotAdopted === true
+      && !ctx.meta.stagedTurnData && committedReceipt && committedReceipt.state === 'committed'
+      && committedReceipt.transactionId === txn.transactionId
+      && Array.isArray(committedReceipt.slots) && committedReceipt.slots.length === 2
+      && ['autosave', 'slot_0'].every(function(id) { return committedReceipt.slots.some(function(slot) {
+        return slot.id === id && slot.campaignId === txn.campaignId && slot.timelineId === txn.timelineId;
+      }); })) {
+    txn.gm = null;
+    txn.p = null;
+    if (txn.captureSession) {
+      ['rollbackCapture', 'preEndturnState', 'preEndturnPayload', 'finalCanonicalState', 'finalPayload'].forEach(function(key) { txn.captureSession[key] = null; });
+      txn.captureSession.released = true;
+    }
+    ctx.meta.canonicalWorldPayload = null;
+    ctx.meta.acceptReconciledCommit = null;
+    ctx.meta.committedCaptureReleased = true;
   }
   try { if (typeof _endTurn_clearCommittedInputs === 'function') _endTurn_clearCommittedInputs(); }
   catch (draftError) { try { if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(draftError, 'endTurn] clear committed drafts'); } catch (_) {} }
@@ -814,6 +823,11 @@ async function _endTurnCore(options){
   var btn=_$("btn-end")||_$("btn-end-turn");
   if (typeof TM_SaveDB !== "undefined" && typeof TM_SaveDB.assertWritable === "function") TM_SaveDB.assertWritable();
   if(GM.busy)return;
+  if (globalThis.TM && TM.NPC && TM.NPC.Meetings && TM.NPC.Meetings.pendingPlayerChoice()) {
+    if (typeof toast === 'function') toast('现场交流正在等你作答，请先打开日常往来处理，或结束这次约见。');
+    if (TM.NPC.DailyUI) TM.NPC.DailyUI.render();
+    return;
+  }
   if (globalThis.TM && TM.RecoveryReview) TM.RecoveryReview.pauseForNextTurn();
   if (_reliability) { _turnScope = _reliability.begin(); _reliability.assertReady(P); _reliability.mark(_turnScope, "prepare"); }
   _turnTxn = _tmCaptureEndTurnTransaction();
@@ -1147,7 +1161,12 @@ async function _endTurnCore(options){
     var _ehuman = (typeof _tmAiErrHuman === 'function') ? _tmAiErrHuman(error) : null;
     var _recoveryInfo = _responseRecovery && _responseRecovery.status();
     var _recoveryHint = _recoveryInfo && _recoveryInfo.state === 'ready' ? '；当前页面保留了 ' + _recoveryInfo.available + ' 份完整响应，重试时严格校验后复用；本地持久候选状态见耗时诊断。' : '';
-    toast((_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message)) + _recoveryHint);
+    // 2026-10-13：玩家只看得到这一句 toast，「Cannot read properties of undefined」定位不到是哪一步崩的。
+    // 认不出的错把出错位置（函数@文件:行）带进提示，完整堆栈留在本机（回合耗时诊断里可看可复制）。
+    // 两个助手是本文件顶层函数；只抽 _endTurnCore 单函数装载的测试夹具里没有它们，按 typeof 守卫退回旧提示。
+    var _errWhere = (typeof _tmEndTurnErrorLocation === 'function') ? _tmEndTurnErrorLocation(error) : '';
+    try { if (typeof _tmRememberEndTurnFailure === 'function') _tmRememberEndTurnFailure(error, _errWhere); } catch (_remErr) {}
+    toast((_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message + (_errWhere ? '（出错处：' + _errWhere + '，详情见回合耗时诊断）' : ''))) + _recoveryHint);
     GM.busy = false;
     GM._endTurnBusy=false;
     if (typeof _tmRefreshEndTurnButtonState === 'function') _tmRefreshEndTurnButtonState();
@@ -1159,6 +1178,44 @@ async function _endTurnCore(options){
     }
     hideLoading();
   }
+}
+
+// 过回合失败定位（2026-10-13）：从堆栈取第一帧「函数 @ 文件:行」，给 toast 与诊断面板用。
+function _tmEndTurnErrorLocation(error) {
+  try {
+    var lines = String(error && error.stack || '').split('\n');
+    for (var i = 0; i < lines.length; i++) {
+      var m = lines[i].match(/^\s*at\s+(?:(.+?)\s+\()?(?:.*[\/\\])?([^\/\\()]+?):(\d+):(\d+)\)?\s*$/);
+      if (m) return (m[1] ? m[1] + ' @ ' : '') + m[2] + ':' + m[3];
+    }
+  } catch (_) {}
+  return '';
+}
+
+// 失败记录留在本机：TM.Endturn.lastFailure（本次会话）+ localStorage 最近 5 条（刷新后仍在），
+// 不含 API 密钥、请求正文；回合耗时诊断面板可查看、复制，玩家回报时不必再截一句话。
+function _tmRememberEndTurnFailure(error, where) {
+  var record = {
+    at: new Date().toISOString(),
+    turn: (typeof GM !== 'undefined' && GM) ? GM.turn : null,
+    version: (typeof window !== 'undefined' && window.TM_VERSION) ? String(window.TM_VERSION) : '',
+    message: String(error && error.message || error).slice(0, 500),
+    where: where || '',
+    stack: String(error && error.stack || '').slice(0, 6000)
+  };
+  try { if (globalThis.TM && globalThis.TM.Endturn) globalThis.TM.Endturn.lastFailure = record; } catch (_) {}
+  try {
+    if (typeof localStorage !== 'undefined') {
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem('tm_endturn_failures') || '[]'); } catch (_) { list = []; }
+      if (!Array.isArray(list)) list = [];
+      list.push(record);
+      while (list.length > 5) list.shift();
+      localStorage.setItem('tm_endturn_failures', JSON.stringify(list));
+    }
+  } catch (_) {}
+  try { console.error('[endTurn] 出错处 ' + (where || '未知') + '\n' + record.stack); } catch (_) {}
+  return record;
 }
 
 // ══════ 史记+起居注列表渲染已迁移到 tm-shiji-qiju-ui.js (R97) ══════

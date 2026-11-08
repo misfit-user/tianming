@@ -1,0 +1,90 @@
+{
+  "recordedAt": "2026-10-23T08:40:25.147Z",
+  "head": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+  "sourcePatch": "web/scripts/smoke-turn-capture-work-count.js",
+  "patchSha256": "489a946ea40e64054185e01258cb428c5ec1930f90892910e3a4e9e76361a733",
+  "inputSha256": "bbce0d44c14a150e8c3893867469f0cc0cd501887ccdfdcf11eca21988b7819d",
+  "runId": "ac0bfde1-8538-46be-b2cb-f3b17f95cc4a",
+  "formalAcceptancePassed": true,
+  "profiling": {
+    "preciseMemory": true,
+    "heapSampling": false,
+    "protocolForcesGC": false,
+    "cpuProfile": false
+  },
+  "files": [
+    {
+      "name": "report.json",
+      "bytes": 90149,
+      "sha256": "70860439663b57deb1654994778a2eac843d74dffbcd3ccac9c216662dcb4541"
+    },
+    {
+      "name": "npc-composite.json",
+      "bytes": 79700,
+      "sha256": "63ca894a367c01af0dde18ae68c9eebb31311d77641b6292936850f27d332afe"
+    },
+    {
+      "name": "npc-composite.log",
+      "bytes": 2179,
+      "sha256": "3a12a451f977a98b8664fd42a8172eaacdf85e1833da2e66c2d1f786dfdc1eac"
+    },
+    {
+      "name": "official-ui.json",
+      "bytes": 44659,
+      "sha256": "0ce142b628f1bfc2e61463a91d028bcc47ebe86ea58c9c70decef938fd3e94b7"
+    },
+    {
+      "name": "process-memory.jsonl",
+      "bytes": 408862,
+      "sha256": "39be19393eec045227f1c083696722f9529e2dfcb4e6a418d82459c32a68b6b0"
+    },
+    {
+      "name": "progress.log",
+      "bytes": 59451,
+      "sha256": "26b6e769c6d1884a76b6172aa2990ccbf15ba5d1209977a05662e0699fc58c70"
+    },
+    {
+      "name": "renderer-heap.jsonl",
+      "bytes": 79769,
+      "sha256": "8c9ed56f8a2144e48c6fa003616b4147b58bf06b8668f5235a8996960f3b66ce"
+    },
+    {
+      "name": "renderer.log",
+      "bytes": 243147,
+      "sha256": "43001c7879a3c478ad8d6a9fc69cb05af8cc393ef77687f4149e98e59a2466a7"
+    },
+    {
+      "name": "turn-result-controls.json",
+      "bytes": 201,
+      "sha256": "3fdb97bfef577041c8f3ebd216f8e942064b04280020ce8e758a7ed58abe196b"
+    },
+    {
+      "name": "01-official-start.png",
+      "bytes": 971878,
+      "sha256": "4de7b943414fe77bcda40b7aae61b1ddae7a4f80407725de96ff3196233f5327"
+    },
+    {
+      "name": "02-meeting-request.png",
+      "bytes": 1087059,
+      "sha256": "5a478fa13b424d7da9fe73901ee52a729d002408a729f3dd609b0c05bc46e037"
+    },
+    {
+      "name": "03-onsite-question.png",
+      "bytes": 1072996,
+      "sha256": "a08726fc8e811dbeeeb603183db7601a08ba275cd557ce9d6b5d982a8ae7d8ad"
+    },
+    {
+      "name": "04-completed-return.png",
+      "bytes": 1011122,
+      "sha256": "8923b29e75a529e221236e217a4106573fa4f9eef399bb70c790c4894288cccf"
+    },
+    {
+      "name": "composite-timeline.json",
+      "originalBytes": 5081548,
+      "originalSha256": "915a83fd293cd1f8c114b77511298528ced6bef78b4e3d0fba139abbf0588939",
+      "bytes": 3001588,
+      "sha256": "276d44a8c6dcc66ae50389431e8e7bba5fa71ba1d566c603a7fe372b83d1e92b",
+      "transformation": "JSON whitespace only; every parsed field preserved"
+    }
+  ]
+}

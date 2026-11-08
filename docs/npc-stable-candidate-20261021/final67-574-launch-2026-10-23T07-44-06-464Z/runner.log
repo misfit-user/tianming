@@ -1,0 +1,17 @@
+[final-gates] START targeted-smokes
+[final-gates] FAIL targeted-smokes 393582ms
+[final-gates] START other-officials
+[final-gates] PASS other-officials 63714ms
+[final-gates] START architecture
+[final-gates] PASS architecture 38765ms
+[final-gates] START official-parity
+[final-gates] PASS official-parity 83150ms
+[final-gates] START native-manifest
+[final-gates] PASS native-manifest 2017ms
+[final-gates] START startup-manifest
+[final-gates] PASS startup-manifest 529ms
+[final-gates] START release-contract
+[final-gates] PASS release-contract 5329ms
+[final-gates] START hot-baseline
+[final-gates] PASS hot-baseline 2982ms
+[final-gates] FAILED C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\final-gates\2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25\final-gates.json

@@ -84,10 +84,9 @@ const ALLOW_LINES = [
   // map-editor-to-game.js: division.factionId is scenario map ownership metadata inherited from autonomyHierarchy,
   // not character/army/province membership mutation.
   { file: 'map-editor-to-game.js', match: /nd\.factionId\s*=\s*facId/ },
-  // tm-save-lifecycle.js: one-time deterministic schema migration only backfills missing stable IDs.
-  // It must not emit membership-change events while an old world is still detached during load.
-  { file: 'tm-save-lifecycle.js', match: /ch\.factionId\s*=\s*id/ },
-  { file: 'tm-save-lifecycle.js', match: /region\.factionId\s*=\s*id/ },
+  // rec is a local conversion record for detached map metadata; this inherits
+  // its containing division's faction, without mutating live membership.
+  { file: 'map-editor-to-game.js', match: /^\s*if \(!rec\.factionId\) rec\.factionId = inheritedFaction \|\| null;\s*$/ },
   // tm-huji-engine.js: worldPopulationSummary entry is a read-model label,
   // not a character/army/province membership mutation.
   { file: 'tm-huji-engine.js', match: /entry\.factionId\s*=\s*group\.factionId/ },

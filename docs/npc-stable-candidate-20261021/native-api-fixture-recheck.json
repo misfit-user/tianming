@@ -1,0 +1,73 @@
+{
+  "head": "279296525587db092feea6051338bf92793d8722",
+  "node": "v24.14.0",
+  "startedAt": "2026-10-22T12:10:30.336Z",
+  "scope": "Integration fixture native encoding/crypto alignment; production storage unchanged; fallback contracts retained.",
+  "originalDeadlineMs": 120000,
+  "testHashes": {
+    "web/scripts/smoke-full-turn-flow.js": "5f29b407884e3ac95045b1853d7143cc6fe807f341ec0b5953b65de1fce60c6f",
+    "web/scripts/smoke-start-game-data-integrity.js": "5b2f82f8ee7f43371129f5b4b765d754bac244ec5e543c4ea10a92f8e1dcb2a3",
+    "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459"
+  },
+  "results": [
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 61804,
+      "log": "docs/npc-stable-candidate-20261021/smoke-full-turn-flow-native-apis.log",
+      "passLines": [
+        "[full-turn-flow] PASS"
+      ],
+      "tail": "turn\": 1,\n    \"targetTurn\": 2,\n    \"courtRecords\": 2\n  },\n  \"loadingTail\": [\n    {\n      \"turn\": 2,\n      \"msg\": \"检查历史事件\",\n      \"pct\": 93.4\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"检查职位与寿数\",\n      \"pct\": 93.7\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"处理监听队列\",\n      \"pct\": 94\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"清理回合缓存\",\n      \"pct\": 94.3\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"回合阶段 6/7 · 生成史记弹窗\",\n      \"pct\": 78\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"hide\",\n      \"pct\": 0\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"回合阶段 7/7 · prepare-commit-barrier\",\n      \"pct\": 90\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"hide\",\n      \"pct\": 0\n    }\n  ],\n  \"toasts\": [\n    \"第1回合\",\n    \"❌ 存档数据库初始化失败：stub·no-idb\",\n    \"诏令需细化：征何税（商/盐/茶/市舶）？\",\n    \"鸿雁：1 封新来函已抵达\",\n    \"回合已完整保存；附加快照或存档后处理发生错误，详情见控制台。请勿为此重新推演本回合。\"\n  ],\n  \"errors\": [\n    \"播放背景音乐失败: ReferenceError: Audio is not defined\",\n    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\",\n    \"[SaveDB] 初始化失败: Error: stub·no-idb\",\n    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",\n    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",\n    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\"\n  ],\n  \"warns\": [\n    \"  Error: [perf] guoku.tick 超阈值: 1420.00ms > 800ms\\n      at _defaultThresholdHandler (tm-perf.js:225:9)\\n      at _checkThreshold (tm-perf.js:217:7)\",\n    \"[endTurn systems] slow stage: 系统结算总耗时 9819ms \",\n    \"[cc3·agenda] AI 返回不可用·走 fallback\",\n    \"[AutoSave] 端回合 snapshot 耗 1404ms·考虑 A-2\",\n    \"[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb\",\n    \"[TM.Features] [object Object]\",\n    \"[TM.Features] [object Object]\",\n    \"[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb\"\n  ],\n  \"writeTurnData\": 0,\n  \"autoSave\": 0\n}\n"
+    },
+    {
+      "file": "web/scripts/smoke-start-game-data-integrity.js",
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 81835,
+      "log": "docs/npc-stable-candidate-20261021/smoke-start-game-data-integrity-native-apis.log",
+      "passLines": [
+        "[smoke-start-game-data-integrity] stale-map-choice-is-ignored PASS {\"chars\":217,\"facs\":22,\"vars\":21,\"mapRegions\":307,\"guokuMoney\":850000,\"neitangMoney\":2500000,\"populationMouths\":94530000,\"corruptionIndex\":61.08148869142071,\"minxinIndex\":47.688629842378084,\"huangquanIndex\":75,\"huangweiIndex\":70,\"useAIGeo\":false,\"entered\":true,\"aiDeepRead\":true,\"aiPlan\":true,\"aiMatrix\":true,\"aiFirstTurn\":true}",
+        "[smoke-start-game-data-integrity] fresh-ai-geography-choice-is-honored PASS {\"chars\":217,\"facs\":22,\"vars\":21,\"mapRegions\":307,\"guokuMoney\":850000,\"neitangMoney\":2500000,\"populationMouths\":94530000,\"corruptionIndex\":61.08148869142071,\"minxinIndex\":47.688629842378084,\"huangquanIndex\":75,\"huangweiIndex\":70,\"useAIGeo\":true,\"entered\":true,\"aiDeepRead\":true,\"aiPlan\":true,\"aiMatrix\":true,\"aiFirstTurn\":true}",
+        "[smoke-start-game-data-integrity] fast-start-skips-artificial-and-model-waits PASS",
+        "[smoke-start-game-data-integrity] latest-start-request-wins PASS",
+        "[smoke-start-game-data-integrity] lazy-load-failure-unlocks-and-retries PASS",
+        "[smoke-start-game-data-integrity] strict-history-fast-path-preserved PASS",
+        "[smoke-start-game-data-integrity] first-turn-candidates-before-memorials PASS",
+        "[smoke-start-game-data-integrity] player-body-edit-blocks-late-initial-memorials PASS",
+        "[smoke-start-game-data-integrity] scenario-source-isolation PASS",
+        "[smoke-start-game-data-integrity] background-prewarm-nonblocking-and-stale-safe PASS",
+        "[smoke-start-game-data-integrity] deepread-config-is-immutable PASS",
+        "[smoke-start-game-data-integrity] deepread-stale-call-aborts-and-stops-queue PASS"
+      ],
+      "tail": "·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] first-turn-candidates-before-memorials PASS\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] player-body-edit-blocks-late-initial-memorials PASS\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] scenario-source-isolation PASS\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] background-prewarm-nonblocking-and-stale-safe PASS\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] deepread-config-is-immutable PASS\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] deepread-stale-call-aborts-and-stops-queue PASS\n"
+    },
+    {
+      "file": "web/scripts/smoke-perf-canonical-utf8.js",
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 325,
+      "log": "docs/npc-stable-candidate-20261021/smoke-perf-canonical-utf8-native-apis.log",
+      "passLines": [
+        "PASS Unicode/order/freeze/roundtrip; gzip=true",
+        "PASS Unicode/order/freeze/roundtrip; gzip=false",
+        "PASS one explicit UTF-8 encoding; gzip=true",
+        "PASS one explicit UTF-8 encoding; gzip=false",
+        "PASS legacy FNV with missing crypto",
+        "PASS legacy FNV with missing TextEncoder",
+        "PASS legacy FNV with missing both",
+        "PASS compression error keeps exact JSON and byte counts",
+        "PASS digest failure rejects; subsequent independent save recovers",
+        "PASS invalid/throwing input never produces a payload",
+        "PASS async digest freezes JSON before mutation and keeps concurrent identities separate",
+        "{\"passed\":11,\"failed\":0}"
+      ],
+      "tail": "PASS Unicode/order/freeze/roundtrip; gzip=true\nPASS Unicode/order/freeze/roundtrip; gzip=false\nPASS one explicit UTF-8 encoding; gzip=true\nPASS one explicit UTF-8 encoding; gzip=false\nPASS legacy FNV with missing crypto\nPASS legacy FNV with missing TextEncoder\nPASS legacy FNV with missing both\nPASS compression error keeps exact JSON and byte counts\nPASS digest failure rejects; subsequent independent save recovers\nPASS invalid/throwing input never produces a payload\nPASS async digest freezes JSON before mutation and keeps concurrent identities separate\n{\"passed\":11,\"failed\":0}\n"
+    }
+  ],
+  "finishedAt": "2026-10-22T12:12:54.313Z"
+}

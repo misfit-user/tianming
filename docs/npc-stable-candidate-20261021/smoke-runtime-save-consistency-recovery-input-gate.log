@@ -1,0 +1,95 @@
+  ok - legacy GM.map runtime state wins over an empty GM.mapData scaffold and P templates
+  ok - populated GM.mapData remains authoritative over legacy GM.map and P mirrors
+  ok - P.map remains the fallback when no GM runtime map exists
+=== 1. unified save snapshot builder ===
+  ok - _autoSaveSnapshotGM + _buildSaveState 可抽取
+  ok - Electron autoSave 显式区分业务成功与 resolve({success:false})
+  ok - IDB 外壳保持 {GM,P}
+  ok - project 外壳保持 P+gameState
+  ok - 两种外壳均剥离主/次 API key
+  ok - 两种外壳复用 selective GM snapshot
+  ok - 浏览器导出走统一纯 builder
+  ok - 桌面手动存档走统一纯 builder
+  ok - pre_endturn 从点击时事务引用走统一 detached builder
+  ok - 残局发布以 detached 模式复用统一 builder
+  ok - 生产存档写口无裸 deepClone(GM)
+  ok - 端回合不再重复调用 SaveManager.autoSave 覆盖 slot_0
+  ok - canonical batch failure preserves the pre_endturn recovery marker
+  ok - slot index is published only after the canonical batch commits
+  ok - tm_autosave_mark 仅在原子双槽提交后写入并锚定快照 turn
+  ok - 60s Electron autoSave 仅在业务成功后推进成功时钟
+  ok - Electron 闲置跳存基线锚定已写 committed snapshot turn
+  ok - 端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口
+  ok - 端回合 detached save 捕获 GM/P/loadGen/pre snapshotId
+  ok - 后台记忆不阻塞·builder 仍先验租约并使用 detached snapshot
+  ok - autosave/slot_0 共用代际租约与单一批量事务
+  ok - _endTurn_render 只渲染·不再在 Phase5 前启动存档
+  ok - normal 路径在 Phase5/J1 后只声明提交屏障
+  ok - deferred 路径在 Phase5/openers 后复用共享提交屏障
+  ok - deferred 路径显式阻止 core 提前落库
+  ok - normal/deferred 两条路径复用同一幂等存档 promise
+  ok - normal 提交屏障严格等待最终存档后才 commit
+  ok - SaveDB 同步冻结 canonical payload，并在异步准备前及真正 put 前复验 writeGuard
+  ok - 60s Electron IPC 跨档或快照推进后不推进当前局闲置跳存基线
+  ok - 主进程串行化固定 .tmp 的所有 auto-save IPC
+  ok - Electron canonical auto-save 在 write/rename 间按 session token 复验
+  ok - preload + 读档 + 新局共同切换 auto-save session
+  ok - receipt recovery failure aborts before the loaded world can fork its timeline
+  ok - state-mutating load migrations propagate into the load transaction instead of failing open
+  ok - integration bridge is aggregation-only; Huji and CorruptionEngine own simulation time
+  ok - desktop and auto-save envelope fields are stripped before P/GM become runtime state
+  ok - 回合分卷先暂存·receipt 与世界同事务提交·仅在 commit 后发布
+  ok - 读档按世界身份租约补发独立 receipt，并只删除轻量事务记录
+  ok - 读档以显式 Promise 屏障等待编年 hydration 和 receipt 恢复后才开放玩法
+  ok - hydration 期间 busy 阻止过回合，所有主要手动保存入口也等待同一屏障
+  ok - 正常分卷发布不再解压、重压并重写两个 canonical 世界
+  ok - 财政、问对和地图派生状态在事务内最终化
+  ok - commit 后 UI 渲染跳过所有已知状态准备入口
+=== 2. pre_endturn two-phase + strict validator ===
+  ok - marker pending -> committed 两阶段
+  ok - snapshotId 同时进入 marker/state/IDB record
+  ok - pre_endturn 写事务绑定 GM/P/loadGen/turn/sid/snapshotId lease
+  ok - SaveDB 在异步 open/gzip 前同步固化 snapshot JSON
+  ok - 启动恢复要求 marker 严格校验
+  ok - 校验/读取失败保留 autosave 安全回退
+  ok - 完全匹配 committed 三方可恢复
+  ok - marker snapshotId 错配拒绝
+  ok - record turn 错配拒绝
+  ok - pending marker 拒绝
+=== 3. sSaveAll atomic API persistence ===
+  ok - sSaveAll 不再提前调用 sSaveAPI 写旧 secondary
+  ok - API 单项保存不再以纯 P 覆盖对局中的桌面恢复档
+  ok - 主 API 单项保存统一 tm_api + saveP
+  ok - 次 API 单项保存统一 tm_api + saveP
+  ok - saveP / 编辑器返回不再以纯 P 覆盖 Electron canonical 恢复档
+  ok - Electron autoSave 生产写口只剩消费 committed snapshot 的 60s runner
+  ok - 保存全部只原子写 tm_api 一次
+  ok - 同一次持久化包含新主 key + 新 secondary key
+=== 4. dynamic write lease regressions ===
+  ok - 保存/玩法共享的 load barrier 在 hydration 完成前保持未决
+  ok - hydration 完成后 load barrier 才放行等待中的操作
+  ok - 读档—保存循环不推进玩法，Huji 单次推进且 IntegrationBridge 不再重复结算
+  ok - storage envelope metadata never enters validated runtime P/GM
+  ok - loaded-world invariant gate rejects duplicate stable character IDs before UI opens
+  ok - critical migration partial write rolls back P/GM/session and rebinds every runtime singleton to the old world
+  ok - 读档回滚自身失败时 barrier 保持 rejected，半恢复世界不能被手动保存入口放行
+  ok - 重叠读档被同步拒绝且不能替换第一条仍在进行的完成屏障
+  ok - 真实 save helper 只快照 Phase5 后状态并同时写 autosave/slot_0
+  ok - desktop receipt commits with canonical worlds and publish cleanup never mutates the world payload
+  ok - load recovery publishes only matching, non-future receipts and leaves other branches untouched
+  ok - receipt recovery failure is explicit and leaves the durable receipt available for a transactional retry
+[AutoSave] post-turn save failed: Error: slot_0 injected failure
+    at Object.saveManyAtomic (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-runtime-save-consistency.js:557:51)
+    at evalmachine.<anonymous>:282:38
+    at async runDynamicLeaseSmokes (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-runtime-save-consistency.js:562:19)
+  ok - canonical batch failure discards desktop staging and leaves no formal publish marker
+  ok - a post-commit load switch preserves staging and its durable receipt for the original campaign
+[SaveDB] IndexedDB就绪 (v6)
+  ok - stale quota recovery neither deletes an older autosave nor retries put
+  ok - stale pre_endturn completion fails closed and cannot overwrite the newer record or marker
+  ok - first wrapped request atomically adopts its token when sidecar is absent
+  ok - full-load/new-game synchronously invalidates an in-flight session
+  ok - invalidated old IPC cannot rename over canonical auto-save
+  ok - current session writes and reloads the canonical envelope
+
+[smoke-runtime-save-consistency] 84 passed / 0 failed

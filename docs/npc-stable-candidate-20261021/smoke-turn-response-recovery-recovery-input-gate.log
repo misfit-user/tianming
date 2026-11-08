@@ -1,0 +1,26 @@
+PASS accepted baseline retains exactly the original JSON bytes and SHA-256 identity
+{"case":"baseline-size-early-stop","kind":"string","limitChars":32000000,"tailVisits":0,"digests":0,"elapsedMs":0.0548,"heapBefore":18558584,"heapAfter":18565672,"rssBefore":76296192,"rssAfter":76308480,"processPeakRssKB":76316}
+{"case":"baseline-size-early-stop","kind":"numbers","limitChars":32000000,"tailVisits":0,"digests":0,"elapsedMs":1501.1422,"heapBefore":51815840,"heapAfter":120572064,"rssBefore":118681600,"rssAfter":243548160,"processPeakRssKB":355672}
+PASS oversized strings and numeric arrays stop before the tail without disabling live requests
+PASS native toJSON, special values and repeated references keep their original fingerprint
+PASS cycles and BigInt still disable unavailable fingerprints without reusable checkpoints
+PASS the exact final length check still rejects key and escaping overhead missed by the lower bound
+PASS full JSON is reused after confirmed rollback without a second paid request
+PASS consumer mutations cannot damage the preserved response
+PASS successful calls in the same attempt are never merged into one response
+PASS any change to prompt, output budget, schema or endpoint prevents reuse
+PASS changed world, model, mode or player options invalidate the entire recovery set
+PASS a newly loaded identical world is not treated as the rolled-back instance
+PASS validation errors, cancellations and uncertain persistence never arm recovery
+PASS length-truncated, filtered, refused and unconfirmed completions are not reusable
+PASS long Chinese narrative is replayed byte-for-byte with no shortening
+PASS oversized checkpoint is skipped rather than truncating the live response
+PASS lack of SHA-256 support leaves the original full request path intact
+PASS committed turns and unconfirmed rollbacks cannot be replayed
+PASS expiry, explicit discard and changed post-court choice prevent reuse
+PASS a changed wire request after context repair is not cached under the original prompt
+PASS native Agent tool arguments survive recovery unchanged, without executing tools early
+PASS non-finite tool arguments are never silently converted into reusable null values
+PASS uncacheable optional metadata does not suppress or repeat a normal request
+PASS tool definitions changed during inference do not populate the old request checkpoint
+{"pass":23,"fail":0,"total":23}

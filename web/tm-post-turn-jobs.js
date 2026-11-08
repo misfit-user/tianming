@@ -439,6 +439,10 @@ function _runPostTurnJobAttempt(job) {
     job.status = 'done';
     job.value = value;
     job.lastError = null;
+    // A settled receipt can be awaited again, but its runner must not retain
+    // a completed turn's context and rollback snapshots through detached jobs.
+    // Failed/retryable jobs keep their runner and lease for an explicit retry.
+    job.run = null;
     return { ok: true, value: value, attempt: job.attempts, totalAttempt: job.totalAttempts, retryCycle: job.retryCycle || 0 };
   }, function(error) {
     job.lastError = error;

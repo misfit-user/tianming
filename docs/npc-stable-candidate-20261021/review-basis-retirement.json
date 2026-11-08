@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-22T13:50:54.3928820Z",
+  "workingDirectory": "C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011",
+  "purpose": "Evidence for retiring completed review planning snapshots without weakening detached reads, conflict revalidation, rollback, or late-response identity checks.",
+  "provenance": {
+    "kind": "assistant-observed tool execution outputs",
+    "originalCompleteStdoutStderrFilesRetained": false,
+    "excerptPolicy": "Only selected lines actually observed in tool responses are reproduced below; these are not original complete log files.",
+    "executionTimestampsUtcAvailable": false,
+    "timestampExplanation": "recordedAtUtc is the evidence-writing time. The earlier tool responses did not provide absolute execution start/end timestamps; no such timestamps are inferred.",
+    "rerunForEvidence": false,
+    "formalElectronAcceptance": false
+  },
+  "sourceIdentity": {
+    "baselineCommit": "477ecfacf35039c33e554a5d50caf0eff24e27d0",
+    "runtimePath": "web/tm-emergency-recovery-review.js",
+    "runtimeSha256": "ed2a6b69a67a967cbe8f376bf43ddb2d12e7f9a14e65510e646e388655cb4a2b",
+    "testPath": "web/scripts/smoke-emergency-recovery-review.js",
+    "testSha256": "50369fb7e54d0b5d7844f1adb89c34aec4b2cd02b98c2d21b62c8c8b51acb4cc",
+    "baselineRuntimeSha256": "118a57db5c724661598f1eebe26df4e31fc5ecf819be4e507bce265c9cabf0ed",
+    "verifiedAtEvidenceWrite": true,
+    "lineEndings": {
+      "runtime": {
+        "LF": 461,
+        "CRLF": 0
+      },
+      "test": {
+        "LF": 290,
+        "CRLF": 0
+      }
+    },
+    "runtimeDiff": {
+      "addedLines": 12,
+      "removedLines": 2
+    },
+    "testDiff": {
+      "addedLines": 80,
+      "removedLines": 2
+    }
+  },
+  "implementation": {
+    "completeSnapshotSerialization": "Unchanged JSON.parse(JSON.stringify(...)) semantics.",
+    "basisRelease": "Every plan exit, including prepared, verified and failed exits, deletes the corresponding playerSnapshots WeakMap entry and sets session.basis to null.",
+    "conflictEvidence": "session.reads and session.record remain available after a prepared proposal until conflict checking/commit or the next plan.",
+    "newPlanAndCleanup": "Superseded read and record copies are retired before new snapshot allocation; terminated session cleanup retires all three snapshot owners.",
+    "retainedIdentity": "ctx, transaction, GM/P identity, generation, signal and budgets are not removed or bypassed."
+  },
+  "executions": [
+    {
+      "id": "current-review",
+      "command": "node web/scripts/smoke-emergency-recovery-review.js",
+      "exitCode": 0,
+      "pass": 37,
+      "fail": 0,
+      "total": 37,
+      "toolChunkId": "55f8ba",
+      "observedExcerpts": [
+        "PASS prepared review retires full worlds before handoff and preserves copied conflict evidence through replanning",
+        "PASS failed replacement snapshot leaves no old basis or read owner and cannot commit its superseded proposal",
+        "PASS cancellation releases private snapshot owners while late responses retain identity checks and cannot write",
+        "PASS a conflicting follow-up value forces another Agent check within the same budget",
+        "PASS state evidence read during planning remains available unchanged during after-write verification",
+        "{\"pass\":37,\"fail\":0,\"total\":37}"
+      ]
+    },
+    {
+      "id": "baseline-review-with-new-assertions",
+      "shell": "powershell",
+      "command": "$reviewProbe = @'\nconst fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');\nconst runtime=path.resolve('web/tm-emergency-recovery-review.js');\nconst baseline=cp.execFileSync('git',['show','477ecfacf35039c33e554a5d50caf0eff24e27d0:web/tm-emergency-recovery-review.js'],{encoding:'utf8'});\nconst read=fs.readFileSync.bind(fs);\nfs.readFileSync=function(file,...args){if(path.resolve(String(file))===runtime)return typeof args[0]==='string'||args[0]&&args[0].encoding?baseline:Buffer.from(baseline);return read(file,...args);};\nrequire('./web/scripts/smoke-emergency-recovery-review.js');\n'@\nnode -e $reviewProbe",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "pass": 34,
+      "fail": 3,
+      "total": 37,
+      "toolChunkId": "55d251",
+      "substitutionBoundary": "Reads the immutable baseline runtime from git into memory and substitutes only that runtime path in this test process. The same current test file is used. No production file or original source is rewritten.",
+      "observedExcerpts": [
+        "FAIL prepared review retires full worlds before handoff and preserves copied conflict evidence through replanning",
+        "AssertionError [ERR_ASSERTION]: prepared proposal cannot retain a full world through handoff or save",
+        "FAIL failed replacement snapshot leaves no old basis or read owner and cannot commit its superseded proposal",
+        "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /fixture replacement snapshot failed/. Input:",
+        "FAIL cancellation releases private snapshot owners while late responses retain identity checks and cannot write",
+        "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+        "{\"pass\":34,\"fail\":3,\"total\":37}"
+      ],
+      "observation": "The baseline still owned the complete basis where the new assertions required null. No unhandled rejection appeared in this final baseline run."
+    },
+    {
+      "id": "save-commit-boundary",
+      "command": "node web/scripts/smoke-save-commit-boundary.js",
+      "exitCode": 0,
+      "pass": 28,
+      "fail": 0,
+      "total": 28,
+      "toolChunkId": "614f3e",
+      "observedExcerpts": [
+        "PASS confirmed finalizer retires large captures while a background review can still read its exact results",
+        "PASS failed snapshot adoption and outstanding publication retain the complete recovery references",
+        "PASS a failed canonical write keeps the original capture usable by the real rollback owner",
+        "{\"pass\":28,\"fail\":0,\"total\":28}"
+      ]
+    },
+    {
+      "id": "final-save-reconcile",
+      "command": "node web/scripts/smoke-final-save-reconcile.js",
+      "exitCode": 0,
+      "pass": 10,
+      "fail": 0,
+      "total": 10,
+      "toolChunkId": "350d92",
+      "observedExcerpts": [
+        "PASS unknown outcome remains blocked; an arbitrary acknowledgement cannot release it",
+        "PASS genuine late commit verifies both complete slots and finalizes the original result once",
+        "PASS mismatched full data keeps the safety latch instead of adopting a partial save",
+        "PASS world switches cannot accept late disk results or clear the old safety latch",
+        "{\"pass\":10,\"fail\":0,\"total\":10}"
+      ]
+    },
+    {
+      "id": "endturn-transaction-failures",
+      "command": "node web/scripts/smoke-endturn-transaction-failures.js",
+      "exitCode": 0,
+      "assertions": 56,
+      "toolChunkId": "a5cc71",
+      "observedExcerpts": [
+        "[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable",
+        "[smoke-endturn-transaction-failures] PASS assertions=56"
+      ],
+      "observation": "The fixture emitted repeated rollback-baseline-unavailable diagnostics while exercising failure paths; the process completed with exit 0 and 56 passing assertions."
+    },
+    {
+      "id": "architecture",
+      "command": "node web/scripts/lint-arch-all.js",
+      "exitCode": 0,
+      "sessionId": 18840,
+      "toolChunkIds": [
+        "cd2a77",
+        "7afc1e",
+        "6aaa7c"
+      ],
+      "passedGuards": [
+        "lint-gm-writes",
+        "lint-dep-graph",
+        "lint-global-providers",
+        "lint-feature-boundaries",
+        "lint-runtime-template-immutability",
+        "lint-renderer-writeback-boundaries",
+        "lint-renderer-module-boundaries",
+        "lint-file-size",
+        "lint-control-bytes",
+        "lint-split-contracts",
+        "lint-split-stamps",
+        "lint-smoke-family-order",
+        "lint-scenario-data",
+        "lint-design-tokens",
+        "ref-check"
+      ],
+      "observedExcerpts": [
+        "[lint-arch-all] PASS  ref-check (2.3s)",
+        "[lint-arch-all] PASS — 架构守卫全绿"
+      ]
+    },
+    {
+      "id": "diff-whitespace",
+      "command": "git diff --check -- web/tm-emergency-recovery-review.js web/scripts/smoke-emergency-recovery-review.js",
+      "exitCode": 0,
+      "toolChunkId": "4326ef",
+      "observation": "A direct whitespace check was repeated when writing this evidence record; it exited 0 with no output. The test suites above were not rerun."
+    }
+  ],
+  "remainingValidation": "This evidence establishes ownership retirement and regression behavior. A new complete same-run formal Electron composite acceptance is still required to establish whether the renderer crash is resolved."
+}

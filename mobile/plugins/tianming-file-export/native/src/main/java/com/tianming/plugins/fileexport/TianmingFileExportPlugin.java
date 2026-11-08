@@ -56,19 +56,118 @@ public class TianmingFileExportPlugin extends Plugin {
             try (Writer writer = new OutputStreamWriter(new FileOutputStream(pendingFile), StandardCharsets.UTF_8)) {
                 writer.write(data);
             }
-            getActivity().runOnUiThread(() -> {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    intent.setType(call.getString("mimeType", "application/json"));
-                    intent.putExtra(Intent.EXTRA_TITLE, call.getString("fileName"));
-                    startActivityForResult(call, intent, "documentCreated");
-                } catch (Exception error) {
-                    fail(call, "无法打开系统保存窗口", "PICKER_UNAVAILABLE", error);
-                }
-            });
+            openPicker(call);
         } catch (Exception error) {
             fail(call, "无法准备导出文件", "EXPORT_PREPARE_FAILED", error);
+        }
+    }
+
+    private void openPicker(PluginCall call) {
+        getActivity().runOnUiThread(() -> {
+            try {
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType(call.getString("mimeType", "application/json"));
+                intent.putExtra(Intent.EXTRA_TITLE, call.getString("fileName"));
+                startActivityForResult(call, intent, "documentCreated");
+            } catch (Exception error) {
+                fail(call, "无法打开系统保存窗口", "PICKER_UNAVAILABLE", error);
+            }
+        });
+    }
+
+    // ── 分块导出（2026-10-14）────────────────────────────────────────────────
+    // 手机「抄送副本」闪退：整档 JSON 一次性过桥，JS 串→桥报文→Java String→JSONObject 要拷四五份，大档撑爆内存。
+    // 改为 beginExport 开缓存临时文件，appendChunk 逐块追加（每次约 1MB），finishExport 才弹系统保存窗口并流式写入。
+    private volatile Writer chunkWriter;
+    private volatile String chunkMimeType;
+    private volatile String chunkFileName;
+
+    @PluginMethod
+    public void beginExport(PluginCall call) {
+        if (!exporting.compareAndSet(false, true)) {
+            call.reject("请先完成或取消当前导出", "EXPORT_BUSY");
+            return;
+        }
+        String fileName = call.getString("fileName", "天命导出.json")
+            .replaceAll("[\\\\/\\x00-\\x1f]", "_").trim();
+        if (fileName.isEmpty()) fileName = "天命导出.json";
+        chunkFileName = fileName;
+        chunkMimeType = call.getString("mimeType", "application/json");
+        try {
+            pendingFile = File.createTempFile("tianming-export-", ".json", getContext().getCacheDir());
+            chunkWriter = new OutputStreamWriter(new FileOutputStream(pendingFile), StandardCharsets.UTF_8);
+            JSObject response = new JSObject();
+            response.put("started", true);
+            call.resolve(response);
+        } catch (Exception error) {
+            closeChunkWriter();
+            fail(call, "无法准备导出文件", "EXPORT_PREPARE_FAILED", error);
+        }
+    }
+
+    @PluginMethod
+    public void appendChunk(PluginCall call) {
+        String chunk = call.getString("chunk");
+        Writer writer = chunkWriter;
+        if (writer == null) {
+            call.reject("导出尚未开始或已结束", "EXPORT_NOT_STARTED");
+            return;
+        }
+        if (chunk == null) {
+            call.reject("缺少导出内容", "INVALID_DATA");
+            return;
+        }
+        // 大块内容不进 Capacitor 的 call 保存状态（Binder 大小限制）
+        call.getData().remove("chunk");
+        execute(() -> {
+            try {
+                synchronized (this) { writer.write(chunk); }
+                JSObject response = new JSObject();
+                response.put("bytes", chunk.length());
+                call.resolve(response);
+            } catch (Exception error) {
+                closeChunkWriter();
+                fail(call, "写入导出缓存失败", "EXPORT_WRITE_FAILED", error);
+            }
+        });
+    }
+
+    @PluginMethod
+    public void finishExport(PluginCall call) {
+        Writer writer = chunkWriter;
+        if (writer == null || pendingFile == null) {
+            call.reject("导出尚未开始或已结束", "EXPORT_NOT_STARTED");
+            return;
+        }
+        try {
+            synchronized (this) { writer.flush(); writer.close(); }
+            chunkWriter = null;
+        } catch (Exception error) {
+            closeChunkWriter();
+            fail(call, "无法准备导出文件", "EXPORT_PREPARE_FAILED", error);
+            return;
+        }
+        // documentCreated 从 call 里读 fileName/mimeType，这里补进去，与 saveFile 同一条收尾路径。
+        call.getData().put("fileName", chunkFileName);
+        call.getData().put("mimeType", chunkMimeType);
+        openPicker(call);
+    }
+
+    @PluginMethod
+    public void cancelExport(PluginCall call) {
+        closeChunkWriter();
+        cleanup();
+        JSObject response = new JSObject();
+        response.put("cancelled", true);
+        call.resolve(response);
+    }
+
+    private void closeChunkWriter() {
+        Writer writer = chunkWriter;
+        chunkWriter = null;
+        if (writer != null) {
+            try { writer.close(); } catch (IOException ignored) { /* temp file is deleted by cleanup */ }
         }
     }
 

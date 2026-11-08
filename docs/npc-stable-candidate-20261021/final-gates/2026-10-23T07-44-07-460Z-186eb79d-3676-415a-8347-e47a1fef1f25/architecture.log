@@ -1,0 +1,17 @@
+[lint-arch-all] PASS  lint-gm-writes (5.2s)
+[lint-arch-all] PASS  lint-dep-graph (2.2s)
+[lint-arch-all] PASS  lint-global-providers (8.0s)
+[lint-arch-all] PASS  lint-feature-boundaries (0.5s)
+[lint-arch-all] PASS  lint-runtime-template-immutability (0.5s)
+[lint-arch-all] PASS  lint-renderer-writeback-boundaries (7.3s)
+[lint-arch-all] PASS  lint-renderer-module-boundaries (1.3s)
+[lint-arch-all] PASS  lint-file-size (0.9s)
+[lint-arch-all] PASS  lint-control-bytes (0.9s)
+[lint-arch-all] PASS  lint-split-contracts (0.3s)
+[lint-arch-all] PASS  lint-split-stamps (0.3s)
+[lint-arch-all] PASS  lint-smoke-family-order (1.7s)
+[lint-arch-all] PASS  lint-scenario-data (5.4s)
+[lint-arch-all] PASS  lint-design-tokens (1.9s)
+[lint-arch-all] PASS  ref-check (2.1s)
+
+[lint-arch-all] PASS — 架构守卫全绿

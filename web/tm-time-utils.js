@@ -104,7 +104,8 @@
     var daysFromStart = (typeof TM !== 'undefined' && TM.SimTime && typeof GM !== 'undefined' && GM)
       ? TM.SimTime.dayAtTurn(GM, Number(turn)) : Math.floor((Number(turn) - 1) * dpv);
     if (!isFinite(daysFromStart)) daysFromStart = 0;
-    var d = _civilFromDays(_daysFromCivil(start.year, start.month, start.day) + daysFromStart);
+    // Civil dates project the current day; daysFromStart retains exact elapsed time.
+    var d = _civilFromDays(_daysFromCivil(start.year, start.month, start.day) + Math.floor(daysFromStart));
     var year = d.year;
     var month = d.month;
     var day = d.day;

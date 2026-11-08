@@ -1,0 +1,9 @@
+{
+  "recordedAt": "2026-10-23T08:32:46.565Z",
+  "runId": "ac0bfde1-8538-46be-b2cb-f3b17f95cc4a",
+  "path": "web/dev-tools/candidate-temp/tm-bridge-series-GrWHoZ/production/saves/__autosave__.json",
+  "bytes": 181390295,
+  "mtime": "2026-10-23T08:29:19.002Z",
+  "observedStage": "Second actual slot load at simulated day 37 has completed; third turn is in progress, before its final canonical commit",
+  "scope": "Whole desktop autosave file bytes, not NPC-only growth. Metadata only; no save contents copied."
+}

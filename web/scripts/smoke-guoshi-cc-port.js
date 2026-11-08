@@ -259,6 +259,9 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   var oq = 0, oSum = 0;
   var fatReq = '需求很长' + '求'.repeat(28000);
   var r9 = await AA.runAuthoringLoop(AA.makeDraft({ name: '甲' }), fatReq, {
+    // Real overflow recovery needs compressible history; raw user instructions
+    // are preserved verbatim and cannot become smaller by adding a summary.
+    priorConversation: [{ role: 'user', text: '原始任务', userInstruction: '原始任务' }, { role: 'assistant', text: '旧工具结果'.repeat(30000), toolCalls: [] }],
     macroKeepTail: 0,
     caller: function (conv, tools2) {
       if (tools2 && tools2.length === 1 && tools2[0].name === 'submitSummary') { oSum++; return Promise.resolve({ text: '①用户给了超长需求 ②尚未改动 ③无任务表 ④草稿完好 ⑤首轮请求超窗 ⑥压缩自救 ⑦下一步:直接完成需求并 finish。' + '摘'.repeat(200), toolCalls: [] }); }
@@ -339,7 +342,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   // 9e: UI 接线源契约(编辑器输入框运行中回车 → onSteer·运行态占位提示插话)
   var uiSrc = require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui-icons.js'), 'utf8') + require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui.js'), 'utf8') + require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui-render.js'), 'utf8');
   ok(/ui\.running && typeof onSteer === 'function'\) onSteer\(\)/.test(uiSrc) && /function onSteer\(\)/.test(uiSrc), 'G9 UI 接线:运行中回车路由到 onSteer');
-  ok(uiSrc.indexOf('回车可随时插话') >= 0 && /AA\.steer\(t\)/.test(uiSrc), 'G9 UI 接线:运行态占位提示+steer 调用');
+  ok(uiSrc.indexOf('这时说的话会排进去') >= 0 && /AA\.steer\(t\)/.test(uiSrc), 'G9 UI 接线:运行态占位提示(插话会排进去)+steer 调用');
 
   // ───────── H1 · 输出截断自愈(CC max_tokens 动态调整对照) ─────────
   console.log('— H1 输出截断自愈 —');
@@ -411,7 +414,9 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   ok(/\['tm_P_lite', 'tm_P'\]\.forEach/.test(uiSrc4) && /localStorage\.setItem\('tm_api'/.test(uiSrc4), 'H4 保存写 tm_api+镜像游戏存档 P.ai(否则被存档优先级压掉)');
   ok(/_refreshModelChip/.test(uiSrc4) && /'配置 API'/.test(uiSrc4) && /classList\.toggle\('warn', !ok\)/.test(uiSrc4), 'H4 模型徽未配置显「配置 API」警示态');
   var wsSrc = require('fs').readFileSync(path.join(__dirname, '..', 'preview', 'scenario-editor-reset-style.css'), 'utf8') /* R1·工坊CSS已外提 */;
-  ok(/\.je-aa-apicfg \{ display: none !important; \}|\.je-aa-stop, \.je-aa-apicfg \{ display: none !important; \}/.test(wsSrc), 'H4 工坊旧 API 抽屉已退役(功能移模型徽弹层)');
+  var adSrc4 = require('fs').readFileSync(path.join(__dirname, '..', 'preview', 'scenario-editor-reset-adapters.js'), 'utf8');
+  // 2026-10-15 国师重做：旧折叠块连同藏它的 CSS 一并拆掉（原先建好再藏，隐藏的旧权限块还会悄悄改掉新模式）
+  ok(!/je-aa-apicfg/.test(adSrc4) && !/je-aa-apicfg/.test(wsSrc), 'H4 工坊旧 API 抽屉已退役(功能移模型徽弹层·不再建也不再藏)');
 
   // ───────── H5 · 权限模式(问策/共审/放行·CC permission modes 对照·owner 点名缺失件) ─────────
   console.log('— H5 权限模式 —');
@@ -421,7 +426,9 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   ok(/localStorage\.setItem\(PERM_KEY/.test(uiSrc5) && /_applyPerm\(_loadPerm\(\)\)/.test(uiSrc5), 'H5 模式持久+启动即布防');
   ok(/id="tm-aa-perm-danger"/.test(uiSrc5), 'H5 危险操作开关(允许删除/改名联动)');
   var wsSrc5 = require('fs').readFileSync(path.join(__dirname, '..', 'preview', 'scenario-editor-reset-style.css'), 'utf8') /* R1·工坊CSS已外提 */;
-  ok(/\.je-aa-planmode:not\(\.je-aa-fewshot\) \{ display: none !important; \}/.test(wsSrc5), 'H5 工坊旧计划模式勾选退役(升级为问策·少样例开关保留)');
+  var adSrc5 = require('fs').readFileSync(path.join(__dirname, '..', 'preview', 'scenario-editor-reset-adapters.js'), 'utf8');
+  ok(!/je-aa-planmode/.test(adSrc5) && !/je-aa-planmode/.test(wsSrc5), 'H5 工坊旧计划模式勾选退役(升级为问策)');
+  ok(/data-sw="' \+ id|_swHtml\('exemplars'/.test(uiSrc5) && /tm_aa_exemplars/.test(uiSrc5), 'H5 少样例开关收进「设置 · 偏好」(照剧本里已有的写法来)');
 
   // ───────── H6 · 次要模型分工(杂活走便宜模型·owner"自动调用次要API的模型为它工作") ─────────
   console.log('— H6 次要模型分工 —');
@@ -606,7 +613,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   var _oldFetch13 = global.fetch;
   global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] })); };
   var conv13 = [];
-  for (var ci13 = 0; ci13 < 10; ci13++) conv13.push({ role: ci13 % 2 ? 'assistant' : 'user', text: '第' + ci13 + '条·' + new Array(60).join('内容'), toolCalls: [] });
+  for (var ci13 = 0; ci13 < 10; ci13++) conv13.push({ role: ci13 % 2 ? 'assistant' : 'user', text: '第' + ci13 + '条·' + new Array(ci13 % 2 ? 1200 : 60).join('内容'), toolCalls: [] });
   var rc13 = await AA.compactConversation(conv13, AA.makeDraft({ name: '甲' }), { cfg: { url: 'https://api.x.com', key: 'k', model: 'm' } });
   ok(rc13 && rc13.ok === true && rc13.after < rc13.before && /【前情摘要·上下文已压缩】/.test(rc13.conversation[0].text), 'H13 手动压缩：N 条→摘要头+近尾(真走 caller 管线)');
   global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '太薄', tool_calls: [] } }] })); };
@@ -628,6 +635,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   console.log('— H14 压缩保用户原话 —');
   global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] })); };
   var conv14 = [
+    { role: 'assistant', text: '历史工具结果'.repeat(2000), toolCalls: [] },
     { role: 'user', text: '【用户需求】\n给东林补两个能干的文官\n\n【草稿现状】\n（很长的构建附文·不该进原话）\n\n开始：先按需 getField 查看。' },
     { role: 'assistant', text: '好', toolCalls: [] },
     { role: 'user', text: '【前情摘要·上下文已压缩】旧摘要头·非玩家原话' },

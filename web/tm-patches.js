@@ -786,6 +786,17 @@ openSettings=function(){
             '</div>' +
           '</label>';
         })() +
+        // 2026-11-08·断处续开关(docs/llm-duanchu-xu-20261108.md·默认开)
+        (function(){
+          var _contOn = !(typeof P !== 'undefined' && P && P.conf && P.conf.aiContinueOnCut === false);
+          return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
+            '<input type="checkbox" id="s-ai-continue-on-cut" ' + (_contOn ? 'checked ' : '') + 'onchange="_togglePConf(\'aiContinueOnCut\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">回答被截断时从断处接着写（默认启用）</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">有的中转写到几分钟就把回答掐断，结构化结果只剩半截·过回合会因此中止。开启时把半截交回去请 AI 从断处接着写·拼成完整结果再用·同一次最多接 3 次。每接一次要把整份提示再发一遍（支持缓存的接口花得不多）。关闭则被截断的回答照旧按失败处理。</div>' +
+            '</div>' +
+          '</label>';
+        })() +
         (function(){
           var _wtAgOn = !(P.conf && P.conf.wentianAgentMode === false);
           return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
@@ -1098,6 +1109,20 @@ openSettings=function(){
       return h;
     })()+
 
+    // ── 新推演施工·事的容器（甲1a·2026-11-07）：只读整理旧账成案单，不改世界；默认关。不挂实验模式总闸（开它不必连带打开实验玩法）──
+    (function(){
+      var _mlOn = !!(P.conf && P.conf.mattersLedgerEnabled === true);
+      return '<div class="settings-section"><h4>新推演施工（实验）</h4>' +
+        '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;">' +
+          '<input type="checkbox" id="s-matters-ledger" ' + (_mlOn?'checked ':'') + 'onchange="_togglePConf(\'mattersLedgerEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">事的容器（默认关）</div>' +
+            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">只读：每次过回合，把诏令、承诺、要务、待议、奏疏等旧账整理成一份案单，随存档保存。不改动世界、不调模型、不影响推演。供新推演施工用。</div>' +
+          '</div>' +
+        '</label>' +
+      '</div>';
+    })()+
+
     (function(){
       var _ofa = window.TM && TM.OfficeFlags ? TM.OfficeFlags.masterOn() : (P.conf && typeof P.conf.officeActivationEnabled === 'boolean' ? P.conf.officeActivationEnabled : !(P.ai && P.ai.officeActivationEnabled === false));
       return '<div class="settings-section"><h4>官制活化</h4>' +
@@ -1220,6 +1245,9 @@ openSettings=function(){
     "<div class=\"rw\"><div class=\"fd q\"><label>\u51B3\u7B56\u8BB0\u5F55</label><input type=\"number\" id=\"s-mem-dec\" value=\""+(P.conf.playerDecisionKeep||30)+"\" min=\"5\" max=\"100\"></div>"+
     "<div class=\"fd q\"><label>\u53D9\u4E8B\u8BB0\u5FC6</label><input type=\"number\" id=\"s-mem-chr\" value=\""+(P.conf.chronicleKeep||10)+"\" min=\"3\" max=\"50\"></div>"+
     "<div class=\"fd q\"><label>\u5BF9\u8BDD\u5386\u53F2</label><input type=\"number\" id=\"s-mem-conv\" value=\""+(P.conf.convKeep||40)+"\" min=\"10\" max=\"200\"></div></div></div>"+
+
+    // 文风（2026-11-07 同志定）：照旧/文言/半文半白/白话，各栏可单设，人物说话另设开关；这一节由 tm-wenfeng.js 出
+    ((window.TM && TM.Wenfeng) ? TM.Wenfeng.settingsHtml() : '')+
 
     // AI生成字数
     "<div class=\"settings-section\"><h4>AI\u751F\u6210\u5B57\u6570</h4>"+

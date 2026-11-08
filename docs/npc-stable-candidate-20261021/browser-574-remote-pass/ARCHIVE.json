@@ -1,0 +1,113 @@
+{
+  "recordedAt": "2026-10-23T08:04:34.603Z",
+  "head": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+  "checkout": "481eea15eecc348e11b4cad28fd655208df21a83",
+  "tree": "e0aa6115fed7238a1adc72e64badcb4995f9f363",
+  "runId": "fad96787-97f8-4f56-8c89-910434b72ef4",
+  "ciRun": 39919665284,
+  "ciJob": 120301568125,
+  "artifact": 12487650239,
+  "formalAcceptancePassed": true,
+  "profiling": {
+    "preciseMemory": true,
+    "heapSampling": false,
+    "protocolForcesGC": false,
+    "cpuProfile": false
+  },
+  "scope": "Normal unprofiled remote complete composite; not whole CI success; no heap samples or forced collection",
+  "files": [
+    {
+      "name": "report.json",
+      "original": "report.json",
+      "bytes": 84112,
+      "sha256": "956ed90a2e460c2beb8a9f9f2d2c472d04c04b6221e52766dce8752a959f1c69"
+    },
+    {
+      "name": "npc-composite.json",
+      "original": "npc-composite.json",
+      "bytes": 74395,
+      "sha256": "127e70eaddb58accd670556605d0ac79a3643c5b81077fe99fb0a12f7b9eb7a3"
+    },
+    {
+      "name": "npc-composite.log",
+      "original": "npc-composite.log",
+      "bytes": 2174,
+      "sha256": "6adad06a2bf654468489fcf9c4efbba60b1c3c3c4a71bfc6c1deff45985576fd"
+    },
+    {
+      "name": "official-ui.json",
+      "original": "official-ui.json",
+      "bytes": 44659,
+      "sha256": "0ce142b628f1bfc2e61463a91d028bcc47ebe86ea58c9c70decef938fd3e94b7"
+    },
+    {
+      "name": "process-memory.jsonl",
+      "original": "process-memory.jsonl",
+      "bytes": 157693,
+      "sha256": "5b151c661c2d12bc1e1a5fc297e06d92ea601b60e9c9ff5a39eb4d9e643f2d2f"
+    },
+    {
+      "name": "progress.log",
+      "original": "progress.log",
+      "bytes": 59451,
+      "sha256": "25d7db2cb21cae55b86cadbfb57714761a214cb2c103684f617edbf65598b203"
+    },
+    {
+      "name": "renderer-heap.jsonl",
+      "original": "renderer-heap.jsonl",
+      "bytes": 79767,
+      "sha256": "cdef7f040c502fd3e3e691cec98ebead87e203e7b1dc08501b4ab428096aec65"
+    },
+    {
+      "name": "renderer.log",
+      "original": "renderer.log",
+      "bytes": 280425,
+      "sha256": "ada52e2e43f68b8a6b23669240af6f6d81164b07591e965892f4d94c03d5d91e"
+    },
+    {
+      "name": "turn-result-controls.json",
+      "original": "turn-result-controls.json",
+      "bytes": 201,
+      "sha256": "3fdb97bfef577041c8f3ebd216f8e942064b04280020ce8e758a7ed58abe196b"
+    },
+    {
+      "name": "01-official-start.png",
+      "original": "01-official-start.png",
+      "bytes": 55954,
+      "sha256": "256183fb08d9e4d86643aa5ed0638082d0f47e7621be86dddc6f446f9f9dec32"
+    },
+    {
+      "name": "02-meeting-request.png",
+      "original": "02-meeting-request.png",
+      "bytes": 564633,
+      "sha256": "ba4d410c0425c1ccc250e4ae8d58608ae1c6ce48d033d223dbcc6e1f7ae5c15a"
+    },
+    {
+      "name": "03-onsite-question.png",
+      "original": "03-onsite-question.png",
+      "bytes": 141059,
+      "sha256": "edba76504c439c3a3c4c718a229fda155aece8c4f9ddfe0f279c8bac882bb0ae"
+    },
+    {
+      "name": "04-completed-return.png",
+      "original": "04-completed-return.png",
+      "bytes": 537094,
+      "sha256": "c7be1fa93a3cb9562f58421d18728825790e7ce024d765a3ab5a58cbe1b983f4"
+    },
+    {
+      "name": "composite-timeline.json",
+      "original": "composite-timeline.json",
+      "originalBytes": 5077836,
+      "originalSha256": "74ba2a6d4d3e131a8c5a91273e6a25a207b03556ec71d54efa52c7ce714d56a4",
+      "bytes": 2998268,
+      "sha256": "b2c32c60cd7bccbe3a0b38680822ef80add217853bc82f7002648af56f5d3d76",
+      "transformation": "JSON whitespace only; every parsed field preserved"
+    },
+    {
+      "name": "ci-job.log",
+      "original": "web/dev-tools/ci-39919665284-composite.log",
+      "bytes": 76115,
+      "sha256": "819758a4c5d95abafef6225355f3aa29ce6539323db3a64ececdf600229b7626"
+    }
+  ]
+}

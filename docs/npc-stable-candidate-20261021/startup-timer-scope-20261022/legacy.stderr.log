@@ -1,0 +1,16 @@
+FAIL dispose cancels both immediate and lexical host animation-frame handles
+AssertionError [ERR_ASSERTION]: an old VM immediate callback survived disposal
+
+1 !== 0
+
+    at Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\startup-timer-scope-20261022\test-timer-scope.cjs:12:241)
+    at async C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\startup-timer-scope-20261022\test-timer-scope.cjs:16:56
+FAIL a late old async callback cannot schedule any timer or frame after disposal
+AssertionError [ERR_ASSERTION]: disposed scope accepted new work from a late callback
+
+5 !== 0
+
+    at Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\startup-timer-scope-20261022\test-timer-scope.cjs:13:518)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processTimers (node:internal/timers:538:9)
+    at async C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\startup-timer-scope-20261022\test-timer-scope.cjs:16:56

@@ -1,0 +1,72 @@
+全量 smoke 记录 · 分支 claude/shishan-cleanup-20261014 @ b93b69ac · 2026-10-14
+（各段「分支 @ xxx」是当时跑 smoke 的实际分支头；分支后来两次变基换了号，最终号对照见 README「六」。）
+命令：cd web && node scripts/ci-smokes.js --jobs 2（本机 Node v24.14.0，node_modules 为 junction → E:/tianming-edict-efficacy-20260924/node_modules）
+
+[run-smokes] 完成：1154 PASS · 3 FAIL · 0 SKIP · 2 WAIVED / 1159 executed · 0 suspect · 总耗时 2726s
+
+三个 FAIL 逐个复核（都不是本轮改动造成）：
+1. smoke-npc-composite-official.js —— 并行跑 121s 超时。单跑 --jobs 1：PASS（90.7s）。
+2. smoke-full-turn-flow.js —— doActualStart 那段 vm 10 秒限时超时（vm 的 timeout 按墙钟算，本机当时有别的会话在跑 node/codex）。
+   在未改动的 bddd3c51 基线工作树（E:/tianming-tmp/base-bddd3c51，同 junction、同剧本包）单跑：同一位置同样超时。
+   机器空下来后在本分支再单跑：PASS（整个用例 210s）。
+3. smoke-production-dependencies.js —— 用例跑 `npm ls --omit=dev --all --json`，默认 maxBuffer 1MB；
+   本机 node_modules 是 junction，几百个 dev 依赖被 npm 报成 extraneous，stderr 撑爆 → spawnSync ENOBUFS。
+   bddd3c51 基线同样 ENOBUFS。GitHub CI 用干净 npm ci 不会有这问题（bddd3c51 的 guards 工作流 10-09 绿）。
+
+结论：本分支相对 bddd3c51 无 smoke 回归。两个超时用例在本机属负载敏感，production-dependencies 属 junction 环境问题。
+最慢 Top 3：smoke-perf-save-preparation 169s · smoke-npc-composite-official 121s · smoke-circuit-governor-effects-tang 110s。
+
+—— 变基到 d41e534a 之后（第四刀补齐派生清单）——
+定向 run-smokes（endturn/release/hot-/manifest/retention/right-panel/startup/split/memory/faction-npc/content-manager/preview/tax/emergency/minxin/editor-admin/formal-map）：
+第一次 189/190，smoke-startup-phase-observability FAIL——分期清单是拿变基前的 global-providers 报告生成的，少 5 个主干新函数；
+重跑 lint-global-providers 后重生成并重打热更基线，该用例 PASS（scripts=479），四项 --check 与 release contract 176 全绿。
+
+—— 第二轮（10-15 凌晨，分支 @ b7509202 = 672b9097/e582e821/3476a04b/8f55bd30/25f766ac/b7509202）——
+命令同上（--jobs 2；机器当时 CPU 82%，别的会话在跑 Codex 与 newui）。
+跑到 [785/1164] 时被 Claude Code 以「系统内存吃紧」停掉（不是用例失败；未自行重启）。已执行 785 条：1 FAIL · 4 TIMEOUT，其余通过。
+1. smoke-building-appraisal-compat.js —— 真回归，8f55bd30 引入：harness 整装 tm-ai-infra-json.js、只按名抽 tm-utils 几个函数，
+   robustParseJSON 搬回 tm-utils 后上下文里没了；调用点裹 try/catch，ReferenceError 被当解析失败吞掉，兜底解析断言露馅（23/24）。
+   --ref d41e534a 与 --ref 3476a04b 对照 24/24，--ref 8f55bd30 起 23/24。修在 b7509202：lib-turn-reliability.js（12 个 smoke 共用）
+   与 3 个单独 smoke 按名抽正典进上下文；探针（钩 vm.runInContext 查 typeof robustParseJSON）核 23 条同类 harness，全部齐全、全过。
+   探针还抓到 smoke-secondary-task-retries 此前静默走到过一次缺失函数、仍 17/17——假绿，一并修掉。
+2. smoke-edict-data-writeback.js —— 并发 120.7s 超时；单跑 PASS（104s）。
+3. smoke-map-circuit-book-shaosong.js —— 并发 121.6s 超时；单跑 PASS（108s）。
+4. smoke-npc-composite-official.js —— 并发 121.0s 超时；第一轮已核单跑 PASS（90.7s）。
+5. smoke-office-seat-dept-prefix.js —— 并发 121.8s 超时；单跑 PASS（111s）。
+未跑到的 379 条（字母序 office-seat-dept-prefix 之后）本轮没有全量结论，待机器空闲补跑。
+已另核：触及族定向 run-smokes 75 条、四刀各自的随动 smoke、lint-arch-all 15/15（b7509202 后复跑）、release contract 176、
+hot-builder-gates 27、四项 --check 全绿。
+
+—— 变基到 origin/main ac568161 之后（分支 @ 7ae3f136 = 上述 12 笔 + 「变基后重生成派生清单」）——
+主干 ac568161 的 guards 工作流红在 canonical hot baseline stale 19 项（主干改了脚本字节没重打热更基线），Electron 七组、bridge、mobile 契约全绿。
+变基只撞两份派生 JSON（-X theirs），之后按序重生成：global-providers 报告 → startup-script-phases.json（内容已同主干）→ tm-start-runtime-manifest.json
+→ .hot-update-manifest.json；四项 --check、release contract 176（bytes 479,841,325）、hot-builder-gates 27、lint-arch-all 15/15 全绿。
+
+完整全量（串行）：node scratchpad/ci-smokes-serial.js = ci-smokes 同款门禁（--all --no-retry、run-id、证据校验、HEAD 与用例集不变），
+只多 --jobs 1 --timeout 240（本机被别的会话占到 CPU 90%+、提交额度到顶，120 秒并发会误伤）。
+开跑前后台守候内存：空闲与提交余量都 >5GB 连续三分钟才起跑（此前两次后台重活被 Claude Code 因内存吃紧收掉）。
+[run-smokes] 完成：1161 PASS · 4 FAIL · 0 SKIP · 2 WAIVED / 1167 executed · 0 suspect · 总耗时 2674s（主干新增 3 条 smoke，总数 1164→1167）
+四个 FAIL 逐个复核：
+1. smoke-tang840-opening-ledgers.js —— vm 内 60 秒墙钟超时（变基前 383 条串行里 71s 过）。单跑：分支 7ae3f136 PASS（68s）、主干 ac568161 基线工作树 PASS（144s，同负载）。负载，不是回归。
+2. smoke-full-turn-flow.js —— doActualStart 那段 vm 10 秒墙钟，同第一轮；99% CPU 下单跑仍超时。守候 240 分钟 CPU 从没连续 3 分钟低于 50%（别的会话一直在跑），
+   改同负载 A/B：07:00 前后 CPU 70%+ 时，分支 7ae3f136 单跑 PASS（159s），主干 ac568161 基线工作树单跑 PASS（160s）。负载，不是回归。
+3. smoke-perf-save-preparation.js —— 五个子用例共用 290 秒预算，90%+ 负载下四个就耗完、第五个（failure checks）没轮到；第一轮同机空闲 169s 过。
+   全量里前四个子用例各 3/3 PASS（12 条断言）；第五个单独跑（--case 4，不占共用预算）PASS（49s）：13 条断言在分支上全部执行通过，只是本机负载下塞不进一个 290 秒窗口。
+   整条重跑与主干基线的同负载计时对照两次都被 Claude Code 以「内存吃紧」收掉（每个子用例要装一整份官方剧本），没拿到计时数；本轮改动不碰存档准备路径（见 README）。
+4. smoke-production-dependencies.js —— junction node_modules 的 ENOBUFS，同第一轮；CI 干净 npm ci 绿。
+
+结论：本分支相对主干 ac568161 无 smoke 回归，四个红全是本机负载或 junction 环境。门禁在 7ae3f136 全绿（lint-arch-all 15/15、release contract 176、hot-baseline --check、hot-builder-gates 27、startup-phase 与 native-preparation --check）；之后的记录提交只改 docs/。
+
+—— 第三轮（分支 claude/shishan-round3-20261015 @ 1201d8ae = 主干 8f05376d + 删 seeder 主包）——
+守卫/契约：lint-arch-all 15/15、verify-official-scenario-parity 46（builtin/game/preview 三模式）、release contract 176（files=809 bytes=387,020,170）、
+hot-builder-gates 27、sync-official --check（artifacts=10）、hot-baseline --check（files=800，容忍 595）、startup-phase --check（scripts=479）、native-preparation --check 全绿。
+改动族单跑：smoke-official-bundle-parity 23、smoke-official-scenario-seeder 24（新）、smoke-scenario-isolation 46、smoke-scenario-editor-reset-roundtrip、smoke-official-scenario-lazy-loader 全过。
+定向 run-smokes（16 族 --grep 并集，--jobs 2 --timeout 240 --no-retry）：72 PASS · 0 FAIL · 0 suspect（run-smokes 205s）；
+热更基线手摘旧条目后 hot-/manifest/release 三族复跑：7 PASS。
+根目录 scripts/smoke-scenario-no-bleed.js 改读注册表后 A3 仍红，与改前一致（不在 run-smokes 自动发现范围，主干既有）。
+全量 smoke 与 Electron 七组交 GitHub CI（PR → main），结果补在下面。
+GitHub CI（PR #106 → main，run 38656592494，分支 @ b7d25acb）十项全绿：
+guards = sync-official --check（artifacts=10）、parity 46、hot-baseline files=800（容忍 595）、release contract 176（files=809 bytes=387,020,170）、hot-builder-gates 27、lint-arch-all、
+全量 ci-smokes --jobs 2：[run-smokes] 完成：1166 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 1168 executed · 0 suspect · 总耗时 893s（新增 smoke-official-scenario-seeder，总数 1167→1168）；
+Electron 七组（core/battle/court/maps/official-authoring/authoring/relief）、electron-bridge、mobile-release-contracts 全绿。guards 作业 11 分钟（23:51→00:02 UTC）。
+本机负载下红过的 tang840-ledgers / full-turn-flow / perf-save-preparation / production-dependencies 在 CI 干净环境全过，再次坐实是环境不是回归。

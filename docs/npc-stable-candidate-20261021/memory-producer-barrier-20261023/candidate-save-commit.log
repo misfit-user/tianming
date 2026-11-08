@@ -1,0 +1,37 @@
+PASS commit receipt is delivered once, only after both slots commit
+PASS commit observation precedes cleanup but save still waits for cleanup completion
+PASS cleanup errors cannot change a confirmed commit into failure
+PASS observer exceptions do not undo or reject committed data
+PASS aborted writes never notify success or create committed slots
+PASS local committed journal cleanup failure preserves new slots and a committed marker
+PASS partial local write failure restores the original slots without a commit receipt
+PASS auxiliary snapshot rejection does not roll back a committed full world
+PASS auxiliary false result is reported without changing the durable world result
+PASS failed primary write never starts the auxiliary snapshot
+PASS snapshot and cleanup overlap only after durable commit and are both awaited
+PASS a world switch during snapshot cannot publish old-world save markers
+PASS legacy boolean SaveDB success retains the full snapshot path
+PASS mismatched callback receipt cannot start snapshot or bypass a failed primary save
+PASS a staged display failure cannot interrupt retirement of the world transaction
+PASS failure of instrumentation after commit does not erase the observed commit
+PASS an async observer rejection is handled without rejecting the successful write
+PASS synchronous put failure aborts the transaction before any partial slot commit
+PASS failed supplementary memory does not prevent canonical save or snapshot
+PASS unresolved memory never blocks the turn and late success schedules a same-world save
+PASS original memory producer does not queue an obsolete world save
+PASS original memory producer does not queue an obsolete player save
+PASS original memory producer does not queue an obsolete load save
+PASS original memory producer does not queue an obsolete turn save
+PASS memory completion missing remains an explicit compact failure without affecting main commit
+PASS memory completion unscheduled remains an explicit compact failure without affecting main commit
+PASS memory completion rejected remains an explicit compact failure without affecting main commit
+PASS memory completion report-throws remains an explicit compact failure without affecting main commit
+PASS a failed auxiliary turn-data file preserves its payload in the successful main save
+PASS an empty auxiliary result is a reported warning, not silent success of that task
+PASS actual finalizer keeps committed world and full presentation when auxiliary snapshot fails
+PASS a matching durable receipt blocks rollback but a foreign receipt does not
+PASS confirmed finalizer retires large captures while a background review can still read its exact results
+PASS captures remain live until a committed sidecar publication actually finishes
+PASS failed snapshot adoption and outstanding publication retain the complete recovery references
+PASS a failed canonical write keeps the original capture usable by the real rollback owner
+{"pass":36,"fail":0,"total":36}

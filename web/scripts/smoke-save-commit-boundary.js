@@ -83,8 +83,26 @@ test('failed supplementary memory does not prevent canonical save or snapshot',a
   assert.equal(await f.save(),true);assert(f.events.includes('commit'));assert(f.events.includes('snapshot'));assert(f.events.includes('capture'));}
 });
 test('unresolved memory never blocks the turn and late success schedules a same-world save',async()=>{
- const f=renderFixture();let release,saves=0;f.c._awaitPostTurnJobsForSave=()=>new Promise(r=>{release=r;});f.c.requestBackgroundAutosave=async()=>{saves++;return {ok:true};};
- assert.equal(await f.save(),true);assert.equal(saves,0);release();await tick();assert.equal(saves,1);
+ const f=renderFixture();let release,saves=0,waits=0;f.c._awaitPostTurnJobsForSave=()=>{waits++;return new Promise(r=>{release=r;});};f.c.requestBackgroundAutosave=async()=>{saves++;return {ok:true,scheduled:true};};
+ assert.equal(await f.save(),true);assert.equal(saves,0);const owner=f.ctx.meta.postTurnMemorySavePromise;
+ assert.equal(f.c._endTurn_startPostTurnMemorySave(f.ctx,()=>true,4),owner);assert.equal(waits,1);
+ release();await tick();assert.equal(saves,1);assert.deepEqual(clone(await owner),{ok:true,scheduled:true,turn:4});
+});
+for(const change of ['world','player','load','turn'])test('original memory producer does not queue an obsolete '+change+' save',async()=>{
+ const f=renderFixture();let release,saves=0;f.c._awaitPostTurnJobsForSave=()=>new Promise(r=>{release=r;});f.c.requestBackgroundAutosave=async()=>{saves++;return {ok:true,scheduled:true};};
+ assert.equal(await f.save(),true);
+ if(change==='world')f.c.GM={...f.c.GM};else if(change==='player')f.c.P={};else if(change==='load')f.c._tmLoadGen++;else f.c.GM.turn++;
+ release();const receipt=await f.ctx.meta.postTurnMemorySavePromise;assert.equal(receipt.ok,false);assert.equal(receipt.stale,true);assert.equal(saves,0);assert.equal(f.disk.get('autosave').GM.turn,4);
+});
+for(const kind of ['missing','unscheduled','rejected','report-throws'])test('memory completion '+kind+' remains an explicit compact failure without affecting main commit',async()=>{
+ const f=renderFixture();let waits=0,requests=0,deferrals=0;
+ if(kind!=='missing')f.c._awaitPostTurnJobsForSave=async()=>{waits++;if(kind==='report-throws')throw Error('original memory error');};
+ f.c.requestBackgroundAutosave=async()=>{requests++;if(kind==='rejected')throw Error('queue rejected');return {ok:false,reason:'queue refused'};};
+ f.c.TM.Endturn={Validity:{defer(){deferrals++;if(kind==='report-throws')throw Error('diagnostic unavailable');}}};
+ assert.equal(await f.save(),true);const receipt=await f.ctx.meta.postTurnMemorySavePromise;
+ assert.equal(receipt.ok,false);assert.equal(deferrals,1);assert.equal(waits,kind==='missing'?0:1);assert.equal(requests,['missing','report-throws'].includes(kind)?0:1);
+ assert(receipt.reason.includes(kind==='missing'?'生产者不可用':kind==='unscheduled'?'queue refused':kind==='rejected'?'queue rejected':'original memory error'));
+ assert.deepEqual(Object.keys(receipt).sort(),['code','ok','reason']);assert.equal(f.disk.size,2);
 });
 test('a failed auxiliary turn-data file preserves its payload in the successful main save',async()=>{
  const f=renderFixture();f.ctx.meta.turnPresentation={turnData:{chronicle:'完整本期正文'}};f.c._endTurn_stageTurnData=async()=>{throw Error('sidecar failed');};
@@ -110,4 +128,68 @@ test('a matching durable receipt blocks rollback but a foreign receipt does not'
   f.txn.canonicalSaveReceipt={...f.txn.canonicalSaveReceipt,transactionId:'other'};
   assert.equal(c._tmRollbackEndTurnTransaction(f.txn,Error('not committed')),true);assert.equal(restores,2);
 });
+
+function capturedFinalizerFixture(){
+  const f=renderFixture(),c=f.c;
+  c.deepClone=clone;c.structuredClone=structuredClone;c.Math=Math;c._tmRequestEndTurnDesktopAutoSaveFlush=()=>{};
+  c._tmReportEndTurnBoundaryError=()=>{};c._tmAdoptCommittedWorldSnapshot=state=>{f.adopted=state;return true;};
+  c._endTurn_render=p=>{f.shown=p;};c._endTurn_publishStagedTurnData=async()=>{f.ctx.meta.stagedTurnData=null;return true;};
+  loadFunctions(c,'tm-endturn-core.js',['_tmCaptureEndTurnObject','_tmCaptureEndTurnTransaction','_tmCapturePreEndTurnCommittedState',
+    '_tmEndTurnTransactionCurrent','_tmRestoreEndTurnObject','_tmRestoreCommittedBaselineAfterRollback',
+    '_tmRollbackEndTurnTransaction','_tmCommitEndTurnTransaction','_tmFinalizeEndTurnTransaction']);
+  f.txn=c._tmCaptureEndTurnTransaction();f.ctx.meta={transaction:f.txn,transactionId:f.txn.transactionId};
+  f.click=c._tmCapturePreEndTurnCommittedState(f.txn);c.GM.turn++;
+  f.ctx.input={edicts:[{id:'kept-input'}]};f.ctx.results={sc1:{summary:'kept-result'}};f.ctx.record={zhengwen:'kept-record'};
+  f.ctx.meta.turnPresentation={zhengwen:'actual completed presentation'};
+  f.finish=()=>c._tmFinalizeEndTurnTransaction(f.ctx,f.txn);
+  return f;
+}
+function assertCaptureReleased(f){
+  assert.equal(f.txn.gm,null);assert.equal(f.txn.p,null);
+  for(const key of ['rollbackCapture','preEndturnState','preEndturnPayload','finalCanonicalState','finalPayload'])assert.equal(f.txn.captureSession[key],null,key+' no longer retains a whole world');
+  assert.equal(f.txn.captureSession.released,true);assert.equal(f.ctx.meta.canonicalWorldPayload,null);
+  assert.equal(f.ctx.meta.acceptReconciledCommit,null);assert.equal(f.ctx.meta.committedCaptureReleased,true);
+}
+test('confirmed finalizer retires large captures while a background review can still read its exact results',async()=>{
+  const f=capturedFinalizerFixture();let reviews=0;
+  f.c.TM.RecoveryReview={afterCommit:ctx=>{
+    reviews++;assert.equal(ctx,f.ctx);assert.equal(ctx.meta.transaction,f.txn);assert.equal(f.txn.committed,true);
+    assert.equal(ctx.input.edicts[0].id,'kept-input');assert.equal(ctx.results.sc1.summary,'kept-result');assert.equal(ctx.record.zhengwen,'kept-record');
+    assertCaptureReleased(f);
+  }};
+  assert.equal(await f.finish(),true);assert.equal(reviews,1);assertCaptureReleased(f);
+  assert.equal(f.adopted.GM.turn,5);assert.equal(f.disk.get('autosave').GM.turn,5);
+  assert.equal(f.txn.gmRef,f.c.GM);assert.equal(f.txn.pRef,f.c.P);assert.equal(f.txn.canonicalSaveReceipt.state,'committed');
+  const writes=f.events.filter(x=>x==='commit').length;
+  await assert.rejects(f.finish(),/回合提交时世界身份已变化/);
+  assert.equal(f.events.filter(x=>x==='commit').length,writes);assert.equal(reviews,1);
+});
+test('captures remain live until a committed sidecar publication actually finishes',async()=>{
+  const f=capturedFinalizerFixture();let publish;
+  f.ctx.meta.stagedTurnData={transactionId:f.txn.transactionId};
+  f.c._endTurn_publishStagedTurnData=()=>new Promise(resolve=>{publish=()=>{f.ctx.meta.stagedTurnData=null;resolve(true);};});
+  const pending=f.finish();await tick();assert.equal(f.txn.committed,true);assert(publish);
+  assert(f.txn.gm&&f.txn.p&&f.txn.captureSession.finalPayload);assert.equal(typeof f.ctx.meta.acceptReconciledCommit,'function');
+  publish();assert.equal(await pending,true);assertCaptureReleased(f);
+});
+test('failed snapshot adoption and outstanding publication retain the complete recovery references',async()=>{
+  for(const reason of ['adoption','publication']){
+    const f=capturedFinalizerFixture();
+    if(reason==='adoption')f.c._tmAdoptCommittedWorldSnapshot=()=>false;
+    else {f.ctx.meta.stagedTurnData={transactionId:f.txn.transactionId};f.c._endTurn_publishStagedTurnData=async()=>{throw Error('publication pending');};}
+    assert.equal(await f.finish(),true);assert.equal(f.txn.committed,true);
+    assert(f.txn.gm&&f.txn.p&&f.txn.captureSession.preEndturnState&&f.txn.captureSession.finalPayload);
+    assert(f.ctx.meta.canonicalWorldPayload);assert.equal(typeof f.ctx.meta.acceptReconciledCommit,'function');assert.notEqual(f.ctx.meta.committedCaptureReleased,true);
+  }
+});
+test('a failed canonical write keeps the original capture usable by the real rollback owner',async()=>{
+  const f=capturedFinalizerFixture(),before=clone(f.click);
+  f.c.GM.changed='must roll back';f.c.P.changed='must roll back';f.c.TM_SaveDB.saveManyAtomic=async()=>false;
+  await assert.rejects(f.finish(),/回合最终存档失败/);assert.equal(f.txn.committed,false);
+  assert(f.txn.gm&&f.txn.p&&f.txn.captureSession.preEndturnState);assert.notEqual(f.ctx.meta.committedCaptureReleased,true);
+  assert.equal(f.c._tmRollbackEndTurnTransaction(f.txn,Error('save failed')),true);
+  assert.equal(f.c.GM.turn,before.GM.turn);assert.equal(f.c.GM.changed,undefined);assert.equal(f.c.P.changed,undefined);
+  assert.equal(f.adopted.GM.turn,before.GM.turn);assert.equal(f.txn.rolledBack,true);assert.equal(f.disk.size,0);
+});
+
 (async()=>{let pass=0,fail=0;for(const t of tests){try{await t.run();pass++;console.log('PASS '+t.name);}catch(e){fail++;console.error('FAIL '+t.name+'\n'+e.stack);}}console.log(JSON.stringify({pass,fail,total:tests.length}));if(fail)process.exitCode=1;})();

@@ -1,0 +1,381 @@
+{
+  "recordedAt": "2026-10-23T07:47:47.131Z",
+  "scope": "Current 574 remote desktop IPC, real process restart publication recovery, and opt-in startup recovery only. Not composite activity acceptance, all CI success, or OOM resolution.",
+  "workflowRun": 39919665284,
+  "job": 120301568159,
+  "jobName": "electron-cases (core)",
+  "url": "https://github.com/misfit-user/tianming/actions/runs/39919665284/job/120301568159",
+  "status": "passed",
+  "identity": {
+    "implementation": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+    "actualCheckout": "481eea15eecc348e11b4cad28fd655208df21a83",
+    "actualTree": "e0aa6115fed7238a1adc72e64badcb4995f9f363",
+    "localTree": "e0aa6115fed7238a1adc72e64badcb4995f9f363",
+    "treesEqual": true,
+    "parents": [
+      "b0c80e5ae005912effbc947af027d021505c1dbd",
+      "574fcf05447d6daf0e6a99f64ea4a70b119a496e"
+    ]
+  },
+  "artifact": {
+    "id": 12487305356,
+    "name": "electron-bridge-core-481eea15eecc348e11b4cad28fd655208df21a83",
+    "reportedZipBytes": 311007,
+    "githubDigest": "sha256:3838d706cda7f2a13f7a4c7489b152bfd5062a909fffc3e2f9ed1d8bd0ea9368",
+    "digestScope": "GitHub API metadata for archive; extracted files independently hashed"
+  },
+  "sourceHashes": {
+    "main-impl.js": "eaf893396a6213b1ab92aa8fc80ddb9b25596647a8d12918d9b96bff7facd2e0",
+    "preload-impl.js": "22fc36e4490c6c3584e943d62ff706f63bca1ee04ecf8e7f04f0179a8f7e5f70",
+    "web/tm-endturn-render.js": "f8a5a8bf29067a2c09eab645a9591eca606660cf5cca2b8665c5a4c1cce0a3f6",
+    "web/tm-emergency-recovery-review.js": "83c998c9565d481fd7e9fd8822ff417fcf8c47f0c983c6ff3e1ca9012de5259f"
+  },
+  "reports": [
+    {
+      "runId": "8c88661f-3754-49ef-9168-014e4acd9a32",
+      "group": "startup-autosave",
+      "head": "481eea15eecc348e11b4cad28fd655208df21a83",
+      "host": {
+        "platform": "win32",
+        "node": "v22.23.4"
+      },
+      "modes": [
+        {
+          "mode": "startup-autosave",
+          "ok": true,
+          "exitCode": 0,
+          "elapsedMs": 31174,
+          "versions": {
+            "node": "20.18.3",
+            "acorn": "8.14.0",
+            "ada": "2.9.2",
+            "ares": "1.34.4",
+            "base64": "0.5.2",
+            "brotli": "1.0.9",
+            "cjs_module_lexer": "1.4.1",
+            "cldr": "44.1",
+            "icu": "74.2",
+            "llhttp": "8.1.2",
+            "modules": "130",
+            "napi": "9",
+            "nghttp2": "1.61.0",
+            "openssl": "0.0.0",
+            "simdutf": "5.6.4",
+            "tz": "2024a",
+            "undici": "6.21.1",
+            "unicode": "15.1",
+            "uv": "1.46.0",
+            "uvwasi": "0.0.21",
+            "v8": "13.0.245.25-electron.0",
+            "zlib": "1.3.0.1-motley",
+            "electron": "33.4.11",
+            "chrome": "130.0.6723.191"
+          },
+          "cases": [
+            {
+              "name": "locked-electron-runtime",
+              "status": "PASS"
+            },
+            {
+              "name": "production-webpreferences",
+              "status": "PASS"
+            },
+            {
+              "name": "observed-turn-data-protocol",
+              "value": 2,
+              "status": "PASS",
+              "required": 2
+            },
+            {
+              "name": "real-bridge-and-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "production-test-exports-boundary",
+              "status": "PASS"
+            },
+            {
+              "name": "real running T1 autosave exists and the validated native reader can read it",
+              "status": "PASS"
+            },
+            {
+              "name": "restart 1 keeps the menu open and preserves the autosave without prompting or loading",
+              "status": "PASS"
+            },
+            {
+              "name": "restart 2 keeps the menu open and preserves the autosave without prompting or loading",
+              "status": "PASS"
+            },
+            {
+              "name": "the existing load manager exposes a styled manual desktop-backup entry and restores the full game",
+              "status": "PASS"
+            }
+          ],
+          "failures": [],
+          "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data"
+        }
+      ]
+    },
+    {
+      "runId": "ec3c0fb7-e683-4131-871a-34539f803f2b",
+      "group": "desktop-ipc-restart",
+      "head": "481eea15eecc348e11b4cad28fd655208df21a83",
+      "host": {
+        "platform": "win32",
+        "node": "v22.23.4"
+      },
+      "modes": [
+        {
+          "mode": "production",
+          "ok": true,
+          "exitCode": 0,
+          "elapsedMs": 5070,
+          "versions": {
+            "node": "20.18.3",
+            "acorn": "8.14.0",
+            "ada": "2.9.2",
+            "ares": "1.34.4",
+            "base64": "0.5.2",
+            "brotli": "1.0.9",
+            "cjs_module_lexer": "1.4.1",
+            "cldr": "44.1",
+            "icu": "74.2",
+            "llhttp": "8.1.2",
+            "modules": "130",
+            "napi": "9",
+            "nghttp2": "1.61.0",
+            "openssl": "0.0.0",
+            "simdutf": "5.6.4",
+            "tz": "2024a",
+            "undici": "6.21.1",
+            "unicode": "15.1",
+            "uv": "1.46.0",
+            "uvwasi": "0.0.21",
+            "v8": "13.0.245.25-electron.0",
+            "zlib": "1.3.0.1-motley",
+            "electron": "33.4.11",
+            "chrome": "130.0.6723.191"
+          },
+          "cases": [
+            {
+              "name": "locked-electron-runtime",
+              "status": "PASS"
+            },
+            {
+              "name": "production-webpreferences",
+              "status": "PASS"
+            },
+            {
+              "name": "observed-turn-data-protocol",
+              "value": 2,
+              "status": "PASS",
+              "required": 2
+            },
+            {
+              "name": "real-bridge-and-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "production-test-exports-boundary",
+              "status": "PASS"
+            },
+            {
+              "name": "legacy-and-hash-save-real-ipc-roundtrip",
+              "status": "PASS"
+            },
+            {
+              "name": "autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk",
+              "status": "PASS"
+            },
+            {
+              "name": "manual-save-world-switch-barrier-and-late-real-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "atomic-export-real-ipc-failure-and-cancel",
+              "status": "PASS"
+            },
+            {
+              "name": "real-worker-import-cancel-timeout-error-and-recovery",
+              "status": "PASS"
+            },
+            {
+              "name": "workshop-overwrite-rollback-through-real-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "canonical-world-and-receipt-committed-before-process-exit",
+              "status": "PASS"
+            }
+          ],
+          "failures": [],
+          "securityScope": "real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data"
+        },
+        {
+          "mode": "test-exports",
+          "ok": true,
+          "exitCode": 0,
+          "elapsedMs": 2698,
+          "versions": {
+            "node": "20.18.3",
+            "acorn": "8.14.0",
+            "ada": "2.9.2",
+            "ares": "1.34.4",
+            "base64": "0.5.2",
+            "brotli": "1.0.9",
+            "cjs_module_lexer": "1.4.1",
+            "cldr": "44.1",
+            "icu": "74.2",
+            "llhttp": "8.1.2",
+            "modules": "130",
+            "napi": "9",
+            "nghttp2": "1.61.0",
+            "openssl": "0.0.0",
+            "simdutf": "5.6.4",
+            "tz": "2024a",
+            "undici": "6.21.1",
+            "unicode": "15.1",
+            "uv": "1.46.0",
+            "uvwasi": "0.0.21",
+            "v8": "13.0.245.25-electron.0",
+            "zlib": "1.3.0.1-motley",
+            "electron": "33.4.11",
+            "chrome": "130.0.6723.191"
+          },
+          "cases": [
+            {
+              "name": "locked-electron-runtime",
+              "status": "PASS"
+            },
+            {
+              "name": "production-webpreferences",
+              "status": "PASS"
+            },
+            {
+              "name": "observed-turn-data-protocol",
+              "value": 2,
+              "status": "PASS",
+              "required": 2
+            },
+            {
+              "name": "real-bridge-and-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "production-test-exports-boundary",
+              "status": "PASS"
+            },
+            {
+              "name": "legacy-and-hash-save-real-ipc-roundtrip",
+              "status": "PASS"
+            },
+            {
+              "name": "autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk",
+              "status": "PASS"
+            },
+            {
+              "name": "manual-save-world-switch-barrier-and-late-real-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "atomic-export-real-ipc-failure-and-cancel",
+              "status": "PASS"
+            },
+            {
+              "name": "real-worker-import-cancel-timeout-error-and-recovery",
+              "status": "PASS"
+            },
+            {
+              "name": "workshop-overwrite-rollback-through-real-ipc",
+              "status": "PASS"
+            }
+          ],
+          "failures": [],
+          "securityScope": "real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data"
+        },
+        {
+          "mode": "restart",
+          "ok": true,
+          "exitCode": 0,
+          "elapsedMs": 1848,
+          "versions": {
+            "node": "20.18.3",
+            "acorn": "8.14.0",
+            "ada": "2.9.2",
+            "ares": "1.34.4",
+            "base64": "0.5.2",
+            "brotli": "1.0.9",
+            "cjs_module_lexer": "1.4.1",
+            "cldr": "44.1",
+            "icu": "74.2",
+            "llhttp": "8.1.2",
+            "modules": "130",
+            "napi": "9",
+            "nghttp2": "1.61.0",
+            "openssl": "0.0.0",
+            "simdutf": "5.6.4",
+            "tz": "2024a",
+            "undici": "6.21.1",
+            "unicode": "15.1",
+            "uv": "1.46.0",
+            "uvwasi": "0.0.21",
+            "v8": "13.0.245.25-electron.0",
+            "zlib": "1.3.0.1-motley",
+            "electron": "33.4.11",
+            "chrome": "130.0.6723.191"
+          },
+          "cases": [
+            {
+              "name": "locked-electron-runtime",
+              "status": "PASS"
+            },
+            {
+              "name": "production-webpreferences",
+              "status": "PASS"
+            },
+            {
+              "name": "observed-turn-data-protocol",
+              "value": 2,
+              "status": "PASS",
+              "required": 2
+            },
+            {
+              "name": "real-bridge-and-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "production-test-exports-boundary",
+              "status": "PASS"
+            },
+            {
+              "name": "canonical-receipt-and-folio-recover-after-real-process-exit",
+              "status": "PASS"
+            }
+          ],
+          "failures": [],
+          "securityScope": "real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data"
+        }
+      ]
+    }
+  ],
+  "verifiedAssertions": {
+    "actualTextTransportAndLegacyDiskEnvelope": true,
+    "invalidInputs": [
+      "{bad",
+      "null",
+      "[]"
+    ],
+    "invalidRejects": true,
+    "invalidDiskUnchanged": true,
+    "invalidPreloadSessionUnchanged": true,
+    "sourceEvidence": "source-assertions.json"
+  },
+  "boundaries": [
+    "Real locked Electron main/preload/IPC/disk with existing core synthetic fixtures, no player data.",
+    "The restart mode uses a fresh process and production publication recovery; it is not the composite invitation/travel chain.",
+    "Startup-autosave checks two startup page reloads and the existing manual backup entry; not the two composite nonterminal saves.",
+    "No local test/heavy browser was run by this collector; no source, HEAD, CURRENT or report prose changes.",
+    "Core success cannot substitute for the still separate normal composite run or prove OOM fixed."
+  ],
+  "archive": "ARCHIVE.json"
+}

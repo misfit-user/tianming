@@ -547,6 +547,7 @@ console.log('天命游戏脚本开始加载...');
 <!-- 2026-07-04 起居注单一写口(gm:qijuHistory 收口)·须在所有写手之前 -->
 <script src="tm-qiju-ledger.js?v=20260928-release1353"></script>
 <script src="tm-prompt-composer.js?v=20260928-release1353"></script>
+<script src="tm-wenfeng.js?v=20261107-wenfeng"></script><!-- 文风设置·照旧/文言/半文半白/白话·实录固定文言·人物说话默认不跟·默认照旧=提示词逐字不变 -->
 <script src="tm-memory-adaptive.js?v=20260928-release1353"></script>
 <script src="tm-memory-long-term.js?v=20260928-release1353"></script>
 <script src="tm-memory-hybrid.js?v=20260928-release1353"></script>
@@ -561,6 +562,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-ai-infra.js?v=20260930-context-detection"></script>
 <!-- 勿动位置·第二十三拆：json → infra → model-detect 必须连续按序装载(顶层函数型保序切割) -->
 <script src="tm-ai-infra-model-detect.js?v=20260930-context-detection"></script>
+<script src="tm-ai-continuation.js?v=20261108-continue1"></script><!-- 断处续·中转掐断的 JSON 回答接着写·回合推演(_callEndturnAI)调用期取用·只做文本与请求体 -->
 <script src="tm-memory-trace.js?v=20260928-release1353"></script>
 <script src="tm-memory-evidence-registry.js?v=20260928-release1353"></script>
 <script src="tm-memory-source-bound.js?v=20260928-release1353"></script>
@@ -589,6 +591,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-edict-lifecycle.js?v=20260928-release1353"></script>
 <script src="tm-edict-efficacy.js"></script>
 <script src="tm-edict-outcomes.js?v=20260928-release1353"></script>
+<script src="tm-matters.js?v=20261107-matters1a"></script><!-- 事的容器(甲1a)·只读把旧账整理成案单存 GM.matters·开关 mattersLedgerEnabled 默认关 -->
+<script src="tm-turn-ledger-facts.js?v=20261107-ledgerfacts1"></script><!-- 本回合账目实变·只读·史官成文(sc1d)时交给史官的数目依据 -->
 <script src="tm-edict-effects.js?v=20260928-release1353"></script>
 <!-- 2026-04-30 Phase 4.1 时间工具：回合→干支年月日/相对时间/时辰 -->
 <script src="tm-time-utils.js?v=20260928-release1353"></script>
@@ -638,6 +642,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-ai-result-contract.js?v=20260928-release1353"></script>
 <script src="tm-world.js?v=20260928-release1353"></script>
 <script src="tm-memorials.js?v=20260928-release1353"></script>
+<script src="tm-person.js?v=20261107-person1"></script><!-- 人物实体(人1)·一个人只有一份「他是谁」·问对经此拼装(逐字不变)·另有精简档 -->
 <script src="tm-wendui.js?v=20260929-political-actions"></script>
 <script src="tm-wendui-persona-views.js?v=20260929-political-actions"></script>
 <!-- 2026-05-21·狱中问对模式·6 动作 + AI 解析 + 频率限制 + 朝议反应 -->
@@ -921,8 +926,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-bgm-config.js?v=20260928-release1353"></script>
 <!-- R131 (2026-04-25) tm-audio-theme.js 拆分 → audio-theme + save-lifecycle + office-editor -->
 <script src="tm-audio-theme.js?v=20260928-release1353"></script>
-<script src="tm-save-world-validation.js?v=20260929-local-npc"></script>
-<script src="tm-save-lifecycle.js?v=20260929-local-npc"></script>
+<!-- Stable-ID migration split: keep these three scripts adjacent and ordered. -->
+<script src="tm-save-stable-id-migration.js?v=20261022-save-stable-ids"></script>
+<script src="tm-save-world-validation.js?v=20261022-save-stable-ids"></script>
+<script src="tm-save-lifecycle.js?v=20261022-save-stable-ids"></script>
 <script src="tm-save-close-flush.js?v=20260928-release1353"></script><!-- 必须紧随 save-lifecycle：应用退出前排空 canonical + 桌面镜像 -->
 <script src="tm-office-editor.js?v=20260928-release1353-vacancy"></script>
 <script src="tm-topbar-vars.js?v=20260928-release1353"></script>

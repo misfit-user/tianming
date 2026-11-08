@@ -1,0 +1,348 @@
+{
+  "id": 120285295560,
+  "run_id": 39914633560,
+  "workflow_name": "guards",
+  "head_branch": "codex/npc-composite-r123-20261011",
+  "run_url": "https://api.github.com/repos/misfit-user/tianming/actions/runs/39914633560",
+  "run_attempt": 1,
+  "node_id": "CR_kwDOSGJNKs8AAAAcAY_zyA",
+  "head_sha": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+  "url": "https://api.github.com/repos/misfit-user/tianming/actions/jobs/120285295560",
+  "html_url": "https://github.com/misfit-user/tianming/actions/runs/39914633560/job/120285295560",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2026-10-23T06:56:54Z",
+  "started_at": "2026-10-23T06:56:55Z",
+  "completed_at": "2026-10-23T06:58:29Z",
+  "name": "electron-cases (core)",
+  "steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-10-23T06:56:56Z",
+      "completed_at": "2026-10-23T06:56:57Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-10-23T06:56:57Z",
+      "completed_at": "2026-10-23T06:57:17Z"
+    },
+    {
+      "name": "Run actions/setup-node@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-10-23T06:57:17Z",
+      "completed_at": "2026-10-23T06:57:27Z"
+    },
+    {
+      "name": "Install locked dependencies and Electron runtime",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-10-23T06:57:27Z",
+      "completed_at": "2026-10-23T06:57:42Z"
+    },
+    {
+      "name": "Real sandbox bridge, desktop IPC and restart recovery",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5,
+      "started_at": "2026-10-23T06:57:42Z",
+      "completed_at": "2026-10-23T06:57:51Z"
+    },
+    {
+      "name": "Desktop startup stays on menu and autosave recovery is opt-in",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-10-23T06:57:51Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Personal campaign real trigger, tactical result and fallback",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 7,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Tactical landscape profiles, picking and real WebGL rendering",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 8,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Tactical routing, detailed assets, shadows and GPU recovery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 9,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Tactical troop models and commander abilities",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 10,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Construction appraisal thinking tools and visible feedback",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 11,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Edict polish complete text and visible failure recovery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 12,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Edict settled text clarity, layout and draft preservation",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 13,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Memorial list continuity, drafts and reading preferences",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 14,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Character actions, office recommendations and existing appointment flow",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 15,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Zero API local introduction, independent player response and sourced assistance",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 16,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Official NPC composite meeting, onsite choices, two real reloads and thirty days",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 17,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Edict office creation, recursive tree, appointment target and native save recovery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 18,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Formal sourced public-duty request, local decision, payment and save",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 19,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Right rail pending audiences, navigation and completion feedback",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 20,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Player feedback army search, local fonts and fatal turn boundary",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 21,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Treasury, help, rail, edict continuity and primary-secondary API controls",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 22,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Authoring region paths and real editor persistence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 23,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Workshop hierarchy, nested creation and saved editor readback",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 24,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Authoring streamed tools, final result, approval and real editor persistence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 25,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Guoshi project ownership and read-only execution (real Electron)",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 26,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Guoshi truthful completion and same-project recovery (real Electron)",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 27,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Guoshi relay continuation, readable controls and empty administration (real Electron)",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 28,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Verify authoring full-permission apply and response recovery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 29,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Strategic map territory labels, native input and rendering performance",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 30,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Circuit book, click by map tier, context menu and circuit outline",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 31,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Default C1 terrain, live labels, native picking and original-map fallback",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 32,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Startup mode continuation and full native menu flow",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 33,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Guoshi bounded progress, instruction retention and actual game consumption",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 34,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:23Z"
+    },
+    {
+      "name": "Controlled TLS address binding and redirects",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 35,
+      "started_at": "2026-10-23T06:58:23Z",
+      "completed_at": "2026-10-23T06:58:24Z"
+    },
+    {
+      "name": "Relief pilot official scenarios, real UI and save recovery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 36,
+      "started_at": "2026-10-23T06:58:24Z",
+      "completed_at": "2026-10-23T06:58:24Z"
+    },
+    {
+      "name": "Preserve Electron evidence (including startup failures)",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 37,
+      "started_at": "2026-10-23T06:58:24Z",
+      "completed_at": "2026-10-23T06:58:25Z"
+    },
+    {
+      "name": "Post Run actions/setup-node@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 73,
+      "started_at": "2026-10-23T06:58:25Z",
+      "completed_at": "2026-10-23T06:58:26Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 74,
+      "started_at": "2026-10-23T06:58:26Z",
+      "completed_at": "2026-10-23T06:58:28Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 75,
+      "started_at": "2026-10-23T06:58:28Z",
+      "completed_at": "2026-10-23T06:58:28Z"
+    }
+  ],
+  "check_run_url": "https://api.github.com/repos/misfit-user/tianming/check-runs/120285295560",
+  "labels": [
+    "windows-latest"
+  ],
+  "runner_id": 1000004296,
+  "runner_name": "GitHub Actions 1000004296",
+  "runner_group_id": 0,
+  "runner_group_name": "GitHub Actions"
+}

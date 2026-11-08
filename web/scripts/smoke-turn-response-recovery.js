@@ -1,7 +1,80 @@
 'use strict';
 const assert=require('assert/strict');
+const {webcrypto,createHash}=require('crypto');
 const {fixture,copy,pause}=require('./lib-turn-response-recovery');
 const tests=[];const test=(name,run)=>tests.push({name,run});
+function observeBaseline(f) {
+  const bytes=[],fingerprints=[];
+  f.c.crypto={subtle:{digest:async(algorithm,input)=>{bytes.push(Buffer.from(input));return webcrypto.subtle.digest(algorithm,input);}}};
+  f.c.TM.Endturn.RecoveryVault={load:async key=>{fingerprints.push(key);return null;},clear:async()=>true};
+  return {bytes,fingerprints};
+}
+function baselineValue(txn,options={}) {
+  const gm={...txn.gm.data};
+  for(const key of ['busy','_endTurnBusy','_endTurnCommitPending','_lastEndTurnRollback'])delete gm[key];
+  return {version:1,gm,p:txn.p.data,scenario:txn.p.descriptors&&txn.p.descriptors.scenario&&txn.p.descriptors.scenario.value,postTurnCourt:options.postTurnCourt};
+}
+test('accepted baseline retains exactly the original JSON bytes and SHA-256 identity',async()=>{
+  const f=fixture();try{
+    const txn=f.capture(),options={postTurnCourt:false};
+    txn.gm.data.question='A quoted "question"\\path\n\t\u4e2d\u6587 \ud83d\ude42';
+    txn.gm.data.busy=true;txn.gm.data._lastEndTurnRollback={reason:'not part of the input'};
+    txn.p.descriptors.scenario={value:{id:'scenario:explicit',title:'Original template'}};
+    const expected=Buffer.from(JSON.stringify(baselineValue(txn,options)),'utf8'),seen=observeBaseline(f);
+    assert.equal(await f.R.begin(txn,options),true);assert.equal(seen.bytes.length,1);
+    assert.deepEqual(seen.bytes[0],expected);assert.deepEqual(seen.fingerprints,[createHash('sha256').update(expected).digest('hex')]);
+  }finally{f.dispose();}
+});
+test('oversized strings and numeric arrays stop before the tail without disabling live requests',async()=>{
+  for(const kind of ['string','numbers']){const f=fixture();try{
+    const txn=f.capture(),seen=observeBaseline(f);let tailVisits=0,calls=0;
+    const values=kind==='string'?'x'.repeat(f.R.limits.inputChars+1):new Array(2400000).fill(1234567890.125);
+    txn.gm.data.large={values,tail:{toJSON(){tailVisits++;return 'tail must not be visited';}}};
+    const memoryBefore=process.memoryUsage(),started=process.hrtime.bigint();
+    assert.equal(await f.R.begin(txn,{}),false);
+    const elapsedMs=Number(process.hrtime.bigint()-started)/1e6,memoryAfter=process.memoryUsage();
+    assert.equal(f.R.status().state,'disabled');assert.equal(f.R.status().reason,'input_size');assert.equal(f.R.status().available,0);
+    assert.equal(seen.bytes.length,0);assert.equal(tailVisits,0,'native stringify must stop before the remaining oversized input');
+    f.c.fetch=async()=>{calls++;return f.okay(f.response());};await f.request();assert.equal(calls,1,'only optional recovery is disabled');
+    console.log(JSON.stringify({case:'baseline-size-early-stop',kind,limitChars:f.R.limits.inputChars,tailVisits,digests:seen.bytes.length,elapsedMs,
+      heapBefore:memoryBefore.heapUsed,heapAfter:memoryAfter.heapUsed,rssBefore:memoryBefore.rss,rssAfter:memoryAfter.rss,processPeakRssKB:process.resourceUsage().maxRSS}));
+  }finally{f.dispose();}}
+});
+test('native toJSON, special values and repeated references keep their original fingerprint',async()=>{
+  const f=fixture();try{
+    const txn=f.capture(),shared={label:'shared',amount:3};let visits=0;
+    // These are direct serialization-boundary inputs. fixture.capture() uses
+    // JSON transport and must not pre-normalize the values being tested.
+    txn.gm.data.special={date:new Date('2026-10-22T00:00:00Z'),toJson:{toJSON(){visits++;return {answer:'actual toJSON value'};}},
+      omitted:undefined,nan:NaN,infinity:Infinity,negativeInfinity:-Infinity,negativeZero:-0,
+      array:[undefined,,NaN,shared,shared],left:shared,right:shared,boxed:new Number(7)};
+    const expected=Buffer.from(JSON.stringify(baselineValue(txn)),'utf8');visits=0;
+    const seen=observeBaseline(f);assert.equal(await f.R.begin(txn,{}),true);
+    assert.equal(visits,1,'the budget guard must not run a separate serialization pass');
+    assert.deepEqual(seen.bytes,[expected]);assert.deepEqual(seen.fingerprints,[createHash('sha256').update(expected).digest('hex')]);
+    assert.equal(txn.gm.data.special.left,txn.gm.data.special.right,'the input graph is not converted or copied');
+    assert(Object.is(txn.gm.data.special.negativeZero,-0));assert.equal(txn.gm.data.special.nan,NaN);
+  }finally{f.dispose();}
+});
+test('cycles and BigInt still disable unavailable fingerprints without reusable checkpoints',async()=>{
+  for(const kind of ['cycle','bigint']){const f=fixture();try{
+    const txn=f.capture(),seen=observeBaseline(f);let calls=0;
+    if(kind==='cycle'){txn.gm.data.cycle={};txn.gm.data.cycle.self=txn.gm.data.cycle;}else txn.gm.data.bigint=1n;
+    assert.throws(()=>JSON.stringify(baselineValue(txn)),TypeError);
+    assert.equal(await f.R.begin(txn,{}),false);assert.equal(f.R.status().reason,'fingerprint_unavailable');
+    assert.equal(f.R.status().available,0);assert.equal(seen.bytes.length,0);
+    f.c.fetch=async()=>{calls++;return f.okay(f.response());};await f.request();assert.equal(calls,1);
+  }finally{f.dispose();}}
+});
+test('the exact final length check still rejects key and escaping overhead missed by the lower bound',async()=>{
+  for(const kind of ['keys','escaping']){const f=fixture();try{
+    const txn=f.capture(),seen=observeBaseline(f);let tailVisits=0;
+    const large=kind==='keys'?{['k'.repeat(f.R.limits.inputChars+1)]:0}:{escaped:'\u0000'.repeat(Math.ceil(f.R.limits.inputChars/6))};
+    large.tail={toJSON(){tailVisits++;return 'visited';}};txn.gm.data.large=large;
+    assert.equal(await f.R.begin(txn,{}),false);assert.equal(f.R.status().reason,'input_size');
+    assert.equal(tailVisits,1,'the original final check handles an inconclusive lower bound');assert.equal(seen.bytes.length,0);
+  }finally{f.dispose();}}
+});
 test('full JSON is reused after confirmed rollback without a second paid request',async()=>{
   const f=fixture();let calls=0;try{
     f.c.fetch=async()=>{calls++;return f.okay(f.response());};

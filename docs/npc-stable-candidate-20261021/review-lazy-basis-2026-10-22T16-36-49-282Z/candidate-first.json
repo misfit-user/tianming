@@ -1,0 +1,16 @@
+{
+  "command": "node web/scripts/smoke-emergency-recovery-review.js",
+  "exitCode": 0,
+  "signal": null,
+  "elapsedMs": 3071,
+  "sources": [
+    {
+      "file": "web/tm-emergency-recovery-review.js",
+      "sha256": "c8259cac6fc244ed6371c740130eca9d8441fbd0098870d8d9c7c766d16efb54"
+    },
+    {
+      "file": "web/scripts/smoke-emergency-recovery-review.js",
+      "sha256": "0f7762e2d368db457e37cbd1ffac7b02f592263d8a90b85de428f6c4d4084f7c"
+    }
+  ]
+}

@@ -36,7 +36,8 @@
         allowedCollections:['nativeMap'],conventions:ME.agentTools.skill,
         editorContext:'独立地图编辑器。选中地块 ID：'+JSON.stringify(ME.EDITOR.selectedIds || [])
           +(options.readOnly?'。玩家选择仅查看；只读地图并回答。':'。玩家已要求直接操作当前地图，完成后自动应用一次，可撤销。'),
-        onStep:options.onStep,onText:options.onText
+        onStep:options.onStep,onText:options.onText,
+        stream:options.stream===true,onDelta:options.onDelta   // 实时显示（与工坊国师共用开关）
       });
       var response={ok:false,applied:false,changed:false,result:result,draft:draft};
       if(task.stopped || result.stopReason === 'aborted') {response.reason='已停止，地图未应用本次修改';return response;}

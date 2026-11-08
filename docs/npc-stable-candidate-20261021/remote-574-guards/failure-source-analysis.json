@@ -1,0 +1,27 @@
+{
+  "testedSource": "web/scripts/smoke-turn-capture-work-count.js",
+  "implementation": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+  "sourceSha256": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+  "runtimeSource": "web/tm-endturn-render.js",
+  "runtimeSha256": "f8a5a8bf29067a2c09eab645a9591eca606660cf5cca2b8665c5a4c1cce0a3f6",
+  "fixtureExtractionLines": [
+    35,
+    38,
+    91,
+    93
+  ],
+  "runtimeHelperDefined": true,
+  "fixtureIncludesHelper": false,
+  "reason": "The isolated fixture concatenates the extracted _endTurn_saveSnapshot without its newly called _endTurn_startPostTurnMemorySave dependency. The exact remote stack is ReferenceError at that call. This establishes the recorded fixture failure, not a failed world result or assertion about memory counts.",
+  "failure": {
+    "name": "smoke-turn-capture-work-count.js",
+    "pass": false,
+    "flaky": false,
+    "suspect": false,
+    "exit": 1,
+    "ms": 25,
+    "timedOut": false,
+    "waivers": [],
+    "output": "ReferenceError: _endTurn_startPostTurnMemorySave is not defined\n    at Object._endTurn_saveSnapshot (round20-turn-capture-production-boundaries.js:291:3)\n    at main (/home/runner/work/tianming/tianming/web/scripts/smoke-turn-capture-work-count.js:101:36)\n    at Object.<anonymous> (/home/runner/work/tianming/tianming/web/scripts/smoke-turn-capture-work-count.js:122:3)\n    at Module._compile (node:internal/modules/cjs/loader:1781:14)\n    at Object..js (node:internal/modules/cjs/loader:1913:10)\n    at Module.load (node:internal/modules/cjs/loader:1505:32)\n    at Function._load (node:internal/modules/cjs/loader:1309:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)\n    at node:internal/main/run_main_module:36:49\n"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "node": "v24.14.0",
+  "apis": {
+    "Blob": "function",
+    "Response": "function",
+    "CompressionStream": "function",
+    "DecompressionStream": "function",
+    "AbortController": "function"
+  },
+  "storageSourceSha256": "320b212981a47a76739ffb587bd4375765a46e1e528b40e3ae695472fa583ba9",
+  "headlessSha256": "39a832f551534caa64959133aac00e1d281ce68c82b7a5d661b9974408c944c7",
+  "rows": [
+    {
+      "mode": "existing-stubs",
+      "supported": false,
+      "decompressionSupported": false,
+      "resultType": "string",
+      "inputBytes": 30054,
+      "compressedBytes": 30054,
+      "gzipMagic": null,
+      "roundtripExact": true,
+      "responseInterop": null,
+      "elapsedMs": 1,
+      "warnings": []
+    },
+    {
+      "mode": "four-native-with-stub-abort",
+      "supported": true,
+      "decompressionSupported": true,
+      "resultType": "native Blob",
+      "inputBytes": 30054,
+      "compressedBytes": 203,
+      "gzipMagic": [
+        31,
+        139
+      ],
+      "roundtripExact": true,
+      "responseInterop": true,
+      "elapsedMs": 26,
+      "warnings": []
+    },
+    {
+      "mode": "five-native",
+      "supported": true,
+      "decompressionSupported": true,
+      "resultType": "native Blob",
+      "inputBytes": 30054,
+      "compressedBytes": 203,
+      "gzipMagic": [
+        31,
+        139
+      ],
+      "roundtripExact": true,
+      "responseInterop": true,
+      "elapsedMs": 5,
+      "warnings": []
+    }
+  ],
+  "storageBoundary": "TM_SaveDB still stores original JSON under its deliberately unavailable IndexedDB fallback; injecting codec APIs does not turn that storage stub into a real database."
+}

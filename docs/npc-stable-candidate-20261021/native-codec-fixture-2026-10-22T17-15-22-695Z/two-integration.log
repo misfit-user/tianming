@@ -1,0 +1,17 @@
+[run-smokes] 共 1185 个 smoke · 选中 2 · 跳过 0 · 并发 1 · 超时 120s
+[run-smokes] 独占执行硬时限用例（不改用例内部压力/期限）：smoke-full-turn-flow.js, smoke-start-game-data-integrity.js
+  [1/2] FAIL    smoke-full-turn-flow.js (3.3s)
+  [2/2] FAIL    smoke-start-game-data-integrity.js (7.2s)
+
+[run-smokes] 完成：0 PASS · 2 FAIL · 0 SKIP · 0 WAIVED / 2 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 10s(并行墙钟更短)
+
+--- 失败聚类（1 簇）---
+  ×2  TypeError: Cannot read properties of undefined (reading 'tiers')
+      smoke-full-turn-flow.js
+      smoke-start-game-data-integrity.js
+
+--- 最慢 Top 10 ---
+  7.2s  smoke-start-game-data-integrity.js
+  3.3s  smoke-full-turn-flow.js
+
+[run-smokes] 报告 → ../docs/npc-stable-candidate-20261021/native-codec-fixture-2026-10-22T17-15-22-695Z/two-integration-report.json

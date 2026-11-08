@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-22 14:55:49 UTC",
+  "workingDirectory": "C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011",
+  "scope": "Progress-panel collapse/expand only. No review execution, cancellation policy, save behavior, GM/P state, generated manifests or commits changed by this subtask.",
+  "sourceIdentity": {
+    "baselineCommit": "ebf58473d37fe9ff20f82d6a85c7a771b7f9d1ac",
+    "runtime": {
+      "path": "web/tm-emergency-recovery-settings.js",
+      "sha256": "3dc68e49ef2ffdce086dc697fdcda17f7a63ac415408404b75cc79ac31ac5cb6",
+      "LF": 72,
+      "CRLF": 0
+    },
+    "tests": {
+      "path": "web/scripts/smoke-recovery-settings-restore.js",
+      "sha256": "070718fb6eabc056b639fa9a27dc5840abc0c20e1c6823358ff5795949adace7",
+      "LF": 171,
+      "CRLF": 0
+    },
+    "baselineRuntimeSha256": "6461a538d151e571e18e42df9e71dda2a0f31accd5ca2d9cdab288ddbf1e749d"
+  },
+  "provenance": {
+    "kind": "Observed tool command results; selected excerpts copied into this record",
+    "originalCompleteStdoutStderrFilesRetained": false,
+    "noSyntheticOriginalLogs": true,
+    "currentTestExecutionTimestampUtc": null,
+    "timestampBoundary": "The current 31/31 run did not emit an absolute execution timestamp. The baseline run below emitted its own start/end UTC timestamps. recordedAtUtc is the evidence record creation time.",
+    "currentTestsRerunForRecord": false
+  },
+  "implementation": {
+    "collapseSelector": "#tm-recovery-progress [data-recovery-collapse=\"true\"]",
+    "expandSelector": "#tm-recovery-progress [data-recovery-collapse=\"false\"]",
+    "accessibility": "Native type=button controls, visible labels 收起进度/展开进度, aria-expanded, aria-controls pointing to the hidden/unhidden detail container, focus retained after toggle replacement and same-row progress updates.",
+    "persistence": "Collapsed state stays local to the displayed row.id; same-ID progress updates retain it and a new ID resets expansion.",
+    "positioning": "Collapsed bottom offset is max(16, innerHeight - actual #endturn .et-big bounding rectangle top + 8), recomputed on progress updates and resize.",
+    "ownership": "Collapse/expand never call either cancellation owner or saveP. Original explicit cancellation buttons and terminal close behavior remain available."
+  },
+  "executions": [
+    {
+      "id": "current-ui-and-preference-regression",
+      "command": "node web/scripts/smoke-recovery-settings-restore.js",
+      "exitCode": 0,
+      "pass": 31,
+      "fail": 0,
+      "total": 31,
+      "toolChunkId": "c66756",
+      "observedExcerpts": [
+        "PASS progress collapse and expansion preserve the active row and never cancel or save",
+        "PASS same review updates keep progress collapsed and a new review resets the display",
+        "PASS completed collapsed progress stays closable without cancelling either recovery owner",
+        "PASS only the original explicit cancel button invokes the selected recovery owner",
+        "{\"pass\":31,\"fail\":0,\"total\":31}"
+      ]
+    },
+    {
+      "id": "baseline-with-new-ui-regressions",
+      "shell": "powershell",
+      "command": "$reviewProgressProbe = @'\nconst fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),crypto=require('node:crypto');\nconst runtime=path.resolve('web/tm-emergency-recovery-settings.js');\nconst baseline=cp.execFileSync('git',['show','ebf58473d37fe9ff20f82d6a85c7a771b7f9d1ac:web/tm-emergency-recovery-settings.js'],{encoding:'utf8'});\nconst read=fs.readFileSync.bind(fs);\nconsole.log(JSON.stringify({baselineCommit:'ebf58473d37fe9ff20f82d6a85c7a771b7f9d1ac',baselineRuntimeSha256:crypto.createHash('sha256').update(baseline).digest('hex'),currentRuntimeSha256:crypto.createHash('sha256').update(read(runtime)).digest('hex'),testSha256:crypto.createHash('sha256').update(read('web/scripts/smoke-recovery-settings-restore.js')).digest('hex')}));\nfs.readFileSync=function(file,...args){if(path.resolve(String(file))===runtime)return typeof args[0]==='string'||args[0]&&args[0].encoding?baseline:Buffer.from(baseline);return read(file,...args);};\nrequire('./web/scripts/smoke-recovery-settings-restore.js');\n'@\n$reviewProgressStarted=[DateTimeOffset]::UtcNow.ToString('o')\nnode -e $reviewProgressProbe\n$reviewProgressExit=$LASTEXITCODE\n[pscustomobject]@{startedAtUtc=$reviewProgressStarted;finishedAtUtc=[DateTimeOffset]::UtcNow.ToString('o');exitCode=$reviewProgressExit} | ConvertTo-Json -Compress\nexit $reviewProgressExit",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "pass": 27,
+      "fail": 4,
+      "total": 31,
+      "toolChunkId": "aa8b05",
+      "startedAtUtc": "2026-10-22T14:54:54.8244841Z",
+      "finishedAtUtc": "2026-10-22T14:54:55.1922032Z",
+      "substitutionBoundary": "Only readFileSync calls for the exact settings runtime path return the immutable ebf baseline bytes in this test process. The current test file is unchanged, and all files on disk remain unchanged.",
+      "observedExcerpts": [
+        "FAIL progress collapse and expansion preserve the active row and never cancel or save",
+        "TypeError: Cannot read properties of undefined (reading 'tagName')",
+        "FAIL same review updates keep progress collapsed and a new review resets the display",
+        "TypeError: Cannot read properties of undefined (reading 'click')",
+        "FAIL completed collapsed progress stays closable without cancelling either recovery owner",
+        "FAIL only the original explicit cancel button invokes the selected recovery owner",
+        "{\"pass\":27,\"fail\":4,\"total\":31}"
+      ],
+      "interpretation": "All 27 existing preference/restore cases still passed. The four new UI cases failed because the old runtime has no collapse/expand control."
+    }
+  ],
+  "otherObservedChecks": {
+    "toolChunkId": "056cb7",
+    "syntaxCommand": "node --check web/tm-emergency-recovery-settings.js",
+    "whitespaceCommand": "git diff --check -- web/tm-emergency-recovery-settings.js web/scripts/smoke-recovery-settings-restore.js",
+    "observation": "Both commands were included in the observed read/check batch and emitted no syntax/whitespace errors. The enclosing batch exited 0.",
+    "eol": "Both edited files remain LF-only."
+  },
+  "limitations": [
+    "DOM fixture checks native button contracts, accessible attributes, focus, state preservation and geometry calculation; it does not claim a real browser Enter/Space event test.",
+    "Actual hit testing against the formal Electron page and full same-run composite acceptance remain the root agent's next verification.",
+    "No formal acceptance is inferred from these unit results."
+  ]
+}

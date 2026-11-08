@@ -1,0 +1,220 @@
+{
+  "recordedAt": "2026-10-22T16:00:17.062Z",
+  "runId": "bf4022e2-961c-442f-9f03-a72783c0303e",
+  "mergedHead": "151a2b64ca3e2dc7317d20efba296579176cdd12",
+  "newMainHead": "31368256b021aa698bd99fb2f449fbfaf4e5e112",
+  "parents": [
+    "f732f205fbc28995acf2871510d15eb2f38bada9",
+    "31368256b021aa698bd99fb2f449fbfaf4e5e112"
+  ],
+  "nonGeneratedFiles": [
+    {
+      "file": "scripts/electron/authoring-efficiency-cases.cjs",
+      "bytes": 13468,
+      "mainSha256": "64f681321339ccdaf1917d43e894a6bcd8f651a1273b600e4aff3ab0267c8240",
+      "mergedSha256": "64f681321339ccdaf1917d43e894a6bcd8f651a1273b600e4aff3ab0267c8240",
+      "workingSha256": "64f681321339ccdaf1917d43e894a6bcd8f651a1273b600e4aff3ab0267c8240",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/editor-authoring-agent-ui.js",
+      "bytes": 316271,
+      "mainSha256": "f0001009ace182fa06e615a7564dd795e39fe5884bdaad48ee6dbfcd0f1bfb91",
+      "mergedSha256": "f0001009ace182fa06e615a7564dd795e39fe5884bdaad48ee6dbfcd0f1bfb91",
+      "workingSha256": "f0001009ace182fa06e615a7564dd795e39fe5884bdaad48ee6dbfcd0f1bfb91",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/editor-authoring-agent.js",
+      "bytes": 339180,
+      "mainSha256": "4e09434039f894fa5a5c930bb3921e4330b28398d0acba990d316e5659cc5cbc",
+      "mergedSha256": "4e09434039f894fa5a5c930bb3921e4330b28398d0acba990d316e5659cc5cbc",
+      "workingSha256": "4e09434039f894fa5a5c930bb3921e4330b28398d0acba990d316e5659cc5cbc",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/index.html",
+      "bytes": 77495,
+      "mainSha256": "4c4744e0cb076d5325dc0e77fc92ebad77e88de324be6e67729753082142bf39",
+      "mergedSha256": "4c4744e0cb076d5325dc0e77fc92ebad77e88de324be6e67729753082142bf39",
+      "workingSha256": "4c4744e0cb076d5325dc0e77fc92ebad77e88de324be6e67729753082142bf39",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/map-editor-to-game.js",
+      "bytes": 27101,
+      "mainSha256": "e5cef4e2f126137d79cf09af3e0e15d7ae6305a8d2586e6b55b3591eaab62562",
+      "mergedSha256": "e5cef4e2f126137d79cf09af3e0e15d7ae6305a8d2586e6b55b3591eaab62562",
+      "workingSha256": "e5cef4e2f126137d79cf09af3e0e15d7ae6305a8d2586e6b55b3591eaab62562",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/lib-perf-round1.js",
+      "bytes": 10458,
+      "mainSha256": "3f0de23566c297c0ac630f10a022bd4cf4d25bdcf6045ea048e33ef6ff1ea882",
+      "mergedSha256": "3f0de23566c297c0ac630f10a022bd4cf4d25bdcf6045ea048e33ef6ff1ea882",
+      "workingSha256": "3f0de23566c297c0ac630f10a022bd4cf4d25bdcf6045ea048e33ef6ff1ea882",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/lint-split-contracts.js",
+      "bytes": 10775,
+      "mainSha256": "9a81a86be5f14eaa16123167f6d178bc728a308d5693aca336b3109290cd7886",
+      "mergedSha256": "9a81a86be5f14eaa16123167f6d178bc728a308d5693aca336b3109290cd7886",
+      "workingSha256": "9a81a86be5f14eaa16123167f6d178bc728a308d5693aca336b3109290cd7886",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-authoring-context-budget.js",
+      "bytes": 8720,
+      "mainSha256": "77dd1662fdfa43918f48a9ccd31222913e80715a3a566f16a07ec4656281fb12",
+      "mergedSha256": "77dd1662fdfa43918f48a9ccd31222913e80715a3a566f16a07ec4656281fb12",
+      "workingSha256": "77dd1662fdfa43918f48a9ccd31222913e80715a3a566f16a07ec4656281fb12",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-authoring-efficiency.js",
+      "bytes": 11137,
+      "mainSha256": "73993498baf06eb911e82a1ca51a693ec32e03b07c39530714fce469df8aa81a",
+      "mergedSha256": "73993498baf06eb911e82a1ca51a693ec32e03b07c39530714fce469df8aa81a",
+      "workingSha256": "73993498baf06eb911e82a1ca51a693ec32e03b07c39530714fce469df8aa81a",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-authoring-map-binding-gate.js",
+      "bytes": 4963,
+      "mainSha256": "ee8f4f1458e51b9da58fa1f1b77a98c8c810cba120c4f8d4332338fe16dd816b",
+      "mergedSha256": "ee8f4f1458e51b9da58fa1f1b77a98c8c810cba120c4f8d4332338fe16dd816b",
+      "workingSha256": "ee8f4f1458e51b9da58fa1f1b77a98c8c810cba120c4f8d4332338fe16dd816b",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-duplicate-admin-id-repair.js",
+      "bytes": 2942,
+      "mainSha256": "2974a5a0acade354fc9e6ed85497c6c60372d70dd8748d469f60a7cf2f7d1179",
+      "mergedSha256": "2974a5a0acade354fc9e6ed85497c6c60372d70dd8748d469f60a7cf2f7d1179",
+      "workingSha256": "2974a5a0acade354fc9e6ed85497c6c60372d70dd8748d469f60a7cf2f7d1179",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-faction-binding-lint.js",
+      "bytes": 10478,
+      "mainSha256": "5fe52eac8ee1a3aed76f3fae2e4953c7f86b9ad7cdfc40b769c7391c952b4e8a",
+      "mergedSha256": "5fe52eac8ee1a3aed76f3fae2e4953c7f86b9ad7cdfc40b769c7391c952b4e8a",
+      "workingSha256": "5fe52eac8ee1a3aed76f3fae2e4953c7f86b9ad7cdfc40b769c7391c952b4e8a",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-faction-npc-full-audit.js",
+      "bytes": 2740,
+      "mainSha256": "a68619a89fcefdb4be44fa1c490dc651e79d0da6c274f89cd54ac4f272cb80f9",
+      "mergedSha256": "a68619a89fcefdb4be44fa1c490dc651e79d0da6c274f89cd54ac4f272cb80f9",
+      "workingSha256": "a68619a89fcefdb4be44fa1c490dc651e79d0da6c274f89cd54ac4f272cb80f9",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-guoshi-cc-port.js",
+      "bytes": 64507,
+      "mainSha256": "8a3185515314cdaffb02694ef315767b8917276d2b403f415cf7130b894d3813",
+      "mergedSha256": "8a3185515314cdaffb02694ef315767b8917276d2b403f415cf7130b894d3813",
+      "workingSha256": "8a3185515314cdaffb02694ef315767b8917276d2b403f415cf7130b894d3813",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-map-editor-admin-roundtrip.js",
+      "bytes": 7458,
+      "mainSha256": "3b712ddd9079a8aadd8d1d2b8829a8ad2dd8cc0fee629e040763f6719f852c77",
+      "mergedSha256": "3b712ddd9079a8aadd8d1d2b8829a8ad2dd8cc0fee629e040763f6719f852c77",
+      "workingSha256": "3b712ddd9079a8aadd8d1d2b8829a8ad2dd8cc0fee629e040763f6719f852c77",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-npc-action-entrypoints.js",
+      "bytes": 6037,
+      "mainSha256": "a06e9eb0e9ac0662fff9d74ff8042225ccc3b875108fc3b1d967e8aeaa793232",
+      "mergedSha256": "a06e9eb0e9ac0662fff9d74ff8042225ccc3b875108fc3b1d967e8aeaa793232",
+      "workingSha256": "a06e9eb0e9ac0662fff9d74ff8042225ccc3b875108fc3b1d967e8aeaa793232",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-player-identity-receipt.js",
+      "bytes": 13386,
+      "mainSha256": "04b7be13713630a07c16adb3a1b6a6e20855baa53801498df30b340c26f6c6c5",
+      "mergedSha256": "04b7be13713630a07c16adb3a1b6a6e20855baa53801498df30b340c26f6c6c5",
+      "workingSha256": "04b7be13713630a07c16adb3a1b6a6e20855baa53801498df30b340c26f6c6c5",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-runtime-save-consistency.js",
+      "bytes": 49983,
+      "mainSha256": "172a4e2524e5295c48610153ef0d5719561ffaf4008169ef38e122970cae6350",
+      "mergedSha256": "172a4e2524e5295c48610153ef0d5719561ffaf4008169ef38e122970cae6350",
+      "workingSha256": "172a4e2524e5295c48610153ef0d5719561ffaf4008169ef38e122970cae6350",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-save-integrity-audit.js",
+      "bytes": 8917,
+      "mainSha256": "849e583759b69b30313d027c86deb1926016846f0b2eaf5948f3aacdd61b9517",
+      "mergedSha256": "849e583759b69b30313d027c86deb1926016846f0b2eaf5948f3aacdd61b9517",
+      "workingSha256": "849e583759b69b30313d027c86deb1926016846f0b2eaf5948f3aacdd61b9517",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-stable-id-dangling-repair.js",
+      "bytes": 10165,
+      "mainSha256": "a82e9ed092eae63bb911d10056571612a44b2a9cc927c13902cf771cea261f00",
+      "mergedSha256": "a82e9ed092eae63bb911d10056571612a44b2a9cc927c13902cf771cea261f00",
+      "workingSha256": "a82e9ed092eae63bb911d10056571612a44b2a9cc927c13902cf771cea261f00",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-stable-id-migration.js",
+      "bytes": 5300,
+      "mainSha256": "16f11a0e5851f45c2698940259a8636dc0292104925130073efdcba522193f10",
+      "mergedSha256": "16f11a0e5851f45c2698940259a8636dc0292104925130073efdcba522193f10",
+      "workingSha256": "16f11a0e5851f45c2698940259a8636dc0292104925130073efdcba522193f10",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-stable-id-reference-integrity.js",
+      "bytes": 8920,
+      "mainSha256": "2a7b9ce744f6426b1f30083b74ad91b4b17e30da5c3861daf7c0bc19670961a8",
+      "mergedSha256": "2a7b9ce744f6426b1f30083b74ad91b4b17e30da5c3861daf7c0bc19670961a8",
+      "workingSha256": "2a7b9ce744f6426b1f30083b74ad91b4b17e30da5c3861daf7c0bc19670961a8",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/scripts/smoke-startup-phase-observability.js",
+      "bytes": 13201,
+      "mainSha256": "f3a4511b18aa1fa061fe16cde255ee9c47f02f7de77ffd09d35372a4adb44cb5",
+      "mergedSha256": "f3a4511b18aa1fa061fe16cde255ee9c47f02f7de77ffd09d35372a4adb44cb5",
+      "workingSha256": "f3a4511b18aa1fa061fe16cde255ee9c47f02f7de77ffd09d35372a4adb44cb5",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "bytes": 157018,
+      "mainSha256": "0675740b33e5fadaa4a6ee30e2792e4dbd61c2786deff5864012f0ae91f4d868",
+      "mergedSha256": "0675740b33e5fadaa4a6ee30e2792e4dbd61c2786deff5864012f0ae91f4d868",
+      "workingSha256": "0675740b33e5fadaa4a6ee30e2792e4dbd61c2786deff5864012f0ae91f4d868",
+      "mainMergedDiskIdentical": true
+    },
+    {
+      "file": "web/tm-save-stable-id-migration.js",
+      "bytes": 18115,
+      "mainSha256": "6a4e4a3775281ba99250f2bc4cf4cabdbe2bb224eaadf3c450ea2d011c7a9ac4",
+      "mergedSha256": "6a4e4a3775281ba99250f2bc4cf4cabdbe2bb224eaadf3c450ea2d011c7a9ac4",
+      "workingSha256": "6a4e4a3775281ba99250f2bc4cf4cabdbe2bb224eaadf3c450ea2d011c7a9ac4",
+      "mainMergedDiskIdentical": true
+    }
+  ],
+  "all25Identical": true,
+  "hot": {
+    "entries": 1397,
+    "present": 802,
+    "absent": 595,
+    "stableIdIncluded": true
+  },
+  "boundary": "Read-only byte comparison. No conversion or regeneration performed by this audit; generated contracts are checked separately in the same final gate run."
+}

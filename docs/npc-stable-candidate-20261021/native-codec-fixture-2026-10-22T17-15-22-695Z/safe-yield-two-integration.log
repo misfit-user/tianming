@@ -1,0 +1,15 @@
+[run-smokes] 共 1185 个 smoke · 选中 2 · 跳过 0 · 并发 1 · 超时 120s
+[run-smokes] 独占执行硬时限用例（不改用例内部压力/期限）：smoke-full-turn-flow.js, smoke-start-game-data-integrity.js
+  [2/2] TIMEOUT smoke-start-game-data-integrity.js (120.3s)
+
+[run-smokes] 完成：1 PASS · 1 FAIL · 0 SKIP · 0 WAIVED / 2 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 230s(并行墙钟更短)
+
+--- 失败聚类（1 簇）---
+  ×1  （超时）
+      smoke-start-game-data-integrity.js
+
+--- 最慢 Top 10 ---
+  120.3s  smoke-start-game-data-integrity.js
+  110.0s  smoke-full-turn-flow.js
+
+[run-smokes] 报告 → ../docs/npc-stable-candidate-20261021/native-codec-fixture-2026-10-22T17-15-22-695Z/safe-yield-two-integration-report.json

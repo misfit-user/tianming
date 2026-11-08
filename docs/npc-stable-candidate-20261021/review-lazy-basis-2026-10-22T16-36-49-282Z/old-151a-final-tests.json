@@ -1,0 +1,16 @@
+{
+  "baselineHead": "151a2b64ca3e2dc7317d20efba296579176cdd12",
+  "method": "readFileSync override only for review source, git show injected in isolated test process; current source never overwritten",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "-e",
+    "const fs=require('fs'),path=require('path'),cp=require('child_process');const target=path.resolve('web/tm-emergency-recovery-review.js');const source=cp.execFileSync('git',['show','151a2b64ca3e2dc7317d20efba296579176cdd12:web/tm-emergency-recovery-review.js']);const real=fs.readFileSync;fs.readFileSync=function(file,options){if(typeof file==='string'&&path.resolve(file)===target){const encoding=typeof options==='string'?options:options&&options.encoding;return encoding?source.toString(encoding):Buffer.from(source);}return real.apply(this,arguments);};require('./web/scripts/smoke-emergency-recovery-review.js');"
+  ],
+  "exitCode": 1,
+  "signal": null,
+  "elapsedMs": 3112,
+  "baselineSourceSha256": "ed2a6b69a67a967cbe8f376bf43ddb2d12e7f9a14e65510e646e388655cb4a2b",
+  "currentSourceSha256": "012a629d8b6bf3b5d5f2f137b45755f8f01b6338f2010409619aa45f225171d6",
+  "currentSourceUnchanged": true,
+  "testSha256": "ccbbef39254efee1c6d2920185cd308590a138a038a0e96c161f9db807d343e6"
+}

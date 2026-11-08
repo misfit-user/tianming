@@ -294,14 +294,65 @@ async function main() {
   'validator exception must be observable with validator identity and error detail');
   delete ctx._validateLivingActorConsistency;
 
+  // 名词用法（「边备倾颓之弊」「试行钞关」「铸钱之权」）不是本期营造、钱法：不留疑似未落地（09-21 真局曾因此整批回滚）。
   ctx.GM = baseGM({ custom: { score: 10 } });
-  const advisory = ctx.applyAITurnChanges({
+  const nounOnly = ctx.applyAITurnChanges({
     _strictValidation: true,
     narrative: '边备倾颓，户部试行钞关核税，收回铸钱之权。',
     changes: [{ path: 'custom.score', delta: 5, reason: 'actual declared change' }]
   });
+  check(nounOnly.ok && ctx.GM.custom.score === 15, 'noun-only narrative must not roll back valid writes');
+  check(!(ctx.GM._constructionValidatorLog || []).length && !(ctx.GM._currencyValidatorLog || []).length, 'noun usages (倾颓之弊/钞关/铸钱之权) are not construction or currency events');
+
+  // 叙事断言了本期营造、钱法而账上没有：照旧只留疑似未落地供复核，不回滚。
+  ctx.GM = baseGM({ custom: { score: 10 } });
+  const advisory = ctx.applyAITurnChanges({
+    _strictValidation: true,
+    narrative: '本月工部兴工修筑宣府边墙；诏行宝钞，户部印造新钞。',
+    changes: [{ path: 'custom.score', delta: 5, reason: 'actual declared change' }]
+  });
   check(advisory.ok && ctx.GM.custom.score === 15, 'keyword-only narrative warnings must not roll back valid writes before later consumers and reconciliation run');
   check(ctx.GM._constructionValidatorLog.length > 0 && ctx.GM._currencyValidatorLog.length > 0, 'advisory evidence remains available for narrative reconciliation');
+
+  // 叙事数目读法：「十二万两」是十二万（旧读法得一百零二万，与账上十二万对不上，整批回滚）。
+  ctx.GM = baseGM({ guoku: { money: 1000000 } });
+  const amountRead = ctx.applyAITurnChanges({
+    _strictValidation: true,
+    narrative: '本月发帑银十二万两赈陕西。',
+    fiscal_adjustments: [{ target: 'guoku', kind: 'expense', resource: 'money', amount: 120000, name: '陕西赈济', reason: '赈济', recurring: false }]
+  });
+  check(amountRead.ok && !(ctx.GM._fiscalValidatorLog || []).length, 'narrated 十二万两 matches a declared 120000 expense');
+  // 引号里的话、风闻里的数目不是本期的账。
+  ctx.GM = baseGM({ custom: { score: 10 } });
+  const hearsay = ctx.applyAITurnChanges({
+    _strictValidation: true,
+    narrative: '林丹汗使臣言“岁赏久不给，今须补发历年、增市银二万两”；皇太极得报：新君逐客氏、关宁拨内帑十万。',
+    changes: [{ path: 'custom.score', delta: 5, reason: 'actual declared change' }]
+  });
+  check(hearsay.ok && ctx.GM.custom.score === 15 && !(ctx.GM._fiscalValidatorLog || []).length, 'amounts in quoted speech or hearsay are not ledger events');
+
+  // AI 写省名简称：「陕西」要落到「陕西布政使司」（11-06 第一回合的区划更新因此报 region not found 丢掉）。
+  ctx.GM = baseGM({
+    adminHierarchy: { player: { divisions: [{ id: 'div-sx', name: '陕西布政使司', minxin: 40, corruption: 30, children: [] }] } }
+  });
+  const shortName = ctx.applyAITurnChanges({
+    _strictValidation: true,
+    _commitMode: 'per-item',
+    region_updates: [{ name: '陕西', updates: { minxin: 45 } }]
+  });
+  const shortFailed = ((shortName.applied && shortName.applied.failed) || []).map((f) => f.reason || f.code || '');
+  check(shortName.ok && !shortFailed.some((r) => /region not found/.test(r)), 'region_updates naming 陕西 resolves 陕西布政使司: ' + JSON.stringify(shortFailed));
+  check(ctx.GM.adminHierarchy.player.divisions[0].minxin !== 40, 'region_updates by short name lands on the division');
+  // 严格预检和落账用同一规矩：「陕西省」「陕西」在严格预检里不再判 region-not-found（原来精确名认不出，好账在预检就被剔）
+  const strictRegion = ctx.validateAIWriteBackBatch({
+    central_local_actions: [
+      { action: 'transfer_to_region', fromAccount: 'guoku.money', region: '陕西省', amount: 1000, purpose: 'disaster_relief' },
+      { action: 'transfer_to_region', fromAccount: 'guoku.money', region: '陕西', amount: 1000, purpose: 'disaster_relief' },
+      { action: 'transfer_to_region', fromAccount: 'guoku.money', region: '月球', amount: 1000, purpose: 'disaster_relief' }
+    ]
+  }, { source: 'test' });
+  const regionMisses = strictRegion.failures.filter((f) => f.field === 'central_local_actions' && /not-found/.test(f.code || ''));
+  check(regionMisses.length === 1 && regionMisses[0].index === 2, 'strict preflight accepts 陕西省/陕西 like the sink, still rejects unknown regions: ' + JSON.stringify(regionMisses));
 
   ctx.GM = baseGM({
     chars: [{ id:'official-a', name:'甲臣', alive:true }],

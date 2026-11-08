@@ -2,7 +2,8 @@
 //
 // 病根：calcLetterDays 只有同处、同省、其余三档，修好京城后天启 176 个收信人 175 个都是二十日。
 // 修法：地名落到地图地块，沿邻接走出公里数，折成里再除驿速；走不通的按直线加绕行；
-// 地图缺或地名对不上的退回老的粗估；全程出错不外抛，不拖垮写信和过回合。
+// 地图缺或地名对不上的，先按地名经纬度表算直线距离（main 0284028f 那层），表里也没有的才退回老的粗估；
+// 全程出错不外抛，不拖垮写信和过回合。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -115,16 +116,22 @@ sandbox.GM = ming();
 assert(near(km('顺天府', '台湾'), greatCircle(PLACES.bj, PLACES.tw) * 1.3), '隔海：直线加三成绕行');
 assert(days('顺天府', '台湾') >= 1, '隔海也算得出日数');
 
-console.log('五、对不上的退回老的粗估');
+console.log('五、地图上找不到的：先按地名经纬度表算直线距离，表里也没有的才退回老的粗估');
+// 经纬度表那层（main 0284028f）：直线乘 1.3 算驿路，按明里 0.576 公里折里；普通日行五十里
+const gazDays = (a, b, perDay) => Math.max(1, Math.ceil(greatCircle(sandbox._ltPlaceCoord(a), sandbox._ltPlaceCoord(b)) * 1.3 / 0.576 / perDay));
 sandbox.GM = ming();
 assert(km('顺天府', '漠北汗帐') == null, '地图上没有的地方：对不上');
-assert(days('顺天府', '漠北汗帐') === 20, '跨省二十日');
-assert(days('顺天府', '漠北汗帐', 'urgent') === 4 && days('顺天府', '漠北汗帐', 'extreme') === 2, '加急四日、八百里二日照旧');
+assert(days('顺天府', '漠北汗帐') === gazDays('顺天府', '漠北汗帐', 50), '地图上没有、地名表认得（漠北）：按直线距离');
+assert(km('顺天府', '某部汗帐') == null && sandbox._ltPlaceCoord('某部汗帐') == null, '地图和地名表都认不得的地方');
+assert(days('顺天府', '某部汗帐') === 20, '都认不得：跨省二十日');
+assert(days('顺天府', '某部汗帐', 'urgent') === 4 && days('顺天府', '某部汗帐', 'extreme') === 2, '加急四日、八百里二日照旧');
 sandbox.GM = { _capital: '北京', adminHierarchy: { player: { divisions: [
-  { name: '北直隶', children: [{ name: '顺天府' }, { name: '保定府' }] },
-  { name: '南直隶', children: [{ name: '应天府' }, { name: '苏州府' }] },
+  { name: '北直隶', children: [{ name: '顺天府' }, { name: '保定府' }, { name: '甲府' }] },
+  { name: '南直隶', children: [{ name: '应天府' }, { name: '苏州府' }, { name: '乙府' }] },
 ] } } };
-assert(days('顺天府', '保定府') === 4 && days('顺天府', '苏州府') === 20, '没有地图：同省四日、跨省二十日照旧');
+assert(days('顺天府', '保定府') === gazDays('顺天府', '保定府', 50) && days('顺天府', '苏州府') === gazDays('顺天府', '苏州府', 50),
+  '没有地图：地名表认得的按直线距离');
+assert(days('顺天府', '甲府') === 4 && days('顺天府', '乙府') === 20, '没有地图、地名表也认不得：同省四日、跨省二十日照旧');
 sandbox.GM = { _capital: '北京', mapData: { regions: [] } };
 assert(days('甲', '乙') === 20, '空地图照旧');
 sandbox.GM = { _capital: '北京', mapData: { regions: [{ id: 'a', name: '甲', neighbors: ['b'] }, { id: 'b', name: '乙', neighbors: ['a'] }] } };

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-22T15:44:46.4822954Z",
+  "workingDirectory": "C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011",
+  "scope": "Test-only observation of real UI turn, manual-save and load producers. No production runtime, save/rollback behavior, model transport, timeout budget or existing formal business assertion is replaced.",
+  "sourceIdentity": {
+    "baselineCommit": "60d9c8f1e9a634eb0919562d1fa34d0c8f049e6f",
+    "frozenFiles": [
+      {
+        "path": "scripts/electron/npc-composite-waits.cjs",
+        "sha256": "16cc4740c05dbfac863dc052cb8f5e149f45815568eb23a85e4b94255e836cfc"
+      },
+      {
+        "path": "scripts/electron/npc-composite-cases.cjs",
+        "sha256": "c9ac85d5b90a0e1e27cc0686d7a2c9c440cbced3441b0ceb76ace30fa53e9a60"
+      },
+      {
+        "path": "scripts/electron/bridge-main.cjs",
+        "sha256": "b583ab7c8dd495362b24b909dc49a379891d3ab348675663b8b1ca62bd36248c"
+      },
+      {
+        "path": "web/scripts/smoke-npc-composite-waits.js",
+        "sha256": "0b01b1f40990df2589bbdb8ef5d0a7cf113c444ac14a4b9433776ee92803eb3b"
+      }
+    ],
+    "verifiedAtRecordWrite": true,
+    "hashBoundary": "The helper, unit test and bridge hashes match the final 21/21 run. After that run, the case harness moved the same helper identity hash from the existing array to a separate assignment so its original CRLF line could remain byte-identical. No waiting or assertion behavior changed.",
+    "caseHarnessHashObservedImmediatelyAfterUnitRun": "6bb55c9aeec5ede8197c0925259bd94d6769722f9bacb89ba179ed0302ac893f",
+    "originalCaseHarnessMixedEolPreserved": true
+  },
+  "provenance": {
+    "kind": "Tool-execution observations with selected excerpts",
+    "originalCompleteStdoutStderrFilesRetained": false,
+    "excerptBoundary": "These are selected lines copied from tool responses, not synthesized original log files.",
+    "unitExecutionStartEndUtc": null,
+    "timestampBoundary": "The unit tool output did not include absolute execution timestamps. recordedAtUtc is the evidence-writing time and must not be used as the unit execution time.",
+    "heavyTestsRerunForEvidence": false,
+    "unitSuiteRerunForEvidence": false,
+    "readOnlyDeadlineComparisonRepeatedForExactExitCode": true
+  },
+  "implementation": {
+    "originalProducerPromises": [
+      "window._endTurnInternal",
+      "window.saveToSlot",
+      "SaveManager.loadFromSlot"
+    ],
+    "turnWitness": "The original _tmCommitEndTurnTransaction must return true; its committed transaction, matching GM/P, original turn/load/campaign/timeline and both matching canonical slots are checked.",
+    "saveReceipt": "The real global saveToSlot Promise spans name confirmation, queued save-required jobs, storage commit and UI refresh; only an exact true return is accepted.",
+    "loadReceipt": "The real loadFromSlot Promise must return true with an idle replacement GM, advanced load generation, same expected campaign/turn and running world. Legitimate loaded timeline forks are permitted.",
+    "transparency": "The original producer is called once per invocation with unchanged this/arguments, and the wrapper returns the original Promise object.",
+    "retainedEvidence": "Only primitive operation identities and result summaries are emitted. Temporary GM/P identity references are cleared on completion, failure or deadline; txn/ctx are never stored.",
+    "sharedDeadline": "One deadlineAt from the existing bridge timer is passed to every operation; no operation receives a fresh duration.",
+    "assertions": "Original real UI controls, history-choice checks, review-collapse cancellation check, two reload comparisons, stale detached control check, onsite exchange, actual return and unique memory/learning assertions remain. completed-evidence additionally requires all observed producers completed exactly once.",
+    "removedArtificialLimits": [
+      "500 iteration turn polling cap",
+      "90 second manual-save appearance cap"
+    ],
+    "preservedLimits": {
+      "suiteMs": 1800000,
+      "outerProcessMs": 1830000,
+      "ciMinutes": 45
+    }
+  },
+  "executions": [
+    {
+      "id": "actual-helper-unit",
+      "command": "node web/scripts/smoke-npc-composite-waits.js",
+      "shellContext": "The PowerShell cell first restored the case harness identity line's pre-existing CRLF. It then ran this exact command and exited with the captured $LASTEXITCODE from this command.",
+      "exitCode": 0,
+      "pass": 21,
+      "fail": 0,
+      "total": 21,
+      "toolChunkId": "7c7a83",
+      "observedExcerpts": [
+        "PASS real turn Promise stays pending after turn advancement and commit until final work settles",
+        "PASS global save producer waits through prompt, background jobs and UI refresh and requires true",
+        "PASS fulfilled save without strict true is rejected: false",
+        "PASS fulfilled save without strict true is rejected: undefined",
+        "PASS fulfilled save without strict true is rejected: [object Object]",
+        "PASS turn fulfillment cannot certify no-commit",
+        "PASS turn fulfillment cannot certify false-commit",
+        "PASS turn fulfillment cannot certify rollback",
+        "PASS turn fulfillment cannot certify unconfirmed",
+        "PASS a nominal true commit with a foreign canonical receipt still fails",
+        "PASS rejected and synchronously throwing producers preserve failure and original behavior",
+        "PASS save completion rejects cross-world mutation: GM",
+        "PASS save completion rejects cross-world mutation: P",
+        "PASS save completion rejects cross-world mutation: generation",
+        "PASS save completion rejects cross-world mutation: timeline",
+        "PASS duplicate and wrong-slot calls fail while every original invocation still executes exactly once",
+        "PASS a duplicate call after settlement cannot reuse the previous passing ticket",
+        "PASS load requires its real true receipt and an idle replacement world with an advancing generation",
+        "PASS one suite deadline covers all producers, including unstarted UI calls, and never resets",
+        "PASS finished, failed and timed-out observers release world references and expose only primitive receipts",
+        "PASS the actual Electron suite, outer process and CI limits retain 1800 seconds, 1830 seconds and 45 minutes",
+        "{\"pass\":21,\"fail\":0,\"total\":21}"
+      ],
+      "importantMethod": "The unit imports the actual helper. Its ownership case runs that same helper's serialized function with a VM-only Map observer, matching the injection mechanism without adding a debug export. The pending case advances a fake clock through 750 old polling intervals and verifies it still cannot pass before genuine producer settlement."
+    },
+    {
+      "id": "unchanged-original-deadline-expression",
+      "command": "node -e \"const fs=require('node:fs'),cp=require('node:child_process'),assert=require('node:assert/strict'),crypto=require('node:crypto');const p='scripts/electron/bridge-main.cjs',old=cp.execFileSync('git',['show','60d9c8f1e9a634eb0919562d1fa34d0c8f049e6f:'+p],{encoding:'utf8'}),current=fs.readFileSync(p,'utf8');const before=old.split('\\n').find(x=>x.startsWith('setTimeout(() => finish(new Error(\\'electron-bridge-timeout\\')),'));const expr=before.slice(before.indexOf(', ')+2,-2);const after=current.match(/^const bridgeTimeoutMs = (.+);$/m)[1];assert.equal(after,expr);console.log(JSON.stringify({baseline:'60d9c8f1e9a634eb0919562d1fa34d0c8f049e6f',timeoutExpressionByteEquivalent:true,expressionSha256:crypto.createHash('sha256').update(expr).digest('hex')}));\"",
+      "exitCode": 0,
+      "toolChunkId": "0170b8",
+      "observation": "Read-only comparison extracts the entire original timeout expression from baseline Git bytes and compares it exactly with bridgeTimeoutMs. No expression value or mode branch changed.",
+      "observedExcerpts": [
+        "{\"baseline\":\"60d9c8f1e9a634eb0919562d1fa34d0c8f049e6f\",\"timeoutExpressionByteEquivalent\":true,\"expressionSha256\":\"a50aac86aab716a64511050df126426f6b291b97c6ad813f192607d778717f8e\"}"
+      ],
+      "expressionSha256": "a50aac86aab716a64511050df126426f6b291b97c6ad813f192607d778717f8e"
+    }
+  ],
+  "otherObservedChecks": {
+    "syntax": {
+      "toolChunkId": "ee0dd7",
+      "method": "All four JavaScript sources parsed through new vm.Script(source, {filename}) without execution.",
+      "exitCode": 0,
+      "observation": "syntax PASS; this preceded the metadata-only harness EOL/hash-line adjustment."
+    },
+    "whitespace": {
+      "observation": "The final case harness preserved its original CRLF identity line unchanged and added the helper hash on a separate LF line. The final git diff --check emitted no whitespace errors.",
+      "command": "git diff --check -- scripts/electron/npc-composite-cases.cjs scripts/electron/bridge-main.cjs scripts/electron/npc-composite-waits.cjs web/scripts/smoke-npc-composite-waits.js",
+      "originalStandaloneExitCodeRetained": false
+    }
+  },
+  "acceptanceBoundary": "No complete Electron acceptance was run by this subtask. These unit and source-comparison results do not establish final NPC composite acceptance, successful release, merge, or deployment."
+}

@@ -1,0 +1,210 @@
+{
+  "candidate": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+  "testedIdentity": "HEAD574 plus one explicit test-only fixture patch; not the pure574 commit",
+  "fixturePatch": {
+    "file": "web/scripts/smoke-turn-capture-work-count.js",
+    "bytes": 7198,
+    "sha256": "489a946ea40e64054185e01258cb428c5ec1930f90892910e3a4e9e76361a733"
+  },
+  "changedSourcePaths": [
+    "web/scripts/smoke-turn-capture-work-count.js"
+  ],
+  "afterChangedSourcePaths": [
+    "web/scripts/smoke-turn-capture-work-count.js"
+  ],
+  "runId": "5a8bdda1-7a3f-4c36-9f31-ca1d757c2815",
+  "status": "passed",
+  "complete": true,
+  "startedAt": "2026-10-23T07:57:29.186Z",
+  "finishedAt": "2026-10-23T08:07:28.364Z",
+  "elapsedMs": 599178,
+  "environment": {
+    "node": "v20.18.3",
+    "platform": "win32",
+    "arch": "x64",
+    "root": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011",
+    "overrides": {
+      "TMP": "D:\\tianming-npc-candidate-temp",
+      "TEMP": "D:\\tianming-npc-candidate-temp",
+      "TMPDIR": "D:\\tianming-npc-candidate-temp",
+      "TIANMING_RELEASE_TEMP_ROOT": "D:\\tianming-npc-candidate-temp"
+    },
+    "inheritedNodeOptions": null
+  },
+  "policy": {
+    "smokeTimeoutMs": 120000,
+    "smokeTimeoutOwner": "unchanged web/scripts/run-smokes.js default",
+    "otherOfficialTimeoutMsPerCase": 150000,
+    "retries": 0,
+    "allowedWaivers": 0,
+    "sequential": true
+  },
+  "counts": {
+    "total": 67,
+    "pass": 67,
+    "fail": 0,
+    "timedOut": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "waivers": 0
+  },
+  "timings": [
+    {
+      "name": "smoke-emergency-recovery-review.js",
+      "pass": true,
+      "ms": 8268,
+      "timedOut": false
+    },
+    {
+      "name": "smoke-full-turn-flow.js",
+      "pass": true,
+      "ms": 99376,
+      "timedOut": false
+    },
+    {
+      "name": "smoke-npc-composite-official.js",
+      "pass": true,
+      "ms": 90037,
+      "timedOut": false
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "pass": true,
+      "ms": 100538,
+      "timedOut": false
+    },
+    {
+      "name": "smoke-turn-capture-work-count.js",
+      "pass": true,
+      "ms": 1361,
+      "timedOut": false
+    }
+  ],
+  "checks": [
+    {
+      "id": "targeted-smokes",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 385211.3664,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-57-29-186Z-5a8bdda1-7a3f-4c36-9f31-ca1d757c2815/targeted-smokes.log",
+      "logSha256": "32ebfc4b884b28e7d88d58c798a74d2b110726e5ee8e5ed5687961cf5c588da0"
+    },
+    {
+      "id": "other-officials",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 66870.579,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-57-29-186Z-5a8bdda1-7a3f-4c36-9f31-ca1d757c2815/other-officials.log",
+      "logSha256": "289e3aedece401f3b86b32e02cc71e9994f6361a69f7529a2413b187aae075a3"
+    },
+    {
+      "id": "architecture",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 40194.3549,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-57-29-186Z-5a8bdda1-7a3f-4c36-9f31-ca1d757c2815/architecture.log",
+      "logSha256": "f9d0f4aad51d7a4d9867d6eb082fad656e2970e994a8afc11cf696b11ef508fc"
+    },
+    {
+      "id": "official-parity",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 84756.7195,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-57-29-186Z-5a8bdda1-7a3f-4c36-9f31-ca1d757c2815/official-parity.log",
+      "logSha256": "0b9abe44973db8933ee4d0971e328a2ce42ca97a154309582f160e02f075600e"
+    },
+    {
+      "id": "native-manifest",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 2012.4664,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-57-29-186Z-5a8bdda1-7a3f-4c36-9f31-ca1d757c2815/native-manifest.log",
+      "logSha256": "5caa7c52501c692aab910fd5675549a473bee0e54cc770e10582f663244ddf16"
+    },
+    {
+      "id": "startup-manifest",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 524.3192,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-57-29-186Z-5a8bdda1-7a3f-4c36-9f31-ca1d757c2815/startup-manifest.log",
+      "logSha256": "4828eecc10e441fdc9d7b6c0d7a6e8fbb7ad3f851e85dc4b515405e78f3a4850"
+    },
+    {
+      "id": "release-contract",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 5274.0243,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-57-29-186Z-5a8bdda1-7a3f-4c36-9f31-ca1d757c2815/release-contract.log",
+      "logSha256": "231560c153f595bdf19da1693c8d42ff4a9bfd9446b7104894fe0edad81a8673"
+    },
+    {
+      "id": "hot-baseline",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 3032.1149,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-57-29-186Z-5a8bdda1-7a3f-4c36-9f31-ca1d757c2815/hot-baseline.log",
+      "logSha256": "e51481f9216cb1602ecec809b8dc8164f472da307f238efd8dcacf4395d9f34d"
+    }
+  ],
+  "otherOfficials": [
+    {
+      "scenarioId": "sc-tianqi7-1627",
+      "loaded": {
+        "people": 217,
+        "factions": 22,
+        "regions": 307,
+        "exactLocations": 163
+      },
+      "runtimeIdentity": {
+        "files": 480,
+        "sha256": "7db51136f8505489356266a79c5b2d7517fbabd7c752e5ac1d1ac763ef31603a"
+      },
+      "elapsedMs": 14659,
+      "modelAttempts": 0,
+      "save": {
+        "format": "idb-snapshot-schema",
+        "bytes": 35120586,
+        "restore": "_buildSaveState + JSON transport + _restoreSavedFields",
+        "worldReplaced": true,
+        "staleLeaseRejected": true,
+        "replayReceiptsUnchanged": true,
+        "formalPersistence": false
+      },
+      "scope": "headless official lazy-load/synchronous-start/location/tenure/activity-entry/save-builder/restore-fields compatibility; no IndexedDB, fullLoadGame, formal UI, top-level endTurn or full composite claim"
+    },
+    {
+      "scenarioId": "sc-tang840-840",
+      "loaded": {
+        "people": 142,
+        "factions": 42,
+        "regions": 575,
+        "exactLocations": 53
+      },
+      "runtimeIdentity": {
+        "files": 480,
+        "sha256": "7db51136f8505489356266a79c5b2d7517fbabd7c752e5ac1d1ac763ef31603a"
+      },
+      "elapsedMs": 48927,
+      "modelAttempts": 0,
+      "save": {
+        "format": "idb-snapshot-schema",
+        "bytes": 108827261,
+        "restore": "_buildSaveState + JSON transport + _restoreSavedFields",
+        "worldReplaced": true,
+        "staleLeaseRejected": true,
+        "replayReceiptsUnchanged": true,
+        "formalPersistence": false
+      },
+      "scope": "headless official lazy-load/synchronous-start/location/tenure/activity-entry/save-builder/restore-fields compatibility; no IndexedDB, fullLoadGame, formal UI, top-level endTurn or full composite claim"
+    }
+  ],
+  "inputFiles": 2395,
+  "inputHash": "bbce0d44c14a150e8c3893867469f0cc0cd501887ccdfdcf11eca21988b7819d",
+  "afterInputHash": "bbce0d44c14a150e8c3893867469f0cc0cd501887ccdfdcf11eca21988b7819d",
+  "sourceUnchanged": true,
+  "rawReportSha256": "5977019839bebf01a1659a1f1b158495fe0cd0eae4c9f54f1011cfb420265373",
+  "targetedReportSha256": "9b69bf6e42e68e6938e891e2fbcbaf65e7d76e581d0a682e03d9879308290099",
+  "precedingFailure": "../2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/SUMMARY.md",
+  "scope": "One frozen local67 + two headless official compatibility checks + six static gates. No browser, real persistence, or full CI acceptance inherited.",
+  "retryPerformed": false
+}

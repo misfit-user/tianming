@@ -1,0 +1,26 @@
+{
+  "node": "v24.14.0",
+  "source": "current generated _captureAIStateObject, structuredClone",
+  "results": [
+    {
+      "name": "synthetic",
+      "bytes": 3151180,
+      "captureMs": 265.1950999999999,
+      "keys": [
+        "mapData",
+        "chars",
+        "turn"
+      ]
+    },
+    {
+      "name": "official-P",
+      "bytes": 136383987,
+      "captureMs": 3370.450999999999,
+      "keys": [
+        "scenarios",
+        "map",
+        "characters"
+      ]
+    }
+  ]
+}

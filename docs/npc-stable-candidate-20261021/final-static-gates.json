@@ -1,0 +1,73 @@
+{
+  "head": "279296525587db092feea6051338bf92793d8722",
+  "runtimeBase": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "results": [
+    {
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 37559,
+      "log": "lint-arch-all.log"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 80476,
+      "log": "verify-official-scenario-parity.log"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/verify-release-contract.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 4265,
+      "log": "verify-release-contract.log"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/build-native-preparation-manifest.cjs",
+        "--check"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 788,
+      "log": "build-native-preparation-manifest.log"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/build-startup-phase-manifest.js",
+        "--check"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 425,
+      "log": "build-startup-phase-manifest.log"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.5.3"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 2857,
+      "log": "sync-hot-baseline.log"
+    }
+  ]
+}

@@ -1,0 +1,709 @@
+{
+  "head": "f4359559260a76417e75a5de76c094fc2248ed4c",
+  "runtimeSha256": "442bc47b0e5e68d7a26fbf0e8f19050f9ec9d8308bb65b3044c561ea3e54741f",
+  "testSha256": "47bf709d88f9932025ea9c48480637658db8647babcbd38469f00b52b0655d2d",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "priorCommit": "f4359559260a76417e75a5de76c094fc2248ed4c",
+  "priorRuntimeSha256": "012a629d8b6bf3b5d5f2f137b45755f8f01b6338f2010409619aa45f225171d6",
+  "startedAt": "2026-10-23T06:25:41.803Z",
+  "runs": [
+    {
+      "name": "candidate",
+      "command": "node web/scripts/smoke-emergency-recovery-review.js",
+      "elapsedMs": 2665,
+      "exitCode": 0,
+      "signal": null,
+      "counts": {
+        "pass": 62,
+        "fail": 0,
+        "total": 62
+      }
+    },
+    {
+      "name": "prior-runtime",
+      "command": "node web/scripts/smoke-emergency-recovery-review.js with TM_REVIEW_SOURCE_OVERRIDE pointing to exact prior Git blob",
+      "elapsedMs": 22668,
+      "exitCode": 1,
+      "signal": null,
+      "counts": {
+        "pass": 45,
+        "fail": 17,
+        "total": 62
+      }
+    }
+  ],
+  "allocationEvidence": [
+    {
+      "file": "allocation-profile-0089.json",
+      "sha256": "a380f1e0a1b3e1ed65e59c941dfb5f01c2e60afd6cb7a736b8f13040a16d318d",
+      "startedAt": 1792735686055,
+      "finishedAt": 1792735694993,
+      "sampledLiveBytes": 2297815296,
+      "topStacks": [
+        {
+          "selfSize": 515168632,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2118,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "_tmDrainBackgroundAutosaves",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2126,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2131,
+              "columnNumber": 41
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "_tmCommitBackgroundWorld",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2077,
+              "columnNumber": 39
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "_buildSaveState",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2381,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "deepClone",
+              "url": "file:///D:/a/tianming/tianming/web/tm-utils.js?v=20260928-release1353",
+              "lineNumber": 1307,
+              "columnNumber": 18
+            }
+          ]
+        },
+        {
+          "selfSize": 391678204,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "join",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 364,
+              "columnNumber": 21
+            },
+            {
+              "functionName": "plan",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 245,
+              "columnNumber": 21
+            },
+            {
+              "functionName": "makeBasis",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 185,
+              "columnNumber": 20
+            },
+            {
+              "functionName": "snapshot",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 31,
+              "columnNumber": 19
+            },
+            {
+              "functionName": "snapshot",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 31,
+              "columnNumber": 19
+            },
+            {
+              "functionName": "forEach",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 37,
+              "columnNumber": 45
+            }
+          ]
+        },
+        {
+          "selfSize": 375634392,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2118,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "_tmDrainBackgroundAutosaves",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2126,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2131,
+              "columnNumber": 41
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "_tmCommitBackgroundWorld",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2077,
+              "columnNumber": 39
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "_buildSaveState",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2381,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "_autoSaveSnapshotGM",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2291,
+              "columnNumber": 28
+            },
+            {
+              "functionName": "deepClone",
+              "url": "file:///D:/a/tianming/tianming/web/tm-utils.js?v=20260928-release1353",
+              "lineNumber": 1307,
+              "columnNumber": 18
+            }
+          ]
+        },
+        {
+          "selfSize": 347127776,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2118,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "_tmDrainBackgroundAutosaves",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2126,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2131,
+              "columnNumber": 41
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "_tmCommitBackgroundWorld",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2077,
+              "columnNumber": 39
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "createCanonicalPayload",
+              "url": "file:///D:/a/tianming/tianming/web/tm-storage.js?v=20260928-release1353",
+              "lineNumber": 299,
+              "columnNumber": 33
+            },
+            {
+              "functionName": "_perfWithSpan",
+              "url": "file:///D:/a/tianming/tianming/web/tm-storage.js?v=20260928-release1353",
+              "lineNumber": 125,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "withSpan",
+              "url": "file:///D:/a/tianming/tianming/web/tm-perf.js?v=20260928-release1353",
+              "lineNumber": 115,
+              "columnNumber": 19
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-storage.js?v=20260928-release1353",
+              "lineNumber": 300,
+              "columnNumber": 55
+            }
+          ]
+        },
+        {
+          "selfSize": 168698024,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "join",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 364,
+              "columnNumber": 21
+            },
+            {
+              "functionName": "plan",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 245,
+              "columnNumber": 21
+            },
+            {
+              "functionName": "makeBasis",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 185,
+              "columnNumber": 20
+            },
+            {
+              "functionName": "snapshot",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 31,
+              "columnNumber": 19
+            },
+            {
+              "functionName": "forEach",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-emergency-recovery-review.js?v=20260928-release1353",
+              "lineNumber": 37,
+              "columnNumber": 45
+            }
+          ]
+        },
+        {
+          "selfSize": 134346500,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "allocation-profile-0098.json",
+      "sha256": "4d922b1b5bb180ac1a1587d4b9ee1f00be4ba8f49c50d94483befa514aa60799",
+      "startedAt": 1792735748406,
+      "finishedAt": 1792735748867,
+      "sampledLiveBytes": 903868848,
+      "topStacks": [
+        {
+          "selfSize": 227692584,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2118,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "_tmDrainBackgroundAutosaves",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2126,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2131,
+              "columnNumber": 41
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "_tmCommitBackgroundWorld",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2077,
+              "columnNumber": 39
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "_buildSaveState",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2381,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "deepClone",
+              "url": "file:///D:/a/tianming/tianming/web/tm-utils.js?v=20260928-release1353",
+              "lineNumber": 1307,
+              "columnNumber": 18
+            }
+          ]
+        },
+        {
+          "selfSize": 179460044,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2118,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "_tmDrainBackgroundAutosaves",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2126,
+              "columnNumber": 42
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2131,
+              "columnNumber": 41
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "_tmCommitBackgroundWorld",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2077,
+              "columnNumber": 39
+            },
+            {
+              "functionName": "owner.<computed>",
+              "url": "",
+              "lineNumber": 12,
+              "columnNumber": 25
+            },
+            {
+              "functionName": "_buildSaveState",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2381,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "_autoSaveSnapshotGM",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 2291,
+              "columnNumber": 28
+            },
+            {
+              "functionName": "deepClone",
+              "url": "file:///D:/a/tianming/tianming/web/tm-utils.js?v=20260928-release1353",
+              "lineNumber": 1307,
+              "columnNumber": 18
+            }
+          ]
+        },
+        {
+          "selfSize": 134346500,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          ]
+        },
+        {
+          "selfSize": 102861368,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-storage.js?v=20260928-release1353",
+              "lineNumber": 1393,
+              "columnNumber": 73
+            }
+          ]
+        },
+        {
+          "selfSize": 66078244,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-manager.js?v=20260928-release1353",
+              "lineNumber": 152,
+              "columnNumber": 54
+            },
+            {
+              "functionName": "fullLoadGame",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1394,
+              "columnNumber": 21
+            },
+            {
+              "functionName": "_fullLoadGameImpl",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1418,
+              "columnNumber": 32
+            },
+            {
+              "functionName": "_fullLoadGameApplyImpl",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1472,
+              "columnNumber": 37
+            },
+            {
+              "functionName": "_tmRunCriticalLoadStep",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1146,
+              "columnNumber": 31
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1777,
+              "columnNumber": 62
+            },
+            {
+              "functionName": "_tmValidateLoadedWorld",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-world-validation.js?v=20261022-save-stable-ids",
+              "lineNumber": 180,
+              "columnNumber": 31
+            },
+            {
+              "functionName": "_tmValidateFiniteWorldNumbers",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-world-validation.js?v=20261022-save-stable-ids",
+              "lineNumber": 112,
+              "columnNumber": 38
+            }
+          ]
+        },
+        {
+          "selfSize": 45138744,
+          "frames": [
+            {
+              "functionName": "(root)",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-manager.js?v=20260928-release1353",
+              "lineNumber": 152,
+              "columnNumber": 54
+            },
+            {
+              "functionName": "fullLoadGame",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1394,
+              "columnNumber": 21
+            },
+            {
+              "functionName": "_fullLoadGameImpl",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1418,
+              "columnNumber": 32
+            },
+            {
+              "functionName": "_fullLoadGameApplyImpl",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1472,
+              "columnNumber": 37
+            },
+            {
+              "functionName": "_tmRebindRuntimeWorld",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1193,
+              "columnNumber": 30
+            },
+            {
+              "functionName": "run",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1200,
+              "columnNumber": 14
+            },
+            {
+              "functionName": "_tmRunCriticalLoadStep",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1146,
+              "columnNumber": 31
+            },
+            {
+              "functionName": "",
+              "url": "file:///D:/a/tianming/tianming/web/tm-save-lifecycle.js?v=20261022-save-stable-ids",
+              "lineNumber": 1209,
+              "columnNumber": 38
+            },
+            {
+              "functionName": "bindRuntimeMapState",
+              "url": "file:///D:/a/tianming/tianming/web/tm-map-system.js?v=20260928-release1353",
+              "lineNumber": 375,
+              "columnNumber": 28
+            },
+            {
+              "functionName": "ensureWritableRuntimeMap",
+              "url": "file:///D:/a/tianming/tianming/web/tm-map-system.js?v=20260928-release1353",
+              "lineNumber": 163,
+              "columnNumber": 33
+            },
+            {
+              "functionName": "cloneMapValue",
+              "url": "file:///D:/a/tianming/tianming/web/tm-map-system.js?v=20260928-release1353",
+              "lineNumber": 200,
+              "columnNumber": 22
+            },
+            {
+              "functionName": "deepClone",
+              "url": "file:///D:/a/tianming/tianming/web/tm-utils.js?v=20260928-release1353",
+              "lineNumber": 1307,
+              "columnNumber": 18
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scope": "Candidate production review and production background save queue, with controlled disk/response boundaries. First 45 existing assertions retained. Sampling profiles are forced-GC diagnostic estimates, not acceptance, exact retained sizes, or proof of permanent leakage.",
+  "fixtureCorrection": "An intermediate added signal assertion incorrectly expected the former main-turn ctx.signal to cancel detached background review; handoff intentionally removes that listener. Corrected the fixture to abort the actual background review controller. No production change for this correction.",
+  "finishedAt": "2026-10-23T06:26:07.151Z",
+  "runtimeUnchanged": true,
+  "testUnchanged": true
+}

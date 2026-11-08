@@ -44,6 +44,20 @@ function loadHeadlessHelpers() {
 const helpers = loadHeadlessHelpers();
 
 function installNodeExtras(win, flow) {
+  // Match Electron native encoding/checksum APIs; legacy fallbacks have their own canonical-UTF8 smoke.
+  win.TextEncoder = TextEncoder;
+  win.TextDecoder = TextDecoder;
+  win.crypto = require('crypto').webcrypto;
+  // The Electron codec uses these native Web APIs as a group. Keep legacy
+  // no-compression behavior in the dedicated storage fallback tests.
+  Object.assign(win, { Blob, Response, CompressionStream, DecompressionStream });
+  assert(win.Blob === Blob && win.Response === Response
+    && win.CompressionStream === CompressionStream && win.DecompressionStream === DecompressionStream
+    && [win.Blob, win.Response, win.CompressionStream, win.DecompressionStream].every(api => typeof api === 'function'),
+    'integration fixture requires the actual native save codec APIs');
+  assert(typeof win.TextEncoder === 'function' && typeof win.TextDecoder === 'function'
+    && win.crypto && win.crypto.subtle && typeof win.crypto.subtle.digest === 'function',
+    'integration fixture requires native UTF-8 and Web Crypto APIs');
   win.__flow = flow;
   win.location.href = 'http://localhost/index.html';
   win.location.search = '';
@@ -76,6 +90,19 @@ function installNodeExtras(win, flow) {
     autoSave() { flow.autoSave++; return Promise.resolve({ ok: true }); },
     saveGame() { return Promise.resolve({ ok: true }); }
   };
+}
+
+async function verifyNativeSaveCodec(sandbox) {
+  assert(sandbox.SaveCompression.supported && sandbox.SaveCompression.decompressionSupported,
+    'the production save codec must detect native compression and decompression');
+  const text = JSON.stringify({ text: '完整保存与🙂\n'.repeat(512), zero: 0, empty: '', array: [1, null, false] });
+  const compressed = await sandbox.SaveCompression.compress(text);
+  assert(compressed instanceof Blob && compressed instanceof sandbox.Blob, 'production compression must return a real native Blob, never its string fallback');
+  assert(compressed.size > 0 && compressed.size < new TextEncoder().encode(text).byteLength, 'real gzip must reduce this repeated fixture');
+  const bytes = new Uint8Array(await new sandbox.Response(compressed).arrayBuffer());
+  assert(bytes.byteLength === compressed.size && bytes[0] === 0x1f && bytes[1] === 0x8b, 'native Response must expose the actual gzip bytes');
+  assert(await sandbox.SaveCompression.decompress(compressed) === text, 'the production native codec must restore the entire exact JSON');
+  console.log('[native-save-codec] PASS gzip Blob and exact production roundtrip');
 }
 
 function loadGame() {
@@ -447,6 +474,7 @@ async function main() {
     doActualStart('${SID}');
   `, sandbox, { timeout: 10000 });
   await delay(160);
+  await verifyNativeSaveCodec(sandbox);
 
   assert(sandbox.GM && sandbox.GM.running, 'game should be running after doActualStart');
   assert(Array.isArray(sandbox.GM.chars) && sandbox.GM.chars.length >= 100, 'characters should load');

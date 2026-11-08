@@ -1,0 +1,20 @@
+
+BRIDGE_CASE_START {"name":"locked-electron-runtime","at":"2026-10-23T06:57:51.983Z"}
+BRIDGE_CASE_PASS {"name":"locked-electron-runtime","elapsedMs":2}
+BRIDGE_CASE_START {"name":"production-webpreferences","at":"2026-10-23T06:57:51.986Z"}
+BRIDGE_CASE_PASS {"name":"production-webpreferences","elapsedMs":0}
+BRIDGE_CASE_START {"name":"real-bridge-and-ipc","at":"2026-10-23T06:57:51.986Z"}
+BRIDGE_CASE_PASS {"name":"real-bridge-and-ipc","elapsedMs":7}
+BRIDGE_CASE_START {"name":"production-test-exports-boundary","at":"2026-10-23T06:57:51.993Z"}
+BRIDGE_CASE_PASS {"name":"production-test-exports-boundary","elapsedMs":0}
+BRIDGE_CASE_START {"name":"official Shaosong population, current player, map and real formal entry are preserved","at":"2026-10-23T06:58:15.284Z"}
+BRIDGE_CASE_PASS {"name":"official Shaosong population, current player, map and real formal entry are preserved","elapsedMs":937}
+BRIDGE_CASE_START {"name":"formal assistance creates the source, NPC independently receives and responds","at":"2026-10-23T06:58:34.194Z"}
+BRIDGE_CASE_PASS {"name":"formal assistance creates the source, NPC independently receives and responds","elapsedMs":10642}
+BRIDGE_CASE_START {"name":"formal departure has a real route, and the travel save actually loads a new world","at":"2026-10-23T07:01:54.915Z"}
+BRIDGE_CASE_PASS {"name":"formal departure has a real route, and the travel save actually loads a new world","elapsedMs":25789}
+BRIDGE_CASE_START {"name":"onsite player question uses a current UI ticket and awaits an independent answer","at":"2026-10-23T07:05:17.148Z"}
+BRIDGE_CASE_PASS {"name":"onsite player question uses a current UI ticket and awaits an independent answer","elapsedMs":114912}
+BRIDGE_CASE_START {"name":"NPC answers the real question, both return, and the official population continues through 30 days","at":"2026-10-23T07:10:15.115Z"}
+BRIDGE_EXIT_REQUESTED {"mode":"npc-composite","at":"2026-10-23T07:11:22.638Z","code":1}
+BRIDGE_NODE_EXIT {"mode":"npc-composite","at":"2026-10-23T07:11:22.640Z","code":1}

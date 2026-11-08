@@ -1,0 +1,30 @@
+{
+  "recordedAt": "2026-10-23T06:00:17.035Z",
+  "scope": "startup fixture conflict only; no heavy tests or other files changed",
+  "oursHead": "8a001de799b447ce18338fed4becbe9a40be9aca",
+  "mainHead": "b0c80e5ae005912effbc947af027d021505c1dbd",
+  "file": "web/scripts/smoke-start-game-data-integrity.js",
+  "sha256": "67764ab2d677631ab30d5488fc6a41f9e9de222b0a257b57df8e39c4c3734491",
+  "oursAssertions": 83,
+  "mainAssertions": 76,
+  "mergedAssertions": 83,
+  "oursMissing": [],
+  "mainMissing": [],
+  "checks": {
+    "mainGetBootScriptsUnchanged": true,
+    "oursOwnGameTimersUnchanged": true,
+    "oursNativeCodecCheckUnchanged": true,
+    "oursNativeApiSetupUnchanged": true,
+    "oursFinallyScopeUnchanged": true,
+    "mainCachedLoadWithOnlyTimerReplacement": true
+  },
+  "assertionScope": "Every parent assert call retained byte-for-byte; no assertion reduction",
+  "lineEndings": {
+    "crlf": 0,
+    "bareLf": 856
+  },
+  "timeouts": {
+    "mainVM": "30000",
+    "mergedVM": "30000"
+  }
+}

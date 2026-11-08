@@ -1,0 +1,9 @@
+{
+  "head": "681e29ad804c56e4a8cb8bb22c10a34b417eb7fe",
+  "heapSampling": false,
+  "temp": "D:\\tianming-npc-candidate-temp",
+  "preciseMemory": true,
+  "command": "node scripts/verify-electron-bridge.js --npc-composite",
+  "startedAt": "2026-10-23T06:36:41.9537511Z",
+  "cpuProfile": false
+}

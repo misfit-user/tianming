@@ -138,7 +138,9 @@ module.exports = async function({ win, root, check }) {
     await fresh(mode, mode); await send(); await settled();
     const r = await js(`(()=>{const ui=TM_AuthoringAgentUI._ui;return{rounds:__relayTest.round,compat:__relayTest.compat,checked:__relayTest.checkedTurns,mismatch:!!__relayTest.protocolMismatch,status:ui._completion.status,live:ui.adapter.getScenario().fiscalConfig.treasury,draft:ui.draft.fiscalConfig.treasury,labels:ui.draft.labels,visible:document.getElementById('tm-aa-panel').textContent};})()`);
     assert.equal(r.rounds, 2); assert.equal(r.compat, 0); assert.equal(r.checked, 1); assert.equal(r.mismatch, false); assert.equal(r.status, 'completed');
-    assert.equal(r.live, 100); assert.equal(r.draft, 450); assert.deepEqual(r.labels, [{ name: 'once', text: '思考续轮已完成' }]); assert(!r.visible.includes('SYNTHETIC_OPAQUE_THOUGHT'));
+    assert.equal(r.live, 100); assert.equal(r.draft, 450); assert.deepEqual(r.labels, [{ name: 'once', text: '思考续轮已完成' }]);
+    // 思考原文默认上屏（2026-10-16）：只有流式旁听到的才画；整段 JSON 回来的不画
+    if (mode === 'reasoning-sse') assert(r.visible.includes('SYNTHETIC_OPAQUE_THOUGHT_1'), 'streamed thinking is shown by default'); else assert(!r.visible.includes('SYNTHETIC_OPAQUE_THOUGHT'));
     await click(`TM_AuthoringAgentUI._ui.els.apply`);
     const saved = await js(`(async()=>{const app=TM_SCENARIO_EDITOR_RESET_APP,p=await app.saveProjectSnapshot('思考续轮隔离存档');await app.loadProjectSnapshot(p.id);return{money:app.state.scenario.fiscalConfig.treasury,labels:app.state.scenario.labels,prompt:app.state.scenario.customPrompt};})()`);
     assert.equal(saved.money, 450); assert.deepEqual(saved.labels, r.labels); assert.equal(saved.prompt, '玩家手工输入');

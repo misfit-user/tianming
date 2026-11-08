@@ -2035,6 +2035,8 @@ function calcDateFromTurn(turn){
   var daysPer = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
   var totalDays = (typeof TM !== 'undefined' && TM.SimTime && typeof GM !== 'undefined' && GM)
     ? TM.SimTime.dayAtTurn(GM, turn) : (turn - 1) * daysPer;
+  // 时刻保留在SimTime；历日及旧GM日期镜像只显示所在的整日。
+  totalDays = Math.floor(totalDays);
 
   // === 公历日期推进（用于干支计算）===
   // 使用精确的公历月天数

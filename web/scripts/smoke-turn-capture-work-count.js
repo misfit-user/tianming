@@ -35,8 +35,11 @@ function clone(value) { return JSON.parse(JSON.stringify(value)); }
   const snapshotBuilder = extractFunction(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n' + extractFunction(lifecycle, 'function _autoSaveSnapshotGM(');
   const persistenceBuilder = extractFunction(lifecycle, 'function _buildSaveState(');
   const transactionBoundary = extractBetween(core, 'function _tmCaptureEndTurnObject(', 'async function _tmCommitPreEndTurnRecoveryPoint(');
+  const memoryProducer = extractFunction(render, 'function _endTurn_startPostTurnMemorySave(');
   const finalSave = extractFunction(render, 'function _endTurn_saveSnapshot(');
 
+  let memoryWaits = 0, backgroundRequests = 0, finishMemory;
+  const memoryCompletion = new Promise(resolve => { finishMemory = resolve; });
   let payloadBuilds = 0;
   let snapshotCalls = 0;
   let slotBatch = null;
@@ -45,6 +48,10 @@ function clone(value) { return JSON.parse(JSON.stringify(value)); }
     setTimeout, clearTimeout, structuredClone,
     crypto: { randomUUID() { return 'round20-transaction'; } },
     localStorage: { setItem() {}, getItem() { return null; }, removeItem() {} },
+    // Only the external memory completion/queue boundary is held here; the
+    // actual save producer must neither block foreground capture nor run twice.
+    async _awaitPostTurnJobsForSave(ids) { memoryWaits++; assert.deepStrictEqual(Array.from(ids), ['sc25', 'sc25c']); await memoryCompletion; },
+    async requestBackgroundAutosave() { backgroundRequests++; return { ok: true, scheduled: true }; },
     deepClone: clone,
     _tmStripAiKeyInPlace(value) { return value; },
     _prepareGMForSave(gm, p) { return { GM: gm, P: p }; },
@@ -88,7 +95,7 @@ function clone(value) { return JSON.parse(JSON.stringify(value)); }
 
   vm.createContext(context);
   vm.runInContext(read('tm-perf.js'), context, { filename: 'tm-perf.js' });
-  vm.runInContext(snapshotBuilder + '\n' + persistenceBuilder + '\n' + transactionBoundary + '\n' + finalSave, context, {
+  vm.runInContext(snapshotBuilder + '\n' + persistenceBuilder + '\n' + transactionBoundary + '\n' + memoryProducer + '\n' + finalSave, context, {
     filename: 'round20-turn-capture-production-boundaries.js'
   });
 
@@ -100,6 +107,8 @@ function clone(value) { return JSON.parse(JSON.stringify(value)); }
   const saveContext = { meta: { transaction: txn, transactionId: txn.transactionId } };
   assert.strictEqual(await context._endTurn_saveSnapshot(saveContext), true);
 
+  assert.strictEqual(memoryWaits, 1, 'the original producer is started once');
+  assert.strictEqual(backgroundRequests, 0, 'foreground commit does not wait for or finish pending memory');
   const work = context.TM.perf.workReport().counters;
   assert.strictEqual(work['world.rollbackClone.count'], 1, 'one rollback capture per successful turn');
   assert.strictEqual(work['world.persistenceBuild.count'], 2, 'pre_endturn plus final canonical are the only detached builds');
@@ -118,6 +127,12 @@ function clone(value) { return JSON.parse(JSON.stringify(value)); }
   assert.strictEqual(clickState.GM.turn, 40, 'click snapshot stays detached after live-world mutation');
   assert.strictEqual(clickState.GM.treasury, 1000);
 
+  finishMemory();
+  const memoryReceipt = await saveContext.meta.postTurnMemorySavePromise;
+  assert.strictEqual(memoryReceipt.ok, true);
+  assert.strictEqual(memoryReceipt.scheduled, true);
+  assert.strictEqual(backgroundRequests, 1, 'the original completion requests one later save');
+  assert.strictEqual(memoryWaits, 1, 'reading the completion does not start another memory attempt');
   console.log('[smoke-turn-capture-work-count] PASS rollback=1 detached=2 payload=1 snapshotRebuild=0');
 })().catch((error) => {
   console.error(error && error.stack || error);

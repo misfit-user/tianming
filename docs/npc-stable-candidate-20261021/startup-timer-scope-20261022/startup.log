@@ -1,0 +1,14 @@
+[run-smokes] 共 1185 个 smoke · 选中 1 · 跳过 0 · 并发 1 · 超时 120s
+[run-smokes] 独占执行硬时限用例（不改用例内部压力/期限）：smoke-start-game-data-integrity.js
+  [1/1] TIMEOUT smoke-start-game-data-integrity.js (120.3s)
+
+[run-smokes] 完成：0 PASS · 1 FAIL · 0 SKIP · 0 WAIVED / 1 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 120s(并行墙钟更短)
+
+--- 失败聚类（1 簇）---
+  ×1  （超时）
+      smoke-start-game-data-integrity.js
+
+--- 最慢 Top 10 ---
+  120.3s  smoke-start-game-data-integrity.js
+
+[run-smokes] 报告 → ../docs/npc-stable-candidate-20261021/startup-timer-scope-20261022/startup-report.json

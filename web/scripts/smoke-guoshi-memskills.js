@@ -80,7 +80,10 @@ AA.memories.recall('需求', null, mockSel).then(function (blk) {
   ok(/showMemories: showMemoriesUI/.test(uiSrc), 'UI 四卡导出 TM_AuthoringAgentUI(供 je-cmdk 调)');
   ok(/data-pack-tg/.test(uiSrc) && /data-pack-imp/.test(uiSrc) && /data-mem-del/.test(uiSrc), 'UI 卡内交互(启停/导入/删)接线');
   ok(/tokensBreakdown/.test(uiSrc) && /真口径/.test(uiSrc) && /_lastRunMeta/.test(uiSrc), 'UI 用量卡吃 G1 真口径构成(codex-token-usage/claude-hud 思路)');
-  ok(/记忆册/.test(adSrc) && /用量·上下文/.test(adSrc), '工坊 je-cmdk 四命令接线(双入口可达)');
+  // 2026-10-15 国师重做：工坊那份 je-cmdk 模态退役，四卡改由面板自己的命令面板（/记忆册…）和「设置 · 资料」两处可达
+  ok(/k: 'memories', t: '记忆册'/.test(uiSrc) && /k: 'skills', t: '技能册'/.test(uiSrc) && /k: 'packs', t: '能力包'/.test(uiSrc) && /k: 'usage', t: '用量·上下文'/.test(uiSrc), '面板命令面板含四卡命令');
+  ok(/\['memories', '记忆册'/.test(uiSrc) && /k === 'memories'\) showMemoriesUI\(\)/.test(uiSrc) && /k === 'usage'\) showUsageUI\(\)/.test(uiSrc), '「设置 · 资料」四卡入口接线(双入口可达)');
+  ok(!/_jeCmdkOpen\s*=/.test(adSrc), '工坊不再另挂一份 Ctrl+K 命令模态(与面板抢同一组按键)');
   console.log('\nsmoke-guoshi-memskills ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + P + '/' + (P + F));
   process.exit(F === 0 ? 0 : 1);
 }).catch(function (e) { console.error('CHAIN FAIL', e && e.message); process.exit(1); });

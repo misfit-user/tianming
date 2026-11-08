@@ -1,0 +1,29 @@
+{
+  "head": "7c6525075d3f07ab435562e21a8d3d74c0e9b413",
+  "runtime": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+  "run": "web/dev-tools/electron-bridge/adeb3d79-5a89-4edc-abfc-edfc90f7633a",
+  "diagnostics": "Read-only process metrics and local non-uploading Crashpad; no heap limit, GC, wait or world changes.",
+  "failures": [
+    "Error: render-process-gone: {\"reason\":\"oom\",\"exitCode\":-536870904}\n    at WebContents.<anonymous> (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\bridge-main.cjs:96:73)\n    at WebContents.emit (node:events:530:35)"
+  ],
+  "peak": {
+    "Browser": {
+      "workingSetKB": 1445484,
+      "privateKB": 1415544
+    },
+    "GPU": {
+      "workingSetKB": 1027916,
+      "privateKB": 1020488
+    },
+    "Utility": {
+      "workingSetKB": 93780,
+      "privateKB": 14192
+    },
+    "Tab": {
+      "workingSetKB": 5474380,
+      "privateKB": 5646544
+    }
+  },
+  "retainedDumpDirectory": "web/dev-tools/electron-bridge/adeb3d79-5a89-4edc-abfc-edfc90f7633a/crash-dumps",
+  "acceptancePassed": false
+}

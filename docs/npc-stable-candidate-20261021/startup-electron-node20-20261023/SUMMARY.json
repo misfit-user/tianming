@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "runId": "ab257c2d-762d-4213-85be-3894f8437a5d",
+  "environment": {
+    "electron": "33.4.11",
+    "node": "20.18.3",
+    "v8": "13.0.245.25-electron.0",
+    "mode": "ELECTRON_RUN_AS_NODE in child only"
+  },
+  "timeoutMs": 120000,
+  "retries": 0,
+  "exit": 0,
+  "ms": 103280,
+  "pass": true,
+  "timedOut": false,
+  "completedCaseScopes": 12,
+  "caseObservations": [
+    {
+      "case": "stale-map-choice-is-ignored",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 5,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 0
+      }
+    },
+    {
+      "case": "fresh-ai-geography-choice-is-honored",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 5,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 0
+      }
+    },
+    {
+      "case": "runFastStartGateCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 26,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 1
+      }
+    },
+    {
+      "case": "runStartRequestRaceCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 11,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 0
+      }
+    },
+    {
+      "case": "runLazyLoadFailureUnlockCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 26,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 1
+      }
+    },
+    {
+      "case": "runStrictHistoryFastPathCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 26,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 1
+      }
+    },
+    {
+      "case": "runMemorialCandidateOrderingCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 7,
+        "intervals": 4,
+        "immediates": 0,
+        "frames": 0
+      }
+    },
+    {
+      "case": "runMemorialInteractionGuardCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 5,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 0
+      }
+    },
+    {
+      "case": "runScenarioSourceIsolationCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 10,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 1
+      }
+    },
+    {
+      "case": "runBackgroundPrewarmCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 5,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 0
+      }
+    },
+    {
+      "case": "runDeepReadImmutableConfigCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 6,
+        "intervals": 4,
+        "immediates": 0,
+        "frames": 0
+      }
+    },
+    {
+      "case": "runDeepReadStaleCallCase",
+      "assertionsCompleted": true,
+      "remaining": {
+        "timeouts": 5,
+        "intervals": 5,
+        "immediates": 0,
+        "frames": 0
+      }
+    }
+  ],
+  "sourceUnchanged": true,
+  "reportSha256": "77b7d68f29c7217856e6894b2fc4ef07f011bfae4ec8213a7e03c9a18c285f7a",
+  "scope": "An isolated real-production-module VM smoke under the existing locked Electron Node engine. Not a browser flow or complete local gate. Prior Node24 timeout evidence remains valid; this comparison does not identify its root cause.",
+  "predecessor": {
+    "directory": "../startup-electron-node20-20261022",
+    "status": "interrupted",
+    "knownCause": false
+  },
+  "assertionsAudit": "../fixture-freeze-audit-20261023.json",
+  "fixtureLimits": [
+    "Headless Audio and IndexedDB remain explicit stubs; this is not native disk or IndexedDB restoration proof."
+  ]
+}

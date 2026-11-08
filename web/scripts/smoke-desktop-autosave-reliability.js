@@ -1,9 +1,10 @@
 'use strict';
 const assert=require('assert/strict');const {fixture,tick,clone}=require('./lib-desktop-autosave-reliability');
 const tests=[];const test=(name,run)=>tests.push({name,run});
+const body=call=>Object.prototype.hasOwnProperty.call(call.payload,'dataJson')?JSON.parse(call.payload.dataJson):call.payload.data;
 test('full committed world is saved once with no data loss and no remaining timeout',async()=>{
   const f=fixture(),before=JSON.stringify({GM:f.c.GM,P:f.c.P});assert.equal((await f.save()).ok,true);
-  assert.equal(f.calls.length,1);assert.equal(JSON.stringify(f.calls[0].payload.data.gameState),JSON.stringify(f.c.GM));
+  assert.equal(f.calls.length,1);assert.equal(JSON.stringify(body(f.calls[0]).gameState),JSON.stringify(f.c.GM));
   assert.equal(JSON.stringify({GM:f.c.GM,P:f.c.P}),before);assert.equal(f.timers.size,0);assert.equal(f.status().pending,false);
 });
 test('never-returning native write has a bounded local wait without a false success',async()=>{
@@ -65,7 +66,7 @@ test('foreign success receipt is rejected and cannot change success time or sess
 test('same-turn new committed memory is saved even without new input; unchanged snapshots stay skipped',async()=>{
   const f=fixture();await f.save();assert.equal((await f.c._tmRunDesktopAutoSaveTick()).reason,'idle-unchanged');assert.equal(f.calls.length,1);
   f.c.GM.fullNarrative+='后台已提交的完整记忆';f.adopt();assert.equal((await f.c._tmRunDesktopAutoSaveTick()).ok,true);
-  assert.equal(f.calls.length,2);assert(f.calls[1].payload.data.gameState.fullNarrative.endsWith('后台已提交的完整记忆'));
+  assert.equal(f.calls.length,2);assert(body(f.calls[1]).gameState.fullNarrative.endsWith('后台已提交的完整记忆'));
 });
 test('ordinary rejection does not poison later retries or fall back to a second transport',async()=>{
   const f=fixture();f.setReply(()=>Promise.reject(Error('ordinary native rejection')));assert.equal((await f.save()).ok,false);

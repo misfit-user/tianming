@@ -1,0 +1,9 @@
+{
+  "observedAt": "2026-10-23T05:12:05.100Z",
+  "status": "interrupted",
+  "reason": "No final report and no remaining test runner process observed after session discontinuity. Cause and termination time unknown.",
+  "reportPresent": false,
+  "priorStartedAt": "2026-10-22T17:42:38.760Z",
+  "notTestPass": true,
+  "notKnownTimeout": true
+}

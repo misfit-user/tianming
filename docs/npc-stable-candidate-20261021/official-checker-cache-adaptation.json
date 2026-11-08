@@ -1,0 +1,17 @@
+{
+  "recordedAt": "2026-10-23T06:10:54.661Z",
+  "head": "f4359559260a76417e75a5de76c094fc2248ed4c",
+  "file": "docs/npc-stable-candidate-20261021/check-other-officials.cjs",
+  "previousSha256": "1549626901007f1135a996885ae32985e3c1bde92c66673ddd18c62a33f0bd47",
+  "sha256": "71044bed835f594bb8e129090a4770e5b2fce484df3b9adcc4f1643df923fdcf",
+  "previousAssertions": 39,
+  "currentAssertions": 41,
+  "missing": [],
+  "addedAssertions": [
+    "assert(compiled instanceof vm.Script, 'compiled cache entry must be an actual vm.Script: ' + file)",
+    "assert(absolute.startsWith(web + path.sep) && fs.statSync(absolute).isFile(), 'compiled cache key must identify an existing runtime file: ' + file)"
+  ],
+  "change": "Adapt source identity audit to actual vm.Script cache values and cache-key files; hash current frozen file bytes. No runtime or limits changed.",
+  "previousFailure": "final-gates/2026-10-23T06-03-03-362Z-68aae9ea-3f38-4e9a-9951-22d24d60defb/other-officials.log",
+  "classification": "documentation fixture incompatible with changed production startup-test cache shape, not an environment or game failure"
+}

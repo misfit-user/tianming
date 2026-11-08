@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// smoke-json-repair-layers.js — Phase 1 C-1·锁 robustParseJSON Layer 1-2.6 修复能力
+// smoke-json-repair-layers.js — Phase 1 C-1·锁 robustParseJSON Layer 1-2.6 修复能力（实现在 tm-utils.js）
 // 喂 5+ 种真实破损 JSON·验证每种都能抢救出 ≥ 关键字段
 
 'use strict';
@@ -9,7 +9,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const code = fs.readFileSync(path.join(ROOT, 'tm-ai-infra-json.js'), 'utf8');
+const code = fs.readFileSync(path.join(ROOT, 'tm-utils.js'), 'utf8');
 
 const sandbox = {
   console: console,
@@ -24,7 +24,7 @@ sandbox.global = sandbox;
 sandbox.self = sandbox;
 sandbox.window.TM = sandbox.TM;
 
-vm.runInNewContext(code, sandbox, { filename: 'tm-ai-infra-json.js' });
+vm.runInNewContext(code, sandbox, { filename: 'tm-utils.js' });
 
 const rp = sandbox.robustParseJSON;
 if (typeof rp !== 'function') {

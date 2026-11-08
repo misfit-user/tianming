@@ -1,0 +1,7 @@
+PASS only the same object counts as an alias
+PASS aliased maps are saved once and live P is untouched
+PASS a separately held map is still saved in full
+PASS load restores the template before rebind, and the rebind leaves template and runtime map unshared
+PASS without a rebind (e.g. AI geography) the template gets its own copy
+PASS saved size drops by the two duplicate copies
+{"passed":6}

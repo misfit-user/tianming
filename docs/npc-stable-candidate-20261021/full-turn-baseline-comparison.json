@@ -1,0 +1,2097 @@
+{
+  "currentHead": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+  "baseline": "e6d5a592fc258f3328fd810c91b61ed0a24599cf",
+  "prefetchMsOutsideChild": 4744,
+  "command": "node --require docs/.../trace-full-turn-preload.cjs web/scripts/smoke-full-turn-flow.js",
+  "hardTimeoutMs": 120000,
+  "assertionsAndTestSourceUnchanged": true,
+  "methodology": "External VM timing, periodic state observation and call-through save observers. Git blobs are prefetched by the parent outside both 120-second child deadlines; baseline child only reads cached changed web/package bytes. No working-tree runtime file is replaced. This is diagnostic evidence, not a replacement CI gate.",
+  "results": [
+    {
+      "label": "current",
+      "head": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+      "startedAt": "2026-10-21T17:34:22.227Z",
+      "ms": 120311,
+      "exit": null,
+      "signal": "SIGTERM",
+      "error": "spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT",
+      "trace": "full-turn-trace-current.jsonl",
+      "output": "full-turn-output-current.log",
+      "lastEvents": [
+        {
+          "ms": 47485,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "[SaveDB] 初始化失败: Error: stub·no-idb",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor"
+            ],
+            "warnTail": [
+              "[perf.threshold] 捕获: [perf] authority.tick 超阈值: 687.00ms > 400ms",
+              "  Error: [perf] authority.tick 超阈值: 687.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+              "[endTurn systems] slow stage: 系统结算总耗时 18314ms "
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1,
+            "modelSchemaErrorCount": 1,
+            "modelSchemaErrorTail": [
+              "[CharFullSchema] 初始化 217 位角色完整字段"
+            ],
+            "postTurnJobs": [
+              {
+                "id": "borderInvasionAI",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "partyInference",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "edict_efficacy",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              }
+            ],
+            "saveDB": {
+              "available": false,
+              "blocked": false
+            },
+            "promises": {},
+            "save": null
+          }
+        },
+        {
+          "ms": 52495,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "[SaveDB] 初始化失败: Error: stub·no-idb",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor"
+            ],
+            "warnTail": [
+              "[perf.threshold] 捕获: [perf] authority.tick 超阈值: 687.00ms > 400ms",
+              "  Error: [perf] authority.tick 超阈值: 687.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+              "[endTurn systems] slow stage: 系统结算总耗时 18314ms "
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1,
+            "modelSchemaErrorCount": 1,
+            "modelSchemaErrorTail": [
+              "[CharFullSchema] 初始化 217 位角色完整字段"
+            ],
+            "postTurnJobs": [
+              {
+                "id": "borderInvasionAI",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "partyInference",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "edict_efficacy",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              }
+            ],
+            "saveDB": {
+              "available": false,
+              "blocked": false
+            },
+            "promises": {},
+            "save": null
+          }
+        },
+        {
+          "ms": 84973,
+          "event": "observed_call",
+          "name": "_endTurn_saveSnapshot"
+        },
+        {
+          "ms": 86416,
+          "event": "observed_call",
+          "name": "createCanonicalPayload"
+        },
+        {
+          "ms": 102045,
+          "event": "observed_settlement",
+          "name": "createCanonicalPayload",
+          "status": "fulfilled",
+          "calledAtMs": 86416,
+          "settledAtMs": 102045
+        },
+        {
+          "ms": 102047,
+          "event": "observed_call",
+          "name": "saveManyAtomic"
+        },
+        {
+          "ms": 102787,
+          "event": "observed_settlement",
+          "name": "saveManyAtomic",
+          "status": "fulfilled",
+          "calledAtMs": 102047,
+          "settledAtMs": 102787,
+          "result": true
+        },
+        {
+          "ms": 102790,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": true
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[cc3·agenda] AI 返回不可用·走 fallback",
+              "[AutoSave] 端回合 snapshot 耗 17072ms·考虑 A-2",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1,
+            "modelSchemaErrorCount": 2,
+            "modelSchemaErrorTail": [
+              "[CharFullSchema] 初始化 217 位角色完整字段",
+              "[cc3·agenda] AI 返回不可用·走 fallback"
+            ],
+            "postTurnJobs": [
+              {
+                "id": "borderInvasionAI",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "partyInference",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "edict_efficacy",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "npc_behavior",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              }
+            ],
+            "saveDB": {
+              "available": false,
+              "blocked": false
+            },
+            "promises": {
+              "_endTurn_saveSnapshot": {
+                "status": "pending",
+                "calledAtMs": 84973
+              },
+              "createCanonicalPayload": {
+                "status": "fulfilled",
+                "calledAtMs": 86416,
+                "settledAtMs": 102045
+              },
+              "saveManyAtomic": {
+                "status": "fulfilled",
+                "calledAtMs": 102047,
+                "settledAtMs": 102787,
+                "result": true
+              }
+            },
+            "save": {
+              "hasEndTurnSavePromise": true,
+              "hasCanonicalPayload": true,
+              "receiptState": "committed"
+            }
+          }
+        },
+        {
+          "ms": 118392,
+          "event": "observed_settlement",
+          "name": "_endTurn_saveSnapshot",
+          "status": "fulfilled",
+          "calledAtMs": 84973,
+          "settledAtMs": 118392,
+          "result": true
+        },
+        {
+          "ms": 118399,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": true
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[TM.Features] [object Object]",
+              "[TM.Features] [object Object]",
+              "[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1,
+            "modelSchemaErrorCount": 2,
+            "modelSchemaErrorTail": [
+              "[CharFullSchema] 初始化 217 位角色完整字段",
+              "[cc3·agenda] AI 返回不可用·走 fallback"
+            ],
+            "postTurnJobs": [
+              {
+                "id": "borderInvasionAI",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "partyInference",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "edict_efficacy",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "npc_behavior",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              }
+            ],
+            "saveDB": {
+              "available": false,
+              "blocked": false
+            },
+            "promises": {
+              "_endTurn_saveSnapshot": {
+                "status": "fulfilled",
+                "calledAtMs": 84973,
+                "settledAtMs": 118392,
+                "result": true
+              },
+              "createCanonicalPayload": {
+                "status": "fulfilled",
+                "calledAtMs": 86416,
+                "settledAtMs": 102045
+              },
+              "saveManyAtomic": {
+                "status": "fulfilled",
+                "calledAtMs": 102047,
+                "settledAtMs": 102787,
+                "result": true
+              }
+            },
+            "save": {
+              "hasEndTurnSavePromise": true,
+              "hasCanonicalPayload": true,
+              "receiptState": "committed"
+            }
+          }
+        }
+      ],
+      "slowVmCalls": [
+        {
+          "stage": "scenarios/tianqi7-1627.js",
+          "ms": 479,
+          "at": 3550
+        },
+        {
+          "stage": "_pendingUseMap = true; _pendingMapModeSid = 'sc-tianqi7-1627'; _pendingMapModeAt = Date.now(); doActualStart('sc-tianqi7-1627');",
+          "ms": 7790,
+          "at": 11344
+        },
+        {
+          "stage": "_postTurnCourtChoose(true);",
+          "ms": 2155,
+          "at": 17383
+        }
+      ]
+    },
+    {
+      "label": "baseline",
+      "head": "e6d5a592fc258f3328fd810c91b61ed0a24599cf",
+      "startedAt": "2026-10-21T17:36:22.548Z",
+      "ms": 120090,
+      "exit": 0,
+      "signal": null,
+      "error": "spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT",
+      "trace": "full-turn-trace-baseline.jsonl",
+      "output": "full-turn-output-baseline.log",
+      "lastEvents": [
+        {
+          "ms": 86432,
+          "event": "observed_call",
+          "name": "createCanonicalPayload"
+        },
+        {
+          "ms": 101757,
+          "event": "observed_settlement",
+          "name": "createCanonicalPayload",
+          "status": "fulfilled",
+          "calledAtMs": 86432,
+          "settledAtMs": 101757
+        },
+        {
+          "ms": 101759,
+          "event": "observed_call",
+          "name": "saveManyAtomic"
+        },
+        {
+          "ms": 102636,
+          "event": "observed_settlement",
+          "name": "saveManyAtomic",
+          "status": "fulfilled",
+          "calledAtMs": 101759,
+          "settledAtMs": 102636,
+          "result": true
+        },
+        {
+          "ms": 102638,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": true
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[cc3·agenda] AI 返回不可用·走 fallback",
+              "[AutoSave] 端回合 snapshot 耗 16568ms·考虑 A-2",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1,
+            "modelSchemaErrorCount": 2,
+            "modelSchemaErrorTail": [
+              "[CharFullSchema] 初始化 217 位角色完整字段",
+              "[cc3·agenda] AI 返回不可用·走 fallback"
+            ],
+            "postTurnJobs": [
+              {
+                "id": "borderInvasionAI",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "partyInference",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "edict_efficacy",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "npc_behavior",
+                "status": "running",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              }
+            ],
+            "saveDB": {
+              "available": false,
+              "blocked": false
+            },
+            "promises": {
+              "_endTurn_saveSnapshot": {
+                "status": "pending",
+                "calledAtMs": 85189
+              },
+              "createCanonicalPayload": {
+                "status": "fulfilled",
+                "calledAtMs": 86432,
+                "settledAtMs": 101757
+              },
+              "saveManyAtomic": {
+                "status": "fulfilled",
+                "calledAtMs": 101759,
+                "settledAtMs": 102636,
+                "result": true
+              }
+            },
+            "save": {
+              "hasEndTurnSavePromise": true,
+              "hasCanonicalPayload": true,
+              "receiptState": "committed"
+            }
+          }
+        },
+        {
+          "ms": 114885,
+          "event": "observed_settlement",
+          "name": "_endTurn_saveSnapshot",
+          "status": "fulfilled",
+          "calledAtMs": 85189,
+          "settledAtMs": 114885,
+          "result": true
+        },
+        {
+          "ms": 118963,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": true
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[TM.Features] [object Object]",
+              "[TM.Features] [object Object]",
+              "[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1,
+            "modelSchemaErrorCount": 2,
+            "modelSchemaErrorTail": [
+              "[CharFullSchema] 初始化 217 位角色完整字段",
+              "[cc3·agenda] AI 返回不可用·走 fallback"
+            ],
+            "postTurnJobs": [
+              {
+                "id": "borderInvasionAI",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "partyInference",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "edict_efficacy",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "npc_behavior",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              }
+            ],
+            "saveDB": {
+              "available": false,
+              "blocked": false
+            },
+            "promises": {
+              "_endTurn_saveSnapshot": {
+                "status": "fulfilled",
+                "calledAtMs": 85189,
+                "settledAtMs": 114885,
+                "result": true
+              },
+              "createCanonicalPayload": {
+                "status": "fulfilled",
+                "calledAtMs": 86432,
+                "settledAtMs": 101757
+              },
+              "saveManyAtomic": {
+                "status": "fulfilled",
+                "calledAtMs": 101759,
+                "settledAtMs": 102636,
+                "result": true
+              }
+            },
+            "save": {
+              "hasEndTurnSavePromise": true,
+              "hasCanonicalPayload": true,
+              "receiptState": "committed"
+            }
+          }
+        },
+        {
+          "ms": 119645,
+          "event": "vm_begin",
+          "stage": "JSON.stringify((function(){ var lastRun = (TM.Endturn && TM.Endturn.Pipeline && TM.Endturn.Pipeline.lastRun) ? TM.Endturn.Pipeline.lastRun() : []; return { turn: GM.t"
+        },
+        {
+          "ms": 119648,
+          "event": "vm_return",
+          "stage": "JSON.stringify((function(){ var lastRun = (TM.Endturn && TM.Endturn.Pipeline && TM.Endturn.Pipeline.lastRun) ? TM.Endturn.Pipeline.lastRun() : []; return { turn: GM.t",
+          "elapsedMs": 2,
+          "promise": false,
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": true
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[TM.Features] [object Object]",
+              "[TM.Features] [object Object]",
+              "[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1,
+            "modelSchemaErrorCount": 2,
+            "modelSchemaErrorTail": [
+              "[CharFullSchema] 初始化 217 位角色完整字段",
+              "[cc3·agenda] AI 返回不可用·走 fallback"
+            ],
+            "postTurnJobs": [
+              {
+                "id": "borderInvasionAI",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "partyInference",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "edict_efficacy",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "npc_behavior",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              }
+            ],
+            "saveDB": {
+              "available": false,
+              "blocked": false
+            },
+            "promises": {
+              "_endTurn_saveSnapshot": {
+                "status": "fulfilled",
+                "calledAtMs": 85189,
+                "settledAtMs": 114885,
+                "result": true
+              },
+              "createCanonicalPayload": {
+                "status": "fulfilled",
+                "calledAtMs": 86432,
+                "settledAtMs": 101757
+              },
+              "saveManyAtomic": {
+                "status": "fulfilled",
+                "calledAtMs": 101759,
+                "settledAtMs": 102636,
+                "result": true
+              }
+            },
+            "save": {
+              "hasEndTurnSavePromise": true,
+              "hasCanonicalPayload": true,
+              "receiptState": "committed"
+            }
+          }
+        },
+        {
+          "ms": 119658,
+          "event": "exit",
+          "code": 0,
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": true
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[TM.Features] [object Object]",
+              "[TM.Features] [object Object]",
+              "[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1,
+            "modelSchemaErrorCount": 2,
+            "modelSchemaErrorTail": [
+              "[CharFullSchema] 初始化 217 位角色完整字段",
+              "[cc3·agenda] AI 返回不可用·走 fallback"
+            ],
+            "postTurnJobs": [
+              {
+                "id": "borderInvasionAI",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "partyInference",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "edict_efficacy",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              },
+              {
+                "id": "npc_behavior",
+                "status": "done",
+                "attempts": 1,
+                "totalAttempts": 1,
+                "maxAttempts": 2,
+                "error": null
+              }
+            ],
+            "saveDB": {
+              "available": false,
+              "blocked": false
+            },
+            "promises": {
+              "_endTurn_saveSnapshot": {
+                "status": "fulfilled",
+                "calledAtMs": 85189,
+                "settledAtMs": 114885,
+                "result": true
+              },
+              "createCanonicalPayload": {
+                "status": "fulfilled",
+                "calledAtMs": 86432,
+                "settledAtMs": 101757
+              },
+              "saveManyAtomic": {
+                "status": "fulfilled",
+                "calledAtMs": 101759,
+                "settledAtMs": 102636,
+                "result": true
+              }
+            },
+            "save": {
+              "hasEndTurnSavePromise": true,
+              "hasCanonicalPayload": true,
+              "receiptState": "committed"
+            }
+          }
+        }
+      ],
+      "slowVmCalls": [
+        {
+          "stage": "scenarios/tianqi7-1627.js",
+          "ms": 439,
+          "at": 3604
+        },
+        {
+          "stage": "_pendingUseMap = true; _pendingMapModeSid = 'sc-tianqi7-1627'; _pendingMapModeAt = Date.now(); doActualStart('sc-tianqi7-1627');",
+          "ms": 7747,
+          "at": 11356
+        },
+        {
+          "stage": "_postTurnCourtChoose(true);",
+          "ms": 2223,
+          "at": 18028
+        }
+      ]
+    }
+  ]
+}

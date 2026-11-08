@@ -1,0 +1,27 @@
+{
+  "scope": "Optional recovery fingerprint microbenchmark only; not official gameplay, Electron OOM resolution or full-world acceptance.",
+  "provenance": "Retained from the completed six-child-process benchmark output. Writing this report did not rerun the benchmark. The script fixes the then-current HEAD to the exact baseline below.",
+  "baseline": "7c6525075d3f07ab435562e21a8d3d74c0e9b413",
+  "runtimeFile": "web/tm-endturn-response-recovery.js",
+  "currentHash": "8a15dd82804e920c06a1c50aab1bcb992f93f2e4fcbecd1ae5cae4a4fb5b91bc",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "actualInvocation": "PowerShell here-string passed to a Node orchestrator, which ran six isolated node --expose-gc -e child processes. The retained script preserves that measured logic and pins the then-current HEAD.",
+  "reproduceCommand": "node docs/npc-stable-candidate-20261021/recovery-input-benchmark.cjs",
+  "limitChars": 32000000,
+  "memoryNotes": "heap and rss are bytes at the measured boundary; peakRssKB is the whole isolated child-process high-water mark, including fixture/input setup. Each process used --expose-gc and collected before the timed call.",
+  "results": [
+    {"mode":"old","kind":"small-numbers","count":100000,"ok":true,"state":{"state":"running","hits":0,"stored":0,"available":0},"tailVisits":1,"elapsedMs":27.3455,"heapBefore":10207224,"heapAfter":11871312,"rssBefore":68321280,"rssAfter":73969664,"peakRssKB":72240,"node":"v24.14.0"},
+    {"mode":"new","kind":"small-numbers","count":100000,"ok":true,"state":{"state":"running","hits":0,"stored":0,"available":0},"tailVisits":1,"elapsedMs":69.8579,"heapBefore":10140320,"heapAfter":15808408,"rssBefore":67588096,"rssAfter":73838592,"peakRssKB":72112,"node":"v24.14.0"},
+    {"mode":"old","kind":"large-numbers","count":8000000,"ok":false,"state":{"state":"disabled","available":0,"hits":0,"reason":"input_size"},"tailVisits":1,"elapsedMs":1378.5205,"heapBefore":73388592,"heapAfter":193401112,"rssBefore":133648384,"rssAfter":253259776,"peakRssKB":364520,"node":"v24.14.0"},
+    {"mode":"new","kind":"large-numbers","count":8000000,"ok":false,"state":{"state":"disabled","available":0,"hits":0,"reason":"input_size"},"tailVisits":0,"elapsedMs":2059.8801,"heapBefore":73321480,"heapAfter":164771640,"rssBefore":133353472,"rssAfter":234774528,"peakRssKB":346396,"node":"v24.14.0"},
+    {"mode":"old","kind":"large-string","count":96000000,"ok":false,"state":{"state":"disabled","available":0,"hits":0,"reason":"input_size"},"tailVisits":1,"elapsedMs":183.0855,"heapBefore":9407424,"heapAfter":201419960,"rssBefore":67682304,"rssAfter":259354624,"peakRssKB":347084,"node":"v24.14.0"},
+    {"mode":"new","kind":"large-string","count":96000000,"ok":false,"state":{"state":"disabled","available":0,"hits":0,"reason":"input_size"},"tailVisits":0,"elapsedMs":0.6143,"heapBefore":9341752,"heapAfter":9354840,"rssBefore":67432448,"rssAfter":67440640,"peakRssKB":67180,"node":"v24.14.0"}
+  ],
+  "interpretation": [
+    "All valid/oversized statuses remain consistent with the old limit. Oversized inputs stop before the tail only in the new implementation.",
+    "For numeric arrays the new native replacer costs CPU and reduced the measured process peak only modestly; this is not evidence that the official renderer OOM has been fixed.",
+    "The oversized single-string case avoids allocating the rejected complete JSON string and shows a much larger reduction.",
+    "These are one-shot Node measurements without confidence intervals. Formal Electron/browser acceptance and sustained-world evidence remain separate."
+  ]
+}

@@ -223,6 +223,25 @@
     }) || null;
   }
 
+  // 地图地块与区划互认：先认名字（区划名去掉「承宣布政使司、布政使司」等后缀也算，地块「陕西」↔ 区划「陕西布政使司」），
+  // 认不出再认区划自带的 regionId。只有省级区划带 regionId，府州只带 mapRegionId——不拿 mapRegionId 认，
+  // 免得把「顺天府尹」这类府里的事记到整个北直隶地块上。
+  function _divisionForMapRegion(G, r) {
+    if (!r) return null;
+    var div = _findDivisionByNameFuzzy(G, r.name || r.id);
+    if (div) return div;
+    var hit = null;
+    _collectAdminDivisions(G).some(function(d) {
+      if (d && d.regionId != null && r.id != null && String(d.regionId) === String(r.id)) { hit = d; return true; }
+      return false;
+    });
+    return hit;
+  }
+  function _mapRegionForDivision(G, d) {
+    if (!d) return null;
+    return _mapRegionByNameOrId(G, d.name || d.id) || (d.regionId != null ? _mapRegionByNameOrId(G, d.regionId) : null);
+  }
+
   function _regionNarrativeRecords(G) {
     var records = [];
     var seen = {};
@@ -240,12 +259,11 @@
     }
     if (G && G.mapData && Array.isArray(G.mapData.regions)) {
       G.mapData.regions.forEach(function(r) {
-        var div = _findDivisionByNameOrId(G, r && (r.name || r.id));
-        add(r && r.name, r && r.id, r, div);
+        add(r && r.name, r && r.id, r, _divisionForMapRegion(G, r));
       });
     }
     _collectAdminDivisions(G).forEach(function(d) {
-      add(d && d.name, d && d.id, _mapRegionByNameOrId(G, d && (d.name || d.id)), d);
+      add(d && d.name, d && d.id, _mapRegionForDivision(G, d), d);
     });
     return records;
   }
@@ -342,8 +360,8 @@
     if (!G || !rec || !governor) return false;
     position = _cleanRegionOfficeTitle(position);
     var mapRegion = rec.mapRegion || _mapRegionByNameOrId(G, rec.id || rec.name);
-    var div = rec.adminDiv || _findDivisionByNameOrId(G, rec.name || rec.id);
-    var oldGov = (div && (div.governor || div.official)) || (mapRegion && (mapRegion.governor || mapRegion.official)) || '';
+    var div = rec.adminDiv || _findDivisionByNameFuzzy(G, rec.name || rec.id);
+    var oldGov =(div && (div.governor || div.official)) || (mapRegion && (mapRegion.governor || mapRegion.official)) || '';
     var changed = false;
     if (mapRegion) {
       if (_writeRegionGovernorAliases(mapRegion, governor, position)) changed = true;

@@ -61,7 +61,7 @@ ok(ui.indexOf('function _coerceArrElem(') < ui.indexOf('function onApply('), '_c
 var applyNode = require('acorn').parse(ui, { ecmaVersion: 'latest' }).body[0].expression.callee.body.body.find(function(n) { return n.type === 'FunctionDeclaration' && n.id.name === 'onApply'; });
 var applyBody = applyNode ? ui.slice(applyNode.start, applyNode.end) : '';
 ok(applyBody.indexOf('_coerceArrElem(it)') >= 0 && applyBody.indexOf('_dropN++') >= 0 && applyBody.indexOf('_fixN++') >= 0, 'onApply 数组集合元素级归一 + 修复/丢弃计数');
-ok(applyBody.indexOf('已自动修复 ') >= 0 && applyBody.indexOf(' 条无法解析条目') >= 0, 'apply 摘要体现「已自动修复 N 条·丢弃 M 条无法解析条目」');
+ok(applyBody.indexOf("'，已自动修复 ' + _fixN + ' 条格式不对的条目'") >= 0 && applyBody.indexOf("'、丢弃 ' + _dropN + ' 条读不懂的'") >= 0, 'apply 摘要体现「已自动修复 N 条格式不对的条目、丢弃 M 条读不懂的」');
 
 console.log('— 行为断言 · eval 归一函数喂用例 —');
 var coerce = null;

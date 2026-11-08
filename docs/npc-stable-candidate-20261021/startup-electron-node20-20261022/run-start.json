@@ -1,0 +1,95 @@
+{
+  "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "runId": "9de56e5d-ee2d-4c7f-b8e8-21ee061a0d95",
+  "startedAt": "2026-10-22T17:42:38.760Z",
+  "runtime": {
+    "execPath": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\node_modules\\electron\\dist\\electron.exe",
+    "versions": {
+      "node": "20.18.3",
+      "acorn": "8.14.0",
+      "ada": "2.9.2",
+      "ares": "1.34.4",
+      "base64": "0.5.2",
+      "brotli": "1.0.9",
+      "cjs_module_lexer": "1.4.1",
+      "cldr": "44.1",
+      "icu": "74.2",
+      "llhttp": "8.1.2",
+      "modules": "130",
+      "napi": "9",
+      "nghttp2": "1.61.0",
+      "openssl": "0.0.0",
+      "simdutf": "5.6.4",
+      "tz": "2024a",
+      "undici": "6.21.1",
+      "unicode": "15.1",
+      "uv": "1.46.0",
+      "uvwasi": "0.0.21",
+      "v8": "13.0.245.25-electron.0",
+      "zlib": "1.3.0.1-motley",
+      "electron": "33.4.11",
+      "chrome": "130.0.6723.191"
+    },
+    "apis": {
+      "Blob": "function",
+      "Response": "function",
+      "CompressionStream": "function",
+      "DecompressionStream": "function",
+      "structuredClone": "function",
+      "TextEncoder": "function",
+      "TextDecoder": "function"
+    }
+  },
+  "preflightCommand": [
+    "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\node_modules\\electron\\dist\\electron.exe",
+    "-e",
+    "console.log(JSON.stringify({execPath:process.execPath,versions:process.versions,apis:Object.fromEntries([\"Blob\",\"Response\",\"CompressionStream\",\"DecompressionStream\",\"structuredClone\",\"TextEncoder\",\"TextDecoder\"].map(k=>[k,typeof globalThis[k]]))}))"
+  ],
+  "command": [
+    "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\node_modules\\electron\\dist\\electron.exe",
+    "web/scripts/run-smokes.js",
+    "--all",
+    "--no-retry",
+    "--jobs",
+    "1",
+    "--run-id",
+    "9de56e5d-ee2d-4c7f-b8e8-21ee061a0d95",
+    "--report",
+    "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\docs\\npc-stable-candidate-20261021\\startup-electron-node20-20261022\\startup-report.json",
+    "--grep",
+    "smoke-start-game-data-integrity.js"
+  ],
+  "timeoutMs": 120000,
+  "retries": 0,
+  "environmentOverridesForChildOnly": {
+    "ELECTRON_RUN_AS_NODE": "1",
+    "TMP": "E:\\tianming-npc-candidate-temp",
+    "TEMP": "E:\\tianming-npc-candidate-temp",
+    "TMPDIR": "E:\\tianming-npc-candidate-temp",
+    "TIANMING_RELEASE_TEMP_ROOT": "E:\\tianming-npc-candidate-temp"
+  },
+  "inheritedNodeOptions": null,
+  "before": [
+    {
+      "file": "web/scripts/smoke-start-game-data-integrity.js",
+      "sha256": "313fb24cf7709ce1bf11692ae847a49b4ff54691ffbb6667dbe9c7edd2c7e676"
+    },
+    {
+      "file": "web/scripts/run-smokes.js",
+      "sha256": "9da339535dc007935d315b88da8f7b9e463ccfd295f358642b19499524b725de"
+    },
+    {
+      "file": "web/scripts/headless-smoke.js",
+      "sha256": "39a832f551534caa64959133aac00e1d281ce68c82b7a5d661b9974408c944c7"
+    },
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "sha256": "41d95a231d652a43c92dde7257330738aac8a5d0bbea04261e8bfdc9bb3f602b"
+    },
+    {
+      "file": "package-lock.json",
+      "sha256": "2b2ddcd79cde53c96d04a29028519330a046bd101fde0cf35f6b6e1978040157"
+    }
+  ],
+  "scope": "single current startup fixture on existing locked Electron Node engine; not a browser acceptance, no installation or lock change"
+}

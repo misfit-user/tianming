@@ -6,6 +6,9 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
+const { functionSource } = require('./lib-perf-round1');
+// robustParseJSON 的正典在 tm-utils.js；tm-ai-infra-json.js 只调用，上下文须先有它。
+const rpjSource = functionSource(fs.readFileSync(path.join(ROOT, 'tm-utils.js'), 'utf8'), 'robustParseJSON');
 const jsonSource = fs.readFileSync(path.join(ROOT, 'tm-ai-infra-json.js'), 'utf8');
 const source = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 let passed = 0;
@@ -66,6 +69,7 @@ async function main() {
   ctx.window = ctx;
   ctx.globalThis = ctx;
   vm.createContext(ctx);
+  vm.runInContext(rpjSource, ctx, { filename: 'tm-utils.js#robustParseJSON' });
   vm.runInContext(jsonSource, ctx, { filename: 'tm-ai-infra-json.js' });
   vm.runInContext(source, ctx, { filename: 'tm-ai-infra.js' });
   if (ctx._aiQueue && typeof ctx._aiQueue.enqueue === 'function') ctx._aiQueue.enqueue = (fn) => fn();

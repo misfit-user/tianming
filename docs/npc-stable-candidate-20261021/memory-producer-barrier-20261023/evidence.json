@@ -1,0 +1,87 @@
+{
+  "baseHead": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+  "node": "v24.14.0",
+  "runtimeTree": {
+    "web/tm-endturn-render.js": "f8a5a8bf29067a2c09eab645a9591eca606660cf5cca2b8665c5a4c1cce0a3f6",
+    "web/tm-emergency-recovery-review.js": "83c998c9565d481fd7e9fd8822ff417fcf8c47f0c983c6ff3e1ca9012de5259f",
+    "web/scripts/smoke-emergency-recovery-review.js": "443d67132fc365755bf8565c9f047a32033a8de6ae8275866b37eb80356bf3a6",
+    "web/scripts/smoke-save-commit-boundary.js": "648e7378809f537f7de395baa3d2623aba2c6b511a18cae461c21c110c2df842",
+    "web/scripts/lib-save-commit-boundary.js": "cdf94d042f56252a84ff5f9febbb212fa8ba25f7ecc4a192ab5866faf789f2fd"
+  },
+  "priorSources": {
+    "prior-tm-emergency-recovery-review.js": "442bc47b0e5e68d7a26fbf0e8f19050f9ec9d8308bb65b3044c561ea3e54741f",
+    "prior-tm-endturn-render.js": "5a16e2e8981863e9e0d1b9a2cc21920a15d7df897c2499456a9ffbd83638c030"
+  },
+  "tests": [
+    {
+      "name": "prior-counterexample",
+      "command": [
+        "node",
+        "docs\\npc-stable-candidate-20261021\\memory-producer-barrier-20261023\\counterexample.cjs"
+      ],
+      "environmentOverrides": {
+        "TM_REVIEW_SOURCE_OVERRIDE": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\docs\\npc-stable-candidate-20261021\\memory-producer-barrier-20261023\\prior-tm-emergency-recovery-review.js"
+      },
+      "exitCode": 1,
+      "log": "prior-counterexample.log",
+      "tail": [
+        "{\"pass\":0,\"fail\":1,\"total\":1}"
+      ]
+    },
+    {
+      "name": "candidate-counterexample",
+      "command": [
+        "node",
+        "docs\\npc-stable-candidate-20261021\\memory-producer-barrier-20261023\\counterexample.cjs"
+      ],
+      "environmentOverrides": {},
+      "exitCode": 0,
+      "log": "candidate-counterexample.log",
+      "tail": [
+        "{\"pass\":1,\"fail\":0,\"total\":1}"
+      ]
+    },
+    {
+      "name": "candidate-review",
+      "command": [
+        "node",
+        "web/scripts/smoke-emergency-recovery-review.js"
+      ],
+      "environmentOverrides": {},
+      "exitCode": 0,
+      "log": "candidate-review.log",
+      "tail": [
+        "{\"pass\":79,\"fail\":0,\"total\":79}"
+      ]
+    },
+    {
+      "name": "candidate-save-commit",
+      "command": [
+        "node",
+        "web/scripts/smoke-save-commit-boundary.js"
+      ],
+      "environmentOverrides": {},
+      "exitCode": 0,
+      "log": "candidate-save-commit.log",
+      "tail": [
+        "{\"pass\":36,\"fail\":0,\"total\":36}"
+      ]
+    },
+    {
+      "name": "candidate-runtime-save",
+      "command": [
+        "node",
+        "web/scripts/smoke-runtime-save-consistency.js"
+      ],
+      "environmentOverrides": {},
+      "exitCode": 0,
+      "log": "candidate-runtime-save.log",
+      "tail": [
+        "[smoke-runtime-save-consistency] 84 passed / 0 failed"
+      ]
+    }
+  ],
+  "scope": "Unit and actual-source integration tests only; normal unprofiled composite browser has not been rerun on this patch.",
+  "producer": "One original _awaitPostTurnJobsForSave attempt; afterCommit consumes its existing Promise; no new retry cycle.",
+  "persistence": "Original memory failure is saved once as pending evidence by the production background canonical queue; errors after a pending save request do not create a new save retry budget."
+}

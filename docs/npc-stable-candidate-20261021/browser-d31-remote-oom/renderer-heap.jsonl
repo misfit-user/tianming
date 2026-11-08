@@ -1,0 +1,385 @@
+{"at":"2026-10-23T06:57:56.195Z","operation":"(async()=>{await new Promise(r=>setTimeout(r,650));const b=document.querySelector('#tm-changelog-ov ","heap":{"limit":4294705152,"used":453395716,"total":466718296}}
+{"at":"2026-10-23T06:57:56.343Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.getE","heap":{"limit":4294705152,"used":453408338,"total":466718902}}
+{"at":"2026-10-23T06:57:56.468Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":453416987,"total":466719703}}
+{"at":"2026-10-23T06:57:56.510Z","operation":"(async()=>{const e=document.querySelector(\"#tm-op-enter\");if(!e)return{missing:true};e.scrollIntoVie","heap":{"limit":4294705152,"used":453424909,"total":466720549}}
+{"at":"2026-10-23T06:58:14.684Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":989448691,"total":1019623871}}
+{"at":"2026-10-23T06:58:14.697Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+35000;(function poll(){let result=(GM.running&&G","heap":{"limit":4294705152,"used":992006140,"total":1020562676}}
+{"at":"2026-10-23T06:58:14.698Z","operation":"_tmAwaitLoadBarrier()","heap":{"limit":4294705152,"used":992039033,"total":1020568281}}
+{"at":"2026-10-23T06:58:15.019Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1005353564,"total":1024319944}}
+{"at":"2026-10-23T06:58:15.022Z","operation":"void(window.__compositeWaits=(function installCompositeWaits(root, deadlineAt, clock) {\n  if (!Numbe","heap":{"limit":4294705152,"used":1005383837,"total":1024327569}}
+{"at":"2026-10-23T06:58:15.022Z","operation":"!!document.querySelector('#tm-firstturn-guide button')","heap":{"limit":4294705152,"used":1005387878,"total":1024327906}}
+{"at":"2026-10-23T06:58:15.028Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1005394586,"total":1024328778}}
+{"at":"2026-10-23T06:58:15.070Z","operation":"(async()=>{const e=document.querySelector(\"#tm-firstturn-guide button:last-child\");if(!e)return{miss","heap":{"limit":4294705152,"used":1005402313,"total":1024329753}}
+{"at":"2026-10-23T06:58:15.154Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1005411180,"total":1024330116}}
+{"at":"2026-10-23T06:58:15.155Z","operation":"!!document.querySelector('#tm-nokey-banner button')","heap":{"limit":4294705152,"used":1005415183,"total":1024330447}}
+{"at":"2026-10-23T06:58:15.156Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1005421695,"total":1024331303}}
+{"at":"2026-10-23T06:58:15.199Z","operation":"(async()=>{const e=document.querySelector(\"#tm-nokey-banner button:last-child\");if(!e)return{missing","heap":{"limit":4294705152,"used":1005433330,"total":1024332710}}
+{"at":"2026-10-23T06:58:15.284Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1005438565,"total":1024333005}}
+{"at":"2026-10-23T06:58:15.285Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1005445763,"total":1024333619}}
+{"at":"2026-10-23T06:58:15.286Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1005461661,"total":1024333937}}
+{"at":"2026-10-23T06:58:15.287Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1005468762,"total":1024335246}}
+{"at":"2026-10-23T06:58:15.288Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1005474226,"total":1024335870}}
+{"at":"2026-10-23T06:58:16.159Z","operation":"({body:document.body.className,turn:document.querySelector('#endturn .et-big')?.outerHTML,save:docum","heap":{"limit":4294705152,"used":1011966822,"total":1025129026}}
+{"at":"2026-10-23T06:58:16.223Z","operation":"(()=>{\n    const trace=(phase,event)=>console.info('COMPOSITE_STAGE '+JSON.stringify({phase,event,tu","heap":{"limit":4294705152,"used":1012077279,"total":1025130935}}
+{"at":"2026-10-23T06:58:16.224Z","operation":"(()=>{window.__compositeResponseFor=(function responseFor(kind, prompt) {\n  kind = String(kind || ''","heap":{"limit":4294705152,"used":1012134073,"total":1025151073}}
+{"at":"2026-10-23T06:58:16.225Z","operation":"(()=>{\n    const venue=GM.mapData.regions.find(r=>r.id==='ssr-0007');venue.public=true;\n    P.time.d","heap":{"limit":4294705152,"used":1012146423,"total":1025154171}}
+{"at":"2026-10-23T06:58:16.226Z","operation":"void((function installCompositeEconomyObservers(root, calls) {\n  function state() {\n    const g = ro","heap":{"limit":4294705152,"used":1012156589,"total":1025156557}}
+{"at":"2026-10-23T06:58:16.229Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1012192023,"total":1025161747}}
+{"at":"2026-10-23T06:58:16.230Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1012198394,"total":1025162534}}
+{"at":"2026-10-23T06:58:16.272Z","operation":"(async()=>{const e=document.querySelector(\"#zhao-btn-3\");if(!e)return{missing:true};e.scrollIntoView","heap":{"limit":4294705152,"used":1012205816,"total":1025163968}}
+{"at":"2026-10-23T06:58:16.481Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1006364554,"total":1025249234}}
+{"at":"2026-10-23T06:58:16.482Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":1006369938,"total":1025249850}}
+{"at":"2026-10-23T06:58:16.483Z","operation":"document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] > details\").open","heap":{"limit":4294705152,"used":1006374098,"total":1025250274}}
+{"at":"2026-10-23T06:58:16.484Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1006380955,"total":1025251263}}
+{"at":"2026-10-23T06:58:16.525Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\","heap":{"limit":4294705152,"used":1006387664,"total":1025252152}}
+{"at":"2026-10-23T06:58:16.627Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1007378123,"total":1025252571}}
+{"at":"2026-10-23T06:58:16.630Z","operation":"(()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] #d","heap":{"limit":4294705152,"used":1007383828,"total":1025253336}}
+{"at":"2026-10-23T06:58:16.712Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1007387339,"total":1025253639}}
+{"at":"2026-10-23T06:58:16.717Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1007394305,"total":1025254685}}
+{"at":"2026-10-23T06:58:16.759Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\","heap":{"limit":4294705152,"used":1007401016,"total":1025255556}}
+{"at":"2026-10-23T06:58:16.853Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1007405033,"total":1025255873}}
+{"at":"2026-10-23T06:58:16.856Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1007412050,"total":1025256942}}
+{"at":"2026-10-23T06:58:16.899Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\","heap":{"limit":4294705152,"used":1007418783,"total":1025257827}}
+{"at":"2026-10-23T06:58:16.983Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1007427648,"total":1025258176}}
+{"at":"2026-10-23T06:58:16.988Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1007434543,"total":1025259199}}
+{"at":"2026-10-23T06:58:17.030Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\","heap":{"limit":4294705152,"used":1007441345,"total":1025260189}}
+{"at":"2026-10-23T06:58:34.193Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1126287723,"total":1149321271}}
+{"at":"2026-10-23T06:58:34.200Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1126576821,"total":1149447381}}
+{"at":"2026-10-23T06:58:34.201Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1126600975,"total":1149447699}}
+{"at":"2026-10-23T06:58:34.202Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1126607197,"total":1149449017}}
+{"at":"2026-10-23T06:58:34.203Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1126612289,"total":1149449625}}
+{"at":"2026-10-23T06:58:34.205Z","operation":"document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"]\").textContent","heap":{"limit":4294705152,"used":1126622157,"total":1149454017}}
+{"at":"2026-10-23T06:58:34.211Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1126626223,"total":1149454631}}
+{"at":"2026-10-23T06:58:34.260Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1136163318,"total":1152600386}}
+{"at":"2026-10-23T06:58:34.273Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1069022959,"total":1090035295}}
+{"at":"2026-10-23T06:58:34.745Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1140349210,"total":1156390150}}
+{"at":"2026-10-23T06:58:37.197Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1010937891,"total":1033973287}}
+{"at":"2026-10-23T06:58:37.240Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\","heap":{"limit":4294705152,"used":1010948771,"total":1033974323}}
+{"at":"2026-10-23T06:58:44.831Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1101150348,"total":1129921708}}
+{"at":"2026-10-23T06:58:44.833Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1101157770,"total":1129922322}}
+{"at":"2026-10-23T06:58:44.834Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1101183612,"total":1129922640}}
+{"at":"2026-10-23T06:58:44.834Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1101189093,"total":1129923949}}
+{"at":"2026-10-23T06:58:44.835Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1101196797,"total":1129924557}}
+{"at":"2026-10-23T06:58:44.837Z","operation":"!!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')","heap":{"limit":4294705152,"used":1101202708,"total":1129924944}}
+{"at":"2026-10-23T06:58:44.838Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1101209408,"total":1129925800}}
+{"at":"2026-10-23T06:58:44.881Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay button[data-close-bridge]\");if(","heap":{"limit":4294705152,"used":1101216897,"total":1129926777}}
+{"at":"2026-10-23T06:58:44.972Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1101234558,"total":1129927358}}
+{"at":"2026-10-23T06:58:44.974Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1101272023,"total":1129932975}}
+{"at":"2026-10-23T06:58:44.975Z","operation":"({turn:GM.turn,day:TM.SimTime.now(GM)})","heap":{"limit":4294705152,"used":1101276247,"total":1129933271}}
+{"at":"2026-10-23T06:58:44.976Z","operation":"__compositeWaits.arm('turn')","heap":{"limit":4294705152,"used":1101285848,"total":1129933556}}
+{"at":"2026-10-23T06:58:44.977Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1101292366,"total":1129934358}}
+{"at":"2026-10-23T06:58:45.018Z","operation":"(async()=>{const e=document.querySelector(\"#endturn .et-big\");if(!e)return{missing:true};e.scrollInt","heap":{"limit":4294705152,"used":1101299663,"total":1129935255}}
+{"at":"2026-10-23T06:58:45.115Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1101320495,"total":1129935919}}
+{"at":"2026-10-23T06:58:45.116Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.quer","heap":{"limit":4294705152,"used":1101325781,"total":1129936433}}
+{"at":"2026-10-23T06:58:45.117Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1101332209,"total":1129937201}}
+{"at":"2026-10-23T06:58:45.158Z","operation":"(async()=>{const e=document.querySelector(\"#cet-ok\");if(!e)return{missing:true};e.scrollIntoView({bl","heap":{"limit":4294705152,"used":1101338919,"total":1129938071}}
+{"at":"2026-10-23T06:58:45.253Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1101357657,"total":1129939857}}
+{"at":"2026-10-23T06:58:45.255Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":1101363200,"total":1129940496}}
+{"at":"2026-10-23T06:58:45.256Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1101369920,"total":1129941392}}
+{"at":"2026-10-23T06:58:45.298Z","operation":"(async()=>{const e=document.querySelector(\"#post-turn-court-prompt button[onclick=\\\"_postTurnCourtCh","heap":{"limit":4294705152,"used":1101376770,"total":1129942362}}
+{"at":"2026-10-23T06:59:00.114Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1863963039,"total":1882833295}}
+{"at":"2026-10-23T07:00:20.552Z","operation":"__compositeWaits.wait(1)","heap":{"limit":4294705152,"used":2217348654,"total":2232041778}}
+{"at":"2026-10-23T07:00:32.724Z","operation":"({busy:!!(GM.busy||GM._endTurnBusy),pending:!!GM._endTurnCommitPending,turn:GM.turn,day:TM.SimTime.n","heap":{"limit":4294705152,"used":1925474615,"total":1947346579}}
+{"at":"2026-10-23T07:00:55.629Z","operation":"Array.from(document.querySelectorAll('button')).filter(b=>/关闭|继续|返回|收起/.test(b.textContent)&&b.getBo","heap":{"limit":4294705152,"used":1858707694,"total":1873284374}}
+{"at":"2026-10-23T07:01:12.981Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1836683277,"total":1874496437}}
+{"at":"2026-10-23T07:01:13.010Z","operation":"({active:TM.RecoveryReview.status(),cancels:__compositeCalls.reviewCancels.length})","heap":{"limit":4294705152,"used":1855779545,"total":1891657009}}
+{"at":"2026-10-23T07:01:13.035Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1855806616,"total":1891657932}}
+{"at":"2026-10-23T07:01:13.079Z","operation":"(async()=>{const e=document.querySelector(\"body > aside:nth-of-type(2) > button:nth-of-type(1)\");if(","heap":{"limit":4294705152,"used":1855814180,"total":1891658964}}
+{"at":"2026-10-23T07:01:22.037Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2739956076,"total":2775614292}}
+{"at":"2026-10-23T07:01:24.320Z","operation":"__compositeCalls.reviewCancels.length","heap":{"limit":4294705152,"used":1943021416,"total":1957815016}}
+{"at":"2026-10-23T07:01:28.983Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1501128622,"total":1522222434}}
+{"at":"2026-10-23T07:01:31.433Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1505363103,"total":1522233943}}
+{"at":"2026-10-23T07:01:35.014Z","operation":"(async()=>{const e=document.querySelector(\"body > aside:nth-of-type(2) > button:nth-of-type(2)\");if(","heap":{"limit":4294705152,"used":1502698789,"total":1522497481}}
+{"at":"2026-10-23T07:01:39.652Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839029738,"total":1858775278}}
+{"at":"2026-10-23T07:01:39.657Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839094685,"total":1858780953}}
+{"at":"2026-10-23T07:01:39.659Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839103318,"total":1858782046}}
+{"at":"2026-10-23T07:01:39.702Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(28) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":1839110824,"total":1858783056}}
+{"at":"2026-10-23T07:01:39.789Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839117678,"total":1858783362}}
+{"at":"2026-10-23T07:01:39.793Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839164070,"total":1858786738}}
+{"at":"2026-10-23T07:01:39.796Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839171619,"total":1858787831}}
+{"at":"2026-10-23T07:01:39.840Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(27) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":1839178363,"total":1858788651}}
+{"at":"2026-10-23T07:01:39.924Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839183384,"total":1858788940}}
+{"at":"2026-10-23T07:01:39.928Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839229176,"total":1858792316}}
+{"at":"2026-10-23T07:01:39.931Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839236725,"total":1858793409}}
+{"at":"2026-10-23T07:01:39.975Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(26) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":1839243941,"total":1858794229}}
+{"at":"2026-10-23T07:01:40.059Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839248858,"total":1858794518}}
+{"at":"2026-10-23T07:01:40.063Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839294050,"total":1858797894}}
+{"at":"2026-10-23T07:01:40.065Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839301599,"total":1858798987}}
+{"at":"2026-10-23T07:01:40.108Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(25) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":1839308343,"total":1858799807}}
+{"at":"2026-10-23T07:01:40.193Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839313260,"total":1858800096}}
+{"at":"2026-10-23T07:01:40.197Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839357852,"total":1858803472}}
+{"at":"2026-10-23T07:01:40.199Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839365401,"total":1858804565}}
+{"at":"2026-10-23T07:01:40.242Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(24) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":1839372145,"total":1858805385}}
+{"at":"2026-10-23T07:01:41.160Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839377062,"total":1858805674}}
+{"at":"2026-10-23T07:01:41.163Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839422922,"total":1858809050}}
+{"at":"2026-10-23T07:01:41.165Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839430471,"total":1858810143}}
+{"at":"2026-10-23T07:01:41.208Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(23) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":1839437215,"total":1858810963}}
+{"at":"2026-10-23T07:01:41.293Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839442132,"total":1858811252}}
+{"at":"2026-10-23T07:01:41.297Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839485524,"total":1858814628}}
+{"at":"2026-10-23T07:01:41.299Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839493073,"total":1858815721}}
+{"at":"2026-10-23T07:01:41.342Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(22) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":1839499817,"total":1858816541}}
+{"at":"2026-10-23T07:01:41.427Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839504734,"total":1858816830}}
+{"at":"2026-10-23T07:01:41.431Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839547526,"total":1858820206}}
+{"at":"2026-10-23T07:01:41.433Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839555075,"total":1858821299}}
+{"at":"2026-10-23T07:01:41.477Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(21) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":1839562155,"total":1858822119}}
+{"at":"2026-10-23T07:01:41.562Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839567072,"total":1858822408}}
+{"at":"2026-10-23T07:01:41.567Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839609264,"total":1858825784}}
+{"at":"2026-10-23T07:01:41.569Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839616913,"total":1858826877}}
+{"at":"2026-10-23T07:01:41.613Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(20) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":1839623665,"total":1858827697}}
+{"at":"2026-10-23T07:01:41.698Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839632850,"total":1858827986}}
+{"at":"2026-10-23T07:01:41.709Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839682556,"total":1858840020}}
+{"at":"2026-10-23T07:01:41.712Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1839690070,"total":1858841110}}
+{"at":"2026-10-23T07:01:41.755Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(8) > div:nth-of-type(1) > div:nth-","heap":{"limit":4294705152,"used":1839697054,"total":1858842154}}
+{"at":"2026-10-23T07:01:41.840Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1839701995,"total":1858842487}}
+{"at":"2026-10-23T07:01:41.843Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1839723887,"total":1858845863}}
+{"at":"2026-10-23T07:01:41.844Z","operation":"(()=>{const b=document.querySelector('#turn-modal button[onclick*=\"closeTurnResult\"]');if(!b)return ","heap":{"limit":4294705152,"used":1839728814,"total":1858846422}}
+{"at":"2026-10-23T07:01:41.846Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1839736644,"total":1858847036}}
+{"at":"2026-10-23T07:01:41.846Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1839778658,"total":1858847354}}
+{"at":"2026-10-23T07:01:41.852Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1839840655,"total":1858848663}}
+{"at":"2026-10-23T07:01:41.853Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1840241651,"total":1858849271}}
+{"at":"2026-10-23T07:01:41.858Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1840280295,"total":1858852647}}
+{"at":"2026-10-23T07:01:41.859Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1840286778,"total":1858853434}}
+{"at":"2026-10-23T07:01:41.901Z","operation":"(async()=>{const e=document.querySelector(\"#zhao-btn-3\");if(!e)return{missing:true};e.scrollIntoView","heap":{"limit":4294705152,"used":1840294056,"total":1858854868}}
+{"at":"2026-10-23T07:01:42.098Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1842349021,"total":1858861761}}
+{"at":"2026-10-23T07:01:42.099Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":1842354517,"total":1858862377}}
+{"at":"2026-10-23T07:01:42.100Z","operation":"document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] > details\").open","heap":{"limit":4294705152,"used":1842358789,"total":1858862801}}
+{"at":"2026-10-23T07:01:42.102Z","operation":"(()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] #d","heap":{"limit":4294705152,"used":1842364586,"total":1858863550}}
+{"at":"2026-10-23T07:01:42.184Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1842367879,"total":1858863839}}
+{"at":"2026-10-23T07:01:42.186Z","operation":"(()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] #d","heap":{"limit":4294705152,"used":1842372870,"total":1858864450}}
+{"at":"2026-10-23T07:01:42.269Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1842376063,"total":1858864739}}
+{"at":"2026-10-23T07:01:42.272Z","operation":"(()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] #d","heap":{"limit":4294705152,"used":1842381008,"total":1858865320}}
+{"at":"2026-10-23T07:01:42.353Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1842384201,"total":1858865609}}
+{"at":"2026-10-23T07:01:42.356Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1842391187,"total":1858866623}}
+{"at":"2026-10-23T07:01:42.398Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\","heap":{"limit":4294705152,"used":1842398080,"total":1858867596}}
+{"at":"2026-10-23T07:01:50.642Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1154320641,"total":1183060845}}
+{"at":"2026-10-23T07:01:50.644Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1154327315,"total":1183061459}}
+{"at":"2026-10-23T07:01:50.645Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1154392117,"total":1183061777}}
+{"at":"2026-10-23T07:01:50.650Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1154452370,"total":1183063086}}
+{"at":"2026-10-23T07:01:50.652Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1154851906,"total":1183063694}}
+{"at":"2026-10-23T07:01:50.731Z","operation":"(()=>{const p=GM._npcPlans.filter(p=>p.localActivity?.kind==='meeting').slice(-1)[0];return p&&{id:p","heap":{"limit":4294705152,"used":1154873784,"total":1183064076}}
+{"at":"2026-10-23T07:01:50.731Z","operation":"!!document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] [data-daily-pl","heap":{"limit":4294705152,"used":1154878711,"total":1183064639}}
+{"at":"2026-10-23T07:01:50.733Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1154885921,"total":1183065677}}
+{"at":"2026-10-23T07:01:50.776Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\","heap":{"limit":4294705152,"used":1154893958,"total":1183066726}}
+{"at":"2026-10-23T07:01:54.914Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1155342765,"total":1208491773}}
+{"at":"2026-10-23T07:01:54.917Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1155349439,"total":1208492387}}
+{"at":"2026-10-23T07:01:54.918Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1155416757,"total":1208492705}}
+{"at":"2026-10-23T07:01:54.923Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1155481678,"total":1208494014}}
+{"at":"2026-10-23T07:01:54.924Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1155881466,"total":1208494622}}
+{"at":"2026-10-23T07:01:54.931Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1155902176,"total":1208495236}}
+{"at":"2026-10-23T07:01:54.932Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1155946582,"total":1208495554}}
+{"at":"2026-10-23T07:01:54.937Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1156001859,"total":1208496863}}
+{"at":"2026-10-23T07:01:54.947Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1156398239,"total":1208497471}}
+{"at":"2026-10-23T07:01:54.956Z","operation":"void(window.__compositeOldButton=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-p","heap":{"limit":4294705152,"used":1156415590,"total":1208498066}}
+{"at":"2026-10-23T07:01:54.956Z","operation":"!!window.__compositeOldButton","heap":{"limit":4294705152,"used":1156419548,"total":1208498352}}
+{"at":"2026-10-23T07:01:54.957Z","operation":"!!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')","heap":{"limit":4294705152,"used":1156423751,"total":1208498739}}
+{"at":"2026-10-23T07:01:54.958Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1156430451,"total":1208499595}}
+{"at":"2026-10-23T07:01:54.998Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay button[data-close-bridge]\");if(","heap":{"limit":4294705152,"used":1156437940,"total":1208500572}}
+{"at":"2026-10-23T07:01:55.086Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1156446677,"total":1208500949}}
+{"at":"2026-10-23T07:01:55.087Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1156453030,"total":1208501742}}
+{"at":"2026-10-23T07:01:55.129Z","operation":"(async()=>{const e=document.querySelector(\"#tm-pause-fab\");if(!e)return{missing:true};e.scrollIntoVi","heap":{"limit":4294705152,"used":1156468948,"total":1208511940}}
+{"at":"2026-10-23T07:01:55.216Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1156484243,"total":1208512267}}
+{"at":"2026-10-23T07:01:55.217Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1156491055,"total":1208513199}}
+{"at":"2026-10-23T07:01:55.259Z","operation":"(async()=>{const e=document.querySelector(\"#pause-bg button[onclick=\\\"closePause();openSaveManager()","heap":{"limit":4294705152,"used":1156499400,"total":1208515100}}
+{"at":"2026-10-23T07:01:55.351Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1156582705,"total":1208516269}}
+{"at":"2026-10-23T07:01:55.352Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":1156588194,"total":1208516874}}
+{"at":"2026-10-23T07:01:55.353Z","operation":"__compositeWaits.arm('save',1)","heap":{"limit":4294705152,"used":1156595321,"total":1208517161}}
+{"at":"2026-10-23T07:01:55.376Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1156601985,"total":1208518025}}
+{"at":"2026-10-23T07:01:55.418Z","operation":"(async()=>{const e=document.querySelector(\"#save-manager-overlay button[onclick=\\\"saveToSlot(1)\\\"]\")","heap":{"limit":4294705152,"used":1156608761,"total":1208518913}}
+{"at":"2026-10-23T07:01:55.511Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1156621337,"total":1208519753}}
+{"at":"2026-10-23T07:01:55.513Z","operation":"(()=>{const e=document.querySelector('body > div:last-child input');if(!e)throw Error('save naming p","heap":{"limit":4294705152,"used":1156627086,"total":1208520674}}
+{"at":"2026-10-23T07:01:55.517Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1156633730,"total":1208521530}}
+{"at":"2026-10-23T07:01:55.559Z","operation":"(async()=>{const e=document.querySelector(\"body > div:last-child button.bt.bp\");if(!e)return{missing","heap":{"limit":4294705152,"used":1156640405,"total":1208522337}}
+{"at":"2026-10-23T07:01:55.647Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1156646663,"total":1208522655}}
+{"at":"2026-10-23T07:02:09.050Z","operation":"__compositeWaits.wait(2)","heap":{"limit":4294705152,"used":1505252650,"total":1526529306}}
+{"at":"2026-10-23T07:02:09.053Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":1505337157,"total":1526530545}}
+{"at":"2026-10-23T07:02:09.061Z","operation":"(()=>{window.__compositeOldWorld=GM;return{load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:G","heap":{"limit":4294705152,"used":1505617548,"total":1526760868}}
+{"at":"2026-10-23T07:02:09.062Z","operation":"__compositeWaits.arm('load',1)","heap":{"limit":4294705152,"used":1505625451,"total":1526761155}}
+{"at":"2026-10-23T07:02:09.063Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1505632275,"total":1526762023}}
+{"at":"2026-10-23T07:02:09.105Z","operation":"(async()=>{const e=document.querySelector(\"#save-manager-overlay button[onclick=\\\"loadSaveSlot(1)\\\"]","heap":{"limit":4294705152,"used":1505640362,"total":1526762922}}
+{"at":"2026-10-23T07:02:09.200Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1505652137,"total":1526763305}}
+{"at":"2026-10-23T07:02:09.201Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1505658715,"total":1526764143}}
+{"at":"2026-10-23T07:02:09.243Z","operation":"(async()=>{const e=document.querySelector(\".rice-paper-confirm #_rpc_ok\");if(!e)return{missing:true}","heap":{"limit":4294705152,"used":1505665414,"total":1526764982}}
+{"at":"2026-10-23T07:02:09.330Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1505670810,"total":1526765298}}
+{"at":"2026-10-23T07:02:19.996Z","operation":"__compositeWaits.wait(3)","heap":{"limit":4294705152,"used":1354611767,"total":1373315679}}
+{"at":"2026-10-23T07:02:20.150Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+45000;(function poll(){let result=(GM!==window._","heap":{"limit":4294705152,"used":1352820837,"total":1375677065}}
+{"at":"2026-10-23T07:02:20.289Z","operation":"_tmAwaitLoadBarrier()","heap":{"limit":4294705152,"used":1359886997,"total":1376490881}}
+{"at":"2026-10-23T07:02:20.656Z","operation":"({load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:GM.playerCharacterId,plans:JSON.stringify(","heap":{"limit":4294705152,"used":1370438982,"total":1394735498}}
+{"at":"2026-10-23T07:02:20.669Z","operation":"P.ai.url==='https://composite-fixture.invalid/v1'&&P.ai.key==='composite-fixture'","heap":{"limit":4294705152,"used":1370446596,"total":1394735836}}
+{"at":"2026-10-23T07:02:20.670Z","operation":"!!window.__compositeOldButton","heap":{"limit":4294705152,"used":1370451354,"total":1394736122}}
+{"at":"2026-10-23T07:02:20.683Z","operation":"window.__compositeOldButton.click()","heap":{"limit":4294705152,"used":1371625306,"total":1394736606}}
+{"at":"2026-10-23T07:02:20.683Z","operation":"JSON.stringify((GM._npcPlans||[]).filter(p=>p.localActivity&&p.localActivity.kind==='meeting'))","heap":{"limit":4294705152,"used":1371645174,"total":1394736958}}
+{"at":"2026-10-23T07:02:20.684Z","operation":"(()=>{delete window.__compositeOldWorld;delete window.__compositeOldButton;return true;})()","heap":{"limit":4294705152,"used":1371649486,"total":1394737306}}
+{"at":"2026-10-23T07:02:20.686Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1371658848,"total":1394737920}}
+{"at":"2026-10-23T07:02:20.686Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1371727050,"total":1394738238}}
+{"at":"2026-10-23T07:02:20.692Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1371788671,"total":1394739547}}
+{"at":"2026-10-23T07:02:20.693Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1372189291,"total":1394740155}}
+{"at":"2026-10-23T07:02:20.706Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1372250914,"total":1394745894}}
+{"at":"2026-10-23T07:02:20.710Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1372257556,"total":1394746688}}
+{"at":"2026-10-23T07:02:20.753Z","operation":"(async()=>{const e=document.querySelector(\"#zhao-btn-3\");if(!e)return{missing:true};e.scrollIntoView","heap":{"limit":4294705152,"used":1372268111,"total":1394748459}}
+{"at":"2026-10-23T07:02:20.908Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1374302013,"total":1394755341}}
+{"at":"2026-10-23T07:02:20.909Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":1374307493,"total":1394755957}}
+{"at":"2026-10-23T07:02:20.910Z","operation":"document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] > details\").open","heap":{"limit":4294705152,"used":1374311749,"total":1394756381}}
+{"at":"2026-10-23T07:02:20.911Z","operation":"!!document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] [data-daily-pl","heap":{"limit":4294705152,"used":1374316288,"total":1394756952}}
+{"at":"2026-10-23T07:02:20.911Z","operation":"!!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')","heap":{"limit":4294705152,"used":1374320475,"total":1394757339}}
+{"at":"2026-10-23T07:02:20.912Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1374327011,"total":1394758195}}
+{"at":"2026-10-23T07:02:20.954Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay button[data-close-bridge]\");if(","heap":{"limit":4294705152,"used":1374333755,"total":1394759167}}
+{"at":"2026-10-23T07:02:21.044Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1374340748,"total":1394759724}}
+{"at":"2026-10-23T07:02:21.047Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1374366590,"total":1394763110}}
+{"at":"2026-10-23T07:02:21.048Z","operation":"({turn:GM.turn,day:TM.SimTime.now(GM)})","heap":{"limit":4294705152,"used":1374370886,"total":1394763406}}
+{"at":"2026-10-23T07:02:21.049Z","operation":"__compositeWaits.arm('turn')","heap":{"limit":4294705152,"used":1374377259,"total":1394763691}}
+{"at":"2026-10-23T07:02:21.050Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1374383761,"total":1394764493}}
+{"at":"2026-10-23T07:02:21.094Z","operation":"(async()=>{const e=document.querySelector(\"#endturn .et-big\");if(!e)return{missing:true};e.scrollInt","heap":{"limit":4294705152,"used":1374390490,"total":1394765390}}
+{"at":"2026-10-23T07:02:21.196Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1374405983,"total":1394765871}}
+{"at":"2026-10-23T07:02:21.197Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.quer","heap":{"limit":4294705152,"used":1374411253,"total":1394766385}}
+{"at":"2026-10-23T07:02:21.198Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1374417665,"total":1394767153}}
+{"at":"2026-10-23T07:02:21.241Z","operation":"(async()=>{const e=document.querySelector(\"#cet-ok\");if(!e)return{missing:true};e.scrollIntoView({bl","heap":{"limit":4294705152,"used":1374424615,"total":1394768023}}
+{"at":"2026-10-23T07:02:21.335Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1374442033,"total":1394769809}}
+{"at":"2026-10-23T07:02:21.337Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":1374447560,"total":1394770448}}
+{"at":"2026-10-23T07:02:21.338Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1374454264,"total":1394771344}}
+{"at":"2026-10-23T07:02:21.380Z","operation":"(async()=>{const e=document.querySelector(\"#post-turn-court-prompt button[onclick=\\\"_postTurnCourtCh","heap":{"limit":4294705152,"used":1374461198,"total":1394772314}}
+{"at":"2026-10-23T07:02:40.217Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2213122748,"total":2233871156}}
+{"at":"2026-10-23T07:04:05.982Z","operation":"__compositeWaits.wait(4)","heap":{"limit":4294705152,"used":2488992973,"total":2507174525}}
+{"at":"2026-10-23T07:04:19.456Z","operation":"({busy:!!(GM.busy||GM._endTurnBusy),pending:!!GM._endTurnCommitPending,turn:GM.turn,day:TM.SimTime.n","heap":{"limit":4294705152,"used":2512518486,"total":2534406362}}
+{"at":"2026-10-23T07:04:46.811Z","operation":"Array.from(document.querySelectorAll('button')).filter(b=>/关闭|继续|返回|收起/.test(b.textContent)&&b.getBo","heap":{"limit":4294705152,"used":2374081790,"total":2395535102}}
+{"at":"2026-10-23T07:05:06.000Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":2420951594,"total":2459854534}}
+{"at":"2026-10-23T07:05:06.099Z","operation":"({active:TM.RecoveryReview.status(),cancels:__compositeCalls.reviewCancels.length})","heap":{"limit":4294705152,"used":2442719666,"total":2477018566}}
+{"at":"2026-10-23T07:05:06.141Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2436531572,"total":2476863832}}
+{"at":"2026-10-23T07:05:06.185Z","operation":"(async()=>{const e=document.querySelector(\"body > aside:nth-of-type(2) > button:nth-of-type(1)\");if(","heap":{"limit":4294705152,"used":2436564849,"total":2476864873}}
+{"at":"2026-10-23T07:05:06.270Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2436574236,"total":2476865328}}
+{"at":"2026-10-23T07:05:06.271Z","operation":"__compositeCalls.reviewCancels.length","heap":{"limit":4294705152,"used":2436578182,"total":2476865622}}
+{"at":"2026-10-23T07:05:06.275Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":2436634536,"total":2476869948}}
+{"at":"2026-10-23T07:05:06.276Z","operation":"JSON.stringify({events:GM.triggeredHistoryEvents||{},choices:(GM.biannianItems||[]).filter(x=>x.type","heap":{"limit":4294705152,"used":2436640082,"total":2476870326}}
+{"at":"2026-10-23T07:05:06.279Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2436647116,"total":2476871356}}
+{"at":"2026-10-23T07:05:06.322Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(20) > div:nth-of-type(1) > div:nth","heap":{"limit":4294705152,"used":2436659084,"total":2476872292}}
+{"at":"2026-10-23T07:05:06.407Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2436664327,"total":2476872591}}
+{"at":"2026-10-23T07:05:06.408Z","operation":"JSON.stringify({events:GM.triggeredHistoryEvents||{},choices:(GM.biannianItems||[]).filter(x=>x.type","heap":{"limit":4294705152,"used":2436668233,"total":2476872969}}
+{"at":"2026-10-23T07:05:06.411Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":2436719973,"total":2476886869}}
+{"at":"2026-10-23T07:05:06.413Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2436727471,"total":2476887959}}
+{"at":"2026-10-23T07:05:06.458Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(8) > div:nth-of-type(1) > div:nth-","heap":{"limit":4294705152,"used":2436734414,"total":2476888998}}
+{"at":"2026-10-23T07:05:06.542Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2436738857,"total":2476889297}}
+{"at":"2026-10-23T07:05:06.545Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":2436760933,"total":2476892673}}
+{"at":"2026-10-23T07:05:06.546Z","operation":"(()=>{const b=document.querySelector('#turn-modal button[onclick*=\"closeTurnResult\"]');if(!b)return ","heap":{"limit":4294705152,"used":2436765844,"total":2476893232}}
+{"at":"2026-10-23T07:05:06.548Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":2436774226,"total":2476893846}}
+{"at":"2026-10-23T07:05:06.549Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":2436859056,"total":2476894164}}
+{"at":"2026-10-23T07:05:06.555Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":2436924185,"total":2476895473}}
+{"at":"2026-10-23T07:05:06.556Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":2437324889,"total":2476896081}}
+{"at":"2026-10-23T07:05:06.570Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":2437370697,"total":2476899457}}
+{"at":"2026-10-23T07:05:06.571Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2437377164,"total":2476900244}}
+{"at":"2026-10-23T07:05:06.615Z","operation":"(async()=>{const e=document.querySelector(\"#zhao-btn-3\");if(!e)return{missing:true};e.scrollIntoView","heap":{"limit":4294705152,"used":2437387578,"total":2476901678}}
+{"at":"2026-10-23T07:05:09.714Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2997196580,"total":3033239604}}
+{"at":"2026-10-23T07:05:17.136Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":3341077487,"total":3376702183}}
+{"at":"2026-10-23T07:05:17.146Z","operation":"document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] > details\").open","heap":{"limit":4294705152,"used":3341095348,"total":3376702620}}
+{"at":"2026-10-23T07:05:17.147Z","operation":"!!document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\\"] [data-daily-pl","heap":{"limit":4294705152,"used":3341099903,"total":3376703191}}
+{"at":"2026-10-23T07:05:17.151Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":3341106969,"total":3376704237}}
+{"at":"2026-10-23T07:05:17.193Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-panel=\\\"formal\\","heap":{"limit":4294705152,"used":3341113944,"total":3376705284}}
+{"at":"2026-10-23T07:05:23.006Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2612973494,"total":2631541422}}
+{"at":"2026-10-23T07:05:23.034Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":2612987034,"total":2631542070}}
+{"at":"2026-10-23T07:05:23.048Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":2613683944,"total":2631542388}}
+{"at":"2026-10-23T07:05:23.057Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":2613748001,"total":2631543697}}
+{"at":"2026-10-23T07:05:23.059Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":2614147401,"total":2631544305}}
+{"at":"2026-10-23T07:05:23.488Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":2614201575,"total":2631544919}}
+{"at":"2026-10-23T07:05:23.489Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":2614262905,"total":2631545237}}
+{"at":"2026-10-23T07:05:23.497Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":2614322042,"total":2631546546}}
+{"at":"2026-10-23T07:05:23.498Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":2614718186,"total":2631547154}}
+{"at":"2026-10-23T07:05:23.516Z","operation":"void(window.__compositeOldButton=document.querySelector(\"#tm-action-letter-overlay [data-npc-daily-p","heap":{"limit":4294705152,"used":2614742389,"total":2631547749}}
+{"at":"2026-10-23T07:05:23.517Z","operation":"!!window.__compositeOldButton","heap":{"limit":4294705152,"used":2614746347,"total":2631548035}}
+{"at":"2026-10-23T07:05:23.518Z","operation":"!!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')","heap":{"limit":4294705152,"used":2614750550,"total":2631548422}}
+{"at":"2026-10-23T07:05:23.519Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2614757250,"total":2631549278}}
+{"at":"2026-10-23T07:05:23.560Z","operation":"(async()=>{const e=document.querySelector(\"#tm-action-letter-overlay button[data-close-bridge]\");if(","heap":{"limit":4294705152,"used":2614765055,"total":2631550255}}
+{"at":"2026-10-23T07:05:23.649Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2614777320,"total":2631550820}}
+{"at":"2026-10-23T07:05:23.650Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2614783673,"total":2631551613}}
+{"at":"2026-10-23T07:05:23.692Z","operation":"(async()=>{const e=document.querySelector(\"#tm-pause-fab\");if(!e)return{missing:true};e.scrollIntoVi","heap":{"limit":4294705152,"used":2614799591,"total":2631561811}}
+{"at":"2026-10-23T07:05:23.782Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2614812290,"total":2631562138}}
+{"at":"2026-10-23T07:05:23.784Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2614819102,"total":2631563070}}
+{"at":"2026-10-23T07:05:23.825Z","operation":"(async()=>{const e=document.querySelector(\"#pause-bg button[onclick=\\\"closePause();openSaveManager()","heap":{"limit":4294705152,"used":2614827447,"total":2631564971}}
+{"at":"2026-10-23T07:05:23.919Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2614930120,"total":2631566404}}
+{"at":"2026-10-23T07:05:23.920Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":2614935609,"total":2631567009}}
+{"at":"2026-10-23T07:05:23.921Z","operation":"__compositeWaits.arm('save',2)","heap":{"limit":4294705152,"used":2614942744,"total":2631567296}}
+{"at":"2026-10-23T07:05:23.945Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2614949392,"total":2631568160}}
+{"at":"2026-10-23T07:05:23.988Z","operation":"(async()=>{const e=document.querySelector(\"#save-manager-overlay button[onclick=\\\"saveToSlot(2)\\\"]\")","heap":{"limit":4294705152,"used":2614959208,"total":2631569048}}
+{"at":"2026-10-23T07:05:24.085Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2614971402,"total":2631569882}}
+{"at":"2026-10-23T07:05:24.087Z","operation":"(()=>{const e=document.querySelector('body > div:last-child input');if(!e)throw Error('save naming p","heap":{"limit":4294705152,"used":2614980427,"total":2631570811}}
+{"at":"2026-10-23T07:05:24.091Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2614987063,"total":2631571667}}
+{"at":"2026-10-23T07:05:24.134Z","operation":"(async()=>{const e=document.querySelector(\"body > div:last-child button.bt.bp\");if(!e)return{missing","heap":{"limit":4294705152,"used":2614993730,"total":2631572474}}
+{"at":"2026-10-23T07:05:24.222Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2614999780,"total":2631572796}}
+{"at":"2026-10-23T07:06:42.732Z","operation":"__compositeWaits.wait(5)","heap":{"limit":4294705152,"used":3036981918,"total":3044163050}}
+{"at":"2026-10-23T07:06:42.775Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":3037066579,"total":3044164611}}
+{"at":"2026-10-23T07:06:42.777Z","operation":"(()=>{window.__compositeOldWorld=GM;return{load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:G","heap":{"limit":4294705152,"used":3037377018,"total":3044423606}}
+{"at":"2026-10-23T07:06:42.778Z","operation":"__compositeWaits.arm('load',2)","heap":{"limit":4294705152,"used":3037385477,"total":3044423893}}
+{"at":"2026-10-23T07:06:42.780Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":3037392320,"total":3044424768}}
+{"at":"2026-10-23T07:06:52.163Z","operation":"(async()=>{const e=document.querySelector(\"#save-manager-overlay button[onclick=\\\"loadSaveSlot(2)\\\"]","heap":{"limit":4294705152,"used":2158318023,"total":2179017631}}
+{"at":"2026-10-23T07:06:56.837Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1707991376,"total":1727949192}}
+{"at":"2026-10-23T07:06:56.848Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1707999005,"total":1727950037}}
+{"at":"2026-10-23T07:06:56.891Z","operation":"(async()=>{const e=document.querySelector(\".rice-paper-confirm #_rpc_ok\");if(!e)return{missing:true}","heap":{"limit":4294705152,"used":1708007001,"total":1727950881}}
+{"at":"2026-10-23T07:07:03.792Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2051639402,"total":2071519598}}
+{"at":"2026-10-23T07:07:11.342Z","operation":"__compositeWaits.wait(6)","heap":{"limit":4294705152,"used":1620793349,"total":1642034941}}
+{"at":"2026-10-23T07:07:11.498Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+45000;(function poll(){let result=(GM!==window._","heap":{"limit":4294705152,"used":1619764131,"total":1643872039}}
+{"at":"2026-10-23T07:07:11.639Z","operation":"_tmAwaitLoadBarrier()","heap":{"limit":4294705152,"used":1626433630,"total":1644947722}}
+{"at":"2026-10-23T07:07:11.995Z","operation":"({load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:GM.playerCharacterId,plans:JSON.stringify(","heap":{"limit":4294705152,"used":1643037054,"total":1662668042}}
+{"at":"2026-10-23T07:07:11.998Z","operation":"P.ai.url==='https://composite-fixture.invalid/v1'&&P.ai.key==='composite-fixture'","heap":{"limit":4294705152,"used":1636078040,"total":1663192668}}
+{"at":"2026-10-23T07:07:11.999Z","operation":"!!window.__compositeOldButton","heap":{"limit":4294705152,"used":1636082790,"total":1663192954}}
+{"at":"2026-10-23T07:07:12.020Z","operation":"window.__compositeOldButton.click()","heap":{"limit":4294705152,"used":1637264685,"total":1663193405}}
+{"at":"2026-10-23T07:07:12.021Z","operation":"JSON.stringify((GM._npcPlans||[]).filter(p=>p.localActivity&&p.localActivity.kind==='meeting'))","heap":{"limit":4294705152,"used":1637285937,"total":1663193757}}
+{"at":"2026-10-23T07:07:12.022Z","operation":"(()=>{delete window.__compositeOldWorld;delete window.__compositeOldButton;return true;})()","heap":{"limit":4294705152,"used":1637290241,"total":1663194105}}
+{"at":"2026-10-23T07:07:12.025Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1637300019,"total":1663194719}}
+{"at":"2026-10-23T07:07:12.026Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1637385005,"total":1663195037}}
+{"at":"2026-10-23T07:07:12.035Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1637450142,"total":1663196346}}
+{"at":"2026-10-23T07:07:12.037Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1637850650,"total":1663196954}}
+{"at":"2026-10-23T07:07:12.062Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":1637883876,"total":1663197568}}
+{"at":"2026-10-23T07:07:12.064Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":1637944922,"total":1663197886}}
+{"at":"2026-10-23T07:07:12.069Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":1638009583,"total":1663199195}}
+{"at":"2026-10-23T07:07:12.071Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":1638405979,"total":1663199803}}
+{"at":"2026-10-23T07:07:12.093Z","operation":"!!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')","heap":{"limit":4294705152,"used":1638435114,"total":1663200502}}
+{"at":"2026-10-23T07:07:12.096Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1638502587,"total":1663206471}}
+{"at":"2026-10-23T07:07:12.098Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1638510073,"total":1663207385}}
+{"at":"2026-10-23T07:07:12.140Z","operation":"(async()=>{const e=document.querySelector(\"body > aside:nth-of-type(2) > button:nth-of-type(2)\");if(","heap":{"limit":4294705152,"used":1638517625,"total":1663208225}}
+{"at":"2026-10-23T07:07:12.226Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1638523870,"total":1663208522}}
+{"at":"2026-10-23T07:07:12.228Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":1638552198,"total":1663211898}}
+{"at":"2026-10-23T07:07:12.229Z","operation":"({turn:GM.turn,day:TM.SimTime.now(GM)})","heap":{"limit":4294705152,"used":1638556478,"total":1663212194}}
+{"at":"2026-10-23T07:07:12.230Z","operation":"__compositeWaits.arm('turn')","heap":{"limit":4294705152,"used":1638562855,"total":1663212479}}
+{"at":"2026-10-23T07:07:12.231Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1638569349,"total":1663213281}}
+{"at":"2026-10-23T07:07:12.274Z","operation":"(async()=>{const e=document.querySelector(\"#endturn .et-big\");if(!e)return{missing:true};e.scrollInt","heap":{"limit":4294705152,"used":1638576647,"total":1663214183}}
+{"at":"2026-10-23T07:07:12.370Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1638592320,"total":1663214664}}
+{"at":"2026-10-23T07:07:12.371Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.quer","heap":{"limit":4294705152,"used":1638597582,"total":1663215178}}
+{"at":"2026-10-23T07:07:12.372Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1638603986,"total":1663215946}}
+{"at":"2026-10-23T07:07:12.414Z","operation":"(async()=>{const e=document.querySelector(\"#cet-ok\");if(!e)return{missing:true};e.scrollIntoView({bl","heap":{"limit":4294705152,"used":1638610672,"total":1663216816}}
+{"at":"2026-10-23T07:07:12.512Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":1638627094,"total":1663218602}}
+{"at":"2026-10-23T07:07:12.513Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.qu","heap":{"limit":4294705152,"used":1638632613,"total":1663219241}}
+{"at":"2026-10-23T07:07:12.514Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":1638639309,"total":1663220137}}
+{"at":"2026-10-23T07:07:12.557Z","operation":"(async()=>{const e=document.querySelector(\"#post-turn-court-prompt button[onclick=\\\"_postTurnCourtCh","heap":{"limit":4294705152,"used":1638646135,"total":1663221107}}
+{"at":"2026-10-23T07:07:32.690Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2598469696,"total":2621328416}}
+{"at":"2026-10-23T07:09:02.510Z","operation":"__compositeWaits.wait(7)","heap":{"limit":4294705152,"used":2724968922,"total":2741105602}}
+{"at":"2026-10-23T07:09:16.665Z","operation":"({busy:!!(GM.busy||GM._endTurnBusy),pending:!!GM._endTurnCommitPending,turn:GM.turn,day:TM.SimTime.n","heap":{"limit":4294705152,"used":2670254790,"total":2697308846}}
+{"at":"2026-10-23T07:09:44.913Z","operation":"Array.from(document.querySelectorAll('button')).filter(b=>/关闭|继续|返回|收起/.test(b.textContent)&&b.getBo","heap":{"limit":4294705152,"used":2546849551,"total":2568110867}}
+{"at":"2026-10-23T07:10:04.760Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":2655242666,"total":2692069198}}
+{"at":"2026-10-23T07:10:04.849Z","operation":"({active:TM.RecoveryReview.status(),cancels:__compositeCalls.reviewCancels.length})","heap":{"limit":4294705152,"used":2676990318,"total":2709233230}}
+{"at":"2026-10-23T07:10:04.904Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2678854200,"total":2709234144}}
+{"at":"2026-10-23T07:10:04.951Z","operation":"(async()=>{const e=document.querySelector(\"body > aside:nth-of-type(2) > button:nth-of-type(1)\");if(","heap":{"limit":4294705152,"used":2670788649,"total":2709079537}}
+{"at":"2026-10-23T07:10:13.674Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":3581276329,"total":3615971281}}
+{"at":"2026-10-23T07:10:14.899Z","operation":"__compositeCalls.reviewCancels.length","heap":{"limit":4294705152,"used":2712330954,"total":2737137650}}
+{"at":"2026-10-23T07:10:14.903Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":2712420745,"total":2737153409}}
+{"at":"2026-10-23T07:10:14.905Z","operation":"new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e","heap":{"limit":4294705152,"used":2712428743,"total":2737154499}}
+{"at":"2026-10-23T07:10:14.949Z","operation":"(async()=>{const e=document.querySelector(\"body > div:nth-of-type(8) > div:nth-of-type(1) > div:nth-","heap":{"limit":4294705152,"used":2712436731,"total":2737155543}}
+{"at":"2026-10-23T07:10:15.033Z","operation":"new Promise(r=>setTimeout(r,80))","heap":{"limit":4294705152,"used":2712441886,"total":2737155850}}
+{"at":"2026-10-23T07:10:15.036Z","operation":"(()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.tri","heap":{"limit":4294705152,"used":2712464614,"total":2737159450}}
+{"at":"2026-10-23T07:10:15.038Z","operation":"(()=>{const b=document.querySelector('#turn-modal button[onclick*=\"closeTurnResult\"]');if(!b)return ","heap":{"limit":4294705152,"used":2712469533,"total":2737160009}}
+{"at":"2026-10-23T07:10:15.041Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":2712478283,"total":2737160623}}
+{"at":"2026-10-23T07:10:15.042Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":2705925673,"total":2737160941}}
+{"at":"2026-10-23T07:10:15.048Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":2705993942,"total":2737162250}}
+{"at":"2026-10-23T07:10:15.049Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":2706399278,"total":2737162858}}
+{"at":"2026-10-23T07:10:15.074Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":2706440624,"total":2737163472}}
+{"at":"2026-10-23T07:10:15.075Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":2706523546,"total":2737163790}}
+{"at":"2026-10-23T07:10:15.083Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":2706588531,"total":2737165099}}
+{"at":"2026-10-23T07:10:15.085Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":2706984775,"total":2737165707}}
+{"at":"2026-10-23T07:10:15.119Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":2707021473,"total":2737166321}}
+{"at":"2026-10-23T07:10:15.120Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":2707104395,"total":2737166639}}
+{"at":"2026-10-23T07:10:15.128Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":2707166600,"total":2737167948}}
+{"at":"2026-10-23T07:10:15.129Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":2707562884,"total":2737168556}}
+{"at":"2026-10-23T07:10:15.160Z","operation":"['char_jianyan1_01','char_jianyan1_16'].map(id=>({id,location:TM.NPC.DailyActivities.exactLocation(G","heap":{"limit":4294705152,"used":2707601218,"total":2737168946}}
+{"at":"2026-10-23T07:10:15.161Z","operation":"GM.chars.find(c=>c.id==='char_jianyan1_01')._lifeExp||[]","heap":{"limit":4294705152,"used":2707606099,"total":2737169259}}
+{"at":"2026-10-23T07:10:15.162Z","operation":"GM.chars.filter(c=>['char_jianyan1_01','char_jianyan1_16'].includes(c.id)).map(c=>({id:c.id,entries:","heap":{"limit":4294705152,"used":2707625287,"total":2737169759}}
+{"at":"2026-10-23T07:10:15.163Z","operation":"__compositeWaits.snapshot()","heap":{"limit":4294705152,"used":2707635191,"total":2737170043}}
+{"at":"2026-10-23T07:10:15.165Z","operation":"(()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people","heap":{"limit":4294705152,"used":2707648281,"total":2737170657}}
+{"at":"2026-10-23T07:10:15.165Z","operation":"window.__compositeWaits?window.__compositeWaits.snapshot():[]","heap":{"limit":4294705152,"used":2707731439,"total":2737170975}}
+{"at":"2026-10-23T07:10:15.170Z","operation":"(()=>{const s=GM._npcActionState&&GM._npcActionState.planning;if(!s)return null;return {requests:(s.","heap":{"limit":4294705152,"used":2707793644,"total":2737172284}}
+{"at":"2026-10-23T07:10:15.172Z","operation":"(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat","heap":{"limit":4294705152,"used":2708189932,"total":2737172892}}

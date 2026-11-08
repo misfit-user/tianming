@@ -1,0 +1,20 @@
+{
+  "main": "31368256b021aa698bd99fb2f449fbfaf4e5e112",
+  "candidate": "151a2b64ca3e2dc7317d20efba296579176cdd12",
+  "parents": [
+    "f732f205fbc28995acf2871510d15eb2f38bada9",
+    "31368256b021aa698bd99fb2f449fbfaf4e5e112"
+  ],
+  "upstreamNonGeneratedFiles": 25,
+  "allByteIdentical": true,
+  "conflicts": [
+    "web/.hot-update-manifest.json",
+    "web/tm-start-runtime-manifest.json"
+  ],
+  "resolution": "existing generators; source semantics preserved; startup480/hot1397",
+  "unchangedVersion": "1.3.5.3",
+  "notes": [
+    "Upstream stable-ID module contains CRLF bytes; retained byte-identically rather than normalizing after generic whitespace checker flagged them.",
+    "Asset overlay supplements595files; the migration module is now legitimate tracked main source, not parallel unsubmitted content."
+  ]
+}

@@ -1,7 +1,0 @@
-﻿{
-    "message":  "fix: handle large scenario editor return payloads\n\n- add 1.3.3.3 changelog entry\n- store large runtime return payloads in IndexedDB\n- load returned scenarios from IndexedDB and reapply after restore",
-    "parents":  [
-                    "d2f3c4e5da94c3ae75fef9bc1c736d1a26c8c3d2"
-                ],
-    "tree":  "{\"message\":\"Problems parsing JSON\",\"documentation_url\":\"https://docs.github.com/rest/git/trees#create-a-tree\",\"status\":\"400\"}"
-}

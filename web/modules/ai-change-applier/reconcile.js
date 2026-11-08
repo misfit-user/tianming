@@ -757,6 +757,59 @@ export function createReconcile(deps) {
     return (s === 'income' || s === 'expense') ? s : '';
   }
 
+  // ── fiscal_adjustments 的另一种写法（11-07 记：玩家 09-21 那局的主推演写成
+  //    {subject:"太仓银库", action:"拨发陕西急赈", amount:-100000, note:"……"}）──
+  //   没有 target/kind，预检原来整条剔掉（missing target/kind）。就地改成标准形状再过闸，只改认得准的：
+  //   subject 认账户（太仓、国库、户部 → guoku；内帑、内库、内承运库 → neitang），认不出不改；
+  //   amount 为负是支出；为正看字面（拨发、赈济、犒赏……为出，征收、捐纳、鬻卖……为入），两样都有或都没有就不改；
+  //   action 记作名目，note 记作事由，原写法留在 _altShape。
+  //   同批央地调拨若是同一笔钱（同账户同资源、金额差 1% 内、调拨的地名出现在这条里），标 _dupOfTransfer，
+  //   落账时跳过（applier 的 fiscal 段），免得一笔赈银扣两次。
+  //   只就地改、不增删条目：严格预检按下标剔条目。严格预检（validateAIWriteBackBatch）与 applier 入口各调一次，已改过的不再动。
+  var _FA_ALT_OUT = /拨|发放|发帑|发银|支|赈|犒|赏|赐|给|付|偿|修|筑|造|建|购|买|采办|转运|运脚|军费|饷|济|恤|贴/;
+  var _FA_ALT_IN = /征|收|入库|纳|捐|鬻|卖|售|抄没|籍没|罚|没入|进奉|上缴|解送|解京/;
+  var _REGION_NAME_SUFFIX = /(承宣布政使司|布政使司|行都指挥使司|都指挥使司|宣慰使司|宣慰司|宣抚司|省)$/;
+  function _normalizeFiscalAltShape(output) {
+    var rows = output && Array.isArray(output.fiscal_adjustments) ? output.fiscal_adjustments : [];
+    var transfers = output && Array.isArray(output.central_local_actions) ? output.central_local_actions : [];
+    var changed = 0;
+    rows.forEach(function(fa) {
+      if (!fa || typeof fa !== 'object' || fa.target != null || fa.kind != null) return;
+      var subject = String(fa.subject || fa.account || fa.treasury || '').trim();
+      var amount = parseFloat(fa.amount);
+      if (!subject || !isFinite(amount) || amount === 0) return;
+      var target = /内帑|内库|内承运|私帑|帝室|御库/.test(subject) ? 'neitang' : (/太仓|国库|户部|外库|公帑|公库/.test(subject) ? 'guoku' : '');
+      if (!target) return;
+      var desc = String(fa.action || fa.name || '').trim(), note = String(fa.note || fa.reason || '').trim();
+      var words = desc + ' ' + note, out = _FA_ALT_OUT.test(words), inn = _FA_ALT_IN.test(words);
+      var kind = amount < 0 ? 'expense' : (out && !inn ? 'expense' : (inn && !out ? 'income' : ''));
+      if (!kind) return;
+      fa._altShape = { subject: fa.subject, action: fa.action, amount: fa.amount, note: fa.note };
+      fa.target = target;
+      fa.kind = kind;
+      if (!fa.resource) fa.resource = /粮|米|麦|粟|谷/.test(subject + desc) ? 'grain' : (/布|绢|帛|缎|棉/.test(subject + desc) ? 'cloth' : 'money');
+      fa.amount = Math.abs(amount);
+      fa.action = 'add';
+      if (!fa.name) fa.name = desc || subject;
+      if (!fa.reason) fa.reason = note || desc;
+      changed++;
+      if (kind !== 'expense') return;
+      var text = subject + ' ' + desc + ' ' + note;
+      var dup = transfers.filter(function(t) {
+        if (!t || typeof t !== 'object') return false;
+        if (!/transfer|grant|下拨|拨银|发帑|赈/.test(String(t.action || t.type || t.kind || t.policyId || ''))) return false;
+        var from = String(t.fromAccount || 'guoku.money').split('.');
+        if (from[0] !== target || (from[1] || 'money') !== fa.resource) return false;
+        var tAmt = parseFloat(t.amount || t.money || t.silver);
+        if (!(tAmt > 0) || Math.abs(tAmt - fa.amount) > fa.amount * 0.01) return false;
+        var region = String(t.regionName || t.region || t.target || t.province || '').trim().replace(_REGION_NAME_SUFFIX, '');
+        return region.length >= 2 && text.indexOf(region) >= 0;
+      })[0];
+      if (dup) fa._dupOfTransfer = String(dup.regionName || dup.region || dup.target || dup.province || '') + ' ' + (parseFloat(dup.amount || dup.money || dup.silver) || '');
+    });
+    return changed;
+  }
+
   function preflightAIWriteBack(aiOutput, opts) {
     var G = global.GM;
     if (!G || !aiOutput || typeof aiOutput !== 'object') return aiOutput;
@@ -1027,6 +1080,16 @@ export function createReconcile(deps) {
     }
     var byName = rows.filter(function(row) { return row && row.name != null && String(row.name).trim() === raw; });
     if (byName.length === 1) return byName[0];
+    // 区划：落账处（applier 的 _findDivisionForAI）认「陕西省」「陕西承宣布政使司」这类去后缀相等的名字，
+    // 预检要和落账用同一规矩，不然好账在预检就被剔（11-07）。只在精确名一个都没有时才放宽；有重名照旧报歧义。
+    if (kind === 'region' && byName.length === 0) {
+      var pathUtils = global.TM && global.TM.AIChange && global.TM.AIChange.PathUtils;
+      var fuzzy = pathUtils && typeof pathUtils.findDivisionByNameFuzzy === 'function' ? pathUtils.findDivisionByNameFuzzy(global.GM, raw) : null;
+      if (fuzzy) {
+        var same = rows.filter(function(row) { return row && fuzzy.id != null && row.id != null && String(row.id) === String(fuzzy.id); });
+        return same.length ? same[0] : fuzzy;
+      }
+    }
     fail({
       field: field,
       index: index,
@@ -1152,6 +1215,7 @@ export function createReconcile(deps) {
     _validateIdentityAgreement(G, aiOutput, failures);
     var detached = _tmCloneWriteback(aiOutput);
     _normalizeCharacterUpdateAliases(detached, failures);
+    _normalizeFiscalAltShape(detached);
     var previousCollector = _tmPreflightCollector;
     var previousSideEffects = _tmPreflightSideEffects;
     var previousContext = _tmPreflightContext;
@@ -1214,10 +1278,90 @@ export function createReconcile(deps) {
     var unique = [];
     var seenFailures = Object.create(null);
     failures.forEach(function(failure) {
-      var key = [failure.field, failure.index, failure.code, failure.target, failure.reason].join('|');
+      var key = _tmWritebackFailureKey(failure);
       if (!seenFailures[key]) { seenFailures[key] = true; unique.push(failure); }
     });
-    return { ok: unique.length === 0, output: detached, failures: unique };
+    var verdict = { ok: unique.length === 0, output: detached, failures: unique };
+    if (!verdict.ok && opts.prune === true) verdict.pruned = _tmPruneAndRevalidate(detached, unique, opts);
+    return verdict;
+  }
+
+  function _tmWritebackFailureKey(failure) {
+    return [failure && failure.field, failure && failure.index, failure && failure.code, failure && failure.target, failure && failure.reason].join('|');
+  }
+
+  /**
+   * 逐条落账用：把严格预检点名的坏条目从批里剔掉，其余条目留着照常落地。
+   * - 定位得到条目（数组字段 + 下标，或带着条目本身）：只剔这一条。
+   * - 字段在批里但定位不到条目：剔掉这个字段。
+   * - 批里没有这个字段（多是由别的字段推出来的条目）：没有可剔的，记下来；落地时 applier
+   *   自带的预检还会把它挡掉。
+   * - 整批形状坏了（invalid-writeback-batch）：致命，整批不落。
+   */
+  function _tmPruneWritebackFailures(output, failures) {
+    var drops = Object.create(null), dropped = [], fatal = [];
+    (failures || []).forEach(function(failure) {
+      if (!failure || failure.code === 'invalid-writeback-batch') { fatal.push(failure); return; }
+      var field = String(failure.field || ''), index = Number.isInteger(failure.index) ? failure.index : null;
+      var dot = field.indexOf('.');
+      if (dot > 0) {
+        var rest = field.slice(dot + 1).split('.');
+        field = field.slice(0, dot);
+        if (index === null && /^\d+$/.test(rest[0])) index = Number(rest[0]);
+      }
+      var value = field ? output[field] : undefined;
+      if (value == null || typeof value !== 'object') {
+        dropped.push(Object.assign({ droppedBy: 'strict-preflight', unlocated: true }, failure));
+        return;
+      }
+      if (Array.isArray(value) && index === null && failure.item) {
+        var at = value.indexOf(failure.item);
+        if (at >= 0) index = at;
+      }
+      var plan = drops[field] || (drops[field] = { whole: false, indexes: Object.create(null) });
+      if (!Array.isArray(value) || index === null || index < 0 || index >= value.length) plan.whole = true;
+      else plan.indexes[index] = true;
+      dropped.push(Object.assign({ droppedBy: 'strict-preflight' }, failure, {
+        field: field,
+        index: index,
+        item: failure.item || (Array.isArray(value) && index !== null ? value[index] : null)
+      }));
+    });
+    if (fatal.length) return { ok: false, fatal: fatal, dropped: [] };
+    var next = _tmCloneWriteback(output);
+    Object.keys(drops).forEach(function(field) {
+      var plan = drops[field];
+      if (plan.whole) {
+        if (Array.isArray(next[field])) next[field] = [];
+        else delete next[field];
+        return;
+      }
+      next[field] = next[field].filter(function(_, i) { return !plan.indexes[i]; });
+    });
+    return { ok: true, output: next, dropped: dropped };
+  }
+
+  // 剔完再验：剔掉一条可能让别的条目失去依托（如更新引用了被剔的新建项），最多再剔几轮。
+  // 定位不到的失败只记一次，不因它反复出现而判整批不过。
+  function _tmPruneAndRevalidate(output, failures, opts) {
+    var dropped = [], current = output, pending = failures, unlocated = Object.create(null);
+    for (var round = 0; round < 4; round++) {
+      var cut = _tmPruneWritebackFailures(current, pending);
+      if (!cut.ok) return { ok: false, output: null, dropped: dropped, failures: cut.fatal };
+      cut.dropped.forEach(function(entry) {
+        if (entry.unlocated) {
+          var key = _tmWritebackFailureKey(entry);
+          if (unlocated[key]) return;
+          unlocated[key] = true;
+        }
+        dropped.push(entry);
+      });
+      var again = validateAIWriteBackBatch(cut.output, { source: (opts && opts.source || 'strict-preflight') + ':pruned' });
+      pending = again.failures.filter(function(failure) { return !unlocated[_tmWritebackFailureKey(failure)]; });
+      if (!pending.length) return { ok: true, output: again.output, dropped: dropped, failures: [] };
+      current = again.output;
+    }
+    return { ok: false, output: null, dropped: dropped, failures: pending };
   }
 
   function _applyBattleResult(G, aiOutput, applied) {
@@ -1549,23 +1693,40 @@ export function createReconcile(deps) {
     }
   }
 
+  /**
+   * AI 写回入口。默认整批原子：任一条失败就恢复原状。
+   * 主回合写回带 _commitMode:'per-item'，改为逐条落账：
+   *   预检点名的坏条目先剔掉，处理时失败的条目只记进 applied.failed，其余照常落地，
+   *   返回 ok:true（partial:true 表示有条目没落）。只有世界形状被写坏
+   *   （_validateAIResultState 不过）或 applier 在条目之外抛错，才整批恢复原状。
+   */
   function applyAITurnChangesAtomic(aiOutput) {
     var G = global.GM;
     var P0 = global.P;
     if (!G || !aiOutput || typeof aiOutput !== 'object') return { ok: false, applied: { failed: [{ reason: 'invalid GM/AI output' }] } };
+    var perItem = aiOutput._commitMode === 'per-item';
+    var preflightDropped = [];
     if (aiOutput._strictValidation === true) {
-      var strictPreflight = validateAIWriteBackBatch(aiOutput, { source:'applyAITurnChangesAtomic' });
-      if (!strictPreflight.ok) {
+      var strictPreflight = validateAIWriteBackBatch(aiOutput, { source:'applyAITurnChangesAtomic', prune:perItem });
+      var pruned = !strictPreflight.ok && perItem ? strictPreflight.pruned : null;
+      if (!strictPreflight.ok && !(pruned && pruned.ok)) {
         return {
           ok:false,
           rolledBack:false,
           preflightRejected:true,
-          applied:{ failed:strictPreflight.failures.map(function(failure) {
+          applied:{ failed:((pruned && pruned.failures.length) ? pruned.failures : strictPreflight.failures).map(function(failure) {
             return Object.assign({ reason:failure.reason || failure.code }, failure);
           }) }
         };
       }
-      aiOutput = strictPreflight.output;
+      if (pruned) {
+        preflightDropped = pruned.dropped.map(function(failure) {
+          return Object.assign({ reason:failure.reason || failure.code }, failure);
+        });
+        aiOutput = pruned.output;
+      } else {
+        aiOutput = strictPreflight.output;
+      }
     }
     if (aiOutput._strictValidation !== true && (aiOutput.char_updates || []).some(function(row) { return row && row.changes != null; })) {
       aiOutput=_tmCloneWriteback(aiOutput); var aliases=[]; _normalizeCharacterUpdateAliases(aiOutput, aliases);
@@ -1581,12 +1742,15 @@ export function createReconcile(deps) {
       result.applied.failed = Array.isArray(result.applied.failed) ? result.applied.failed : [];
       var stateFailures = _validateAIResultState(G);
       if (stateFailures.length) Array.prototype.push.apply(result.applied.failed, stateFailures);
-      if (result.ok !== true || result.applied.failed.length) {
+      if (preflightDropped.length) result.applied.failed = preflightDropped.concat(result.applied.failed);
+      var mustRestore = result.ok !== true || stateFailures.length > 0 || (!perItem && result.applied.failed.length > 0);
+      if (mustRestore) {
         _restoreAIStateObject(G, gSnapshot);
         if (P0 && pSnapshot) _restoreAIStateObject(P0, pSnapshot);
         _refreshAIIndices(G, P0);
         return { ok: false, applied: result.applied, rolledBack: true, error: 'AI writeback transaction rejected' };
       }
+      if (perItem && result.applied.failed.length) result.partial = true;
       return result;
     } catch (e) {
       try { if (gSnapshot) _restoreAIStateObject(G, gSnapshot); } catch (_) {}
@@ -1632,6 +1796,7 @@ export function createReconcile(deps) {
     _applyRegentDecisions: _applyRegentDecisions,
     preflightAIWriteBack: preflightAIWriteBack,
     validateAIWriteBackBatch: validateAIWriteBackBatch,
+    _normalizeFiscalAltShape: _normalizeFiscalAltShape,
     _applyBattleResult: _applyBattleResult,
     _applyFiscalDeficitPenalties: _applyFiscalDeficitPenalties,
     _hasInstantArrivalRule: _hasInstantArrivalRule,

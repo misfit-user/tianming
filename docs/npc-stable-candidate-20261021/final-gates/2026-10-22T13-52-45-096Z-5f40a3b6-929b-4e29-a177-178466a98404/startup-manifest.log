@@ -1,0 +1,1 @@
+[startup-phase-manifest] PASS scripts=479 deferred=9 phases={"menu":15,"core":117,"world":318,"optional":29}

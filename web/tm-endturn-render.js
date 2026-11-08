@@ -136,6 +136,33 @@ async function _endTurn_publishStagedTurnData(ctx) {
   return true;
 }
 
+// Start the existing memory completion producer once, outside the canonical
+// snapshot closure. Its promise contains only a completion receipt, never a
+// detached GM/P snapshot or payload; final review consumes this same attempt.
+function _endTurn_startPostTurnMemorySave(ctx, stillCurrent, turn) {
+  if (ctx.meta.postTurnMemorySavePromise) return ctx.meta.postTurnMemorySavePromise;
+  ctx.meta.postTurnMemorySavePromise = Promise.resolve().then(function() {
+    if (!stillCurrent()) return { ok:false, stale:true, reason:'post-turn-memory-world-changed' };
+    if (typeof _awaitPostTurnJobsForSave !== 'function') throw new Error('后台记忆保存生产者不可用');
+    return _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);
+  }).then(function(result) {
+    if (!stillCurrent() || result && result.stale) return { ok:false, stale:true, reason:'post-turn-memory-world-changed' };
+    if (typeof requestBackgroundAutosave !== 'function') throw new Error('后台记忆的正式保存入口不可用');
+    return requestBackgroundAutosave({reason:'post-turn-memory-complete', expectedTurn:turn});
+  }).then(function(result) {
+    if (!stillCurrent() || result && result.stale) return { ok:false, stale:true, reason:String(result && result.reason || 'post-turn-memory-world-changed') };
+    if (!result || result.ok !== true || result.scheduled !== true) throw result && result.error || new Error('后台记忆未进入正式保存队列：' + String(result && result.reason || '未取得排队回执'));
+    return { ok:true, scheduled:true, turn:turn };
+  }).catch(function(error) {
+    try {
+      if (window.TM && TM.Endturn && TM.Endturn.Validity) TM.Endturn.Validity.defer(ctx, '后台记忆', error);
+      else console.warn('[EndturnDeferred] 后台记忆待补正:', error.message);
+    } catch (reportError) { console.warn('[EndturnDeferred] 后台记忆错误报告失败:', reportError.message); }
+    return { ok:false, reason:String(error && error.message || error), code:String(error && error.code || 'POST_TURN_MEMORY_SAVE') };
+  });
+  return ctx.meta.postTurnMemorySavePromise;
+}
+
 // 回合存档唯一入口：必须由 core 在全部状态写入和记录最终化后触发。
 // autosave/slot_0 共用一个数据库事务；桌面分卷只在该事务提交后发布。
 function _endTurn_saveSnapshot(ctx) {
@@ -156,17 +183,7 @@ function _endTurn_saveSnapshot(ctx) {
       && GM.turn === _endturnSaveTurn && GM.sid === _endturnSaveSid
       && (!_livePreId || _livePreId === _endturnSavePreId);
   };
-  // 后台记忆（sc25、sc25c）补完后再补存一次。这串回调要建在这一层，别挪进下面的 async 函数：
-  // 那个函数里放着定稿和存档文字包（各是整局大小），在同一个函数里建的回调会把它们一起留住，
-  // 一直留到记忆补完——后台模型排队时能拖一两分钟，白占约 600MB（绍宋），其间赶上后台自动存档，空闲时就到 2GB。
-  if (typeof _awaitPostTurnJobsForSave === 'function') {
-    Promise.resolve().then(function(){return _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);}).then(function(){
-      if(_endturnSaveStillCurrent()&&typeof requestBackgroundAutosave==='function')return requestBackgroundAutosave({reason:'post-turn-memory-complete',expectedTurn:_endturnSaveTurn});
-    }).catch(function(error){
-      if(window.TM&&TM.Endturn&&TM.Endturn.Validity)TM.Endturn.Validity.defer(ctx,'后台记忆',error);
-      else console.warn('[EndturnDeferred] 后台记忆待补正:',error.message);
-    });
-  }
+  _endTurn_startPostTurnMemorySave(ctx, _endturnSaveStillCurrent, _endturnSaveTurn);
   return (async function() {
     var _canonicalCommitted = false;
     var _snapshotTask = null;

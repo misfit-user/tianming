@@ -23,7 +23,7 @@ function renderFixture(root=ROOT){
     if(opts.onCommitted)opts.onCommitted({state:'committed',transactionId:opts.transactionId,slots:entries.map(e=>({id:e.id,turn:e.meta.turn,campaignId:e.gameState.GM._campaignId,timelineId:e.gameState.GM._timelineId}))});
     events.push('cleanup');return true;
   }};
-  loadFunctions(c,'tm-endturn-render.js',['_endTurn_saveSnapshot'],root);
+  loadFunctions(c,'tm-endturn-render.js',['_endTurn_startPostTurnMemorySave','_endTurn_saveSnapshot'],root);
   const txn={transactionId:'txn-fixture',campaignId:c.GM._campaignId,timelineId:c.GM._timelineId,turn:3,gmRef:c.GM,pRef:c.P,committed:false,rolledBack:false};
   return {c,events,disk,markers,txn,ctx:{meta:{transactionId:txn.transactionId,transaction:txn}},save(ctx){return c._endTurn_saveSnapshot(ctx||this.ctx);}};
 }

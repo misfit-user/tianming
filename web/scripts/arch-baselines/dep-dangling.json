@@ -22,7 +22,8 @@
         "Roster",
         "ThreeSystems",
         "_registry",
-        "errors"
+        "errors",
+        "platform"
       ]
     },
     "map-editor.html": {

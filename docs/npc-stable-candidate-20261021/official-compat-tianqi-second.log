@@ -1,0 +1,32 @@
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+... Skipped lines
+
+  {
+    rows: [
+      {
+        appointmentId: '',
+        appointmentStartedTurn: 1,
+...
+        organizationId: 'fac_mp9rsc3fd62j6',
++       positionId: 'political-office:fac_mp9rsc3fd62j6:off_mp9rsc2h1h3ed%2F%E7%A7%89%E7%AC%94%E5%A4%AA%E7%9B%91%C2%B7%E6%8F%90%E7%9D%A3%E4%B8%9C%E5%8E%82%C2%B7%E4%B8%8A%E5%85%AC%231',
+-       positionId: '',
+        positionName: '秉笔太监·提督东厂·上公',
+        returnLocationId: '',
+        usualDutyLocationId: ''
+      },
+      {
+...
+        organizationId: 'fac_mp9rsc3fd62j6',
++       positionId: 'political-office:fac_mp9rsc3fd62j6:off_mp9rsc2h1h3ed%2F%E7%A7%89%E7%AC%94%E5%A4%AA%E7%9B%91%C2%B7%E4%B8%9C%E5%8E%82%E6%8E%8C%E5%88%91%232',
+-       positionId: '',
+        positionName: '秉笔太监·东厂掌刑',
+        returnLocationId: '',
+        usualDutyLocationId: ''
+      }
+    ],
+
+    at run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\check-other-officials.cjs:103:12)
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb

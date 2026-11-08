@@ -52,8 +52,29 @@ module.exports=async function({win,check}){
   await check('building-ordinary-rejection-does-not-force-construction',async()=>{
     await prepare();const r=await ordinary('reject');assert.equal(r.buildings.length,0);assert.equal(r.money,100000);assert.equal(r.order.status,'rejected');
   });
+  // 主写回逐条落账（62de2ee5）：一条坏账（这里是给不存在的人记死讯）只剔掉这一条并记账，营造照常落地，不再整批撤回。
+  await check('building-main-writeback-bad-entry-is-recorded-and-construction-still-lands',async()=>{
+    await prepare();
+    const r=await ordinary('bad-core');
+    const unapplied=await js(`JSON.stringify(GM._unappliedChanges||[])`);
+    assert.equal(r.money,95000);
+    assert.equal(r.buildings.length,1);
+    assert.equal(r.buildings[0].orderId,r.order.id);
+    assert.equal(r.order.receipt.committed,true);
+    assert(unapplied.includes('本测试不存在的人'),'坏条目应记进 GM._unappliedChanges：'+unapplied.slice(0,600));
+  });
+  // 整批被拒只剩两种：世界形状写坏、条目之外出错。这里让主应用器整批拒绝，验预付的钱与工程仍一并退回。
   await check('building-main-applier-rejection-rolls-back-the-preliminary-payment-and-project',async()=>{
-    await prepare();await assert.rejects(()=>ordinary('bad-core'));
+    await prepare();
+    await js(`(()=>{
+      __orderProbe.realApplier=window.applyAITurnChanges;
+      window.applyAITurnChanges=function(){
+        return {ok:false,rolledBack:true,applied:{failed:[{path:'guoku.money',reason:'fiscal scalar must be finite'}]},error:'AI writeback transaction rejected'};
+      };
+      return true;
+    })()`);
+    try{await assert.rejects(()=>ordinary('approve'));}
+    finally{await js(`(()=>{window.applyAITurnChanges=__orderProbe.realApplier;return true;})()`);}
     const r=await js(`(()=>({money:GM.guoku.money,buildings:P.adminHierarchy.player.divisions[0].buildings.length,order:TM.BuildingOrders.list(GM)[0].status,committed:TM.BuildingOrders.list(GM)[0].receipt&&TM.BuildingOrders.list(GM)[0].receipt.committed}))()`);
     assert.equal(r.money,100000);assert.equal(r.buildings,0);assert.equal(r.order,'submitted');assert(!r.committed);
     const recovered=await ordinary('approve');assert.equal(recovered.money,95000);assert.equal(recovered.buildings.length,1);

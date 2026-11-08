@@ -1,0 +1,8 @@
+FAIL an already saved pending receipt cannot bypass the unresolved original memory producer
+AssertionError [ERR_ASSERTION]: the old implementation starts a second model attempt before SC25c settles
+
+2 !== 1
+
+    at Object.eval [as fn] (eval at <anonymous> (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\memory-producer-barrier-20261023\counterexample.cjs:13:1), <anonymous>:498:10)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+{"pass":0,"fail":1,"total":1}

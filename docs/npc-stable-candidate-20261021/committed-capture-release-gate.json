@@ -1,0 +1,299 @@
+{
+  "head": "b282ace097013cb3e8c0a2454ff2b18ab883727e",
+  "node": "v24.14.0",
+  "startedAt": "2026-10-22T12:55:08.791Z",
+  "scope": "Retire only captured worlds after real canonical commit, snapshot ownership transfer and completed publication. Preserve rollback, unknown outcomes and real readback reconciliation.",
+  "hardTimeoutMs": 120000,
+  "runtimeSource": "web/tm-endturn-core.js",
+  "runtimeHashBefore": "1500dba1c171d02a3e18b4edf08a799812a809b630505357d2e6a7dd8e5cd2f6",
+  "testHashes": {
+    "web/scripts/smoke-save-commit-boundary.js": "fe79463e5a2d0140c3625ee2db7400e1368f0336f8e98c7cec3f2876e42c0920",
+    "web/scripts/smoke-final-save-reconcile.js": "fb87b9fdbabd2ac77272be26f478c9ff0733f8563cff5a099c516f5eb014c4a2",
+    "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+    "web/scripts/smoke-endturn-transaction-failures.js": "4f290c76f3ba947bb6378862b19f62f3bf2f732174ab5cd930f6d223fd83b43d",
+    "web/scripts/smoke-postturn-court-deferred-finalize.js": "76235e920ad1d41bfb3e1fbaf124eb29e550ccd89eeed91cf2b5115d4a7f4810",
+    "web/scripts/smoke-emergency-recovery-review.js": "e3078082b3da17998d9f70e10514984cae0c0bddfccf2542daacdfc690fb0e55",
+    "web/scripts/smoke-round19-cross-system-rollback.js": "de673ab34819cbd90ca61022de5bc2679750bbe46407d48295141b94f77ec987",
+    "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+    "web/scripts/smoke-desktop-autosave-committed-world.js": "ca2306d2239f5c62f7f162994ed4945f566774642203b252dde0fbc52d189e35",
+    "web/scripts/smoke-full-turn-flow.js": "5f29b407884e3ac95045b1853d7143cc6fe807f341ec0b5953b65de1fce60c6f"
+  },
+  "results": [
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-save-commit-boundary.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 553,
+      "log": "docs/npc-stable-candidate-20261021/smoke-save-commit-boundary-committed-release-gate.log",
+      "passLines": [
+        "PASS commit receipt is delivered once, only after both slots commit",
+        "PASS commit observation precedes cleanup but save still waits for cleanup completion",
+        "PASS cleanup errors cannot change a confirmed commit into failure",
+        "PASS observer exceptions do not undo or reject committed data",
+        "PASS aborted writes never notify success or create committed slots",
+        "PASS local committed journal cleanup failure preserves new slots and a committed marker",
+        "PASS partial local write failure restores the original slots without a commit receipt",
+        "PASS auxiliary snapshot rejection does not roll back a committed full world",
+        "PASS auxiliary false result is reported without changing the durable world result",
+        "PASS failed primary write never starts the auxiliary snapshot",
+        "PASS snapshot and cleanup overlap only after durable commit and are both awaited",
+        "PASS a world switch during snapshot cannot publish old-world save markers",
+        "PASS legacy boolean SaveDB success retains the full snapshot path",
+        "PASS mismatched callback receipt cannot start snapshot or bypass a failed primary save",
+        "PASS a staged display failure cannot interrupt retirement of the world transaction",
+        "PASS failure of instrumentation after commit does not erase the observed commit",
+        "PASS an async observer rejection is handled without rejecting the successful write",
+        "PASS synchronous put failure aborts the transaction before any partial slot commit",
+        "PASS failed supplementary memory does not prevent canonical save or snapshot",
+        "PASS unresolved memory never blocks the turn and late success schedules a same-world save",
+        "PASS a failed auxiliary turn-data file preserves its payload in the successful main save",
+        "PASS an empty auxiliary result is a reported warning, not silent success of that task",
+        "PASS actual finalizer keeps committed world and full presentation when auxiliary snapshot fails",
+        "PASS a matching durable receipt blocks rollback but a foreign receipt does not",
+        "PASS confirmed finalizer retires large captures while a background review can still read its exact results",
+        "PASS captures remain live until a committed sidecar publication actually finishes",
+        "PASS failed snapshot adoption and outstanding publication retain the complete recovery references",
+        "PASS a failed canonical write keeps the original capture usable by the real rollback owner"
+      ],
+      "tail": " notify success or create committed slots\nPASS local committed journal cleanup failure preserves new slots and a committed marker\nPASS partial local write failure restores the original slots without a commit receipt\nPASS auxiliary snapshot rejection does not roll back a committed full world\nPASS auxiliary false result is reported without changing the durable world result\nPASS failed primary write never starts the auxiliary snapshot\nPASS snapshot and cleanup overlap only after durable commit and are both awaited\nPASS a world switch during snapshot cannot publish old-world save markers\nPASS legacy boolean SaveDB success retains the full snapshot path\nPASS mismatched callback receipt cannot start snapshot or bypass a failed primary save\nPASS a staged display failure cannot interrupt retirement of the world transaction\nPASS failure of instrumentation after commit does not erase the observed commit\nPASS an async observer rejection is handled without rejecting the successful write\nPASS synchronous put failure aborts the transaction before any partial slot commit\nPASS failed supplementary memory does not prevent canonical save or snapshot\nPASS unresolved memory never blocks the turn and late success schedules a same-world save\nPASS a failed auxiliary turn-data file preserves its payload in the successful main save\nPASS an empty auxiliary result is a reported warning, not silent success of that task\nPASS actual finalizer keeps committed world and full presentation when auxiliary snapshot fails\nPASS a matching durable receipt blocks rollback but a foreign receipt does not\nPASS confirmed finalizer retires large captures while a background review can still read its exact results\nPASS captures remain live until a committed sidecar publication actually finishes\nPASS failed snapshot adoption and outstanding publication retain the complete recovery references\nPASS a failed canonical write keeps the original capture usable by the real rollback owner\n{\"pass\":28,\"fail\":0,\"total\":28}\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-final-save-reconcile.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 474,
+      "log": "docs/npc-stable-candidate-20261021/smoke-final-save-reconcile-committed-release-gate.log",
+      "passLines": [
+        "PASS unknown outcome remains blocked; an arbitrary acknowledgement cannot release it",
+        "PASS genuine late commit verifies both complete slots and finalizes the original result once",
+        "PASS mismatched full data keeps the safety latch instead of adopting a partial save",
+        "PASS confirmed late abort calls the existing rollback owner and never publishes a new result",
+        "PASS world switches cannot accept late disk results or clear the old safety latch",
+        "PASS contradictory duplicate terminal callbacks cannot turn a confirmed commit into abort",
+        "PASS failed readback does not unlock writes or replace the completed narrative",
+        "PASS a temporarily failed completion callback remains retryable after real outcome acknowledgement",
+        "PASS same-object timeline changes still reject an old terminal result",
+        "PASS post-commit display error never causes replay of a confirmed transaction"
+      ],
+      "tail": "PASS unknown outcome remains blocked; an arbitrary acknowledgement cannot release it\nPASS genuine late commit verifies both complete slots and finalizes the original result once\nPASS mismatched full data keeps the safety latch instead of adopting a partial save\nPASS confirmed late abort calls the existing rollback owner and never publishes a new result\nPASS world switches cannot accept late disk results or clear the old safety latch\nPASS contradictory duplicate terminal callbacks cannot turn a confirmed commit into abort\nPASS failed readback does not unlock writes or replace the completed narrative\nPASS a temporarily failed completion callback remains retryable after real outcome acknowledgement\nPASS same-object timeline changes still reject an old terminal result\nPASS post-commit display error never causes replay of a confirmed transaction\n{\"pass\":10,\"fail\":0,\"total\":10}\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-turn-capture-work-count.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 1168,
+      "log": "docs/npc-stable-candidate-20261021/smoke-turn-capture-work-count-committed-release-gate.log",
+      "passLines": [
+        "[smoke-turn-capture-work-count] PASS rollback=1 detached=2 payload=1 snapshotRebuild=0"
+      ],
+      "tail": "[smoke-turn-capture-work-count] PASS rollback=1 detached=2 payload=1 snapshotRebuild=0\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-endturn-transaction-failures.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 174,
+      "log": "docs/npc-stable-candidate-20261021/smoke-endturn-transaction-failures-committed-release-gate.log",
+      "passLines": [
+        "[smoke-endturn-transaction-failures] PASS assertions=56"
+      ],
+      "tail": "lback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable\n    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)\n    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)\n    at expectStepFailureRollback (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-endturn-transaction-failures.js:115:7)\n    at async main (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-endturn-transaction-failures.js:275:3)\n[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable\n    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)\n    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)\n    at main (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-endturn-transaction-failures.js:295:7)\n[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable\n    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)\n    at Object._tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)\n    at main (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-endturn-transaction-failures.js:308:7)\n[endTurn] restore rollback desktop autosave baseline: Error: rollback committed snapshot boundary unavailable\n    at _tmRestoreCommittedBaselineAfterRollback (evalmachine.<anonymous>:232:13)\n    at _tmRollbackEndTurnTransaction (evalmachine.<anonymous>:290:5)\n    at GM._pendingShijiModal.deferredPhase5 (evalmachine.<anonymous>:776:78)\n    at async expectFailure (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-endturn-transaction-failures.js:82:9)\n    at async main (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-endturn-transaction-failures.js:368:6)\n[smoke-endturn-transaction-failures] PASS assertions=56\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-postturn-court-deferred-finalize.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 160,
+      "log": "docs/npc-stable-candidate-20261021/smoke-postturn-court-deferred-finalize-committed-release-gate.log",
+      "passLines": [],
+      "tail": "[smoke-postturn-court-deferred-finalize] pass assertions=8\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-emergency-recovery-review.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 1355,
+      "log": "docs/npc-stable-candidate-20261021/smoke-emergency-recovery-review-committed-release-gate.log",
+      "passLines": [
+        "PASS mandatory review runs even with zero warnings and emergency mode off, in one model call",
+        "PASS review can create a missing party through the same world editor and verify real persistence",
+        "PASS a full 93417-token review is not blocked by the old 48000-token emergency budget",
+        "PASS an explicit fixed-review token budget is enforced before any model call",
+        "PASS heuristic false positives are adjudicated without fabricating wars or payments",
+        "PASS review planning overlaps other work and commits only at join, preserving unrelated follow-up edits",
+        "PASS a conflicting follow-up value forces another Agent check within the same budget",
+        "PASS failed second write rolls back the first correction and cannot claim review success",
+        "PASS made-up evidence and uncovered diagnostics cannot be submitted",
+        "PASS game switching discards a pending proposal",
+        "PASS cancelling removes live review ownership and rejects late writes",
+        "PASS main write failure can be repaired and replayed through the real atomic applier",
+        "PASS fiscal narrative hints reach the Agent without guessing a debit from the public treasury",
+        "PASS Agent repairs an edict with neither account debited, posting only the declared palace account",
+        "PASS Agent can post a missed public payment through the same fiscal owner",
+        "PASS a failed palace debit cannot switch to the wealthy public treasury or leave partial edits",
+        "PASS production main stage starts review on an ordinary successful write even without warnings",
+        "PASS production infer returns before review finishes, then corrects and saves in the background",
+        "PASS full Agent mode returns its main result immediately and later updates the saved narrative",
+        "PASS exhausted background review preserves the committed turn and its original evidence",
+        "PASS starting another turn cancels a late background proposal before it can write",
+        "PASS review absence or failure is advisory once the main result exists",
+        "PASS a rejected atomic write is retained for background repair without fabricating success",
+        "PASS complete long annals, political chronicle and other generated results are actually sent, without prefix clipping",
+        "PASS late annals and new inference results force review even when the initial proposal made no changes",
+        "PASS an ok/verified tool receipt cannot hide a no-op or wrong actual value",
+        "PASS Agent receives real before/after data and can correct a semantically wrong first modification",
+        "PASS successful writes without remaining verification budget do not receive a completion receipt",
+        "PASS every actual correction must be covered by the second Agent verdict",
+        "PASS a field overwritten while the verifying model responds cannot be approved",
+        "PASS corrected annals are read back and propagated while the original generated text remains evidence",
+        "PASS post-write evidence exposes unintended changes rather than trusting the tool self-report",
+        "PASS a later distinct inference source is reviewed even when its text duplicates an earlier source",
+        "PASS state evidence read during planning remains available unchanged during after-write verification"
+      ],
+      "tail": "guessing a debit from the public treasury\nPASS Agent repairs an edict with neither account debited, posting only the declared palace account\nPASS Agent can post a missed public payment through the same fiscal owner\nPASS a failed palace debit cannot switch to the wealthy public treasury or leave partial edits\nPASS production main stage starts review on an ordinary successful write even without warnings\nPASS production infer returns before review finishes, then corrects and saves in the background\nPASS full Agent mode returns its main result immediately and later updates the saved narrative\nPASS exhausted background review preserves the committed turn and its original evidence\nPASS starting another turn cancels a late background proposal before it can write\nPASS review absence or failure is advisory once the main result exists\nPASS a rejected atomic write is retained for background repair without fabricating success\nPASS complete long annals, political chronicle and other generated results are actually sent, without prefix clipping\nPASS late annals and new inference results force review even when the initial proposal made no changes\nPASS an ok/verified tool receipt cannot hide a no-op or wrong actual value\nPASS Agent receives real before/after data and can correct a semantically wrong first modification\nPASS successful writes without remaining verification budget do not receive a completion receipt\nPASS every actual correction must be covered by the second Agent verdict\nPASS a field overwritten while the verifying model responds cannot be approved\nPASS corrected annals are read back and propagated while the original generated text remains evidence\nPASS post-write evidence exposes unintended changes rather than trusting the tool self-report\nPASS a later distinct inference source is reviewed even when its text duplicates an earlier source\nPASS state evidence read during planning remains available unchanged during after-write verification\n{\"pass\":34,\"fail\":0,\"total\":34}\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-round19-cross-system-rollback.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 224,
+      "log": "docs/npc-stable-candidate-20261021/smoke-round19-cross-system-rollback-committed-release-gate.log",
+      "passLines": [
+        "[smoke-round19-cross-system-rollback] PASS assertions=45"
+      ],
+      "tail": "[econLinkage] 已加载：层层剥夺+区域财政树+下拨生命周期+俸禄流+贪腐流+抄家触发+事件总线\n[smoke-round19-cross-system-rollback] PASS assertions=45\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-round20-performance-isolation.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 1127,
+      "log": "docs/npc-stable-candidate-20261021/smoke-round20-performance-isolation-committed-release-gate.log",
+      "passLines": [
+        "[smoke-round20-performance-isolation] PASS failed-world-isolated successful-payload-shared world-b-clean"
+      ],
+      "tail": "[smoke-round20-performance-isolation] PASS failed-world-isolated successful-payload-shared world-b-clean\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-desktop-autosave-committed-world.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 164,
+      "log": "docs/npc-stable-candidate-20261021/smoke-desktop-autosave-committed-world-committed-release-gate.log",
+      "passLines": [
+        "  PASS - 桌面存档生命周期安装关闭前 flush 回调",
+        "  PASS - 统一世界事务判定函数可用",
+        "  PASS - 已提交快照排除带 gmRef 环的运行时任务队列",
+        "  PASS - 生产 prepare 顺序先提交点击时 pre_endturn、后执行校准",
+        "  PASS - 过回合事务中 timer 只 deferred、不写盘",
+        "  PASS - 真实回合事务回滚恢复半结算前 GM/P",
+        "  PASS - 回滚后 deferred 自动档写入一次",
+        "  PASS - 桌面自动档等于过回合前已提交世界",
+        "  PASS - 回滚纵深保护重新提升恢复世界而非校准世界",
+        "  PASS - canonical commit 后自动档推进到新回合",
+        "  PASS - 已提交快照不引用调用方随后修改的对象",
+        "  PASS - hydration/rollback/time-travel 活跃时均不写盘",
+        "  PASS - hydration/rollback/time-travel 活跃时均不写盘",
+        "  PASS - hydration/rollback/time-travel 活跃时均不写盘",
+        "  PASS - 连续 timer 不会写入三个不同结算阶段",
+        "  PASS - 连续 deferred 最终只补写同一已提交快照一次",
+        "  PASS - IPC 在途锁阻止重叠自动档",
+        "  PASS - 新会话不会复用旧战役已提交快照",
+        "  PASS - 新世界稳定边界能够建立自己的 committed snapshot",
+        "  PASS - 新世界只写入本战役已提交快照",
+        "  PASS - 摘要与月度纪事保存请求合并为一个 canonical 双槽事务",
+        "  PASS - 双槽共享同一 canonical payload 且保存后台完成后的最新状态",
+        "  PASS - 后台 canonical 提交后推进 committed snapshot",
+        "  PASS - 切档后的旧后台结果不会写入新世界",
+        "  PASS - 后台保存失败只做有限重试并最终原子成功",
+        "  PASS - 后台保存拒绝与 lease 不一致的回合身份",
+        "  PASS - 关闭握手会等待桌面自动档 IPC 而非仅等待 canonical 双槽",
+        "  PASS - 桌面镜像在途时新摘要仍进入独立 canonical 保存队列",
+        "  PASS - 首次镜像完成后关闭握手继续等待新 canonical 对应的第二个桌面镜像",
+        "  PASS - 立即退出握手会实际 drain 后台保存而非只提示",
+        "  PASS - 关闭握手把最新后台摘要同步到桌面恢复镜像",
+        "  PASS - 关闭握手成功后 canonical 与桌面镜像都不存在待保存或在途任务",
+        "  PASS - 世界事务活跃时关闭握手明确拒绝退出",
+        "  PASS - 后台摘要和月度纪事都请求正式串行保存队列",
+        "  PASS - 月度纪事关闭时在任何 AI 调用前退出"
+      ],
+      "tail": "  PASS - 桌面存档生命周期安装关闭前 flush 回调\n  PASS - 统一世界事务判定函数可用\n  PASS - 已提交快照排除带 gmRef 环的运行时任务队列\n  PASS - 生产 prepare 顺序先提交点击时 pre_endturn、后执行校准\n  PASS - 过回合事务中 timer 只 deferred、不写盘\n  PASS - 真实回合事务回滚恢复半结算前 GM/P\n  PASS - 回滚后 deferred 自动档写入一次\n  PASS - 桌面自动档等于过回合前已提交世界\n  PASS - 回滚纵深保护重新提升恢复世界而非校准世界\n  PASS - canonical commit 后自动档推进到新回合\n  PASS - 已提交快照不引用调用方随后修改的对象\n  PASS - hydration/rollback/time-travel 活跃时均不写盘\n  PASS - hydration/rollback/time-travel 活跃时均不写盘\n  PASS - hydration/rollback/time-travel 活跃时均不写盘\n  PASS - 连续 timer 不会写入三个不同结算阶段\n  PASS - 连续 deferred 最终只补写同一已提交快照一次\n  PASS - IPC 在途锁阻止重叠自动档\n  PASS - 新会话不会复用旧战役已提交快照\n  PASS - 新世界稳定边界能够建立自己的 committed snapshot\n  PASS - 新世界只写入本战役已提交快照\n  PASS - 摘要与月度纪事保存请求合并为一个 canonical 双槽事务\n  PASS - 双槽共享同一 canonical payload 且保存后台完成后的最新状态\n  PASS - 后台 canonical 提交后推进 committed snapshot\n  PASS - 切档后的旧后台结果不会写入新世界\n  PASS - 后台保存失败只做有限重试并最终原子成功\n  PASS - 后台保存拒绝与 lease 不一致的回合身份\n  PASS - 关闭握手会等待桌面自动档 IPC 而非仅等待 canonical 双槽\n  PASS - 桌面镜像在途时新摘要仍进入独立 canonical 保存队列\n  PASS - 首次镜像完成后关闭握手继续等待新 canonical 对应的第二个桌面镜像\n  PASS - 立即退出握手会实际 drain 后台保存而非只提示\n  PASS - 关闭握手把最新后台摘要同步到桌面恢复镜像\n  PASS - 关闭握手成功后 canonical 与桌面镜像都不存在待保存或在途任务\n  PASS - 世界事务活跃时关闭握手明确拒绝退出\n  PASS - 后台摘要和月度纪事都请求正式串行保存队列\n  PASS - 月度纪事关闭时在任何 AI 调用前退出\n[smoke-desktop-autosave-committed-world] pass=35\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-full-turn-flow.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 80171,
+      "log": "docs/npc-stable-candidate-20261021/smoke-full-turn-flow-committed-release-gate.log",
+      "passLines": [
+        "[full-turn-flow] PASS",
+        "    \"❌ 存档数据库初始化失败：stub·no-idb\",",
+        "    \"播放背景音乐失败: ReferenceError: Audio is not defined\",",
+        "    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\",",
+        "    \"[SaveDB] 初始化失败: Error: stub·no-idb\",",
+        "    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",",
+        "    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",",
+        "    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\"",
+        "    \"[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb\""
+      ],
+      "tail": "selected=\\\"true\\\" aria-\"\n    }\n  ],\n  \"playerActionSummary\": {\n    \"turn\": 1,\n    \"minister\": \"袁崇焕\",\n    \"memorials\": 1,\n    \"letters\": 2,\n    \"courtRecords\": 1\n  },\n  \"postTurnCourtSummary\": {\n    \"turn\": 1,\n    \"targetTurn\": 2,\n    \"courtRecords\": 2\n  },\n  \"loadingTail\": [\n    {\n      \"turn\": 2,\n      \"msg\": \"检查历史事件\",\n      \"pct\": 93.4\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"检查职位与寿数\",\n      \"pct\": 93.7\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"处理监听队列\",\n      \"pct\": 94\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"清理回合缓存\",\n      \"pct\": 94.3\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"回合阶段 6/7 · 生成史记弹窗\",\n      \"pct\": 78\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"hide\",\n      \"pct\": 0\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"回合阶段 7/7 · prepare-commit-barrier\",\n      \"pct\": 90\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"hide\",\n      \"pct\": 0\n    }\n  ],\n  \"toasts\": [\n    \"第1回合\",\n    \"❌ 存档数据库初始化失败：stub·no-idb\",\n    \"诏令需细化：征何税（商/盐/茶/市舶）？\",\n    \"鸿雁：1 封新来函已抵达\",\n    \"回合已完整保存；附加快照或存档后处理发生错误，详情见控制台。请勿为此重新推演本回合。\"\n  ],\n  \"errors\": [\n    \"播放背景音乐失败: ReferenceError: Audio is not defined\",\n    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\",\n    \"[SaveDB] 初始化失败: Error: stub·no-idb\",\n    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",\n    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",\n    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\"\n  ],\n  \"warns\": [\n    \"  Error: [perf] guoku.tick 超阈值: 4206.00ms > 800ms\\n      at _defaultThresholdHandler (tm-perf.js:225:9)\\n      at _checkThreshold (tm-perf.js:217:7)\",\n    \"[endTurn systems] slow stage: 系统结算总耗时 17308ms \",\n    \"[cc3·agenda] AI 返回不可用·走 fallback\",\n    \"[AutoSave] 端回合 snapshot 耗 1720ms·考虑 A-2\",\n    \"[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb\",\n    \"[TM.Features] [object Object]\",\n    \"[TM.Features] [object Object]\",\n    \"[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb\"\n  ],\n  \"writeTurnData\": 0,\n  \"autoSave\": 0\n}\n"
+    }
+  ],
+  "finishedAt": "2026-10-22T12:56:34.392Z",
+  "runtimeHashAfter": "1500dba1c171d02a3e18b4edf08a799812a809b630505357d2e6a7dd8e5cd2f6",
+  "runtimeUnchanged": true,
+  "postturnCompanion": {
+    "command": [
+      "node",
+      "web/scripts/smoke-postturn-critical-failures.js"
+    ],
+    "exit": 0,
+    "signal": null,
+    "ms": 234,
+    "log": "docs/npc-stable-candidate-20261021/smoke-postturn-critical-failures-committed-release-gate.log",
+    "runtimeSource": "web/tm-post-turn-jobs.js",
+    "runtimeSha256": "aad8d466fda510e5c2b74fcd2d97ee46657c928a5a09f2f25702396041350ac5",
+    "testSha256": "59e8fee19e09c23c0ebd6a462853e952d580fe88d24ed654de3c3189938c954b",
+    "output": "[smoke-postturn-critical-failures] PASS assertions=30\n"
+  }
+}

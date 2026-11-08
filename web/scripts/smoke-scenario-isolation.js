@@ -26,13 +26,11 @@ let GM = { sid: null };
 const _tmActiveScenarioRows = globalThis._tmActiveScenarioRows;
 assert(typeof _tmActiveScenarioRows === 'function', '助手可取');
 
-// ── 2. 真官方剧本数据（天启 + 绍宋）──
+// ── 2. 真官方剧本数据（天启 + 绍宋·只装这两个内建，省内存）──
 globalThis.window = globalThis;
-(0, eval)(read('tm-official-scenario-bundle.js'));
-const B = globalThis.TMOfficialScenarioBundle;
-const TQ = B.find(b => b.data.id === 'sc-tianqi7-1627').data;
-const SS = B.find(b => b.data.id === 'sc-jianyan1-1127-shaosong').data;
 const TQ_SID = 'sc-tianqi7-1627', SS_SID = 'sc-jianyan1-1127-shaosong';
+const builtins = require('./lib-official-builtins').loadBuiltins({ ids: [TQ_SID, SS_SID] }).TMOfficialScenarioBuiltins;
+const TQ = builtins[TQ_SID], SS = builtins[SS_SID];
 assert(TQ && SS, '取到天启+绍宋官方数据');
 
 // 运行时 P.characters：两剧本累积（doActualStart/desktopStartScn 会 force-set sid=激活剧本）

@@ -1,0 +1,1926 @@
+{
+  "files": 480,
+  "sha256": "a6da7d7f5d3f6df478a955506ffd7df1d9a1a11958bc61ef931dd93b5c58e734",
+  "runtimeFiles": [
+    {
+      "file": "web/bundled-scenarios/manifest.js",
+      "sha256": "d447497ded314e6033e29a736d9bf4f9043377d197b53efe190ccd501d93ef67"
+    },
+    {
+      "file": "web/editor-details.js",
+      "sha256": "01ce6ef2e5e8c8d663a5508da947aa9129b3fef57599d6751b758e10a0ef5cff"
+    },
+    {
+      "file": "web/editor-division-deep.js",
+      "sha256": "150c1f032bd8716e956bd31f0f778c490845de3454d0be1fc3b60ebcc0eec61d"
+    },
+    {
+      "file": "web/editor-office-deep.js",
+      "sha256": "1893951edba18ca444f5f9e36e869ae51d2bf80859ce875ef7a465a1667f687c"
+    },
+    {
+      "file": "web/editor-presets.js",
+      "sha256": "f166251f7bb0ede05a83ad39171348b4bac0c90359e8e1f163b25d58b6860d39"
+    },
+    {
+      "file": "web/generated/tm-ai-change-applier.bundle.js",
+      "sha256": "556edc97650375e463d990cc15569410cfda48936b64f10d275b1068f6112dcc"
+    },
+    {
+      "file": "web/libs/polygon-clipping-0.15.7.min.js",
+      "sha256": "7f8619e84a86ce8dd400c9b50430e9c8cf8f26027b19eeb479f109f5c1a9d688"
+    },
+    {
+      "file": "web/map-converter.js",
+      "sha256": "96e8808180a8650c6db72237ffe11411fa82befd3db41ac6b7ea0e1776bc7629"
+    },
+    {
+      "file": "web/map-display.js",
+      "sha256": "750389c4077a898a99ea6dc0193ea29d9de6cfc5d143ce51e79e369df0fc3d39"
+    },
+    {
+      "file": "web/map-editor-to-game.js",
+      "sha256": "e5cef4e2f126137d79cf09af3e0e15d7ae6305a8d2586e6b55b3591eaab62562"
+    },
+    {
+      "file": "web/map-integration.js",
+      "sha256": "794ee55a2c1bfefd63612053e508e4179283871d606406388b1d0f9bf1d315ab"
+    },
+    {
+      "file": "web/phase8-formal-bridge-styles.js",
+      "sha256": "5cc608970768d85dca5fcb7a348e3319ea05e449701d4ce5919e2910662a810a"
+    },
+    {
+      "file": "web/phase8-formal-bridge.js",
+      "sha256": "f4a4e02e157e8b011243850481822832e26e4f0d86204f03e02ed7afff8e9696"
+    },
+    {
+      "file": "web/phase8-formal-drafts-message-panels.js",
+      "sha256": "8d5e5c87889ef2f8581b18ec12cce6db2c1f4011354b3623221deb6d1d1fc636"
+    },
+    {
+      "file": "web/phase8-formal-drafts.js",
+      "sha256": "2190e0acba7f7aebc24ae86864bdbed9a18307ea0c2a3ad355d2ade0d4d59df1"
+    },
+    {
+      "file": "web/phase8-formal-map-dossier.js",
+      "sha256": "6f044da60519dec79091969b4405506b6947fa7f92a3b62bc20104c1e5cbda57"
+    },
+    {
+      "file": "web/phase8-formal-map.js",
+      "sha256": "5c028ea34a875599c1de30719d781dca5eb9b7e92cc09bec724cf584793fe755"
+    },
+    {
+      "file": "web/phase8-formal-modules.js",
+      "sha256": "0615eb61ced1feb588841aec10418441d51a114fbe3acd4faf33d7948e5a9d18"
+    },
+    {
+      "file": "web/phase8-formal-records.js",
+      "sha256": "11fecdbd15b2217b1c1f54536215a90bd55bba2e152cee1b6b9ef053b8c0887e"
+    },
+    {
+      "file": "web/phase8-formal-rightrail-social.js",
+      "sha256": "08f272d743403262b18c4cdd00dc914ca75ac539eaf0ddeaa1e225dec8c98c18"
+    },
+    {
+      "file": "web/phase8-formal-rightrail.js",
+      "sha256": "5933cd88ee857db6b2b452351cafbaa3286781ec1a38da12990bcdd2a393751c"
+    },
+    {
+      "file": "web/phase8-formal-topbar.js",
+      "sha256": "5aee1468e67345a2a6121bc3a7b47e6a7a50c4fac0d707d1614b6b2188a47e41"
+    },
+    {
+      "file": "web/preview/img/east-asia-basemap-data.js",
+      "sha256": "ee797484e61126f24304dff3f690dc648d8ad8f250389681be0e1cad7820f7bf"
+    },
+    {
+      "file": "web/preview/scenario-editor-sandbox-bridge.js",
+      "sha256": "d10505105c3d8a5a07829b956870795c089ae02eaa7e11ae594a21e00d0f954e"
+    },
+    {
+      "file": "web/tm-agent-flags.js",
+      "sha256": "fc437eff5afc7cc4218f79c3f574321d677fa5cdabb5b64ec5cdffdab63380c7"
+    },
+    {
+      "file": "web/tm-agent-kernel.js",
+      "sha256": "f153d29c60a57916768859ad6c33ab974bbeb272ac0fd3623c088d0162ee954f"
+    },
+    {
+      "file": "web/tm-agent-world-editor.js",
+      "sha256": "073bf446593d13724d14f40b35cbde2aab6baecd9d0f77dbe8674babca48e61d"
+    },
+    {
+      "file": "web/tm-ai-apply-deaths.js",
+      "sha256": "8c10cfd6665ba9a11214acd5ebc86e230f1088fd7eab160cb42d569fecef06c0"
+    },
+    {
+      "file": "web/tm-ai-change-army.js",
+      "sha256": "4bfec6374b6f0a287a130356a6c674978857f6852ea60fb2be05096c67d93414"
+    },
+    {
+      "file": "web/tm-ai-change-narrative.js",
+      "sha256": "d5ee2b17a969f13096bb73bf0bdc40d000761a56a23652d14857a0c11e504b91"
+    },
+    {
+      "file": "web/tm-ai-change-pathutils.js",
+      "sha256": "89a60e594ccd7bcb4e298923c5faaad5cadfbef09fa9c381667315b092f282d5"
+    },
+    {
+      "file": "web/tm-ai-infra-json.js",
+      "sha256": "5e46171354b2f9d2613af0db3cd9e5aab3bf0ac3d660a7e4241bc4abb8213d71"
+    },
+    {
+      "file": "web/tm-ai-infra-model-detect.js",
+      "sha256": "e20c33f7ae0e7725bb06d579226cf61abfc12c92a87a56ebc61f15fb59323712"
+    },
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "sha256": "72fdaded96fac3306c91f0e8b9ce99adcb3f5506dda1328b55ee762c2e3a3914"
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "sha256": "f4ed4cd58390390d3036fc310f6ea21dc8ae2e9b6dfd790364190e08b592bbaf"
+    },
+    {
+      "file": "web/tm-ai-narrative-guards.js",
+      "sha256": "703021c8efaab3d0af0d5099e4daed42fefd36e0064a8b9b1b0d7f9508664e7d"
+    },
+    {
+      "file": "web/tm-ai-npc-memorials.js",
+      "sha256": "ad3a93bf70ecd3fe383fd38df922812b23129a44b8d6118db55143e669c70371"
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "sha256": "15cd21916b1b2817a4f6dd87296c0bbbbef4d2a81dacdfecf46c090fde00d25f"
+    },
+    {
+      "file": "web/tm-ai-planning.js",
+      "sha256": "ed389c938e963de87b75f1c0b7ced2d3d9d1188807aea56e0bf3ab5a22e6b187"
+    },
+    {
+      "file": "web/tm-ai-request-options.js",
+      "sha256": "885eba9e935fb4ed0bbf07aefb03632c7a86768602e673de500ae2360c8785d0"
+    },
+    {
+      "file": "web/tm-ai-result-contract.js",
+      "sha256": "30b3a2a32c9daf26615f71509e9cc0aaeb2df6ac2d3b7a1c686f99b2c5c9af65"
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "sha256": "6bf763fad3d4dd4aa45e9fc2c19b68a36fc23c03d34815f8aea90090958a7554"
+    },
+    {
+      "file": "web/tm-api-models.js",
+      "sha256": "1b67a240d301cd761adca302c753e652ba7c5e1b3f91602af96e39bb9cc1523e"
+    },
+    {
+      "file": "web/tm-api-settings.js",
+      "sha256": "810b78ead58488fe6703fc5ee78027f006223a848f6b4aa76702c9344e321eb1"
+    },
+    {
+      "file": "web/tm-arcs.js",
+      "sha256": "25a4c8d0caa8d2ac0b451a652a9b46132020581c24c794b1fab0651cd1cd0edf"
+    },
+    {
+      "file": "web/tm-armory.js",
+      "sha256": "dca917eb50ebbdba797dbb8e2cbf151000ac54fc78d79d3b955a48bac04b96ac"
+    },
+    {
+      "file": "web/tm-army-units.js",
+      "sha256": "dc038868374658b27962e3b32ebb14e265545efd2c240ed511d0458a140301e0"
+    },
+    {
+      "file": "web/tm-audio-theme.js",
+      "sha256": "a10370f0565628f6ff3a986d56635a4b688c6a885b90dbfa781c7a8024ca85d5"
+    },
+    {
+      "file": "web/tm-audit.js",
+      "sha256": "f859a92e84e585c2eafa9a1b636db064251d0747822f0fac30ab0fc9f0aad977"
+    },
+    {
+      "file": "web/tm-authority-complete.js",
+      "sha256": "e4f06d8b96b3630790eb0345abddc267549047376dacef08cb27c550f887deff"
+    },
+    {
+      "file": "web/tm-authority-deep.js",
+      "sha256": "a2c1dc8125871d89db0dcca3e974654d5608031fd294ab0c123a7e53e661d4e3"
+    },
+    {
+      "file": "web/tm-authority-engines.js",
+      "sha256": "0691403e5657eff67ffbf1059b3095fcafd68737f081acbf08830b3e4c3bbac9"
+    },
+    {
+      "file": "web/tm-authority-ui.js",
+      "sha256": "dc71a2945a6ff9083d478397c5b1f230fc7382f35015616b51c25b7335fcb94d"
+    },
+    {
+      "file": "web/tm-battle-adapter.js",
+      "sha256": "68789e3be44ca7b17ccefada9384ffcd52a4266e0ec9060e986e779156abb7c1"
+    },
+    {
+      "file": "web/tm-battle-contract.js",
+      "sha256": "9e2445f9b1a918d4048774ba3c4659a5eaaa62fb7bba2ab65bcf21ef0daf0dfe"
+    },
+    {
+      "file": "web/tm-battle-embed.js",
+      "sha256": "84561e64f6c1ba613302f27eee3b97da02cab0e3d986e6cad613526bf73a7467"
+    },
+    {
+      "file": "web/tm-battle-resolve.js",
+      "sha256": "8aeeec73db97d2f0c310759a7f94cd0007c19c12695e4149b53cd633489ebdc3"
+    },
+    {
+      "file": "web/tm-battle-turn.js",
+      "sha256": "25b08c38635921429e8851d78e13032eb293e0bf185a1b4c63376ea4e5b1ee8c"
+    },
+    {
+      "file": "web/tm-benji.js",
+      "sha256": "61f4b68d58a43d7bbb4f350504df125a0a629dab9a7b75d8bedaed4dc3f7346c"
+    },
+    {
+      "file": "web/tm-bgm-config.js",
+      "sha256": "205e6746b1b1b01e2d01a30c6081dab654230b5a9dce2deffc181dd64f64c8a2"
+    },
+    {
+      "file": "web/tm-border-invasion.js",
+      "sha256": "74adb02448d86d9f231106edb9481de611a367579d88598dd5cae6c20ce11b01"
+    },
+    {
+      "file": "web/tm-border-risk.js",
+      "sha256": "833436f557e9bf99107ce732ec123d8b80bd4924e95b39aa30cae38b18562f2b"
+    },
+    {
+      "file": "web/tm-building-orders.js",
+      "sha256": "c8cd8bedaa27a01439baef54a4b59b64615e76946130081fa4a6c88b9da89466"
+    },
+    {
+      "file": "web/tm-building-works.js",
+      "sha256": "c4e6fc24ba9451a5c54cfdba0aa2087762f948491f17c7a3d6bda57f53f92ed0"
+    },
+    {
+      "file": "web/tm-call-budget-settings.js",
+      "sha256": "7fce0836cc9fedcd34fcc77d539744af2c12a3f218e72d00c20a47e3b98f0ea3"
+    },
+    {
+      "file": "web/tm-call-retry-policy.js",
+      "sha256": "6b4121d0fc5eb23a78d2aae664bc8ee015730baecc668bca5918d35587f63913"
+    },
+    {
+      "file": "web/tm-capacitor-boot.js",
+      "sha256": "f9c65ba9af91e8162acb4491e3875a32747a5d71734f0c722ce022085d287e93"
+    },
+    {
+      "file": "web/tm-captive-court.js",
+      "sha256": "9031b8a67eab5f7304589fd5fb6df4d120158d3567c61b368590c23d72a96958"
+    },
+    {
+      "file": "web/tm-ceming.js",
+      "sha256": "ea3548625949a022de6c7d89e9c1c44c29668007b2e577fd63629910ad46e827"
+    },
+    {
+      "file": "web/tm-central-local-engine.js",
+      "sha256": "f10c358d71e6d90a255f0665a22a32f956477c7ad82c99a5e396e22d19c32483"
+    },
+    {
+      "file": "web/tm-change-queue.js",
+      "sha256": "b62161b35b34a48fd0391725726245220d6e4d7646c4f011cd1e5815826b4f2b"
+    },
+    {
+      "file": "web/tm-changelog.js",
+      "sha256": "ca6e0d68b075f26132fe9f14d16a8be931daf2f17cd5d1f40b76a00e65d6f2ed"
+    },
+    {
+      "file": "web/tm-chaoyi-changchao-adapter.js",
+      "sha256": "6845eb83e090f1a0c7e4f387a80a7443a608396888a064507f38f57246677492"
+    },
+    {
+      "file": "web/tm-chaoyi-changchao-flows.js",
+      "sha256": "984cd992b35d5cc8dff4b92e41858d6928156e688e30097edf3cb62feeaed2f4"
+    },
+    {
+      "file": "web/tm-chaoyi-changchao.js",
+      "sha256": "a9356cb6c5d754ffe36cb6c802d5cfe468aca8102b238861b86695051fbf76d4"
+    },
+    {
+      "file": "web/tm-chaoyi-tinyi.js",
+      "sha256": "4f39201b056dbd181929dc4f225ea46de6cfef2fe39fbee0e695d2483879ba77"
+    },
+    {
+      "file": "web/tm-chaoyi-yuqian.js",
+      "sha256": "b4caa7e6e547c3d704f5626b9c52973e129a3ccaa254dde9f7907b2c2e751286"
+    },
+    {
+      "file": "web/tm-chaoyi.js",
+      "sha256": "d8431dfe6f03e919446275c48e32f8e2a36299424e2314428da51a021012a01d"
+    },
+    {
+      "file": "web/tm-char-arcs.js",
+      "sha256": "be197644c27711e2b523732983fc7462594959e67d7c808e36efa399234bbf5d"
+    },
+    {
+      "file": "web/tm-char-autogen.js",
+      "sha256": "2757aa57ddaf4a8dfdd426a3afe7d3f0a9ce6bc545f729db141ed1f9f12d3e1e"
+    },
+    {
+      "file": "web/tm-char-economy-engine.js",
+      "sha256": "0f40a131f8e9dec12636a70a32ec07fcdcb59c86302aa4b3bb38601b0fc3f054"
+    },
+    {
+      "file": "web/tm-char-economy-ledger.js",
+      "sha256": "593433a01212cdabc0213791a6e81a8156af326dfb1ee7d2517079c9a67b4e5f"
+    },
+    {
+      "file": "web/tm-char-economy-ui.js",
+      "sha256": "d864039439a2987317220a360b1eaae5ca34006ce644e6f978f30dd89b13bf14"
+    },
+    {
+      "file": "web/tm-char-full-schema.js",
+      "sha256": "b1d742351929a7f3c5437bf7c7ff098a14cf0d02400e969deb915d3318043986"
+    },
+    {
+      "file": "web/tm-char-historical-profiles.js",
+      "sha256": "b476cf3f5048e9af6d6cb14691809ccb5cc5859021fe4a582a094320cf7119d3"
+    },
+    {
+      "file": "web/tm-char-historical-wave-01.js",
+      "sha256": "5665d55f83f9e65323382dc889cc0d68303cbc3317b7cecb00952b671e67712e"
+    },
+    {
+      "file": "web/tm-char-historical-wave-02.js",
+      "sha256": "1749b73b471e46cc126bc0d098aa0b56637ac3a795a6c543325cb7cc085285e7"
+    },
+    {
+      "file": "web/tm-char-historical-wave-03.js",
+      "sha256": "77d34a220b0115485977f001c1c11ab1406635c88a6c831552388ea17d0274bd"
+    },
+    {
+      "file": "web/tm-char-historical-wave-04.js",
+      "sha256": "77f72929caa59c9fdfa674e3c5117870b1edee618d8d7c3822242261f8228889"
+    },
+    {
+      "file": "web/tm-char-historical-wave-05.js",
+      "sha256": "16fe7f090eb0f40e2fa6ac023750836c8fd593cca6a1f55a89ce936530758947"
+    },
+    {
+      "file": "web/tm-char-historical-wave-06.js",
+      "sha256": "b118fd4ada7c9a0d5579f42ba88cc8d5fa565f939c72eb2fe6fe5c85e4bb60f6"
+    },
+    {
+      "file": "web/tm-char-historical-wave-07.js",
+      "sha256": "0af5425f9049c8e68d6745e288e3aad932757c1ae0222ee396f4836f4815e2fe"
+    },
+    {
+      "file": "web/tm-char-historical-wave-08.js",
+      "sha256": "f53acd0f5ea4ce7cac6283291a222cdd2a41c4237547cea69f022d0e8d328fc4"
+    },
+    {
+      "file": "web/tm-char-historical-wave-09.js",
+      "sha256": "985d9643e85aadc3facaf3bee505cf5fcbdf3d7fd1cc5e661442d064ffe946d5"
+    },
+    {
+      "file": "web/tm-char-historical-wave-10.js",
+      "sha256": "bad6261967704fbcccc8962178920450c40cb3688ae8841e04c16ca6dec1220d"
+    },
+    {
+      "file": "web/tm-char-historical-wave-11.js",
+      "sha256": "6b559bc9c89b838b81657ca9ff7c971c4f59ca4bbd7b41c7e2c0e4e701561fa5"
+    },
+    {
+      "file": "web/tm-char-historical-wave-12.js",
+      "sha256": "d117394fd50f6062881363fe15d101f19329920ee12c7548c339b5f702d2bc8e"
+    },
+    {
+      "file": "web/tm-checklist.js",
+      "sha256": "17a08aa728305070958b7c4504f6816b13771017221a842c3a75dee2014634ff"
+    },
+    {
+      "file": "web/tm-chronicle-effects.js",
+      "sha256": "10af2de488da496b7a42e4981def0b454d67202043923851e85b72493bf81d76"
+    },
+    {
+      "file": "web/tm-chronicle-system.js",
+      "sha256": "9cadf5a129eb2a7d40c8806e12e799525356a34d26e57d0c219cabd4427646b2"
+    },
+    {
+      "file": "web/tm-chronicle-tracker.js",
+      "sha256": "d3d9504f46619b0bc7d4dd06c43edcb77d52c0721eb8e838e1f94cd282282902"
+    },
+    {
+      "file": "web/tm-circuit-governance.js",
+      "sha256": "8611e6deeda0a172a131bda750afd4eaa201fcc9e4bcc6d89771ad0a0495762e"
+    },
+    {
+      "file": "web/tm-circuit-governor-effects.js",
+      "sha256": "52e70d8441fa90309866f3b069608e54cec8b4b63d22a264a975fbd82eee8d15"
+    },
+    {
+      "file": "web/tm-class-character-relations.js",
+      "sha256": "1a357ab236a46bf60e2bb20c631d71b1b82706b0b5c360c45204f8cc95876427"
+    },
+    {
+      "file": "web/tm-class-engine.js",
+      "sha256": "226727868b4133976eefbc5d2dd6ed46edb867e607359075520070f23846f848"
+    },
+    {
+      "file": "web/tm-class-minxin-bridge.js",
+      "sha256": "43a8d5d41847a3d10ec4d9fb75fde43cc5b9ec2030c4ab5f5a5ac486789b9492"
+    },
+    {
+      "file": "web/tm-class-mobility.js",
+      "sha256": "358170bee4e925e51b2fcdb2f34efe9d538069c93a9f922ce5819ed19ffefb04"
+    },
+    {
+      "file": "web/tm-coastal-raid.js",
+      "sha256": "176415ed38ff9fe9b4c8bcf52e896bf9119aff9199adc6546d18af49e1bede6b"
+    },
+    {
+      "file": "web/tm-command-authority.js",
+      "sha256": "8573ac12041f5e7aa739fa7095a46f77fa8fa61ca3056d72ff7b3dc3cdc51227"
+    },
+    {
+      "file": "web/tm-conspiracy.js",
+      "sha256": "6eb9b65784463aabb094f29c7d39a0414277f3332f651ab532db83f950af6184"
+    },
+    {
+      "file": "web/tm-content-manager-community.js",
+      "sha256": "9a9c36367c4bec8473a99e21dc9279fa5121be7a66caabe2ff89a9b3e5748d05"
+    },
+    {
+      "file": "web/tm-content-manager.js",
+      "sha256": "471d533871683584a436617057d8a87075506bc527c1e4dcc37333ed1848dca1"
+    },
+    {
+      "file": "web/tm-context-zones.js",
+      "sha256": "f7a5d97bb4fc8f0173d8317762c90478eea67b378323aaca5e5d0a7d32d97ffc"
+    },
+    {
+      "file": "web/tm-corruption-cases.js",
+      "sha256": "41edba043c478cc203d34bbd8f1984df2443458ec5ce5b6657db444252135574"
+    },
+    {
+      "file": "web/tm-corruption-engine.js",
+      "sha256": "e516b599b3858fc4015ddbc6bc7ff7bac2ceabe9ab0a386a1e6f64589004b10d"
+    },
+    {
+      "file": "web/tm-corruption-extras.js",
+      "sha256": "f0e7edcc3106053b7ff3b5decd56c41eb7deca38f337f038a37447daf69b9c1d"
+    },
+    {
+      "file": "web/tm-court-meter.js",
+      "sha256": "f01a79f31325fc1c979496e47a3f6a68d5c86a3cbe3d3bfb98692c44ad2789e7"
+    },
+    {
+      "file": "web/tm-custom-build-agent.js",
+      "sha256": "1a8654f60f40071d062d50cf3ebe1003119666737e3f1032020ea9b5a5083537"
+    },
+    {
+      "file": "web/tm-data-access.js",
+      "sha256": "c955dea1b2cc43596957617a01ac61c00bfb39fe157f996c7f979a2c4ab54aa8"
+    },
+    {
+      "file": "web/tm-data-model.js",
+      "sha256": "4f5ce09fa066142152eedf101ac3cea61bd93b67314b0a0d92cc04b2024769d2"
+    },
+    {
+      "file": "web/tm-debug-logger.js",
+      "sha256": "3a7f01eb14d6f2fb5f18d893b2e57c6330988d61453813176e1fe76d94c015c8"
+    },
+    {
+      "file": "web/tm-diagnostics-foundation.js",
+      "sha256": "136028008b59c7527089d9b97abe6bcedcddb55f9746282f6be3c65e82dff0de"
+    },
+    {
+      "file": "web/tm-diagnostics-panel.js",
+      "sha256": "7c64f71916f3b8d10b86985b7b7c7a1983b1e19dc10fa5aa5ee0da1140542a58"
+    },
+    {
+      "file": "web/tm-dianzhang.js",
+      "sha256": "ce45372c6510ba70edd66274f83c7821a31c83673afddf697a7018f8d1e2f448"
+    },
+    {
+      "file": "web/tm-diff.js",
+      "sha256": "c202a21a9286b9894e723393294b92dded2fa2088a43da7317f1b49b1d104ba7"
+    },
+    {
+      "file": "web/tm-division-reassign.js",
+      "sha256": "4d3b9e60f373cd97c0cebe1afb25f0d2d297d165486b5b286c45afb9c9bdc05c"
+    },
+    {
+      "file": "web/tm-dynamic-systems.js",
+      "sha256": "085e0c12bf85f697f8ade6009681622ec0946442c10cc855ab2153baf4eb42bc"
+    },
+    {
+      "file": "web/tm-economy-engine-currency.js",
+      "sha256": "2e11fc7fb0e4fcac28c6c48759aab2a298a2ba34dfb33a41c2a67b1a6dddc2c4"
+    },
+    {
+      "file": "web/tm-economy-engine.js",
+      "sha256": "fffbcb55ba888eac71b2c131b57c279df27e0ce313ef2d966568e7edf5bb1f43"
+    },
+    {
+      "file": "web/tm-economy.js",
+      "sha256": "b80095817ae2f794d1a025398d4005a1094560f39c685e26149f699d59458c03"
+    },
+    {
+      "file": "web/tm-edict-complete.js",
+      "sha256": "9babd8151c2624a1e797576a3bbe1c56bd57d9bbd37c92bd3f06208bf709afd3"
+    },
+    {
+      "file": "web/tm-edict-effects.js",
+      "sha256": "46e05709f3970b0bebf9676b182cb870f40ec1c6858bae4109f6e987b278fd4b"
+    },
+    {
+      "file": "web/tm-edict-efficacy.js",
+      "sha256": "2865be4c81f169e1a702d080b3f854edb538531408c83f465aa71a96afed45f1"
+    },
+    {
+      "file": "web/tm-edict-lifecycle.js",
+      "sha256": "0dec426ac3f477120eb129721e7e0d7e57caffd47bbc6064753f2c8bbca92565"
+    },
+    {
+      "file": "web/tm-edict-outcomes.js",
+      "sha256": "a194eec62f2a6919c0819134a596bd98117daebc755f6dc133851b60446ea45b"
+    },
+    {
+      "file": "web/tm-edict-oversight.js",
+      "sha256": "da601adb63991eaa9f57491ba4d0f7921500d9f8179acc73bf43c6ac8ae3ac54"
+    },
+    {
+      "file": "web/tm-edict-parser.js",
+      "sha256": "a1c6567b81b68b53225480936ce492c6598088a4372ae03a7a3878e8c62f82d0"
+    },
+    {
+      "file": "web/tm-edict-thresholds.js",
+      "sha256": "84dac9cdc7b82c0fb93ca2488c9ac75899bf366f2c7f5705ec64580570b1e626"
+    },
+    {
+      "file": "web/tm-electron.js",
+      "sha256": "fe5174011894ca20362655deb679615c5a8839cf338a238e99795574cfedb75d"
+    },
+    {
+      "file": "web/tm-emergency-recovery-adapters.js",
+      "sha256": "2ddf8c97c4995702cfad4c3ac5258259d6ba26ac42a5a7d30fe73f709b96902e"
+    },
+    {
+      "file": "web/tm-emergency-recovery-core.js",
+      "sha256": "9234fd326c5f52a92079b3d5cbccf258fcc4b8814967cf6f8496014ba232d607"
+    },
+    {
+      "file": "web/tm-emergency-recovery-edict.js",
+      "sha256": "ef3efa5750d683dad0f561366b9a01134f23ca5f505a34205e90853629a4b376"
+    },
+    {
+      "file": "web/tm-emergency-recovery-review.js",
+      "sha256": "012a629d8b6bf3b5d5f2f137b45755f8f01b6338f2010409619aa45f225171d6"
+    },
+    {
+      "file": "web/tm-emergency-recovery-runtime.js",
+      "sha256": "90c3b878631e580b5a58964199728592ab49db74e48018e1fcc065c722baf307"
+    },
+    {
+      "file": "web/tm-emergency-recovery-settings.js",
+      "sha256": "3dc68e49ef2ffdce086dc697fdcda17f7a63ac415408404b75cc79ac31ac5cb6"
+    },
+    {
+      "file": "web/tm-emergency-recovery-tools.js",
+      "sha256": "ccef8d341aa78d480f8d23ead0a54e1c4bcb4bdce6912c264df8812c4c4e5ff8"
+    },
+    {
+      "file": "web/tm-endturn-agent-depth-tools.js",
+      "sha256": "58de70cd1815684344944a152e2168e7046c30d6f160462dddef16318c80535d"
+    },
+    {
+      "file": "web/tm-endturn-agent-intent-plan.js",
+      "sha256": "e83a315d36e90964070b106d1682b7acbcd49dc160a6eeced556dbb894186079"
+    },
+    {
+      "file": "web/tm-endturn-agent-mode.js",
+      "sha256": "0d8e0c9238edb2b2d907554b655cdea4a8c46709027c184cf7ed30fe78ba57e2"
+    },
+    {
+      "file": "web/tm-endturn-agent-read-tools.js",
+      "sha256": "6b1c0aa4bebed1219ac508f8131a67fbedff4298b59c3df0845b179c3f8f077b"
+    },
+    {
+      "file": "web/tm-endturn-agent-write-tools.js",
+      "sha256": "3c7a40c2027e985dd1e55a86601c7bbead3cfcef26509796e0ff3e33f801314b"
+    },
+    {
+      "file": "web/tm-endturn-ai-context.js",
+      "sha256": "c92d0a4d2a0440b67e5fe5be2669d24d059b09a4a0144292b92d5bed9a06ca82"
+    },
+    {
+      "file": "web/tm-endturn-ai-helpers.js",
+      "sha256": "f19b058ac76dfe9f9e09471fcd0e41a4a4462084c3c4cc35a4798343ce46e547"
+    },
+    {
+      "file": "web/tm-endturn-ai-infer.js",
+      "sha256": "0203a15d6efa1778815116ba5816223d59605260f6c1acfd893b616a7b85d8ca"
+    },
+    {
+      "file": "web/tm-endturn-ai-sc1-budget.js",
+      "sha256": "530570b8653b91bb5c34f6d0fe94e33b78d2d1015e046d45ae4be905fbbca061"
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "8cbaa996d717b89d26338fac9936fcb552c3370e16d38da614982dc4a157ef79"
+    },
+    {
+      "file": "web/tm-endturn-apply-stages.js",
+      "sha256": "c398310d7b2e3d74cc4168e35a7a9bcc0339bd961993f68aafcb64c3056e6406"
+    },
+    {
+      "file": "web/tm-endturn-apply.js",
+      "sha256": "ab71b948c5b00fc109044b1f70ca900d65d50ab0d29273cb6104890daff7fd98"
+    },
+    {
+      "file": "web/tm-endturn-core.js",
+      "sha256": "1500dba1c171d02a3e18b4edf08a799812a809b630505357d2e6a7dd8e5cd2f6"
+    },
+    {
+      "file": "web/tm-endturn-edict.js",
+      "sha256": "a079ac5056d5f2d396c378459bbf68e3c9de5d55abb212971cfd0d4f05387f34"
+    },
+    {
+      "file": "web/tm-endturn-followup-helpers.js",
+      "sha256": "b05dbbb3b1028a181eece551844f01232ec88d9e751d9c63e990926dc7209396"
+    },
+    {
+      "file": "web/tm-endturn-followup.js",
+      "sha256": "17f45bbeeb518d4edd03cbf76ef9523a92447bdd07c3395365a28f2e80288c96"
+    },
+    {
+      "file": "web/tm-endturn-helpers.js",
+      "sha256": "97668225afeca90ca3ed2d3e5cfd0f2cd590906f8094fe4ac4b7cbb2d0be955c"
+    },
+    {
+      "file": "web/tm-endturn-loading.js",
+      "sha256": "9043a1956faec03f838a6008434b6f428290965e2e1a28a10414ea5827c98f27"
+    },
+    {
+      "file": "web/tm-endturn-mode-contract.js",
+      "sha256": "1f4e081c117b49553dd6fc01d47b234c882dc165396c63cd09fb491e2eb681e7"
+    },
+    {
+      "file": "web/tm-endturn-pipeline-executor.js",
+      "sha256": "e7ba7e1482d6c835bac50e524655e8cd4466ddd112202326dedc4b5e0f113472"
+    },
+    {
+      "file": "web/tm-endturn-pipeline-steps.js",
+      "sha256": "a55b8952c7cb15c969768bb698aade54eb94e024f1b405c934e7fc9224867f88"
+    },
+    {
+      "file": "web/tm-endturn-pipeline-types.js",
+      "sha256": "c99504738da515041516a41fccafeb9be5afe4eae03cc62669974ae2d3dd6454"
+    },
+    {
+      "file": "web/tm-endturn-prep.js",
+      "sha256": "39f90c6abcfa7ba44857770fe6c78353efe50f98c610d4214f3472ee02e750b6"
+    },
+    {
+      "file": "web/tm-endturn-progress.js",
+      "sha256": "750011513e049004447d0f8d27b4b025e1d2dd9120528676fcd4919882b146ee"
+    },
+    {
+      "file": "web/tm-endturn-prompt.js",
+      "sha256": "a0a3a3ab4e30ee983ea438915b392fc8e849484e64015ec841dacc27825d1280"
+    },
+    {
+      "file": "web/tm-endturn-province.js",
+      "sha256": "27bea75ce7af9d6a4bd2acd57d2c9c6f48cb627607f4b2a8d774937651fd24ea"
+    },
+    {
+      "file": "web/tm-endturn-qiaozhi.js",
+      "sha256": "09fbd37050d0a3c1e0df3a71de2f0bb92c2b5dccdf703ac6a4f8478ac3b5e786"
+    },
+    {
+      "file": "web/tm-endturn-record-specs.js",
+      "sha256": "6d92adb869cdd91c1d16bf730564e7be68fb85f7f130f1a915884f9b8cd0eec2"
+    },
+    {
+      "file": "web/tm-endturn-record.js",
+      "sha256": "94a3865986f924dcbe30f7327beeda324a93dd7458d245745a669ee374a89ba8"
+    },
+    {
+      "file": "web/tm-endturn-recovery-vault.js",
+      "sha256": "a1e2aac215ddb735eda9bf685179d05d58224f9664f00527d6a8a1ff0b390394"
+    },
+    {
+      "file": "web/tm-endturn-reliability.js",
+      "sha256": "cb2a2a03ad1361cdc606e2192e4ae2a3515afa0a9458224fc561e2b88ad704f3"
+    },
+    {
+      "file": "web/tm-endturn-render.js",
+      "sha256": "5a16e2e8981863e9e0d1b9a2cc21920a15d7df897c2499456a9ffbd83638c030"
+    },
+    {
+      "file": "web/tm-endturn-response-recovery.js",
+      "sha256": "8a15dd82804e920c06a1c50aab1bcb992f93f2e4fcbecd1ae5cae4a4fb5b91bc"
+    },
+    {
+      "file": "web/tm-endturn-save-reconcile.js",
+      "sha256": "bd29f9f75b92814588eba64bb3f832f4a88b8c77fc2c58d2246eaff7778c7b8e"
+    },
+    {
+      "file": "web/tm-endturn-shiji-compose.js",
+      "sha256": "29668e39b5562a400a960cd28e51efe89f1332ce28201045a2a09f581b4ad0b6"
+    },
+    {
+      "file": "web/tm-endturn-systems.js",
+      "sha256": "5259defe76f6a278cbb281e08de1cfb947542a327456cdf2320bd43a1961835c"
+    },
+    {
+      "file": "web/tm-endturn-timing-ledger.js",
+      "sha256": "f8215b34d9be2f7a81e1e88a75324db22a47c925623cfc1b1a78b663d0ebdc78"
+    },
+    {
+      "file": "web/tm-endturn-validity.js",
+      "sha256": "3dfdd51cdb6e9dfaa793ece10cd58def94ea0d68165fb309bcea04f36c0fe8f7"
+    },
+    {
+      "file": "web/tm-engine-constants.js",
+      "sha256": "9324440d8efb640c1ad1b5e0093170527fc182edb0f47fa90780111e96286d39"
+    },
+    {
+      "file": "web/tm-env-detect.js",
+      "sha256": "a509e6b4d2da87e2e936c901fdd2bf9f3662e152de9906ed398128f08c2af6ee"
+    },
+    {
+      "file": "web/tm-env-recovery-fill.js",
+      "sha256": "f8f89e366a990e4b1ceefc5e005b5d8da67512ae51a2ff255fd61bca66fede38"
+    },
+    {
+      "file": "web/tm-era-language-pack.js",
+      "sha256": "75f3c4ec8db37d1d6eeb66665b9ae1da6dc30ded4b4cfff8595ab2bd27b62c6b"
+    },
+    {
+      "file": "web/tm-ethnic-religion.js",
+      "sha256": "98ad7832bf7af1823fb2e7061f076c6d6334c605c0fbee0535c9ca1c09c9c5ad"
+    },
+    {
+      "file": "web/tm-event-bus.js",
+      "sha256": "14c4d97d61311b62feb4882426109d35dba158824efe6d6c1225dac5709b93da"
+    },
+    {
+      "file": "web/tm-event-system.js",
+      "sha256": "eb57c0ec2480fc4a8e0567d39a94f667cfa7b719ba4dd4abbc72075eaa854e36"
+    },
+    {
+      "file": "web/tm-faction-action-engine.js",
+      "sha256": "746729f6108fa05deb099c6426fd20b630190bd64a70cf39b7795302918a9585"
+    },
+    {
+      "file": "web/tm-faction-decision-tools.js",
+      "sha256": "fb0e4e3b5a3f4185f810d8d4d85e41716485cb139a17c6cefb05018393f4bc04"
+    },
+    {
+      "file": "web/tm-faction-derived-cohesion.js",
+      "sha256": "014e180273d4b9f947cf0a1d6f503989095e16d0e90a9fdf7f79fe0ccba1efb8"
+    },
+    {
+      "file": "web/tm-faction-derived-economy.js",
+      "sha256": "ea6f47fe177b91e67beef6e9d2dc024a0c15e9e0d60dc03a070d0140eb83c06c"
+    },
+    {
+      "file": "web/tm-faction-derived-health.js",
+      "sha256": "0cd85ab5a2952a3c5a93192dd3d47542efb06b78a8958f56e4578a1f54c0282c"
+    },
+    {
+      "file": "web/tm-faction-derived-strength.js",
+      "sha256": "cf01c37276bf9fd87d209cc68acf07e29856d4137e2e94e41fa82a25743f4ca5"
+    },
+    {
+      "file": "web/tm-faction-diplomacy.js",
+      "sha256": "ebec13056b1399481fa6371a942cbf1fd8dc46485e7e01344470964df5c93b5f"
+    },
+    {
+      "file": "web/tm-faction-goal-stack.js",
+      "sha256": "35771156783f304042087b68e106f8669dd4467804d290c01c4c00b51d4e40a4"
+    },
+    {
+      "file": "web/tm-faction-index.js",
+      "sha256": "c8db3587e3bc9166791b40732cfbda33fa5a163c3e4a8b4b1b2aea8e23774dca"
+    },
+    {
+      "file": "web/tm-faction-membership.js",
+      "sha256": "d076760aa7418489b21ddb861f233f84f3e5f36047cb23349fc5e3afc38a9d73"
+    },
+    {
+      "file": "web/tm-faction-npc-chaoyi.js",
+      "sha256": "eb4afb94dadaccec081159ba01b121a53191cba789f82c2debffab2a5745d0cc"
+    },
+    {
+      "file": "web/tm-faction-npc-dispatcher.js",
+      "sha256": "81a3bb682c0607030ac9ac62ca0fe745fc3003e31cb6fd6e5bf57c458e84fea4"
+    },
+    {
+      "file": "web/tm-faction-npc-edict.js",
+      "sha256": "e79be86329d3ccbc843bbcfb0b577ca2600dccbde570d38eac2cd07d148974a8"
+    },
+    {
+      "file": "web/tm-faction-npc-guoku.js",
+      "sha256": "60813f434bc91cad6df36b8cc31553c5b6ceef49a12b823733db02ec00410a37"
+    },
+    {
+      "file": "web/tm-faction-npc-in-turn-driver.js",
+      "sha256": "7a7c86e7e0e5c0c6fd0bc8bd682267eda24778217b4e20b7f6f0f8bf156bd1e8"
+    },
+    {
+      "file": "web/tm-faction-npc-intervention.js",
+      "sha256": "af99c10c55a292c405db48f3bc88a5680001ac2259847807a9617f5d5e3500d5"
+    },
+    {
+      "file": "web/tm-faction-npc-llm-decision.js",
+      "sha256": "2aa4b89fc15730cd89f49e497847ef84b12c4cb0f0d52a7619486d1265e483fa"
+    },
+    {
+      "file": "web/tm-faction-npc-llm-enrich.js",
+      "sha256": "3dafb9324dcbc75f78117c76eea5701d2d153fccf5806560dbd2c94948da46d2"
+    },
+    {
+      "file": "web/tm-faction-npc-memorial.js",
+      "sha256": "feb16c0b721f97f256cd26369ace8f77434fce430cf0e93277b12e1b92d71f67"
+    },
+    {
+      "file": "web/tm-faction-npc-news-bridge.js",
+      "sha256": "13bb5c598cc0342c4f6e6eb3a0ab74f2d75b0d3ec345a7b1ff95c9a9e25fa954"
+    },
+    {
+      "file": "web/tm-faction-npc-office.js",
+      "sha256": "e87d232be62654c6a92163d98b718be8345870d3bb33721fadd5cbb4d3e7ff6d"
+    },
+    {
+      "file": "web/tm-faction-npc-settings.js",
+      "sha256": "7574f4dfeaba9ee1987687f3425a4e1986d4620b2daca887976ce52556118e73"
+    },
+    {
+      "file": "web/tm-faction-paradigm.js",
+      "sha256": "bb9d061fb4f5c228ca165d6eecb5d3057acc1c0347b4c2ea849c0c49c36bcdbf"
+    },
+    {
+      "file": "web/tm-faction-personality.js",
+      "sha256": "96442e5f82d0166e9ed265b7bf7b0f7d14604d9a545ecdbdd9bc6dc909f5de69"
+    },
+    {
+      "file": "web/tm-feature-loader.js",
+      "sha256": "890b7c2a7bb760f3975ffd2234b026b4abd6ae5cc63236a9052dc1e2ba06e6a2"
+    },
+    {
+      "file": "web/tm-feedback-loops.js",
+      "sha256": "4e9dc544d0adbeac50cb9d44b3abf3ad93e4c942abdf585d619472f89a3714fa"
+    },
+    {
+      "file": "web/tm-feudal-warfare.js",
+      "sha256": "1cde591ed539957ddbbd7fd86c44002fd30e0f0c1bd6afacc047d717609a7ac4"
+    },
+    {
+      "file": "web/tm-feudal.js",
+      "sha256": "0e167e3c95b8a17030d9a77ca64affe79bdb81caf2316357b52a510c35439bf9"
+    },
+    {
+      "file": "web/tm-field-pipelines.js",
+      "sha256": "987d783bca19f11d8e40de94ce3e8a198dff60853ebfd591dfe984ce1132c882"
+    },
+    {
+      "file": "web/tm-file-export.js",
+      "sha256": "513c2399d437fce55e11a687cd2df618ca55587322a5a5243fd3d7d5c651857d"
+    },
+    {
+      "file": "web/tm-fiscal-engine.js",
+      "sha256": "39f1da77712dab73873027b605c3af3682053b0b9491e4726136325dc4cf9389"
+    },
+    {
+      "file": "web/tm-fiscal-statements.js",
+      "sha256": "f948a65cbbe41d80cf427b6fe89abf698c3185301c28dd31ed4ac0acb96a7aac"
+    },
+    {
+      "file": "web/tm-fiscal-ui.js",
+      "sha256": "785eacd46c48d32d56aeacda9d4798beea571c4e443fadf9548bff6656d8c206"
+    },
+    {
+      "file": "web/tm-fixed-fit.js",
+      "sha256": "bb5a1e75c5115a7b413b7ee47ca82318b6718fb2217779b82e2f565ffbc7da45"
+    },
+    {
+      "file": "web/tm-game-loop-wentian-hardchange.js",
+      "sha256": "537e72fdc6a61246184b171fd7cf08741b7a402a5d5bbb10cd16653338618ad7"
+    },
+    {
+      "file": "web/tm-game-loop.js",
+      "sha256": "5aea644ca1f37b5a8008b9f2ab56d7b83619e2228c7b6a81f16f2e1bbe96303b"
+    },
+    {
+      "file": "web/tm-game-ui-shell.js",
+      "sha256": "bfb9cab0a75d5c4af7ec4e4e331f838a8a8ae00f4b70d8f71c15a349e51e5f34"
+    },
+    {
+      "file": "web/tm-globalrules.js",
+      "sha256": "8b9ec8e45aa57758f1bb5a56901f25966b9aad4d9605301540a46ade123ac6ad"
+    },
+    {
+      "file": "web/tm-gongming.js",
+      "sha256": "6653b6a028371db5783d97514428e6376c5bfb294c3701756b0c2350a7067006"
+    },
+    {
+      "file": "web/tm-guoku-engine.js",
+      "sha256": "b7c0704a1775376f0fb338e1d953c37ae718f4a8fbbfd73420c2cc2cc319b249"
+    },
+    {
+      "file": "web/tm-guoku-panel.js",
+      "sha256": "e35e88a734b3f15620e059c1d720ebc693fbb3631e6bf491331c3e3a8c4b4c2f"
+    },
+    {
+      "file": "web/tm-help-social.js",
+      "sha256": "80ea076cde9c396011e840d8364f3c395a0467e9461f1ac254f73c5333713d9f"
+    },
+    {
+      "file": "web/tm-historical-presets.js",
+      "sha256": "113111a061ed2a4496f178007538feb5830e99ad697f13e8867dfee7add7ad03"
+    },
+    {
+      "file": "web/tm-history-advisor.js",
+      "sha256": "769cb3fb142b4165ebbf146a68feb5b72df0e7f126c42e2cca63b88a21d14d18"
+    },
+    {
+      "file": "web/tm-history-events.js",
+      "sha256": "fef6e7d01ece7aab98bc95153d7c70e808fc11e661476c24e0331095cd8a9fe3"
+    },
+    {
+      "file": "web/tm-home-ui.js",
+      "sha256": "d1b4e1a42b2214012b8d4a74b10eff6e34be5819d0d6cf2aab3ed83bceeb59b3"
+    },
+    {
+      "file": "web/tm-hongyan-edict-ui.js",
+      "sha256": "dff5187a63ae03b904407d6635436d02799bfa0d26811eb1332bc9109a795f0a"
+    },
+    {
+      "file": "web/tm-hongyan-office.js",
+      "sha256": "17cf70ef549b33cf8edd8bf93a8019607340706ad5ba7d04e97ddf4ac4bfd8d2"
+    },
+    {
+      "file": "web/tm-hooks-tracker.js",
+      "sha256": "084cb426e609cae9d710c2e1f7cfe82708230581bba4e3bbcce9ab69b9bef144"
+    },
+    {
+      "file": "web/tm-houguong.js",
+      "sha256": "b0fbee6ff751f5555e922e02cad6d6ad36df321327d6cd6a23b3bd9264051408"
+    },
+    {
+      "file": "web/tm-hover-fulltext.js",
+      "sha256": "edff7e8bb9ad5f07149111fdd41e8d4cd247bb7614a84f3092c540436acaa57d"
+    },
+    {
+      "file": "web/tm-huji-deep-fill.js",
+      "sha256": "401eaca24df793a1b44d62eb2cf50188568fe32787ca5a72a060682b3c30aa4e"
+    },
+    {
+      "file": "web/tm-huji-engine.js",
+      "sha256": "6eb2c3a7e3e9bc5bcefe12454232b5d278dd149ee065d84adcf2c513c7698c2b"
+    },
+    {
+      "file": "web/tm-huji-governance-loop.js",
+      "sha256": "bfb518b1e66fc755c81186145e2f68d109a2a9bb3f6005ad75dce3f432639350"
+    },
+    {
+      "file": "web/tm-huji-runtime-bridge.js",
+      "sha256": "7ecde2ba1beff1af0a7668c078ae76e9c516f58796aee990c80acbd36847c667"
+    },
+    {
+      "file": "web/tm-imperial-orders.js",
+      "sha256": "22ef15ddc1a4f8042dabf7c290ba280bd6a0bcd9df45115f79af322b0eb3992d"
+    },
+    {
+      "file": "web/tm-indices.js",
+      "sha256": "fe4b7aa558c3eb4de8e6f2a6c4f15edfb7cf532315854e6ce13235173f551e34"
+    },
+    {
+      "file": "web/tm-influence-groups.js",
+      "sha256": "40cc536e4a3bfa34b96f4124b5ee90dc4379c8998e5cfe73a4f626b907b295c9"
+    },
+    {
+      "file": "web/tm-integration-bridge.js",
+      "sha256": "0850b94b1888c0bd47e6254ec572ece92a7faf389fc3937adcd783c6ef8eed43"
+    },
+    {
+      "file": "web/tm-invariants.js",
+      "sha256": "2281acf450612860907c72e92c1a3cccc29e9c79b40cff1cc5016895b9ca0741"
+    },
+    {
+      "file": "web/tm-junqing-brief.js",
+      "sha256": "08254d78ebd526bfac5a5d8fc04b2bf5a1472f05035615524ae57c043065ef28"
+    },
+    {
+      "file": "web/tm-keju-activation.js",
+      "sha256": "5486651d76abfa4847eb67d71c709179513d5b78e2d108be5ccedd63ae889f2f"
+    },
+    {
+      "file": "web/tm-keju-allocation.js",
+      "sha256": "5bf0cc34d2538abd04314f1d5cc94a045c08fed036fefec9235bb835acce4a64"
+    },
+    {
+      "file": "web/tm-keju-budget-ui.js",
+      "sha256": "b78eab288811fbeacf11b18c824aeb60f65da67d373c6b11f1702c98fee14663"
+    },
+    {
+      "file": "web/tm-keju-cohort-meet.js",
+      "sha256": "2d33b8cf09d2632978e970cb75f39df752e8ee4200d7cfde40c42c59f321a68a"
+    },
+    {
+      "file": "web/tm-keju-corruption.js",
+      "sha256": "297352ec134457ad372da52e0a5e03e399616e6fd8f6aaf7179ce81ee2c659b7"
+    },
+    {
+      "file": "web/tm-keju-dianshi-events.js",
+      "sha256": "07c5d0503e6cf83e8c510eefcfea1b27d760fb81d69528787b1b6cde771cc32c"
+    },
+    {
+      "file": "web/tm-keju-disciple-graph.js",
+      "sha256": "63ca33c075e39c6e1584ae1ae77ed16aee6ab15d59a03d8275f921a9f0deead4"
+    },
+    {
+      "file": "web/tm-keju-disciple-memorial.js",
+      "sha256": "c40542f2457c7d7710d336d92bad49c905f4b018849bc49ce9590c668c010a02"
+    },
+    {
+      "file": "web/tm-keju-enke-player-initiative.js",
+      "sha256": "c539e6c6413d0e6f19ab4a46cd48f1e2dd3c579945fe3066d47c4646ffc0f1a4"
+    },
+    {
+      "file": "web/tm-keju-enke.js",
+      "sha256": "b640e46c1d3e2d0b7064b9e0c73b8d98e1d8d384d9f6e9a37b7f174d62052f0b"
+    },
+    {
+      "file": "web/tm-keju-event-hooks.js",
+      "sha256": "e11ece26120db789a0bc6700ec353260d22e32e26caaa6e416d6a87bf65bd8cc"
+    },
+    {
+      "file": "web/tm-keju-examiner-view.js",
+      "sha256": "c7117307975ccef9ff7a08a414f3b1e9f8451ad9e4d9c5d9467b5623c18a2478"
+    },
+    {
+      "file": "web/tm-keju-indicators.js",
+      "sha256": "af6a1b77e4a685400222f943d9087a88e16eb75015236b4cefec4e4c6e72143b"
+    },
+    {
+      "file": "web/tm-keju-learning-traits.js",
+      "sha256": "a983e58e37908cd968474ee51b0f54e4b99dda4e82ac7f273b6893966f5bee41"
+    },
+    {
+      "file": "web/tm-keju-mentor.js",
+      "sha256": "c46e8569611b57debf9daaf6144126c2243838455470e199bbc8b71638974419"
+    },
+    {
+      "file": "web/tm-keju-paradigm-panel-render.js",
+      "sha256": "1743ee8abf6f90cce975bbf4ab9382f4f25d69963d14c11c2c3af5adb0daa3be"
+    },
+    {
+      "file": "web/tm-keju-paradigm-panel.js",
+      "sha256": "21aa54e51d686f326a79f6bf949006a7aabd291fff362d2de9fd1b69c48a915b"
+    },
+    {
+      "file": "web/tm-keju-paradigm-presets.js",
+      "sha256": "dc7c36a8896f6cf5b6db389b1f3d53a8116bf4014a302b3061ac8cb11c29187f"
+    },
+    {
+      "file": "web/tm-keju-paradigm.js",
+      "sha256": "b94c19ce1aae7f1b76f48025fe713825b6f6019860c59c8c8365071e094a17be"
+    },
+    {
+      "file": "web/tm-keju-presets.js",
+      "sha256": "b9bc68387f7461f2d78e43cf0b25978a240b417d3baa35e6d136bdcecf53c28e"
+    },
+    {
+      "file": "web/tm-keju-question-ui.js",
+      "sha256": "3d6666ac395561658b2e8430d23a98993aebc3bd446c219f363917fa45650539"
+    },
+    {
+      "file": "web/tm-keju-reform-apply.js",
+      "sha256": "5a621b4cd3d4c73cc805359ae81a9d8c6c54e73056fdb9c1af4b9075af053a32"
+    },
+    {
+      "file": "web/tm-keju-reform-evolution.js",
+      "sha256": "f9faa2bfad6ae1de850b335c3b634488513d45c08809306b4a9147c1b61ee477"
+    },
+    {
+      "file": "web/tm-keju-reform-llm.js",
+      "sha256": "6bcd883bc33219921708313a8e97c11c79bea90d565b2db58fc8f4b303fcba54"
+    },
+    {
+      "file": "web/tm-keju-reform-memorial.js",
+      "sha256": "5065c5936180bd89843495514a4077889953ba909177c81cf5251db8eeb8338a"
+    },
+    {
+      "file": "web/tm-keju-reform-presets-history.js",
+      "sha256": "91f2f1ba32dd227cf620dc627fb1ae98414a9487c9033d6133700744fe1445f6"
+    },
+    {
+      "file": "web/tm-keju-reform-rollback.js",
+      "sha256": "6505456c096a6f673b0b7d7768c2c13f6ff9188026f9fcf594b3abfaf82fa4a1"
+    },
+    {
+      "file": "web/tm-keju-reformer-bio.js",
+      "sha256": "b7db1ea5aa27e2d4db85abde86c69235d9ecfc67f6a34826ef62793f904079b0"
+    },
+    {
+      "file": "web/tm-keju-runtime-keyi.js",
+      "sha256": "818f296dae71ae9b78c5d1d840106c81621662818eddcefde098dbba98b456c2"
+    },
+    {
+      "file": "web/tm-keju-runtime.js",
+      "sha256": "4995d1eb9b690ab304b8ef21eba4c7e0bd880a17f6245f561e66a4a184a09112"
+    },
+    {
+      "file": "web/tm-keju-scandal.js",
+      "sha256": "2a0e30df1f4f6774d236b756ad834c9f75c18e9f446e578f619b8dd7a49fef1f"
+    },
+    {
+      "file": "web/tm-keju-school-network.js",
+      "sha256": "8d522555e58e53103c76dcb64dfd72ac006f436b1149e226873614f89d490cf4"
+    },
+    {
+      "file": "web/tm-keju-special-exams.js",
+      "sha256": "e82adeed1fe6460fe8cb09ea0ddaad03fede2b19ff23c47c5da57a8e5cd8364b"
+    },
+    {
+      "file": "web/tm-keju-tension.js",
+      "sha256": "030f43d9cbe6db62be3dbd2a63691e4176a07add7af640d1f97232e07915a8d0"
+    },
+    {
+      "file": "web/tm-keju-tier.js",
+      "sha256": "127b1fa15a7c5e1fdc08fa65d2cceb68aad09f69ba8df56596df6eeb8f33b6b0"
+    },
+    {
+      "file": "web/tm-keju-tongzi.js",
+      "sha256": "0cfbeaac19f3cf12828f1ec78e6972945645f6b274686562c3a06fa307be062a"
+    },
+    {
+      "file": "web/tm-keju-topic-router.js",
+      "sha256": "145762b0332fc30bfe53c844d9dfb85dd17734c9a7f5e206084e4746e67769f8"
+    },
+    {
+      "file": "web/tm-keju-wuju.js",
+      "sha256": "2ad35b2d14164b69848339db4333786ced045c852dc0941c2042cd2eece6d469"
+    },
+    {
+      "file": "web/tm-keju-yanguan-attribution.js",
+      "sha256": "829de3182ec86bb8596cf5c2432e04248c2b8f7473162d4d89e5290895365333"
+    },
+    {
+      "file": "web/tm-keju-yanguan-qingyi.js",
+      "sha256": "3903df70f9032f6333fabc824266ae51d816eb56d191a1a320db18012c4f074a"
+    },
+    {
+      "file": "web/tm-keju.js",
+      "sha256": "81656080729dfab6b10b9c369001723a321bc0f835d5edcb85efe6f49b026eb3"
+    },
+    {
+      "file": "web/tm-launch.js",
+      "sha256": "55cf96a94d67bee0362306e841c01e9236d1596a7502e5c7d84981a902e65932"
+    },
+    {
+      "file": "web/tm-ledger-paper.js",
+      "sha256": "b5a228ac49114047f30aa291af1c31a9d7ba8310d4d676d8374aa83b646e5ff7"
+    },
+    {
+      "file": "web/tm-live-context.js",
+      "sha256": "8bf8038058e617370fef41022dff69752aebccc00147857624bc6f1950af1235"
+    },
+    {
+      "file": "web/tm-lizhi-panel.js",
+      "sha256": "d9a072944b50f400b4cd69d4ff40d5a2ea16d48f5ce27db97a53fcae8b6f8eec"
+    },
+    {
+      "file": "web/tm-map-circuits.js",
+      "sha256": "a716b8886fa889d276145c0a4a21d9c13b8e13d2805f25d479689412dad051f8"
+    },
+    {
+      "file": "web/tm-map-locations.js",
+      "sha256": "d31d241d8ce3e1df99481f7f6ece280f88dfeadcafe1bbea9be7f2283d1db7db"
+    },
+    {
+      "file": "web/tm-map-route-days.js",
+      "sha256": "7aa64b46dbdcc8b0bceda640ea7cb9296d944552795bcfaf2f414063d749446f"
+    },
+    {
+      "file": "web/tm-map-system.js",
+      "sha256": "ca115209b0cdb1ac9a3153393150c6e722c2b6fe49e2d08f7794ea3ed5d4486a"
+    },
+    {
+      "file": "web/tm-map-workbench-client.js",
+      "sha256": "4fd3b36b8206d2e89a0044194889a8e73f246a03e8c756675a77f7508a1239b4"
+    },
+    {
+      "file": "web/tm-map-workbench.js",
+      "sha256": "95d6419c43198e70a5b65e32649d7ad818059980ce62bf2f3a84c62a61e7eb14"
+    },
+    {
+      "file": "web/tm-mechanics-memory.js",
+      "sha256": "71ba316623394b4614af49d22b1a7162654237e4bc3f3c90cddee35f3fc1785b"
+    },
+    {
+      "file": "web/tm-mechanics-world.js",
+      "sha256": "b7ddef75c9a692cc1dcb92d94d592acfacf20651735f2267375167cc8a516b52"
+    },
+    {
+      "file": "web/tm-mechanics.js",
+      "sha256": "8876630482c3614156365175335afceb32f56af1fab635fc54ce3b9b16e77af2"
+    },
+    {
+      "file": "web/tm-memorials.js",
+      "sha256": "45f437e5d1987eb9c6a52fccca95ceff3d42fb431af473a4901d05c25776393c"
+    },
+    {
+      "file": "web/tm-memory-adapter.js",
+      "sha256": "00ce07d6c689de20e60797fa137bace1f34e97115376c59354e93d464f8270fe"
+    },
+    {
+      "file": "web/tm-memory-adaptive.js",
+      "sha256": "b5b8b40857a2e4ccf02e108ac95e78d12a067e28c98714bb5eb2dc4a9fd514ca"
+    },
+    {
+      "file": "web/tm-memory-agent-tools.js",
+      "sha256": "644a241f115bae183bb54d1eb6c7401ffe711c1597a8636ad75d1fb58be9f14d"
+    },
+    {
+      "file": "web/tm-memory-anchors.js",
+      "sha256": "1112a90612d6361d0acf478d0bc68b5c3ea53ce1c2d4006a297e392360f5702b"
+    },
+    {
+      "file": "web/tm-memory-context-compiler.js",
+      "sha256": "cbde8ca9b665f2a9b5dc1fffcf04c4822e3d9464be13bfad6c901691ffe09239"
+    },
+    {
+      "file": "web/tm-memory-controls.js",
+      "sha256": "86765bf34b6b36782c3a739fdaabb124bc32a512097b07596001761219527ac7"
+    },
+    {
+      "file": "web/tm-memory-envelope.js",
+      "sha256": "22bf02fb9a7b5e95fee1ab975a8da3358e4c64645d0d65edc1317a7ea6b93c50"
+    },
+    {
+      "file": "web/tm-memory-evidence-registry.js",
+      "sha256": "675b98a2a20068690f24f8e5979f0c74ddb97921f14be7537341cd1ec4244b33"
+    },
+    {
+      "file": "web/tm-memory-governance.js",
+      "sha256": "a749a578d118e3ec91d1fe1eaff773f10ff68c3ca87f70c20a60ea06da919697"
+    },
+    {
+      "file": "web/tm-memory-hybrid.js",
+      "sha256": "1080e50c78faafbbf4844169a0e452ed55fc458adadc37ad1611d2e552ce2ce3"
+    },
+    {
+      "file": "web/tm-memory-issue-governance.js",
+      "sha256": "500323274d51d965fb93b24731218593810c454cdc5db599484e07176ffd6cff"
+    },
+    {
+      "file": "web/tm-memory-long-term.js",
+      "sha256": "295ee128b5c3c6482c27da9d5e59f1a823a9685b0c9a12c41cf51e5b65beffe4"
+    },
+    {
+      "file": "web/tm-memory-mode-bridge.js",
+      "sha256": "a3507d97a639e6af42607c6c5a104ed05b87842cfd5483ec3ff571a746d8b191"
+    },
+    {
+      "file": "web/tm-memory-retrieval.js",
+      "sha256": "501052e19bba0cdd3dd4bf15e7c9865578f3893888a5a9572a950fa3ed024dfb"
+    },
+    {
+      "file": "web/tm-memory-source-bound.js",
+      "sha256": "f34ff5ca4cab18e55a89847fa7b136c88296c557e4734241a2a37986dfd126c0"
+    },
+    {
+      "file": "web/tm-memory-steward.js",
+      "sha256": "2304261e654457b04e78cf076588762084e3121226ea9d511a2236e1e888ea47"
+    },
+    {
+      "file": "web/tm-memory-tables.js",
+      "sha256": "0afd18a0f1978240494625a845312ac83845116504e992321f339bff544c9229"
+    },
+    {
+      "file": "web/tm-memory-trace.js",
+      "sha256": "8650d23379473cd440c1656f8eb01d6e69a964d9ca0c1abcab67acc21a663ca4"
+    },
+    {
+      "file": "web/tm-memory-turn-archive.js",
+      "sha256": "c2ab83c6dfac10ec19b3e7fe0dc245fc162b8efab4c450699f9f8bfdf61d82b0"
+    },
+    {
+      "file": "web/tm-memory-turn-backfill.js",
+      "sha256": "4d5faee59bd8f63378530bf8767ee230f818301abc0de5425e24158f5c76e53a"
+    },
+    {
+      "file": "web/tm-memory-turn-inference.js",
+      "sha256": "7dbbedc8e6a1f272bcfdfd140785e770c7f578d59d2b7daa1755564906f47572"
+    },
+    {
+      "file": "web/tm-memory-turn-rollup.js",
+      "sha256": "39edbcc66be68f163c74588fc4b68eab50bcca3b12fef1a9ea8fe1eaed657b0a"
+    },
+    {
+      "file": "web/tm-memory-ui.js",
+      "sha256": "58e1af24917c4de709c3c91ffc213e20b0b693a2a0c91acd0930059353ea5096"
+    },
+    {
+      "file": "web/tm-memory-workshop.js",
+      "sha256": "217ccdc3dbfd2f4a5e358e33e870a2464418729ae7363a2a8ea4f6eae4504d28"
+    },
+    {
+      "file": "web/tm-memory-writegate.js",
+      "sha256": "faa6a112b34a264b066945e51982fe6517bd0b388afbbe849a176ad3a24844e8"
+    },
+    {
+      "file": "web/tm-migration.js",
+      "sha256": "1d3d2bf752c3b0cce03e04cb47d5ca89d0b1b4a832d42d9202a29e12a4b83cd4"
+    },
+    {
+      "file": "web/tm-military-arrears.js",
+      "sha256": "d3c990462df5acbb2152c319df0d5d1c8bfa36b0c9a3b49caaf88b62d9140350"
+    },
+    {
+      "file": "web/tm-military-ui.js",
+      "sha256": "8fc989b4d2415323d6932a8ab95406517a6cca170f22b9ffba9cdddd706be79b"
+    },
+    {
+      "file": "web/tm-military.js",
+      "sha256": "fafba799d59da7ce02aa6c207d60e9346b1e7b2a567080f339a7a5e94a183566"
+    },
+    {
+      "file": "web/tm-minxin-commitment-tracker.js",
+      "sha256": "f0cf9aca44957513e2b9cd3c07905d03633eb3de5e7b3f8551d26215bf2106f9"
+    },
+    {
+      "file": "web/tm-minxin-hard-link-consumers.js",
+      "sha256": "ea71f7111d2310e9b874d48e5028dfc547032bbdac0feaf00a279a23a6eb8b56"
+    },
+    {
+      "file": "web/tm-minxin-hard-links.js",
+      "sha256": "8cab7bdd719e70bf7991287625923d5c20ed1e167978407f1649ee5bfb0d4d35"
+    },
+    {
+      "file": "web/tm-minxin-ledger.js",
+      "sha256": "502b5ed750299cb8d05b7641d8d5495de4b10e63e46b50df42c13c792d4362e3"
+    },
+    {
+      "file": "web/tm-minxin-pressure-actions.js",
+      "sha256": "d9f72b137cc584a86561879000e63bb25f548d4f6115db24b60e60aeac30d931"
+    },
+    {
+      "file": "web/tm-minxin-responsibility-chain.js",
+      "sha256": "ea752a999d7e6daa987e98b9b5bb5dd4fb93709b691beb6f1fa74ea129ce0518"
+    },
+    {
+      "file": "web/tm-namespaces.js",
+      "sha256": "98bd7b85e9cc61d2d1ef6dedb171f74165a917a2cdf81ae5c4eaa4bee69b76e5"
+    },
+    {
+      "file": "web/tm-native-fiscal-adapter.js",
+      "sha256": "ef5fe378a1e540bf7db7b756a9b6acd6bf0ba0b112e7235ba64f6aae12854c6c"
+    },
+    {
+      "file": "web/tm-native-fiscal-ui.js",
+      "sha256": "fed8e35b03935edabb7a60327ece9bffc53615113916bebdfde804f294036e56"
+    },
+    {
+      "file": "web/tm-native-scope.js",
+      "sha256": "5b8db0c0774acd2bac36d5c21a447603a3b4f109aa75f5c8dc184f3f0dbcebd0"
+    },
+    {
+      "file": "web/tm-negotiation.js",
+      "sha256": "8446fa5d97b45416aec01b87e7e41c00abbccfc8510a6e1d293f243d47d4fdb7"
+    },
+    {
+      "file": "web/tm-neitang-engine.js",
+      "sha256": "aa9781919d6c3f2b1796bb3edb5fa7dc5bdadd96d8ec8a076aeeae43a615bd18"
+    },
+    {
+      "file": "web/tm-neitang-panel.js",
+      "sha256": "e52910231dbd04495bab23b7d92d083abc53b8ffa8b389d55847053cbf64b228"
+    },
+    {
+      "file": "web/tm-npc-action-ledger.js",
+      "sha256": "2be319337f8d2aeeb4c97de234ba299ba64de56279d0ffbc89e0b11f7bca94bd"
+    },
+    {
+      "file": "web/tm-npc-daily-activities.js",
+      "sha256": "1970a354a24bef4d946b064934320cd11d6dc300a1e91c0d78a1a6cdd8db9b08"
+    },
+    {
+      "file": "web/tm-npc-daily-ui.js",
+      "sha256": "6b0d7bab87589fb5946ad521834e5bdf561d6e28e75c6f8d40af053700dbae09"
+    },
+    {
+      "file": "web/tm-npc-decision-ai-driven.js",
+      "sha256": "7d9934da2eb8083ee56d247e8758adc0d0782f250b6e39dff7ae3e83897fd60d"
+    },
+    {
+      "file": "web/tm-npc-decision.js",
+      "sha256": "c249d2ca82cc6a5a821f660e48172e679daddc4fd4203a33695878c78d1cbb90"
+    },
+    {
+      "file": "web/tm-npc-engine.js",
+      "sha256": "9a30da92bbdc61734629a4dd70fd7b82c14176eb0dd5d0700ca20a87399a04b6"
+    },
+    {
+      "file": "web/tm-npc-local-ai.js",
+      "sha256": "782b553ff15d1897f53e239e691df5cf8c938a9e81e91b4c49317c844f18349b"
+    },
+    {
+      "file": "web/tm-npc-travel.js",
+      "sha256": "dab485ebfa29806134e62bcfa42b7dceef771d2363d9a2cf190cab74bd0cd084"
+    },
+    {
+      "file": "web/tm-number-parser.js",
+      "sha256": "0805331edd5a2efa4b3bbb5ed82c07a3ddc4dce8b61bb0a54eaf4f7ceeeedd88"
+    },
+    {
+      "file": "web/tm-office-action-evidence.js",
+      "sha256": "1624d50bf5cbd3bfd92cc134dada4947930ed944a3552839953b0607a9072a89"
+    },
+    {
+      "file": "web/tm-office-authority.js",
+      "sha256": "443b2f0940e408516b9ab5699ce32951f886e388a0a88055acd365836b1145f4"
+    },
+    {
+      "file": "web/tm-office-charter.js",
+      "sha256": "a993a75c630cc63ac916ba7b709fb70db29e326def55b9af135886d828ecb9dd"
+    },
+    {
+      "file": "web/tm-office-creation.js",
+      "sha256": "be5977b584feca1fb4fe2a26a05d6843d811f8e3c287250c58d801698e42ffd0"
+    },
+    {
+      "file": "web/tm-office-dutystate.js",
+      "sha256": "df37509377d335860249d5dfe37722a2b99071b7b62845daa47e58332e417fb2"
+    },
+    {
+      "file": "web/tm-office-editor.js",
+      "sha256": "23cbb51a8f5d2b8ed676739123e4306d73c4baffcaafbe5d1bd00000ebefcb0c"
+    },
+    {
+      "file": "web/tm-office-fallback.js",
+      "sha256": "5ddce1bc62552ab8f6c4bc12b19ee108a38a95db1d67ceff3dd426874fd8067a"
+    },
+    {
+      "file": "web/tm-office-flags.js",
+      "sha256": "9e1dc304c61538586896e8be783827755821b92698d58efdfefff4703a88d4a6"
+    },
+    {
+      "file": "web/tm-office-holder-state.js",
+      "sha256": "83e031b5c8af9d1ba41691a9c198e4624017264f979b190ed679d59024b65842"
+    },
+    {
+      "file": "web/tm-office-panel.js",
+      "sha256": "5f722b12f2155f703a44be824e9fc215a0c0bd1f033a5d90ab8ca10c8b80ce41"
+    },
+    {
+      "file": "web/tm-office-powermap.js",
+      "sha256": "b2a24b45a2695c6ecbd5f12101e174a1941dca7b944dd97cf503a2fb9d89086b"
+    },
+    {
+      "file": "web/tm-office-recall-agent.js",
+      "sha256": "2086bc49a7b97017f6955bcef660dcaab496c4285513c4b49236335132195bd7"
+    },
+    {
+      "file": "web/tm-office-reform.js",
+      "sha256": "2d5a6020c0dd7c2277ddd0158f9e18f1581fe6e0506a5134b383c2f6897fea91"
+    },
+    {
+      "file": "web/tm-office-runtime-summary-appoint.js",
+      "sha256": "f084073eff842c49f942a73d2ee95dcf4449c3737ffc42bedeaeb577edf8c986"
+    },
+    {
+      "file": "web/tm-office-runtime.js",
+      "sha256": "1705c60f23061e46a540a307256920a3f7e351fd816ce8ac24a20a06b1bcaf4a"
+    },
+    {
+      "file": "web/tm-office-system.js",
+      "sha256": "ce1057a6af6404fdb88ee9a05a7f8e255de6b1e14c78619cdb2b730ca850dc14"
+    },
+    {
+      "file": "web/tm-office-tenure.js",
+      "sha256": "67b94d520279dad27c9277b918cca3cac8af1837d0d333e8fb86e16900549328"
+    },
+    {
+      "file": "web/tm-office-vacancy.js",
+      "sha256": "fccaf4e49a378daa7f2f91760c30180308bb463d26b22a67d6d8a4afb7cd69b1"
+    },
+    {
+      "file": "web/tm-official-scenario-loader.js",
+      "sha256": "51ea397a1eb3eabfa4425a6f600ff2ae3079fef25eb35b27586f7a8633bfb675"
+    },
+    {
+      "file": "web/tm-official-scenario-seeder.js",
+      "sha256": "66905146e086731837a1623c2fa65e93319a18a8d71717bc7726d06f7cb452a5"
+    },
+    {
+      "file": "web/tm-onboard-tools.js",
+      "sha256": "570945f5533a5270627331b897c987460e98fcac2b312df079b4108aa5f127cf"
+    },
+    {
+      "file": "web/tm-online-client.js",
+      "sha256": "0ef6b2524a0fee7a905194933d9f3c2bac6ee315a1a16f41f4502d62573ca875"
+    },
+    {
+      "file": "web/tm-party-class-action-scheduler.js",
+      "sha256": "10b9f5348d49e906695957d38328ee763c7a24bbe44a2c0299b5e0c39a63f475"
+    },
+    {
+      "file": "web/tm-party-class-actors.js",
+      "sha256": "13f1d6112b9a400bb19ccd7a2244fbb367a42092ff374d9778a22c5ede991c06"
+    },
+    {
+      "file": "web/tm-party-class-ecology.js",
+      "sha256": "cf5f8d295bdee6ee8e398fb6f66cf312ec17eed9ee9899f86171252aa43a87d8"
+    },
+    {
+      "file": "web/tm-party-class-llm-calibrator.js",
+      "sha256": "5e59915878b05187f20123e7c1797626f7ae51823b00e782a72ee09b1b91e669"
+    },
+    {
+      "file": "web/tm-party-class-tuning.js",
+      "sha256": "f23f0925806a938d01fee7d5219d530c59ebb929e39d37219b3915d87a50ba86"
+    },
+    {
+      "file": "web/tm-party-goals.js",
+      "sha256": "4f3b3466b00f5f518e9d74bda0148d19ef5ae6629582ef48aa7a5e6218ca852b"
+    },
+    {
+      "file": "web/tm-party-inference.js",
+      "sha256": "df8226a2d2afb38ceba8c163ca018fe04b16f017976e7a2e0d053f088f9b01b1"
+    },
+    {
+      "file": "web/tm-patches-start.js",
+      "sha256": "df2cae2128c29311a05229df3f097b7e215408964527c8fe33296f1956405303"
+    },
+    {
+      "file": "web/tm-patches.js",
+      "sha256": "13b150550cf5b70af0c7f00595ca986efa81e99d6181ef9c453a5ac09cf6e4ef"
+    },
+    {
+      "file": "web/tm-pause-fab.js",
+      "sha256": "3903579fad1703f4ad615b04c1a24c0ecb36a77ab179b155c6b5995ce7cfdeea"
+    },
+    {
+      "file": "web/tm-perf.js",
+      "sha256": "7ac344794d1ea4a1fb9769c6ea4036ba7986bc5952121b097b63e40a4421d09f"
+    },
+    {
+      "file": "web/tm-personal-memory-recall.js",
+      "sha256": "1b2123e8368c37f8f8e16f5996200c020bbb61f392951e5c1ec97c39e3ff286c"
+    },
+    {
+      "file": "web/tm-pinch-pan.js",
+      "sha256": "dcf24bc341291d7ff4ef11367e8d427744d1ca35f0caa90bbcabfe8ec6675da3"
+    },
+    {
+      "file": "web/tm-platform.js",
+      "sha256": "fbcff53dab1b69e3ff562f198bcb431ebe595b7044efe29213a7e24cd28b3e98"
+    },
+    {
+      "file": "web/tm-player-action-signals.js",
+      "sha256": "dc3a09d92bf4288e2bc65d6ce7c23c8e5fcbf9552fac146fab23e780c65400c9"
+    },
+    {
+      "file": "web/tm-player-core.js",
+      "sha256": "d8e7e40b709f2a7c53a778a58b54d60a70aeae3f9b7be32a873ad05e97ca40fc"
+    },
+    {
+      "file": "web/tm-player-settings.js",
+      "sha256": "8efb8c40132e79939cebd16da4e728a1206f556b26c02641d8e1c572a3eaf845"
+    },
+    {
+      "file": "web/tm-player-tools.js",
+      "sha256": "e33dc6175b2f0e757898c8e254f41010f312b65a7953456ff291253b1c2eb943"
+    },
+    {
+      "file": "web/tm-political-actions.js",
+      "sha256": "00a060f6353d1283f964627f8e477f538cff0cfc038dcd5f57ce1ff676aaa908"
+    },
+    {
+      "file": "web/tm-post-turn-jobs.js",
+      "sha256": "aad8d466fda510e5c2b74fcd2d97ee46657c928a5a09f2f25702396041350ac5"
+    },
+    {
+      "file": "web/tm-promotion.js",
+      "sha256": "70d08a92e9abe1fccac19dced59eced8625ae5fd026015c9db082d7b09f9df7c"
+    },
+    {
+      "file": "web/tm-prompt-composer.js",
+      "sha256": "be65bc2ed4b4c1fd8bd1a760f8605ca65d4af7eaf2826696f665887e01cfc904"
+    },
+    {
+      "file": "web/tm-prophecy.js",
+      "sha256": "60620ef41a72a1802fdaa01ef0f387c8287d6363602d56b1929e46b9d8a48add"
+    },
+    {
+      "file": "web/tm-public-treasury.js",
+      "sha256": "60e7ae194ee08fd944faec5c3386fac6923658048a9395cfbfc9fe016a8fef29"
+    },
+    {
+      "file": "web/tm-qiju-ledger.js",
+      "sha256": "4a83508f2e042f16491676dd25757fcff62336377e879c27684c78ea66c579fe"
+    },
+    {
+      "file": "web/tm-recall-gate.js",
+      "sha256": "9f478f46467fbe240261005af3b5fcdfe8b0f5d682378a0985702a7b1413c123"
+    },
+    {
+      "file": "web/tm-reflection-agent.js",
+      "sha256": "b06f6e6237f8d24119ef666be186852c8d50c00c2c18f998db373ddbd872d0ee"
+    },
+    {
+      "file": "web/tm-region-enrich.js",
+      "sha256": "2273be1b7d13d8512053094baaef22bb9c81591473215a2029dfc355f7218194"
+    },
+    {
+      "file": "web/tm-region-magnate.js",
+      "sha256": "94f3ba944d15328200ca1ef8c14fb1c6df17ec72e29076506388475bf3b557a4"
+    },
+    {
+      "file": "web/tm-region-status.js",
+      "sha256": "c4399c6ba8cd58120e3ceebd53f689ca9c7ede1c2b46f43dbd530218e1fdcb74"
+    },
+    {
+      "file": "web/tm-rel-graph.js",
+      "sha256": "205e0184922b65c2d30ca45127e9df2b05234d32f51625e13ec890cf6b1d6093"
+    },
+    {
+      "file": "web/tm-relations.js",
+      "sha256": "dca56960d411b3d92436fecedc86da0e5e3f449d0edfa88addf047c6f29a21cc"
+    },
+    {
+      "file": "web/tm-renli.js",
+      "sha256": "a21c96341a059054cd4ac00d71f9c1faff3bcdb1a7c8e5ad3fbb91893f022f88"
+    },
+    {
+      "file": "web/tm-renwu-tuzhi.js",
+      "sha256": "f736bf3449d56cb145928662b8d85ebd2367fc81addcf5c8918ddab9dce4f29f"
+    },
+    {
+      "file": "web/tm-renwu-ui.js",
+      "sha256": "0b31a5da65e9e9431953333710c01f0c434dd4d99a45c20de21e0dd82bc2136a"
+    },
+    {
+      "file": "web/tm-reported-view.js",
+      "sha256": "8e9bbf8b8d0022961acfa0b4abd609ce32b5db26217a008ecf283c3d9edb7918"
+    },
+    {
+      "file": "web/tm-resume-point.js",
+      "sha256": "5620526ea2fe8bc88cdac3c9072ba8830e85f2dcfaba20bf198b8000039729be"
+    },
+    {
+      "file": "web/tm-revolt-entity.js",
+      "sha256": "de9cf807b558f968ef54c51a220f66e064051fca6e833ab6b1cdfe54ea020e68"
+    },
+    {
+      "file": "web/tm-revolt-inference.js",
+      "sha256": "fea35722f6420f688d0efd8e81e48ce4498bf185f2d02c2068bd1bc2865f275a"
+    },
+    {
+      "file": "web/tm-save-close-flush.js",
+      "sha256": "465aebad69af11bf1c7fdf8ef9886331528cdb1a543e8dccd0b03433e6c30289"
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "sha256": "0675740b33e5fadaa4a6ee30e2792e4dbd61c2786deff5864012f0ae91f4d868"
+    },
+    {
+      "file": "web/tm-save-manager.js",
+      "sha256": "ba4afb9911dd704bd0477cdd33e555083e1c1aab2a2835b6b4c2a50fa60a6516"
+    },
+    {
+      "file": "web/tm-save-stable-id-migration.js",
+      "sha256": "6a4e4a3775281ba99250f2bc4cf4cabdbe2bb224eaadf3c450ea2d011c7a9ac4"
+    },
+    {
+      "file": "web/tm-save-world-validation.js",
+      "sha256": "f8394bdc86207b501d17f79137d8956775d6c9d1a17ab7a055e7464fac1c6fe3"
+    },
+    {
+      "file": "web/tm-semantic-recall.js",
+      "sha256": "ef15a574eb6ecdcd1ed05d00d217797ca3f42203849581c99776c6222d427e71"
+    },
+    {
+      "file": "web/tm-shanhe-runtime.js",
+      "sha256": "5c2fac7664ee222459eab6a19331d6b0469c691d53e082fb8a474c4582157510"
+    },
+    {
+      "file": "web/tm-shell-extras.js",
+      "sha256": "2a0877237335eec14684c7f3dc436c4812ef90f93d2671d66840d462a18b775c"
+    },
+    {
+      "file": "web/tm-shiji-qiju-ui.js",
+      "sha256": "78ed2294c1a82dcd9dac3aa5781dcdefd2d09d88d8390baf52c29b188db87f25"
+    },
+    {
+      "file": "web/tm-shizheng-panel.js",
+      "sha256": "825bab32a66bf4723cb294b157f7e35af08bb952e74f168eb212688e8c374186"
+    },
+    {
+      "file": "web/tm-sidebar-ui.js",
+      "sha256": "d1d238b4fc87c0b343b9a1fb118a307869b802862d16594549e6d3876b99cac4"
+    },
+    {
+      "file": "web/tm-sim-time.js",
+      "sha256": "57478e7c6b7c0660e876a79b90cc49f555731c10f2a6cd32674dd2aee689d213"
+    },
+    {
+      "file": "web/tm-social-formation.js",
+      "sha256": "aebb094a13df3dfc3f6e54b204495ee8849cf041905e8a2546c631ec4cfd65c2"
+    },
+    {
+      "file": "web/tm-social-foundation.js",
+      "sha256": "f6f1ec2a8f34c7e7738b608053d0b418a260d381d66124e3823f750858786e40"
+    },
+    {
+      "file": "web/tm-social-political-signals.js",
+      "sha256": "de14c7e3df21a1e092d7e882560d1eb7c84f40e6b65b079c57eba1b96caf21e3"
+    },
+    {
+      "file": "web/tm-start-commit.js",
+      "sha256": "fe2fb7ef0db6fadfdfae1f0d18c9e933924c88fb4dbde8917574a37f31423a2b"
+    },
+    {
+      "file": "web/tm-start-compiler.js",
+      "sha256": "f3b6479eee8a8e6e97a265bad9f68af68ae43799fb2cf1885df56b131edd49b0"
+    },
+    {
+      "file": "web/tm-start-contracts.js",
+      "sha256": "f00379d0581e2d8ab866952fd0e20ef833621f3f3899e1b5a68890531adbd3e9"
+    },
+    {
+      "file": "web/tm-start-preparation-document.js",
+      "sha256": "a7c2a76482a53ef0f26050c5a5be73f67b7187bc50476894bcd51c09cf5be7e6"
+    },
+    {
+      "file": "web/tm-start-preparation.js",
+      "sha256": "5aaf57338d21676818b3186c4ad17543f659c1b7672c3d7089cfdc56da5eea06"
+    },
+    {
+      "file": "web/tm-start-selector.js",
+      "sha256": "1658721e70f0d85e14420e7a220f648f2aad68f937c3ebe1f6e1af32ee3c00ab"
+    },
+    {
+      "file": "web/tm-start-world.js",
+      "sha256": "67f63f73d1ac471bb19a019034b7689be04e01c006611374edf001590cf4edc1"
+    },
+    {
+      "file": "web/tm-startup-contract.js",
+      "sha256": "a3c87446e6b7e2b7f2bb2d5a6fbcdab2786d8c5282212ce45bf1130a70d2920f"
+    },
+    {
+      "file": "web/tm-startup-phases.js",
+      "sha256": "b314846b6d0c95eab403f450d9c23e6352edc24ed138a53da9c7ae500e434846"
+    },
+    {
+      "file": "web/tm-state-snapshot.js",
+      "sha256": "9aee8893f73ff9db7f6177ab83f5d6518b01e4f886db5d3e0b2d230d62d62784"
+    },
+    {
+      "file": "web/tm-state.js",
+      "sha256": "2081da22900c59cf17eda7219ac3efc7dc3de6c86a640f22cbf65ed626e91aa7"
+    },
+    {
+      "file": "web/tm-storage.js",
+      "sha256": "320b212981a47a76739ffb587bd4375765a46e1e528b40e3ae695472fa583ba9"
+    },
+    {
+      "file": "web/tm-talent-backlash.js",
+      "sha256": "fcd395e31e4fd111744e7c32cd98338eaf0dce70668ad55e83b2d818dacc6949"
+    },
+    {
+      "file": "web/tm-talent-bottlenecks.js",
+      "sha256": "f2196080b5588d617b412481304f732ef322f9633eeed422d3b070beac3f41f5"
+    },
+    {
+      "file": "web/tm-talent-building-bridge.js",
+      "sha256": "2c7388d529b09e9a7ada6d9b3d16fbd4ccf651321cca72e8e376149df6cac82c"
+    },
+    {
+      "file": "web/tm-talent-cohorts.js",
+      "sha256": "43c8c7783bfe6b3744ac3fe20617df2d9e7527ea5f7181c7f9243fa768b5fb9b"
+    },
+    {
+      "file": "web/tm-tax-policy.js",
+      "sha256": "62f64cb225587dfe977b677ead1c14ad56eb525817876509f6b485b5b68f4ca5"
+    },
+    {
+      "file": "web/tm-theme-font.js",
+      "sha256": "86a57498495b24be96093dd21be49c3c73955158d26d5f92e9eb731d01205f30"
+    },
+    {
+      "file": "web/tm-three-systems-ext.js",
+      "sha256": "cdc4cceb8119234df0d5abeef7d35420db35ea804f8d9ccd319c32d555184a89"
+    },
+    {
+      "file": "web/tm-three-systems-ui.js",
+      "sha256": "bf223342b8751a99371ec1742c08fa264501fe6962a5752d43864890956b04bd"
+    },
+    {
+      "file": "web/tm-tianji.js",
+      "sha256": "dba9d6d422466136abc7f769cb66d8ac11bc003f018c64bd71a68bfdb8103add"
+    },
+    {
+      "file": "web/tm-time-utils.js",
+      "sha256": "a6926b510fbda247c6f324ac63945bc99562c55fc441f27984139109949626f9"
+    },
+    {
+      "file": "web/tm-tinyi-v3-edict-personnel.js",
+      "sha256": "a525b55a4e3c503be08c58ca5cc4d5a1dbbae8fea045069d5221cfbd65796971"
+    },
+    {
+      "file": "web/tm-tinyi-v3-parties.js",
+      "sha256": "312efbd5fe3fa93cf3a939836068481c57e4c28d49e8297a5a8088ff7c507a7c"
+    },
+    {
+      "file": "web/tm-tinyi-v3-persona.js",
+      "sha256": "4a41827e7d95acb8d43e7a1e6dce366fb4183e0b8dfc5dc7f0a2d90f5f424ad1"
+    },
+    {
+      "file": "web/tm-tinyi-v3.js",
+      "sha256": "705ca767eb7ae90a954ea19e84b7209eae03c1b76799af78d8ff642a5aed5af7"
+    },
+    {
+      "file": "web/tm-topbar-vars.js",
+      "sha256": "8f638cce6dd00c2cc5b811aa6a83608be8244138f8c855a5ea6510cdff6bc809"
+    },
+    {
+      "file": "web/tm-touch-gestures.js",
+      "sha256": "cf18ab8cb6cb7fe01dafe3c3b90d91b9bc70e1d9a79c2eba06d750ed0aa0c81d"
+    },
+    {
+      "file": "web/tm-traits-data.js",
+      "sha256": "8c9741683bd931dbe296986a388259b99f875e7c95c8f19e7de4f29651b61dca"
+    },
+    {
+      "file": "web/tm-ui-foundation.js",
+      "sha256": "da205b97b3d544081470ebc52d29d2762ff55897f7fcc4c6fb4f34ac6476061a"
+    },
+    {
+      "file": "web/tm-utils.js",
+      "sha256": "6db3b4343e3ddf2622520f16ba55616c3c8ad69d5e423a7dc9397ffe6c1b162b"
+    },
+    {
+      "file": "web/tm-var-drawers.js",
+      "sha256": "2ce1c5e25d01560acfeb0181eee1ed96d0cabf32b93008da9512cf5ef9b5a2a3"
+    },
+    {
+      "file": "web/tm-wendui-persona-views.js",
+      "sha256": "db69d7b983f524d0dc5be1bcaaba6d40115a454c9d4702257c885e5b05349d33"
+    },
+    {
+      "file": "web/tm-wendui-prison.js",
+      "sha256": "fc8a461bb351b494287eb0af3e8bb64946c2814bf522fde0f662fe6466469488"
+    },
+    {
+      "file": "web/tm-wendui.js",
+      "sha256": "3cb9e9b8e0622d5a093c302d7758784c2ac1d55996693a8343ba71276f625237"
+    },
+    {
+      "file": "web/tm-wentian-agent.js",
+      "sha256": "f8a2a95fe8d03025331d19f2338b0d75fd53fead1ea24bee5709282cadb6441a"
+    },
+    {
+      "file": "web/tm-workshop-covers.js",
+      "sha256": "ec8062fabbbbcab332292b4bef91fdd1cf20caac7b06bd1a5f1fe9e5e30d5616"
+    },
+    {
+      "file": "web/tm-world-digest.js",
+      "sha256": "5c76a0e4aa428bac0df26be4a042aaea0e0bca40b9b3257e28f1fd4d52f8bea0"
+    },
+    {
+      "file": "web/tm-world-era.js",
+      "sha256": "4fb4460f9cb2486d5f7e38b402edb39589df3e973364391b4c138add3fe749f5"
+    },
+    {
+      "file": "web/tm-world-identity.js",
+      "sha256": "399479d213b0fa4677ba9b545811f0faf6cbe8f321013a32b7554bbe7dc1ed70"
+    },
+    {
+      "file": "web/tm-world-reactors.js",
+      "sha256": "2556ecf719b7befa390dba43c44850e7a8db52fd7db4efea79aeaf2dabfef168"
+    },
+    {
+      "file": "web/tm-world-snapshot.js",
+      "sha256": "f5d984516df8d4da2baa472a7e4fb84f1c48242b52c783d2df826c01ddf8aa92"
+    },
+    {
+      "file": "web/tm-world-view.js",
+      "sha256": "eaa51dfbbf961903f7fc9ba9777dfe9e2d7f583bfd3d335cea753ab012bb40f7"
+    },
+    {
+      "file": "web/tm-world.js",
+      "sha256": "67d1877dc460169e7b30d4878aad0e5239ed5e38466c4b6e842f4274ff2f06ed"
+    },
+    {
+      "file": "web/tm-xinjun-observe.js",
+      "sha256": "6421519cbe8a2f0e54b3c67e4e874a290e2d60eba8350f45cf0915284c825d0b"
+    },
+    {
+      "file": "web/tm-zip-store.js",
+      "sha256": "e267f424d87457e48799968f779833ea1c3c2235d5293ea3c64019356ade4d4e"
+    }
+  ]
+}

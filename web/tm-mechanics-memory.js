@@ -456,9 +456,7 @@ var NpcMemorySystem = {
 
     // === 方向11：关系历史快照（favor 变化 ≥5 时记录） ===
     if (relatedPerson && relatedPerson !== charName && !(meta && meta.relationshipHandled)) {
-      if (!ch._impressions) ch._impressions = {};
-      if (!ch._impressions[relatedPerson]) ch._impressions[relatedPerson] = { favor: 0, events: [] };
-      var imp = ch._impressions[relatedPerson];
+      var imp = NpcMemorySystem._impressionEntry(ch, relatedPerson);
       var impWeight = Math.max(1, Math.min(importance || 5, 10)) / 5;
       var baseDelta = emotion === '喜' || emotion === '敬' ? 3 : emotion === '怒' || emotion === '恨' ? -4 : emotion === '忧' || emotion === '惧' ? -1 : 0;
       var delta = Math.round(baseDelta * impWeight);
@@ -887,14 +885,34 @@ var NpcMemorySystem = {
     return combine(result);
   },
 
-  /** 获取对特定人物的印象值 */
+  /**
+   * 某人对某人的印象条目，写入时的唯一取用口：没有就建，有就规整后原物返回。
+   * 印象的样子由这里定：{ favor: 有限数, events: 数组 }，其余字段原样保留。
+   * 剧本可以手写 { favor, note }（天启七年杨鹤即如此，没有 events），旧档里也见过只存一个数的；
+   * 2026-11-06 之前 remember() 直接 events.push，碰到这两种就抛错，连累同一批写回。
+   */
+  _impressionEntry: function(ch, targetName) {
+    if (!ch._impressions || typeof ch._impressions !== 'object') ch._impressions = {};
+    var imp = ch._impressions[targetName];
+    if (typeof imp === 'number') imp = { favor: imp };
+    else if (!imp || typeof imp !== 'object') imp = {};
+    var favor = Number(imp.favor);
+    imp.favor = isFinite(favor) ? Math.max(-100, Math.min(100, favor)) : 0;
+    if (!Array.isArray(imp.events)) imp.events = [];
+    ch._impressions[targetName] = imp;
+    return imp;
+  },
+
+  /** 获取对特定人物的印象值（只读，不改条目） */
   getImpression: function(charName, targetName) {
     if (!GM.chars) return 0;
     charName = _tmMemoryCanonName(charName);
     targetName = _tmMemoryCanonName(targetName);
     var ch = _tmMemoryFindChar(charName);
-    if (!ch || !ch._impressions || !ch._impressions[targetName]) return 0;
-    return ch._impressions[targetName].favor;
+    if (!ch || !ch._impressions || ch._impressions[targetName] == null) return 0;
+    var imp = ch._impressions[targetName];
+    var favor = Number(typeof imp === 'number' ? imp : imp.favor);
+    return isFinite(favor) ? favor : 0;
   },
 
   /** 获取角色当前情绪 */
@@ -932,7 +950,7 @@ var NpcMemorySystem = {
       // 印象衰减（不对称：恩情慢衰，怨恨更慢衰——人记仇比记恩更久）
       if (ch._impressions) {
         for (var pn in ch._impressions) {
-          var imp = ch._impressions[pn];
+          var imp = NpcMemorySystem._impressionEntry(ch, pn);
           if (imp.favor > 0) imp.favor = Math.max(0, imp.favor - 0.4);
           else if (imp.favor < 0) imp.favor = Math.min(0, imp.favor + 0.2); // 怨恨衰减更慢
           if (Math.abs(imp.favor) < 0.5 && (!imp.events || imp.events.length === 0)) delete ch._impressions[pn];
@@ -1115,15 +1133,27 @@ var CharacterGrowthSystem = {
    * @param {string} charName
    * @param {string} domain - 历练领域
    * @param {string} desc - 具体经历描述
+   * @param {{characterId?: string}} [options] - 显式身份优先，不按同名回退
    */
-  recordExperience: function(charName, domain, desc) {
-    if (!GM.chars) return;
-    charName = _tmMemoryCanonName(charName);
-    var ch = _tmMemoryFindChar(charName);
-    if (!ch || ch.alive === false) return;
+  recordExperience: function(charName, domain, desc, options) {
+    if (!GM.chars) return false;
+    options = options || {};
+    var matches;
+    if (Object.prototype.hasOwnProperty.call(options, 'characterId')) {
+      // Explicit identity is authoritative: a bad ID never falls back to a name.
+      if (options.characterId == null || String(options.characterId) === '') return false;
+      matches = GM.chars.filter(function (ch) { return ch && ch.id != null && String(ch.id) === String(options.characterId); });
+    } else {
+      charName = _tmMemoryCanonName(charName);
+      matches = GM.chars.filter(function (ch) { return ch && ch.id != null && String(ch.id) === String(charName); });
+      if (!matches.length) matches = GM.chars.filter(function (ch) { return ch && _tmMemoryCanonName(ch.name) === charName; });
+    }
+    if (matches.length !== 1 || matches[0].alive === false) return false;
+    var ch = matches[0];
     if (!ch._lifeExp) ch._lifeExp = [];
     ch._lifeExp.push({ domain: domain, desc: desc, turn: GM.turn });
     if (ch._lifeExp.length > 20) ch._lifeExp = ch._lifeExp.slice(-20);
+    return true;
   },
 
   /**

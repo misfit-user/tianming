@@ -1,0 +1,12 @@
+{
+  "head": "477ecfacf35039c33e554a5d50caf0eff24e27d0",
+  "localRun": "web/dev-tools/electron-bridge/964f3503-873f-4003-aa87-be2f10c2c4bf",
+  "result": "failed",
+  "failure": "The actual history modal Cancel footer is offscreen; the harness ignored it before scrolling. The normal header close button is visible and does not choose an event branch.",
+  "remote": {
+    "run": 39786955659,
+    "job": 119852596289,
+    "result": "renderer crash after real slot1 load and next committed turn; no crash dump, not classified as proven OOM"
+  },
+  "acceptance": "M3 and M4 incomplete; no second reload or onsite result in these runs."
+}

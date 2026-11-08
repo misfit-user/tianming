@@ -31,19 +31,21 @@ function main() {
   const artifact = (relative) => built.files.get(path.join(syncer.REPO_ROOT, ...relative.split('/')))
     || built.files.get(path.join(syncer.WEB_ROOT, ...relative.replace(/^web\//, '').split('/')));
 
-  const seeder = artifact('web/tm-official-scenario-bundle.js');
   const preview = artifact('web/preview/official-scenarios-bundle.js');
   const reset = artifact('web/preview/scenario-editor-reset-data.js');
-  ok(typeof seeder === 'string' && typeof preview === 'string' && typeof reset === 'string', 'seeder/preview/reset artifacts registered');
+  ok(typeof preview === 'string' && typeof reset === 'string', 'preview/reset artifacts registered');
+  const seederBundle = path.join(syncer.WEB_ROOT, 'tm-official-scenario-bundle.js');
+  ok(!built.files.has(seederBundle) && !fs.existsSync(seederBundle), 'no second seeder bundle: the builtins are the only shipped copy');
 
   built.entries.forEach((entry) => {
     const compact = JSON.stringify(entry.data);
     const builtin = artifact('web/' + entry.builtin);
     ok(builtin.includes('var scenario = ' + serializeScenarioExpression(entry.data) + ';'), entry.key + ' builtin embeds the complete lossless root expression');
     ok(builtin.split('\n').length <= 20, entry.key + ' builtin remains reviewable compact output');
+    ok(builtin.includes('global.TMOfficialScenarioBuiltins[scenario.id] = scenario;'), entry.key + ' builtin feeds the standalone registry (desktop seeder/preview/tests)');
     const expression = serializeScenarioExpression(entry.data);
-    ok(seeder.includes('"data":' + expression), entry.key + ' seeder includes lossless root expression');
-    ok(preview.includes('"' + entry.key + '":' + expression), entry.key + ' editor preview includes lossless root expression');
+    ok(preview.includes(JSON.stringify(entry.id) + ':' + JSON.stringify(entry.key)), entry.key + ' editor preview adapter maps the builtin id to its key');
+    ok(!preview.includes(expression.slice(0, 200)), entry.key + ' editor preview no longer embeds a second data copy');
     if (entry.key === 'tianqi7') {
       const marker = '"scenario":';
       const start = reset.lastIndexOf(marker) + marker.length;
@@ -95,11 +97,11 @@ function main() {
   });
 
   // Format checks above supplement, never replace, full executed-consumer parity.
-  for (const mode of ['seeder','preview']) {
+  for (const mode of ['builtin', 'game', 'preview']) {
     const child = spawnSync(process.execPath, [path.join(__dirname, 'verify-official-aggregate-worker.js'), mode],
       { encoding:'utf8', timeout:180000, maxBuffer:1024*1024 });
     if (child.status !== 0) throw new Error(mode + ' complete consumer parity failed: ' + (child.stderr || child.error || child.stdout));
-    const result = JSON.parse(child.stdout.trim());
+    const result = JSON.parse(child.stdout.trim().split(/\r?\n/).pop());
     ok(result.ok && result.checks >= built.entries.length, mode + ' all executed values and object isolation verified');
   }
   console.log('PASS assertions=' + assertions);

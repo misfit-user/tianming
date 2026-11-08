@@ -56,13 +56,14 @@ const state = {
 // 工具
 // ═══════════════════════════════════════════════
 function $(id) { return document.getElementById(id); }
-function escHtml(s) { return String(s||'').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":"&#39;"}[c])); }
+// 本模块私有转义（可单独装载的预览/测试用）；正式游戏全站 escHtml 由 tm-utils.js 唯一提供。
+function _ccEscHtml(s) { return String(s||'').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":"&#39;"}[c])); }
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function avatarHtml(name, opts = {}) {
   const ch = CHARS[name] || { initial: name.slice(0, 1), class: 'east' };
   const cls = ch.class === 'wu' ? 'wu' : ch.class === 'kdao' ? 'koudao' : '';
-  return `<div class="cy-bubble-avatar ${cls}${ch.portrait ? ' has-img' : ''}">${ch.portrait ? '<img class="cy-bubble-avatar-img" src="'+escHtml(ch.portrait)+'" loading="lazy" decoding="async">' : escHtml(ch.initial || name.slice(0, 1))}</div>`;
+  return `<div class="cy-bubble-avatar ${cls}${ch.portrait ? ' has-img' : ''}">${ch.portrait ? '<img class="cy-bubble-avatar-img" src="'+_ccEscHtml(ch.portrait)+'" loading="lazy" decoding="async">' : _ccEscHtml(ch.initial || name.slice(0, 1))}</div>`;
 }
 
 // 2026-06·出班者立绘放大焦点（左殿堂·随发言切换·谁奏对则谁立绘）
@@ -71,9 +72,9 @@ function _cc3_setPresenter(name) {
   if (!el || !name) return;
   var ch = CHARS[name] || {};
   var pic = ch.portrait
-    ? '<img class="cc-pres-img" src="' + escHtml(ch.portrait) + '" loading="lazy">'
-    : '<div class="cc-pres-ph">' + escHtml(String(name).charAt(0)) + '</div>';
-  el.innerHTML = '<div class="cc-pres-pic">' + pic + '</div><div class="cc-pres-info"><div class="cc-pres-nm">' + escHtml(name) + '</div><div class="cc-pres-rl">' + escHtml(ch.title || '') + ' · 出班奏对</div></div>';
+    ? '<img class="cc-pres-img" src="' + _ccEscHtml(ch.portrait) + '" loading="lazy">'
+    : '<div class="cc-pres-ph">' + _ccEscHtml(String(name).charAt(0)) + '</div>';
+  el.innerHTML = '<div class="cc-pres-pic">' + pic + '</div><div class="cc-pres-info"><div class="cc-pres-nm">' + _ccEscHtml(name) + '</div><div class="cc-pres-rl">' + _ccEscHtml(ch.title || '') + ' · 出班奏对</div></div>';
   el.classList.add('active');
 }
 
@@ -89,8 +90,8 @@ function _cc3_renderAgendaList() {
     var stt = i < cur ? 'done' : (i === cur ? 'cur' : 'wait');
     var icon = stt === 'done' ? '✓' : (stt === 'cur' ? '●' : '○');
     var tags = '';
-    if (it.tags && it.tags.length) { for (var t = 0; t < Math.min(2, it.tags.length); t++) tags += '<span class="cc-ag-tag">' + escHtml(it.tags[t]) + '</span>'; }
-    h += '<div class="cc-ag-item ' + stt + '"><span class="cc-ag-st">' + icon + '</span><span class="cc-ag-ti">' + escHtml(it.title || it.presenter || '议题') + '</span><span class="cc-ag-tags">' + tags + '</span></div>';
+    if (it.tags && it.tags.length) { for (var t = 0; t < Math.min(2, it.tags.length); t++) tags += '<span class="cc-ag-tag">' + _ccEscHtml(it.tags[t]) + '</span>'; }
+    h += '<div class="cc-ag-item ' + stt + '"><span class="cc-ag-st">' + icon + '</span><span class="cc-ag-ti">' + _ccEscHtml(it.title || it.presenter || '议题') + '</span><span class="cc-ag-tags">' + tags + '</span></div>';
   }
   h += '</div>';
   el.innerHTML = h;
@@ -106,16 +107,16 @@ function addBubble(opts) {
     const sysCls = opts.sysKind ? (' ' + opts.sysKind) : '';
     inner = `<div class="cy-bubble-content"><div class="cy-bubble-text${sysCls}">${opts.text}</div></div>`;
   } else if (opts.kind === 'player') {
-    inner = `<div class="cy-bubble-content"><div class="cy-bubble-meta">${(typeof _sovereignAddressTerm === 'function' ? _sovereignAddressTerm(typeof GM !== 'undefined' ? GM : null) : '陛下')}</div><div class="cy-bubble-text">${escHtml(opts.text)}</div></div>`;
+    inner = `<div class="cy-bubble-content"><div class="cy-bubble-meta">${(typeof _sovereignAddressTerm === 'function' ? _sovereignAddressTerm(typeof GM !== 'undefined' ? GM : null) : '陛下')}</div><div class="cy-bubble-text">${_ccEscHtml(opts.text)}</div></div>`;
   } else {
     const ch = CHARS[opts.name] || {};
     const stance = opts.stance ? `<span class="stance stance-${opts.stance}">${stanceLbl(opts.stance)}</span>` : '';
     const itemType = opts.itemType ? `<span class="type-badge t-${opts.itemType}">${typeLbl(opts.itemType)}</span>` : '';
-    const meta = `${escHtml(opts.name)} · ${escHtml(ch.title || '')}${itemType}${stance}`;
+    const meta = `${_ccEscHtml(opts.name)} · ${_ccEscHtml(ch.title || '')}${itemType}${stance}`;
     const urgTag = opts.urgent ? '<span class="urg-tag">⚡ 急</span>' : '';
     const detailCls = opts.detail ? (' detail' + (opts.itemType ? ' type-' + opts.itemType : '')) : '';
     const urgCls = opts.urgent ? ' urgent' : '';
-    inner = `${avatarHtml(opts.name)}<div class="cy-bubble-content"><div class="cy-bubble-meta">${meta}</div><div class="cy-bubble-text${detailCls}${urgCls}">${urgTag}${escHtml(opts.text)}</div></div>`;
+    inner = `${avatarHtml(opts.name)}<div class="cy-bubble-content"><div class="cy-bubble-meta">${meta}</div><div class="cy-bubble-text${detailCls}${urgCls}">${urgTag}${_ccEscHtml(opts.text)}</div></div>`;
   }
   row.innerHTML = inner;
   main.appendChild(row);
@@ -1670,11 +1671,11 @@ function showAIConfigModal() {
       <h3>AI 配置 · OpenAI 兼容协议（与主游戏共享）</h3>
       <div class="hint">配置存于 localStorage.tm_api · 主游戏配过此处自动读出 · 改动也会回写</div>
       <div style="font-size:12px;color:var(--ink-500);margin-bottom:4px;">API URL（如 https://api.openai.com/v1·或自定义代理）</div>
-      <input id="ai-cfg-url" type="text" value="${escHtml(cfg.url)}" placeholder="https://api.openai.com/v1" />
+      <input id="ai-cfg-url" type="text" value="${_ccEscHtml(cfg.url)}" placeholder="https://api.openai.com/v1" />
       <div style="font-size:12px;color:var(--ink-500);margin-bottom:4px;">API Key</div>
-      <input id="ai-cfg-key" type="password" value="${escHtml(cfg.key)}" placeholder="sk-..." />
+      <input id="ai-cfg-key" type="password" value="${_ccEscHtml(cfg.key)}" placeholder="sk-..." />
       <div style="font-size:12px;color:var(--ink-500);margin-bottom:4px;">模型名（如 gpt-4o-mini / claude-sonnet-4-5 / deepseek-chat 等）</div>
-      <input id="ai-cfg-model" type="text" value="${escHtml(cfg.model || 'gpt-4o-mini')}" placeholder="gpt-4o-mini" />
+      <input id="ai-cfg-model" type="text" value="${_ccEscHtml(cfg.model || 'gpt-4o-mini')}" placeholder="gpt-4o-mini" />
       <div style="font-size:12px;color:var(--ink-300);margin:8px 0;">注：CORS 限制下·部分官方端点（含 Anthropic）需经代理。已知可直连：兼容 OpenAI 协议的国产 API（DeepSeek/智谱/月之暗面等）和大多数代理端点。</div>
       <div class="row">
         <button class="cy-btn muted" id="ai-cfg-cancel">取消</button>
@@ -1856,9 +1857,9 @@ function updateTimeOfDay() {
 function renderBench() {
   const east = [], west = [], kdao = [];
   Object.entries(CHARS).forEach(([name, ch]) => {
-    const html = `<div class="bench-avatar${ch.absent ? ' absent' : ''}" title="${escHtml(name)}·${escHtml(ch.title)}${ch.absent ? ' ('+escHtml(ch.absent)+')' : ''}" data-name="${escHtml(name)}">
-      <div class="bench-avatar-circle ${ch.class === 'wu' ? 'wu' : ch.class === 'kdao' ? 'koudao' : ''}${ch.absent ? ' absent' : ''}${ch.portrait ? ' has-img' : ''}">${ch.portrait ? '<img class="bench-avatar-img" src="'+escHtml(ch.portrait)+'" loading="lazy" decoding="async">' : escHtml(ch.initial)}</div>
-      <div class="bench-avatar-name">${escHtml(name)}</div>
+    const html = `<div class="bench-avatar${ch.absent ? ' absent' : ''}" title="${_ccEscHtml(name)}·${_ccEscHtml(ch.title)}${ch.absent ? ' ('+_ccEscHtml(ch.absent)+')' : ''}" data-name="${_ccEscHtml(name)}">
+      <div class="bench-avatar-circle ${ch.class === 'wu' ? 'wu' : ch.class === 'kdao' ? 'koudao' : ''}${ch.absent ? ' absent' : ''}${ch.portrait ? ' has-img' : ''}">${ch.portrait ? '<img class="bench-avatar-img" src="'+_ccEscHtml(ch.portrait)+'" loading="lazy" decoding="async">' : _ccEscHtml(ch.initial)}</div>
+      <div class="bench-avatar-name">${_ccEscHtml(name)}</div>
     </div>`;
     if (ch.class === 'kdao') kdao.push(html);
     else if (ch.class === 'wu') west.push(html);
@@ -1920,7 +1921,7 @@ async function runOpening() {
     roster.className = 'absent-roster';
     let html = '<span class="lbl">〔 缺 朝 〕</span>';
     state.absents.forEach(a => {
-      html += '<span class="name">' + escHtml(a.name) + '</span><span style="color:var(--ink-300);font-size:12px;">（' + escHtml(a.reason) + '）</span>';
+      html += '<span class="name">' + _ccEscHtml(a.name) + '</span><span style="color:var(--ink-300);font-size:12px;">（' + _ccEscHtml(a.reason) + '）</span>';
     });
     roster.innerHTML = html;
     main.appendChild(roster);
@@ -2010,7 +2011,7 @@ async function runAnnounce() {
     const main = $('cy-stage-main');
     const card = document.createElement('div');
     card.className = 'urgent-card';
-    card.innerHTML = `<span class="urgent-mark">⚡ 急 奏</span><span class="urgent-text">${escHtml(item.presenter)} · ${escHtml(item.dept || '')} · 「${escHtml(item.title)}」 · 须陛下即决</span>`;
+    card.innerHTML = `<span class="urgent-mark">⚡ 急 奏</span><span class="urgent-text">${_ccEscHtml(item.presenter)} · ${_ccEscHtml(item.dept || '')} · 「${_ccEscHtml(item.title)}」 · 须陛下即决</span>`;
     main.appendChild(card);
     main.scrollTop = main.scrollHeight;
     await delay(700);
@@ -2237,7 +2238,7 @@ function showDetailActions() {
     queueBtnHtml = `
       <button class="cy-btn" style="border-color:var(--celadon-400);color:var(--celadon-400);" onclick="toggleStrictQueuePopover()">📋 请奏 ${liveQueue.length} 人 ▼</button>
       <div class="cy-popover" id="strict-queue-popover">
-        ${liveQueue.map((q, idx) => `<button class="cy-popover-item" onclick="letStrictSpeaker(${queue.indexOf(q)})">${escHtml(q.name)} <span class="hint">${stanceLbl(q.stance)}</span></button>`).join('')}
+        ${liveQueue.map((q, idx) => `<button class="cy-popover-item" onclick="letStrictSpeaker(${queue.indexOf(q)})">${_ccEscHtml(q.name)} <span class="hint">${stanceLbl(q.stance)}</span></button>`).join('')}
         <div class="cy-popover-divider"></div>
         <button class="cy-popover-item" onclick="letAllStrictSpeakers()">一并准予 <span class="hint">${liveQueue.length} 人续奏</span></button>
         <button class="cy-popover-item" onclick="dismissStrictQueue()">免诸卿之言 <span class="hint">直入决断</span></button>

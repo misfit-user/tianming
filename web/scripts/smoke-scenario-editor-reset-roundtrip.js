@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // smoke-scenario-editor-reset-roundtrip.js — behavioural smoke for the new
-// scenario editor. Loads the official-scenarios bundle, applies the same
+// scenario editor. Loads the official scenario builtins + preview adapter, applies the same
 // shape-detection + save predicates the editor uses, and verifies a deep
 // JSON round-trip preserves every field on both 天启 and 绍宋 scenarios. The
 // editor itself uses a window-coupled IIFE so it cannot be required directly;
@@ -26,10 +26,10 @@ function assert(cond, msg) {
 assert(fs.existsSync(appFile), 'preview app must exist');
 assert(fs.existsSync(bundleFile), 'official scenarios bundle must exist');
 
-// Load the bundle into a fresh sandbox so we get the real TM_OFFICIAL_SCENARIOS.
+// Load the three builtins (registry mode: the sandbox has no P) plus the preview adapter
+// into a fresh sandbox so we get the real TM_OFFICIAL_SCENARIOS.
 const bundleSrc = fs.readFileSync(bundleFile, 'utf8');
-const sandbox = {};
-vm.createContext(sandbox);
+const sandbox = require('./lib-official-builtins.js').loadBuiltins();
 vm.runInContext(bundleSrc, sandbox, { filename: 'official-scenarios-bundle.js' });
 const bundle = sandbox.TM_OFFICIAL_SCENARIOS;
 assert(bundle && typeof bundle === 'object', 'bundle should expose TM_OFFICIAL_SCENARIOS');

@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-22T16:46:16Z",
+  "headAtEvidenceCapture": "ff727a22f2ac88b1bb784453e7779156706b27a5",
+  "testRunHeadSeparatelyRecorded": false,
+  "worktree": "C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011",
+  "purpose": "R2 player decision boundaries: omit only committed NPC-only outer stops while preserving all physical/event replay.",
+  "scope": [
+    "web/tm-npc-travel.js",
+    "web/scripts/smoke-npc-meeting-events-boundaries.js",
+    "web/scripts/smoke-npc-meeting-events.js"
+  ],
+  "frozenSha256": {
+    "web/tm-npc-travel.js": "dab485ebfa29806134e62bcfa42b7dceef771d2363d9a2cf190cab74bd0cd084",
+    "web/scripts/smoke-npc-meeting-events-boundaries.js": "0913a011aa204429174dd3429a65184cb7f997914b1fab18da26625843164d2a",
+    "web/scripts/smoke-npc-meeting-events.js": "53e8c6a9bd84bf7a892a4ed446fa54a045a984a6a76e84a9974250bd82ec651a"
+  },
+  "logProvenance": {
+    "kind": "Excerpts from actual exec_command/write_stdin tool results in /root/candidate_review.",
+    "fullOriginalStdoutFilesRetained": false,
+    "note": "The excerpts below are observed tool output, not reconstructed complete stdout files. Individual run wall-clock start/end timestamps were not retained. recordedAtUtc is evidence-file creation time. No test was rerun to create this file."
+  },
+  "executions": [
+    {
+      "name": "current-final-boundary-smoke",
+      "command": "node web/scripts/smoke-npc-meeting-events-boundaries.js",
+      "shell": "powershell",
+      "toolOutputChunks": [
+        "bfd66a",
+        "74724b"
+      ],
+      "execSessionId": 20008,
+      "exitCode": 0,
+      "passed": 15,
+      "failed": 0,
+      "observedStdoutExcerpts": [
+        "PASS committed outbound travel stops at the effective player choice, preserving the earlier real arrival",
+        "PASS a player question replays NPC answer, agreed end and both returns within the same remaining interval",
+        "PASS a lawful late arrival stops at the actual shared start within the agreed window",
+        "PASS player long and split intervals retain all message, physical, discussion and effect receipts",
+        "PASS an already started agreed return does not add an outer arrival stop",
+        "PASS an exhausted NPC answer budget keeps the answer and retry event boundaries",
+        "PASS player target and two controlled participants retain the exact answer boundary and never answer automatically",
+        "PASS changed routes, multiple controlled roles and retry budgets keep conservative event boundaries",
+        "{\"fixture\":\"synthetic-60-people-30-days\",\"segmented\":false,\"days\":30,\"meetings\":30,\"complete\":30,\"modelAttempts\":0,\"elapsedMs\":3780.5192,\"saveGrowthBytes\":655156}",
+        "{\"fixture\":\"synthetic-60-people-30-days\",\"segmented\":true,\"days\":30,\"meetings\":30,\"complete\":30,\"modelAttempts\":0,\"elapsedMs\":7172.2824,\"saveGrowthBytes\":658214}",
+        "{\"suite\":\"meeting-event-boundaries\",\"passed\":15,\"failed\":0}"
+      ]
+    },
+    {
+      "name": "original-151a-runtime-with-same-final-boundary-smoke",
+      "runtimeCommit": "151a2b64ca3e2dc7317d20efba296579176cdd12",
+      "runtimeSha256": "6187495562f09479eb21e8c468d08cd750494582d1f8ed0b171466356991ce2f",
+      "testSha256": "0913a011aa204429174dd3429a65184cb7f997914b1fab18da26625843164d2a",
+      "shell": "powershell",
+      "command": "@'\nconst fs=require('fs'),path=require('path'),cp=require('child_process'),crypto=require('crypto');\nconst target=path.resolve('web/tm-npc-travel.js'),originalRead=fs.readFileSync,originalBytes=originalRead(target);\nconst old=cp.execFileSync('git',['show','151a2b64ca3e2dc7317d20efba296579176cdd12:web/tm-npc-travel.js'],{maxBuffer:8*1024*1024});\nconsole.log('OLD_RUNTIME_SHA256='+crypto.createHash('sha256').update(old).digest('hex'));\nfs.readFileSync=function(file,options){if(typeof file==='string'&&path.resolve(file)===target)return typeof options==='string'||options&&options.encoding?old.toString(typeof options==='string'?options:options.encoding):Buffer.from(old);return originalRead.apply(this,arguments);};\ntry{require('./web/scripts/smoke-npc-meeting-events-boundaries.js');}finally{fs.readFileSync=originalRead;if(!originalRead(target).equals(originalBytes))throw Error('runtime disk bytes changed');console.log('RUNTIME_DISK_BYTES_UNCHANGED=true');}\n'@ | node",
+      "toolOutputChunks": [
+        "f60a81",
+        "a84191"
+      ],
+      "execSessionId": 61975,
+      "exitCode": 1,
+      "passed": 10,
+      "failed": 5,
+      "runtimeDiskBytesUnchanged": true,
+      "observedStdoutExcerpts": [
+        "OLD_RUNTIME_SHA256=6187495562f09479eb21e8c468d08cd750494582d1f8ed0b171466356991ce2f",
+        "FAIL committed outbound travel stops at the effective player choice, preserving the earlier real arrival AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n12.4 !== 16",
+        "FAIL a player question replays NPC answer, agreed end and both returns within the same remaining interval AssertionError [ERR_ASSERTION]: NPC-only work must not manufacture another top-level boundary\n\n16.5 !== 40",
+        "FAIL a lawful late arrival stops at the actual shared start within the agreed window AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n11 !== 12.4",
+        "FAIL player long and split intervals retain all message, physical, discussion and effect receipts AssertionError [ERR_ASSERTION]: one arrival-to-choice interval and one agreed continuation\n\n6 !== 2",
+        "FAIL an already started agreed return does not add an outer arrival stop TypeError: Cannot read properties of undefined (reading 'status')",
+        "{\"suite\":\"meeting-event-boundaries\",\"passed\":10,\"failed\":5}",
+        "RUNTIME_DISK_BYTES_UNCHANGED=true"
+      ],
+      "failureInterpretation": "The fifth failure occurs because the old outer stop ends at the NPC answer, before the agreed end has started a return journey. This is the observed TypeError, not a fabricated assertion message."
+    },
+    {
+      "name": "related-event-travel-office-smokes",
+      "shell": "powershell",
+      "command": "node web/scripts/smoke-npc-meeting-events.js; node web/scripts/smoke-npc-travel.js; node web/scripts/smoke-npc-meeting-office.js",
+      "toolOutputChunks": [
+        "b98584"
+      ],
+      "exitCode": 0,
+      "individualProcessExitCodesSeparatelyCaptured": false,
+      "note": "This was one PowerShell invocation containing three native commands. The tool's exitCode is for that combined invocation; each script printed its passing summary. No independent exit code for the first two processes was captured.",
+      "observedStdoutExcerpts": [
+        "PASS npc-meeting-events 6 groups",
+        "PASS 11 travel groups",
+        "{\"suite\":\"npc-meeting-office\",\"passed\":21,\"failed\":0}",
+        "{\"fixture\":\"resident-composite-with-two-permits\",\"sourcePlanId\":\"plan:office-composite:source\",\"permitPlanIds\":[\"office-leave-plan:office-leave:npc-fixture:1\",\"office-leave-plan:office-leave:npc-fixture:4\"],\"meetingPlanId\":\"plan:office-composite:meeting\",\"startedDay\":12,\"resultDay\":12.5,\"endDay\":14,\"actorReturnDay\":14.2,\"resultId\":\"meeting-discussion:plan:office-composite:meeting:1\",\"modelAttempts\":0}"
+      ]
+    },
+    {
+      "name": "syntax-and-diff-observation",
+      "shell": "powershell",
+      "command": "git diff --check; git diff --stat -- web/tm-npc-travel.js web/scripts/smoke-npc-meeting-events-boundaries.js web/scripts/smoke-npc-meeting-events.js; git diff -- web/tm-npc-travel.js; node --check web/tm-npc-travel.js; node --check web/scripts/smoke-npc-meeting-events-boundaries.js; node --check web/scripts/smoke-npc-meeting-events.js",
+      "toolOutputChunks": [
+        "f5f363"
+      ],
+      "exitCode": 0,
+      "individualCommandExitCodesSeparatelyCaptured": false,
+      "observation": "No whitespace or syntax diagnostics appeared. The output contained the requested diff/stat. The combined invocation returned 0."
+    }
+  ],
+  "implementation": {
+    "changedFunction": "nextPlayerBoundary",
+    "originalEventReplayPreserved": true,
+    "independentlyComparedAgainst151a": [
+      "eventDays",
+      "advanceWithin",
+      "advanceAt",
+      "pendingPlayerChoice"
+    ],
+    "byteComparisonObservation": "eventDays_advanceWithin_pendingPlayerChoice_bytes_unchanged= True",
+    "eol": {
+      "style": "LF",
+      "crlfCounts": [
+        0,
+        0,
+        0
+      ],
+      "lineCounts": [
+        1081,
+        295,
+        131
+      ]
+    },
+    "enabledOnlyWhen": "The controlled actor and NPC target have delivered acceptance, no in-transit message, pending terms, start blockage, interruption, or known retry. Journeys and route versions must remain valid.",
+    "outbound": "Use the effective agreed start rather than an earlier arrival only when both travellers can be physically present by that start.",
+    "afterPlayerQuestion": "Preserve the actual player question. The NPC answer, agreed end and established return replay at their event days inside the existing remaining interval.",
+    "conservativeCases": [
+      "player target",
+      "both participants controlled",
+      "unanswered player choice",
+      "pending message or changed terms",
+      "exhausted NPC budget or retry day",
+      "changed or blocked route",
+      "unproven physical presence at a rounded ETA"
+    ],
+    "replacedOldAssertion": {
+      "old": "assert(D.day()<start+2) after the NPC answer, followed by another advance",
+      "reason": "It required an outer stop where no new player choice exists.",
+      "strongerChecks": [
+        "exact NPC result day start+0.5",
+        "exact participation end start+2",
+        "both actual return journeys returned",
+        "one player question and one NPC answer",
+        "full long/split message/start/participation/discussion/journey/memory receipt equality"
+      ]
+    }
+  },
+  "remainingBounds": {
+    "roundedRouteIssue": "An existing derived route can report rounded route.days=2.4 while its physical segment is 2.4337088271510963 days. At rounded day 12.4 the physical journey can still be in transit. This change does not alter the route planner or physical replay; presentByStart preserves the original conservative stops when unfinished segments extend beyond the predicted start. A separate valid late-arrival fixture uses explicit 2.4-day map edges.",
+    "equivalence": "Long/split equivalence is established for this committed player/NPC meeting chain and the existing bounded NPC fixtures. It is not a claim that every subsystem or arbitrary world has been proved equivalent.",
+    "fullElectronRun": false,
+    "fullSmokeSuite": false,
+    "releaseOrMilestoneAcceptanceClaimed": false
+  },
+  "independentReview": {
+    "reviewer": "/root/final_evidence",
+    "mode": "read-only",
+    "reportedBlockingFindings": 0,
+    "reportedAtUtc": null,
+    "note": "Reviewer confirmed player-controlled and uncertain cases remain conservative and unchanged event replay functions match 151a byte-for-byte."
+  }
+}

@@ -1,0 +1,8 @@
+[full-turn-flow] FAIL Script execution timed out after 10000ms
+    at Script.runInContext (node:vm:149:12)
+    at Object.runInContext (node:vm:301:6)
+    at main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-full-turn-flow.js:450:6)
+    at Object.<anonymous> (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-full-turn-flow.js:525:1)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)

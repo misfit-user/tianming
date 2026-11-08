@@ -1,0 +1,46 @@
+{
+  "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "runId": "b5ffb892-c95f-4805-90f2-640ec4d2edff",
+  "startedAt": "2026-10-22T17:36:08.336Z",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "web/scripts/run-smokes.js",
+    "--all",
+    "--no-retry",
+    "--jobs",
+    "1",
+    "--run-id",
+    "b5ffb892-c95f-4805-90f2-640ec4d2edff",
+    "--report",
+    "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\docs\\npc-stable-candidate-20261021\\startup-timer-scope-20261022\\startup-report.json",
+    "--grep",
+    "smoke-start-game-data-integrity.js"
+  ],
+  "timeoutMs": 120000,
+  "retries": 0,
+  "overrides": {
+    "TMP": "E:\\tianming-npc-candidate-temp",
+    "TEMP": "E:\\tianming-npc-candidate-temp",
+    "TMPDIR": "E:\\tianming-npc-candidate-temp",
+    "TIANMING_RELEASE_TEMP_ROOT": "E:\\tianming-npc-candidate-temp"
+  },
+  "before": [
+    {
+      "file": "web/scripts/smoke-start-game-data-integrity.js",
+      "sha256": "313fb24cf7709ce1bf11692ae847a49b4ff54691ffbb6667dbe9c7edd2c7e676"
+    },
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "sha256": "41d95a231d652a43c92dde7257330738aac8a5d0bbea04261e8bfdc9bb3f602b"
+    },
+    {
+      "file": "web/scripts/headless-smoke.js",
+      "sha256": "39a832f551534caa64959133aac00e1d281ce68c82b7a5d661b9974408c944c7"
+    },
+    {
+      "file": "web/tm-storage.js",
+      "sha256": "320b212981a47a76739ffb587bd4375765a46e1e528b40e3ae695472fa583ba9"
+    }
+  ],
+  "scope": "single authorized startup fixture validation after per-case timer lifecycle change; no full-turn/full suite/browser"
+}

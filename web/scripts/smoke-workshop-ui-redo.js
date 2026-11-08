@@ -39,7 +39,8 @@ ok(/\.inspector \.je-health\s*\{[^}]*border-left:\s*3px solid #a83228/.test(css)
 console.log('— W4 功能件 —');
 ok(/padding-right: calc\(var\(--tm-aa-dock-w, 420px\) \+ 14px\)/.test(css), 'W4 dock 让宽回退 420(与面板 width 回退一致·不再钻面板底下)');
 ok(!/hdRow\.insertBefore\(\w+, hdRow\.querySelector\('#tm-aa-x'\)\)/.test(adapters), 'W4 头部注入无裸 insertBefore(#tm-aa-x 已嵌套·全走安全插入)');
-ok((adapters.match(/xb\.parentNode\s*===?\s*h(?:dRow2?)?\b/g) || []).length >= 2, 'W4 安全插入含 parentNode 直系判定');
+// 2026-10-15 国师重做：工坊不再往国师顶栏塞按钮（测试连接/审阅/导入/捆绑/批量/设置等都收进面板自己的 ＋ 菜单、命令面板与设置），故不再有插入点可判
+ok(!/querySelector\('#tm-aa-hd'\)/.test(adapters) && !/je-aa-test/.test(adapters), 'W4 工坊不往国师顶栏注入按钮(按钮收归面板)');
 ok(/data-cross-jump/.test(app) && /他章命中/.test(app), 'W4 跨模块搜索:他章命中签在 app.js');
 ok(/function jePageTurn\(\)/.test(app) && /jeSwitched/.test(app), 'W4 换章翻页动效(重选同章不闪)');
 ok(/@keyframes jePageTurn/.test(css) && /\.field-cross-hits/.test(css), 'W4 翻页动画与命中签样式在');

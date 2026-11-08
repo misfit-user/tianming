@@ -450,7 +450,8 @@ function _endTurn_collectInput() {
       // 跨势力诏令·letterType 为外交文书·否则走原路径
       var _ltType = et._crossFaction ? 'diplomatic_dispatch' :
                     (et.category === '军令' ? 'military_order' : 'formal_edict');
-      var _urgency = et.category === '军令' ? 'urgent' : 'normal';
+      // 诏令走官驿：常诏经急递铺（日行三百里），军令马上飞递（八百里）；日行五十里是私人捎信的脚程
+      var _urgency = et.category === '军令' ? 'extreme' : 'urgent';
       _remoteTargets.forEach(function(ch) {
         var toLoc = ch.location || _capital;
         var days = (typeof calcLetterDays === 'function') ? calcLetterDays(_capital, toLoc, _urgency) : 5;
@@ -512,6 +513,15 @@ function _endTurn_collectInput() {
     }
   }
   if (typeof TM !== 'undefined' && TM.EdictOutcomes) TM.EdictOutcomes.collect(GM, edicts, GM.turn);
+  // 事的容器（甲1a，开关默认关）：本回合诏令登记之后、推演之前，把旧账整理成案单存进 GM.matters。
+  // 只读，不改世界，不调模型；出错只记下，绝不挡回合。
+  if (typeof TM !== 'undefined' && TM.Matters && P.conf && P.conf.mattersLedgerEnabled === true) {
+    try { TM.Matters.file(GM, { edictDrafts: edicts, xinglu: xinglu }); }
+    catch (_mtE) {
+      try { console.warn('[事的容器] 整理案单失败', _mtE); } catch (_) {}
+      try { if (TM.errors && typeof TM.errors.captureSilent === 'function') TM.errors.captureSilent(_mtE, 'matters-file'); } catch (_) {}
+    }
+  }
   if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({turn:GM.turn,time:getTSText(GM.turn),edicts:edicts,xinglu:xinglu,memorials:memRes,edictsSource:_edictsSource});
   resetTurnChanges();
   // 注意：不在此处清空 _couplingReport/_edictExecutionReport/_buildingOutputReport/_npcIntents/_healthAlerts/_decisionAlerts
@@ -614,6 +624,12 @@ function _endTurn_collectInput() {
         try {
           var fn = GuokuEngine.Actions[fa.type];
           if (typeof fn !== 'function') return;
+          // 2026-10-13：加派没写成数不再按默认档擅自征派——户部回奏请旨，这回合不动税率。
+          // 2026-10-17：禁令管不管到加派说不清、成数不合、同句几个成数，也一样回奏，说明缘由（fa.why·二次复审 R2）。
+          if (fa.type === 'extraTax' && fa.tier == null) {
+            addEB('诏令落效', '户部·诏书「' + String(fa.clause || '').slice(0, 30) + '」' + (fa.why ? fa.why + '，户部未敢擅行，暂未征派；请写明再下' : '加派未写明成数，户部未敢擅定税率，暂未征派；请明示几成再下'));
+            return;
+          }
           var r = (fa.type === 'takeLoan') ? fn(fa.tier, fa.term) : fn(fa.tier);
           addEB('诏令落效', '户部·' + fa.raw + (r && r.success === false ? '（未成：' + (r.reason || '') + '）' : '·已行'));
         } catch (_faOne) {}

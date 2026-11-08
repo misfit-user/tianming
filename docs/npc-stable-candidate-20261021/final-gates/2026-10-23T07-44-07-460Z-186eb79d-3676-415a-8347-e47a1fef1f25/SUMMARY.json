@@ -1,0 +1,160 @@
+{
+  "candidate": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+  "runId": "186eb79d-3676-415a-8347-e47a1fef1f25",
+  "status": "failed",
+  "complete": true,
+  "startedAt": "2026-10-23T07:44:07.460Z",
+  "finishedAt": "2026-10-23T07:54:08.326Z",
+  "elapsedMs": 600866,
+  "environment": {
+    "node": "v20.18.3",
+    "platform": "win32",
+    "arch": "x64",
+    "root": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011",
+    "overrides": {
+      "TMP": "D:\\tianming-npc-candidate-temp",
+      "TEMP": "D:\\tianming-npc-candidate-temp",
+      "TMPDIR": "D:\\tianming-npc-candidate-temp",
+      "TIANMING_RELEASE_TEMP_ROOT": "D:\\tianming-npc-candidate-temp"
+    },
+    "inheritedNodeOptions": null
+  },
+  "policy": {
+    "smokeTimeoutMs": 120000,
+    "smokeTimeoutOwner": "unchanged web/scripts/run-smokes.js default",
+    "otherOfficialTimeoutMsPerCase": 150000,
+    "retries": 0,
+    "allowedWaivers": 0,
+    "sequential": true
+  },
+  "counts": {
+    "total": 67,
+    "pass": 66,
+    "fail": 1,
+    "timedOut": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "waivers": 0
+  },
+  "timings": [
+    {
+      "name": "smoke-emergency-recovery-review.js",
+      "pass": true,
+      "ms": 8144,
+      "timedOut": false
+    },
+    {
+      "name": "smoke-full-turn-flow.js",
+      "pass": true,
+      "ms": 109018,
+      "timedOut": false
+    },
+    {
+      "name": "smoke-npc-composite-official.js",
+      "pass": true,
+      "ms": 91349,
+      "timedOut": false
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "pass": true,
+      "ms": 99107,
+      "timedOut": false
+    },
+    {
+      "name": "smoke-turn-capture-work-count.js",
+      "pass": false,
+      "ms": 317,
+      "timedOut": false
+    }
+  ],
+  "failures": [
+    {
+      "name": "smoke-turn-capture-work-count.js",
+      "ms": 317,
+      "timedOut": false,
+      "exit": 1,
+      "output": "ReferenceError: _endTurn_startPostTurnMemorySave is not defined\n    at Object._endTurn_saveSnapshot (round20-turn-capture-production-boundaries.js:291:3)\n    at main (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-turn-capture-work-count.js:101:36)\n    at Object.<anonymous> (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-turn-capture-work-count.js:122:3)\n    at Module._compile (node:internal/modules/cjs/loader:1484:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1564:10)\n    at Module.load (node:internal/modules/cjs/loader:1295:32)\n    at Module._load (node:internal/modules/cjs/loader:1111:12)\n    at c._load (node:electron/js2c/node_init:2:16955)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:188:12)\n    at node:internal/main/run_main_module:28:49\n",
+      "classification": "test fixture dependency omitted: source extraction did not load the new production helper; not an environment timeout"
+    }
+  ],
+  "failingFixture": {
+    "file": "web/scripts/smoke-turn-capture-work-count.js",
+    "bytes": 5955,
+    "sha256": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea"
+  },
+  "checks": [
+    {
+      "id": "targeted-smokes",
+      "pass": false,
+      "exit": 1,
+      "elapsedMs": 393581.937,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/targeted-smokes.log",
+      "logSha256": "0da835d3d9323de2ab558f64e38910902b0fea021373196b24e2e51ddef7c9fe"
+    },
+    {
+      "id": "other-officials",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 63714.1808,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/other-officials.log",
+      "logSha256": "b823a0f7c71fe17f29b916515135d2ad55cc296d0cb78a3f09923b31a5af201d"
+    },
+    {
+      "id": "architecture",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 38764.8099,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/architecture.log",
+      "logSha256": "a322d15b3f4839be6194ffef204cee8a7844cbf6addd87c986d4b3d6a7e7d632"
+    },
+    {
+      "id": "official-parity",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 83149.8426,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/official-parity.log",
+      "logSha256": "0b9abe44973db8933ee4d0971e328a2ce42ca97a154309582f160e02f075600e"
+    },
+    {
+      "id": "native-manifest",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 2017.0737,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/native-manifest.log",
+      "logSha256": "5caa7c52501c692aab910fd5675549a473bee0e54cc770e10582f663244ddf16"
+    },
+    {
+      "id": "startup-manifest",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 529.3953,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/startup-manifest.log",
+      "logSha256": "4828eecc10e441fdc9d7b6c0d7a6e8fbb7ad3f851e85dc4b515405e78f3a4850"
+    },
+    {
+      "id": "release-contract",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 5328.8329,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/release-contract.log",
+      "logSha256": "231560c153f595bdf19da1693c8d42ff4a9bfd9446b7104894fe0edad81a8673"
+    },
+    {
+      "id": "hot-baseline",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 2982.1974,
+      "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-23T07-44-07-460Z-186eb79d-3676-415a-8347-e47a1fef1f25/hot-baseline.log",
+      "logSha256": "e51481f9216cb1602ecec809b8dc8164f472da307f238efd8dcacf4395d9f34d"
+    }
+  ],
+  "inputFiles": 2395,
+  "inputHash": "b6c4a61b1d11dafcaaa974c5a3a7543d45e58e3327a35d5c293302698bbbf93a",
+  "afterInputHash": "b6c4a61b1d11dafcaaa974c5a3a7543d45e58e3327a35d5c293302698bbbf93a",
+  "sourceUnchanged": true,
+  "rawReportSha256": "1bbf1be93139d4adf102a8d84be5a7bc856a6dbade5ec4c20e55f4a003735935",
+  "targetedReportSha256": "d58e601b3b3c6fa663a821b30f6e5ebfc7f64624bb0aad27a71cb47653dd4c35",
+  "scope": "One frozen local67 + two headless official compatibility checks + six static gates. No browser, real persistence, or full CI acceptance inherited.",
+  "retryPerformed": false
+}

@@ -1,0 +1,19 @@
+[lint-arch-all] PASS  lint-gm-writes (6.4s)
+[lint-arch-all] PASS  lint-dep-graph (2.7s)
+[lint-arch-all] PASS  lint-global-providers (11.2s)
+[lint-arch-all] PASS  lint-feature-boundaries (0.5s)
+[lint-arch-all] PASS  lint-runtime-template-immutability (0.5s)
+[lint-arch-all] PASS  lint-renderer-writeback-boundaries (12.0s)
+[lint-arch-all] PASS  lint-renderer-module-boundaries (1.4s)
+[lint-arch-all] PASS  lint-file-size (0.9s)
+[lint-arch-all] PASS  lint-control-bytes (1.0s)
+[lint-arch-all] PASS  lint-split-contracts (0.2s)
+[lint-arch-all] PASS  lint-split-stamps (0.3s)
+[lint-arch-all] FAIL  lint-smoke-family-order (2.0s)
+    [lint-smoke-family-order] FAIL smoke-npc-composite-model-fixture.js::tm-ai-infra-json.js：实际提及序 tm-ai-infra.js → tm-ai-infra-json.js ≠ 契约序 tm-ai-infra-json.js → tm-ai-infra.js
+      smoke 消费拆分家族须按契约序提及/拼接（装载序防腐测试的可信度所系）
+[lint-arch-all] PASS  lint-scenario-data (7.4s)
+[lint-arch-all] PASS  lint-design-tokens (2.3s)
+[lint-arch-all] PASS  ref-check (2.7s)
+
+[lint-arch-all] FAIL — 1/15 项未过

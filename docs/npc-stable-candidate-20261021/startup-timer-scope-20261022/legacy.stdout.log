@@ -1,0 +1,3 @@
+PASS active same-case timeout interval immediate and frame execute with original arguments
+PASS dispose cancels only its own VM while another VM continues
+{"legacy":true,"pass":2,"fail":2,"total":4}

@@ -1,0 +1,8 @@
+PASS confirmed rollback checkpoints survive a new page context and replay exact full content
+PASS corrupted stored response is rejected rather than replayed
+PASS foreign worlds, changed baselines and expired responses are not adopted
+PASS successful final commit removes only its matching recovery checkpoint
+PASS the local persistence switch clears candidates and does not affect ordinary generation
+PASS invalid or oversized checkpoint rows never create a persistent entry
+PASS disabled or unavailable persistent storage preserves complete uncached requests
+{"pass":7,"fail":0,"total":7}

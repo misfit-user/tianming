@@ -1,0 +1,264 @@
+﻿2026-10-22T13:53:01.4524963Z Current runner version: '2.338.0'
+2026-10-22T13:53:01.4552211Z ##[group]Runner Image Provisioner
+2026-10-22T13:53:01.4553038Z Hosted Compute Agent
+2026-10-22T13:53:01.4553614Z Version: 20261002.596
+2026-10-22T13:53:01.4554197Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-22T13:53:01.4554854Z Build Date: 2026-10-02T22:28:27Z
+2026-10-22T13:53:01.4555501Z Worker ID: {e1e858b6-a540-4b31-8453-ff8c56eef6ea}
+2026-10-22T13:53:01.4556140Z Region: westus3
+2026-10-22T13:53:01.4556618Z Cloud: Azure
+2026-10-22T13:53:01.4557102Z ##[endgroup]
+2026-10-22T13:53:01.4558412Z ##[group]Operating System
+2026-10-22T13:53:01.4559033Z Microsoft Windows Server 2025
+2026-10-22T13:53:01.4559613Z 10.0.26100
+2026-10-22T13:53:01.4560072Z Datacenter
+2026-10-22T13:53:01.4560552Z ##[endgroup]
+2026-10-22T13:53:01.4561039Z ##[group]Runner Image
+2026-10-22T13:53:01.4561594Z Image: windows-2025-vs2026
+2026-10-22T13:53:01.4562148Z Version: 20261007.264.1
+2026-10-22T13:53:01.4563657Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261007.264/images/windows/Windows2025-VS2026-Readme.md
+2026-10-22T13:53:01.4565241Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261007.264
+2026-10-22T13:53:01.4566180Z ##[endgroup]
+2026-10-22T13:53:01.4567222Z ##[group]GITHUB_TOKEN Permissions
+2026-10-22T13:53:01.4569519Z Contents: read
+2026-10-22T13:53:01.4570109Z Metadata: read
+2026-10-22T13:53:01.4570591Z ##[endgroup]
+2026-10-22T13:53:01.4572756Z Secret source: Actions
+2026-10-22T13:53:01.4573702Z Cache mode: write
+2026-10-22T13:53:01.4574440Z Prepare workflow directory
+2026-10-22T13:53:01.4994981Z Prepare all required actions
+2026-10-22T13:53:01.5067958Z Getting action download info
+2026-10-22T13:53:01.8870273Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-22T13:53:02.0472630Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-22T13:53:02.2688145Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-22T13:53:02.7124915Z Complete job name: electron-cases (npc-composite)
+2026-10-22T13:53:02.9270016Z ##[group]Run actions/checkout@v4
+2026-10-22T13:53:02.9271425Z with:
+2026-10-22T13:53:02.9272190Z   repository: misfit-user/tianming
+2026-10-22T13:53:02.9280416Z   token: ***
+2026-10-22T13:53:02.9281151Z   ssh-strict: true
+2026-10-22T13:53:02.9281923Z   ssh-user: git
+2026-10-22T13:53:02.9282702Z   persist-credentials: true
+2026-10-22T13:53:02.9283539Z   clean: true
+2026-10-22T13:53:02.9284323Z   sparse-checkout-cone-mode: true
+2026-10-22T13:53:02.9285236Z   fetch-depth: 1
+2026-10-22T13:53:02.9285989Z   fetch-tags: false
+2026-10-22T13:53:02.9286753Z   show-progress: true
+2026-10-22T13:53:02.9287521Z   lfs: false
+2026-10-22T13:53:02.9288235Z   submodules: false
+2026-10-22T13:53:02.9289434Z   set-safe-directory: true
+2026-10-22T13:53:02.9290340Z   allow-unsafe-pr-checkout: false
+2026-10-22T13:53:02.9291550Z ##[endgroup]
+2026-10-22T13:53:03.0765491Z Syncing repository: misfit-user/tianming
+2026-10-22T13:53:03.0767975Z ##[group]Getting Git version info
+2026-10-22T13:53:03.0769186Z Working directory is 'D:\a\tianming\tianming'
+2026-10-22T13:53:03.1837508Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-22T13:53:03.7214428Z git version 2.56.0.windows.2
+2026-10-22T13:53:03.7268989Z ##[endgroup]
+2026-10-22T13:53:03.7289781Z Temporarily overriding HOME='D:\a\_temp\7e74e039-44c5-4d5b-8853-5cbabbdaabd3' before making global git config changes
+2026-10-22T13:53:03.7292074Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-22T13:53:03.7300839Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\tianming\tianming
+2026-10-22T13:53:03.8275589Z Deleting the contents of 'D:\a\tianming\tianming'
+2026-10-22T13:53:03.8282212Z ##[group]Initializing the repository
+2026-10-22T13:53:03.8291056Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\tianming\tianming
+2026-10-22T13:53:03.9393862Z Initialized empty Git repository in D:/a/tianming/tianming/.git/
+2026-10-22T13:53:03.9445837Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/misfit-user/tianming
+2026-10-22T13:53:04.0253934Z ##[endgroup]
+2026-10-22T13:53:04.0255358Z ##[group]Disabling automatic garbage collection
+2026-10-22T13:53:04.0262416Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-22T13:53:04.0659941Z ##[endgroup]
+2026-10-22T13:53:04.0661255Z ##[group]Setting up auth
+2026-10-22T13:53:04.0672834Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T13:53:04.1072288Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-22T13:53:05.8945147Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T13:53:05.9385723Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-22T13:53:06.5224375Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T13:53:06.5690218Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-22T13:53:07.2128098Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-22T13:53:07.2679861Z ##[endgroup]
+2026-10-22T13:53:07.2680815Z ##[group]Fetching the repository
+2026-10-22T13:53:07.2697683Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +89ce0069761c1ed5edd537c394fe3bff8227cfbd:refs/remotes/pull/105/merge
+2026-10-22T13:53:12.0219044Z From https://github.com/misfit-user/tianming
+2026-10-22T13:53:12.0220231Z  * [new ref]         89ce0069761c1ed5edd537c394fe3bff8227cfbd -> pull/105/merge
+2026-10-22T13:53:12.0261703Z ##[endgroup]
+2026-10-22T13:53:12.0262400Z ##[group]Determining the checkout info
+2026-10-22T13:53:12.0264863Z ##[endgroup]
+2026-10-22T13:53:12.0275873Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-22T13:53:12.0836031Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-22T13:53:12.1254422Z ##[group]Checking out the ref
+2026-10-22T13:53:12.1264115Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/remotes/pull/105/merge
+2026-10-22T13:53:13.7094736Z Updating files:  45% (2210/4872)
+2026-10-22T13:53:13.7245494Z Updating files:  46% (2242/4872)
+2026-10-22T13:53:13.7394659Z Updating files:  47% (2290/4872)
+2026-10-22T13:53:13.7752299Z Updating files:  48% (2339/4872)
+2026-10-22T13:53:13.9687275Z Updating files:  49% (2388/4872)
+2026-10-22T13:53:13.9855397Z Updating files:  50% (2436/4872)
+2026-10-22T13:53:14.0042030Z Updating files:  51% (2485/4872)
+2026-10-22T13:53:14.0233246Z Updating files:  52% (2534/4872)
+2026-10-22T13:53:14.0384736Z Updating files:  53% (2583/4872)
+2026-10-22T13:53:14.0568035Z Updating files:  54% (2631/4872)
+2026-10-22T13:53:14.0785930Z Updating files:  55% (2680/4872)
+2026-10-22T13:53:14.0939383Z Updating files:  56% (2729/4872)
+2026-10-22T13:53:14.1142552Z Updating files:  57% (2778/4872)
+2026-10-22T13:53:14.1372855Z Updating files:  58% (2826/4872)
+2026-10-22T13:53:14.2074943Z Updating files:  59% (2875/4872)
+2026-10-22T13:53:14.5048276Z Updating files:  59% (2900/4872)
+2026-10-22T13:53:14.5186049Z Updating files:  60% (2924/4872)
+2026-10-22T13:53:14.5339805Z Updating files:  61% (2972/4872)
+2026-10-22T13:53:14.5478724Z Updating files:  62% (3021/4872)
+2026-10-22T13:53:14.5612966Z Updating files:  63% (3070/4872)
+2026-10-22T13:53:14.5745527Z Updating files:  64% (3119/4872)
+2026-10-22T13:53:14.5890159Z Updating files:  65% (3167/4872)
+2026-10-22T13:53:14.6014849Z Updating files:  66% (3216/4872)
+2026-10-22T13:53:14.6141509Z Updating files:  67% (3265/4872)
+2026-10-22T13:53:14.6283019Z Updating files:  68% (3313/4872)
+2026-10-22T13:53:14.6417600Z Updating files:  69% (3362/4872)
+2026-10-22T13:53:14.6545096Z Updating files:  70% (3411/4872)
+2026-10-22T13:53:14.6675908Z Updating files:  71% (3460/4872)
+2026-10-22T13:53:14.6814540Z Updating files:  72% (3508/4872)
+2026-10-22T13:53:14.6949639Z Updating files:  73% (3557/4872)
+2026-10-22T13:53:14.7109089Z Updating files:  74% (3606/4872)
+2026-10-22T13:53:14.7247226Z Updating files:  75% (3654/4872)
+2026-10-22T13:53:14.7371018Z Updating files:  76% (3703/4872)
+2026-10-22T13:53:14.7499571Z Updating files:  77% (3752/4872)
+2026-10-22T13:53:14.7637910Z Updating files:  78% (3801/4872)
+2026-10-22T13:53:14.7771401Z Updating files:  79% (3849/4872)
+2026-10-22T13:53:14.7907674Z Updating files:  80% (3898/4872)
+2026-10-22T13:53:14.8038000Z Updating files:  81% (3947/4872)
+2026-10-22T13:53:14.8166570Z Updating files:  82% (3996/4872)
+2026-10-22T13:53:14.8296394Z Updating files:  83% (4044/4872)
+2026-10-22T13:53:14.8441232Z Updating files:  84% (4093/4872)
+2026-10-22T13:53:14.8574218Z Updating files:  85% (4142/4872)
+2026-10-22T13:53:14.8710569Z Updating files:  86% (4190/4872)
+2026-10-22T13:53:14.8843752Z Updating files:  87% (4239/4872)
+2026-10-22T13:53:14.8977396Z Updating files:  88% (4288/4872)
+2026-10-22T13:53:14.9163295Z Updating files:  89% (4337/4872)
+2026-10-22T13:53:14.9368957Z Updating files:  90% (4385/4872)
+2026-10-22T13:53:14.9563631Z Updating files:  91% (4434/4872)
+2026-10-22T13:53:14.9797302Z Updating files:  92% (4483/4872)
+2026-10-22T13:53:15.0024658Z Updating files:  93% (4531/4872)
+2026-10-22T13:53:15.0216468Z Updating files:  94% (4580/4872)
+2026-10-22T13:53:15.0397994Z Updating files:  95% (4629/4872)
+2026-10-22T13:53:15.0602256Z Updating files:  96% (4678/4872)
+2026-10-22T13:53:15.0788939Z Updating files:  97% (4726/4872)
+2026-10-22T13:53:15.0992222Z Updating files:  98% (4775/4872)
+2026-10-22T13:53:15.2049335Z Updating files:  99% (4824/4872)
+2026-10-22T13:53:15.2559187Z Updating files:  99% (4862/4872)
+2026-10-22T13:53:15.2559719Z Updating files: 100% (4872/4872)
+2026-10-22T13:53:15.2560481Z Updating files: 100% (4872/4872), done.
+2026-10-22T13:53:15.2969780Z Note: switching to 'refs/remotes/pull/105/merge'.
+2026-10-22T13:53:15.2970197Z 
+2026-10-22T13:53:15.2970496Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-22T13:53:15.2971606Z changes and commit them, and you can discard any commits you make in this
+2026-10-22T13:53:15.2972435Z state without impacting any branches by switching back to a branch.
+2026-10-22T13:53:15.2972958Z 
+2026-10-22T13:53:15.2973269Z If you want to create a new branch to retain commits you create, you may
+2026-10-22T13:53:15.2974093Z do so (now or later) by using -c with the switch command. Example:
+2026-10-22T13:53:15.2974589Z 
+2026-10-22T13:53:15.2974778Z   git switch -c <new-branch-name>
+2026-10-22T13:53:15.2975069Z 
+2026-10-22T13:53:15.2975228Z Or undo this operation with:
+2026-10-22T13:53:15.2975504Z 
+2026-10-22T13:53:15.2975635Z   git switch -
+2026-10-22T13:53:15.2975825Z 
+2026-10-22T13:53:15.2977309Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-22T13:53:15.2977949Z 
+2026-10-22T13:53:15.3185773Z HEAD is now at 89ce006 Merge ebf58473d37fe9ff20f82d6a85c7a771b7f9d1ac into 0b4012e07aedb14ac81df3ab529ff96c0f249cf6
+2026-10-22T13:53:15.3738985Z ##[endgroup]
+2026-10-22T13:53:15.4469773Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-22T13:53:15.5055492Z 89ce0069761c1ed5edd537c394fe3bff8227cfbd
+2026-10-22T13:53:15.5588556Z ##[group]Run actions/setup-node@v4
+2026-10-22T13:53:15.5589102Z with:
+2026-10-22T13:53:15.5589314Z   node-version: 22
+2026-10-22T13:53:15.5589509Z   cache: npm
+2026-10-22T13:53:15.5589689Z   always-auth: false
+2026-10-22T13:53:15.5589889Z   check-latest: false
+2026-10-22T13:53:15.5592655Z   token: ***
+2026-10-22T13:53:15.5592840Z ##[endgroup]
+2026-10-22T13:53:15.9502943Z Found in cache @ C:\hostedtoolcache\windows\node\22.23.3\x64
+2026-10-22T13:53:15.9503993Z (node:9016) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-22T13:53:15.9505248Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-22T13:53:15.9508391Z ##[group]Environment details
+2026-10-22T13:53:22.1622219Z node: v22.23.3
+2026-10-22T13:53:22.1622602Z npm: 10.9.9
+2026-10-22T13:53:22.1622893Z yarn: 1.22.22
+2026-10-22T13:53:22.1623840Z ##[endgroup]
+2026-10-22T13:53:22.2472868Z [command]C:\Windows\system32\cmd.exe /D /S /C "C:\hostedtoolcache\windows\node\22.23.3\x64\npm.cmd config get cache"
+2026-10-22T13:53:22.8395493Z C:\npm\cache
+2026-10-22T13:53:23.2609943Z Cache hit for: node-cache-Windows-x64-npm-569b4b4363ff527d4d8a85f9a198edce35e20d223459a81b72665ca76f431ce6
+2026-10-22T13:53:23.2732113Z (node:9016) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-22T13:53:24.4935897Z Received 62914560 of 95588602 (65.8%), 59.6 MBs/sec
+2026-10-22T13:53:24.8033991Z Received 95588602 of 95588602 (100.0%), 69.3 MBs/sec
+2026-10-22T13:53:24.8037221Z Cache Size: ~91 MB (95588602 B)
+2026-10-22T13:53:24.8154278Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/0cad340d-ba9a-4346-879a-c8b65cb90e9a/cache.tzst -P -C D:/a/tianming/tianming --force-local --use-compress-program "zstd -d"
+2026-10-22T13:53:29.3324806Z Cache restored successfully
+2026-10-22T13:53:29.3393558Z Cache restored from key: node-cache-Windows-x64-npm-569b4b4363ff527d4d8a85f9a198edce35e20d223459a81b72665ca76f431ce6
+2026-10-22T13:53:29.3745200Z ##[group]Run npm ci --ignore-scripts
+2026-10-22T13:53:29.3745639Z [36;1mnpm ci --ignore-scripts[0m
+2026-10-22T13:53:29.3745997Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-10-22T13:53:29.3746358Z [36;1mnode node_modules/electron/install.js[0m
+2026-10-22T13:53:29.4615232Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-22T13:53:29.4615788Z ##[endgroup]
+2026-10-22T13:53:34.9945863Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2026-10-22T13:53:35.0322376Z npm warn deprecated @npmcli/move-file@2.0.1: This functionality has been moved to @npmcli/fs
+2026-10-22T13:53:35.0480266Z npm warn deprecated npmlog@6.0.2: This package is no longer supported.
+2026-10-22T13:53:35.0790477Z npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+2026-10-22T13:53:35.1632385Z npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2026-10-22T13:53:35.1982379Z npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2026-10-22T13:53:35.2069188Z npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+2026-10-22T13:53:35.3642014Z npm warn deprecated are-we-there-yet@3.0.1: This package is no longer supported.
+2026-10-22T13:53:35.7720056Z npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+2026-10-22T13:53:35.7960847Z npm warn deprecated gauge@4.0.4: This package is no longer supported.
+2026-10-22T13:53:36.7509837Z npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-10-22T13:53:38.2502435Z 
+2026-10-22T13:53:38.2503095Z added 417 packages in 8s
+2026-10-22T13:53:38.2503436Z 
+2026-10-22T13:53:38.2503698Z 64 packages are looking for funding
+2026-10-22T13:53:38.2504233Z   run `npm fund` for details
+2026-10-22T13:53:45.3153004Z ##[group]Run node scripts/verify-electron-bridge.js --npc-composite
+2026-10-22T13:53:45.3153727Z [36;1mnode scripts/verify-electron-bridge.js --npc-composite[0m
+2026-10-22T13:53:45.3236556Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-22T13:53:45.3236930Z ##[endgroup]
+2026-10-22T14:03:15.1657329Z {"mode":"npc-composite","ok":false,"startedAt":"2026-10-22T13:53:46.049Z","elapsedMs":569109,"exitCode":1,"signal":null,"detail":{"complete":true,"ok":false,"mode":"npc-composite","baseline":false,"versions":{"node":"20.18.3","acorn":"8.14.0","ada":"2.9.2","ares":"1.34.4","base64":"0.5.2","brotli":"1.0.9","cjs_module_lexer":"1.4.1","cldr":"44.1","icu":"74.2","llhttp":"8.1.2","modules":"130","napi":"9","nghttp2":"1.61.0","openssl":"0.0.0","simdutf":"5.6.4","tz":"2024a","undici":"6.21.1","unicode":"15.1","uv":"1.46.0","uvwasi":"0.0.21","v8":"13.0.245.25-electron.0","zlib":"1.3.0.1-motley","electron":"33.4.11","chrome":"130.0.6723.191"},"results":[{"name":"locked-electron-runtime","status":"PASS"},{"name":"production-webpreferences","status":"PASS"},{"name":"observed-turn-data-protocol","value":2,"status":"PASS","required":2},{"name":"real-bridge-and-ipc","status":"PASS"},{"name":"production-test-exports-boundary","status":"PASS"},{"name":"official Shaosong population, current player, map and real formal entry are preserved","status":"PASS"},{"name":"formal assistance creates the source, NPC independently receives and responds","status":"PASS"},{"name":"formal departure has a real route, and the travel save actually loads a new world","status":"PASS"}],"failures":["Error: Error: control did not become clickable: #endturn .et-big\n    at poll (<anonymous>:1:485)\n    at js (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:12:697)\n    at async click (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:20:9)\n    at async formalTurn (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:51:5)\n    at async module.exports (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:179:5)\n    at async WebContents.<anonymous> (D:\\a\\tianming\\tianming\\scripts\\electron\\bridge-main.cjs:130:42)"],"timing":{"startedAt":"2026-10-22T13:53:46.257Z","assertionsFinishedAt":"2026-10-22T14:03:14.757Z","elapsedMs":568500,"nodeUptimeSeconds":568.6378844},"securityScope":"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data","temporaryUserData":"C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\tm-bridge-series-TyLV1a\\production"}}
+2026-10-22T14:03:15.1672771Z ELECTRON_REPORT web\dev-tools\electron-bridge\e4d28492-04f7-41d6-ad89-9ab2010fa5d4\report.json
+2026-10-22T14:03:15.2906885Z ##[error]Process completed with exit code 1.
+2026-10-22T14:03:15.3331980Z ##[group]Run actions/upload-artifact@v4
+2026-10-22T14:03:15.3332415Z with:
+2026-10-22T14:03:15.3332855Z   name: electron-bridge-npc-composite-89ce0069761c1ed5edd537c394fe3bff8227cfbd
+2026-10-22T14:03:15.3333366Z   path: web/dev-tools/electron-bridge/**
+2026-10-22T14:03:15.3333740Z   if-no-files-found: error
+2026-10-22T14:03:15.3334040Z   retention-days: 30
+2026-10-22T14:03:15.3334310Z   compression-level: 6
+2026-10-22T14:03:15.3334596Z   overwrite: false
+2026-10-22T14:03:15.3335376Z   include-hidden-files: false
+2026-10-22T14:03:15.3335734Z ##[endgroup]
+2026-10-22T14:03:15.5486272Z (node:1300) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-22T14:03:15.5487367Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-22T14:03:15.5601989Z With the provided path, there will be 12 files uploaded
+2026-10-22T14:03:15.5609565Z Artifact name is valid!
+2026-10-22T14:03:15.5612387Z Root directory input is valid!
+2026-10-22T14:03:15.9610676Z Beginning upload of artifact content to blob storage
+2026-10-22T14:03:16.1107883Z (node:1300) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-22T14:03:16.7455282Z Uploaded bytes 1674827
+2026-10-22T14:03:16.8044609Z Finished uploading artifact content to blob storage!
+2026-10-22T14:03:16.8046001Z SHA256 digest of uploaded artifact zip is 8d8136693a2c35e284af7615cdaa149452d9024560f0e810358d275d852a27b7
+2026-10-22T14:03:16.8048890Z Finalizing artifact upload
+2026-10-22T14:03:17.5596826Z Artifact electron-bridge-npc-composite-89ce0069761c1ed5edd537c394fe3bff8227cfbd.zip successfully finalized. Artifact ID 12431512268
+2026-10-22T14:03:17.5598968Z Artifact electron-bridge-npc-composite-89ce0069761c1ed5edd537c394fe3bff8227cfbd has been successfully uploaded! Final size is 1674827 bytes. Artifact ID is 12431512268
+2026-10-22T14:03:17.5607764Z Artifact download URL: https://github.com/misfit-user/tianming/actions/runs/39790789251/artifacts/12431512268
+2026-10-22T14:03:17.5996537Z Post job cleanup.
+2026-10-22T14:03:17.8047401Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-22T14:03:17.8496419Z git version 2.56.0.windows.2
+2026-10-22T14:03:17.8571947Z Temporarily overriding HOME='D:\a\_temp\cc95711a-9925-4dc6-93df-b705bf2ab0bf' before making global git config changes
+2026-10-22T14:03:17.8573636Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-22T14:03:17.8583629Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\tianming\tianming
+2026-10-22T14:03:17.8995223Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T14:03:17.9396432Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-22T14:03:18.5421991Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T14:03:18.5798726Z http.https://github.com/.extraheader
+2026-10-22T14:03:18.5845777Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-10-22T14:03:18.6225902Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-22T14:03:19.2221868Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T14:03:19.2637324Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-22T14:03:19.8626068Z Cleaning up orphan processes
+2026-10-22T14:03:19.9705823Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

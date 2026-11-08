@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-23T05:31:53.578Z",
+  "ciRunId": 39904863206,
+  "jobId": 120254352752,
+  "jobConclusion": "success",
+  "jobStartedAt": "2026-10-23T05:16:42Z",
+  "jobCompletedAt": "2026-10-23T05:28:31Z",
+  "candidateHead": "9232aa314d9db1b6fd346e3b241f4afcf1676ec4",
+  "testedCheckout": "0ad31616537aa80bd732391cbac0b618fd001b59",
+  "mergeParents": [
+    "31368256b021aa698bd99fb2f449fbfaf4e5e112",
+    "9232aa314d9db1b6fd346e3b241f4afcf1676ec4"
+  ],
+  "candidateTree": "836d8be0bd29a5ad298ff4ea8858348d37380c65",
+  "testedTree": "836d8be0bd29a5ad298ff4ea8858348d37380c65",
+  "treeIdentical": true,
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v22.23.3",
+    "runner": "ubuntu-latest"
+  },
+  "command": "node scripts/ci-smokes.js --jobs 2",
+  "smokeRunId": "b24c8701-f73a-4394-89c8-fb0503e2929d",
+  "summary": {
+    "selected": 1185,
+    "pass": 1183,
+    "fail": 0,
+    "waived": 2,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "executed": 1185,
+  "scheduling": {
+    "parallelJobs": 2,
+    "resourceIsolated": [
+      "smoke-deploy-manifest-atomicity.js",
+      "smoke-full-turn-flow.js",
+      "smoke-perf-save-preparation.js",
+      "smoke-production-dependencies.js",
+      "smoke-start-game-data-integrity.js",
+      "smoke-tang840-opening-ledgers.js",
+      "smoke-workshop-lock-recovery.js"
+    ]
+  },
+  "waivers": [
+    {
+      "name": "smoke-audio-bgm.js",
+      "waivers": [
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/tianming-hegui.mp3"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/gucheng-junqi.mp3"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/changhe-zhangu.mp3"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/yunkai-wanli.mp3"
+        }
+      ]
+    },
+    {
+      "name": "smoke-mapeditor-ui.js",
+      "waivers": [
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/fonts/MaShanZheng-Regular.ttf"
+        }
+      ]
+    }
+  ],
+  "focused": [
+    {
+      "name": "smoke-full-turn-flow.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 55560,
+      "timedOut": false,
+      "flaky": false
+    },
+    {
+      "name": "smoke-npc-composite-waits.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 126,
+      "timedOut": false,
+      "flaky": false
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 57764,
+      "timedOut": false,
+      "flaky": false
+    }
+  ],
+  "report": "arch-guard/ci-aG8zzm/smoke-report.json",
+  "reportSha256": "b69e83895400fe0b67928c727c767746df2d7dcb115384f9f124f7ac03ac9395",
+  "log": "../remote-923-guards.log",
+  "logSha256": "04bc7e063b1139ea88e6f880bc35d8fd3b124d69677500320f20955cd456336a",
+  "scope": "Completed guards job including the actual full smoke suite. Does not assert composite Electron acceptance, all CI jobs, local final gate, merge or release."
+}

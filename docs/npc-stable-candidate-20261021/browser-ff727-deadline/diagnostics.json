@@ -1,0 +1,23 @@
+{
+  "head": "ff727a22f2ac88b1bb784453e7779156706b27a5",
+  "ciCheckout": "cdab5d0dfd5c06f1dc4fbf4d66616268e26673bf",
+  "run": 39814362208,
+  "job": 119948836458,
+  "exit": "original1800sec suite timeout, no observed renderer crash",
+  "heapBytes": {
+    "limit": 4294705152,
+    "maxObserved": 3429423132,
+    "last": {
+      "limit": 4294705152,
+      "used": 3308132702,
+      "total": 3331757362
+    }
+  },
+  "rendererPrivateMaxKiB": 5404504,
+  "sourceDirectory": "web/dev-tools/ci-39814362208-composite/a6f4ad51-a46d-4c2d-b6a4-e7a0188df65b/",
+  "notes": [
+    "Precise memory reporting enabled, no heap limit change",
+    "Onsite answer occurred; final complete/physical-return evidence absent",
+    "No successful full-flow claim"
+  ]
+}

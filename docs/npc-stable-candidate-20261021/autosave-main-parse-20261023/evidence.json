@@ -1,0 +1,66 @@
+{
+  "head": "681e29ad804c56e4a8cb8bb22c10a34b417eb7fe",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "startedAt": "2026-10-23T06:53:22.668Z",
+  "files": {
+    "preload-impl.js": "22fc36e4490c6c3584e943d62ff706f63bca1ee04ecf8e7f04f0179a8f7e5f70",
+    "main-impl.js": "eaf893396a6213b1ab92aa8fc80ddb9b25596647a8d12918d9b96bff7facd2e0",
+    "web/scripts/smoke-autosave-text-bridge.js": "054a2feb22dea802e8fbe071595fe1c86e293cac7c63dd86b14754800fbd644c",
+    "web/scripts/smoke-desktop-autosave-reliability.js": "5c079f463996b083ba39cb811620c91e5ff437e87b39c6372a17e791a19c6d0a",
+    "scripts/electron/desktop-cases.cjs": "ae16e02fb1a988b98a6a59c48c1789db07e6dac08ab0f6c230f45e784b0c9031"
+  },
+  "runs": [
+    {
+      "command": "node web/scripts/smoke-autosave-text-bridge.js",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 315
+    },
+    {
+      "command": "node web/scripts/smoke-desktop-autosave-reliability.js",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 424
+    },
+    {
+      "command": "node web/scripts/smoke-runtime-save-consistency.js",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 518
+    },
+    {
+      "command": "node web/scripts/smoke-security-trust-boundary.js",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 3485
+    },
+    {
+      "command": "node web/scripts/smoke-security-ipc-hardening.js",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 197
+    },
+    {
+      "command": "node web/scripts/smoke-save-project-text-bridge.js",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 218
+    },
+    {
+      "command": "node web/scripts/smoke-npc-composite-waits.js",
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 397
+    }
+  ],
+  "counterexample": {
+    "priorCommit": "681e29ad804c56e4a8cb8bb22c10a34b417eb7fe",
+    "scope": "identical current test and main boundary; prior real preload only",
+    "exitCode": 1,
+    "signal": null
+  },
+  "finishedAt": "2026-10-23T06:53:28.582Z",
+  "unchanged": true,
+  "fixtureCorrection": "A post-rename session-rotation recovery test initially omitted adoption of the new session committed snapshot. The actual renderer correctly rejected it; the test now uses the existing adoption producer before retry. Production was not changed for this correction."
+}

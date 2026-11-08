@@ -1,0 +1,25 @@
+{
+  "dump": "web\\dev-tools\\electron-bridge\\7c947ba3-8169-40d8-bccc-aa94d0d20515\\crash-dumps\\reports\\3875ebc9-4654-476f-bfb8-6a7d92ca9e23.dmp",
+  "dumpSha256": "7fbc60d4f4bc66c31dc4b00f2334fede8b80ad230316f287700ee6d7ebc5afbe",
+  "exception": {
+    "threadId": 30048,
+    "code": "0xe0000008",
+    "flags": "0x81",
+    "address": "0x7ff92709408a",
+    "parameters": [
+      "0x0",
+      "0x7179cd000",
+      "0x11944d000"
+    ]
+  },
+  "gcAndFatalEvidence": [
+    "v8-oom-location",
+    "CALL_AND_RETRY_LAST",
+    "[21732:1022/204250.673:ERROR:v8_initializer.cc(791)] V8 javascript OOM (CALL_AND_RETRY_LAST).",
+    "= 0.896, current mu = 0.911) last resort; GC in old space requested",
+    "ed: 0 MB, 880.23 / 0.01 ms  (average mu = 0.896, current mu = 0.911) last resort; GC in old space requested",
+    "[21732:000057EC001BC000]   727279 ms: Mark-Compact (reduce) 2923.2 (2934.2) -> 2923.2 (2928.8) MB, pooled: 0 MB, 1320.66 / 0.00 ms  (average mu = 0.762, current mu = 0.000) last resort; GC in old space requested",
+    "[21732:000057EC001BC000]   725958 ms: Mark-Compact (reduce) 3319.9 (3340.8) -> 2923.3 (2934.2) MB, pooled: 0 MB, 880.23 / 0.01 ms  (average mu = 0.896, current mu = 0.911) last resort; GC in old space requested",
+    "[21732:000057EC001BC000]   727279 ms: Mark-Compact (reduce) 2923.2 (2934.2) -> 2923.2 (2928.8) MB, pooled: 0 MB, 1320.66 / 0.00 ms  (average mu = 0.762, current mu = 0.000) last resort; GC in old space requested"
+  ]
+}

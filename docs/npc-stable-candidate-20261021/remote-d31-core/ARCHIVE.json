@@ -1,0 +1,107 @@
+{
+  "recordedAt": "2026-10-23T07:01:33.125Z",
+  "files": [
+    {
+      "source": "web/dev-tools/ci-39914633560-core/a8a06012-680c-4986-ad28-c0152b620522/production.json",
+      "archive": "desktop-ipc-restart/production.json",
+      "bytes": 2294,
+      "sha256": "e84c9f738626547b708676235970c2ff951d94057c33624eab6592efe47f8d14"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/a8a06012-680c-4986-ad28-c0152b620522/production.log",
+      "archive": "desktop-ipc-restart/production.log",
+      "bytes": 2221,
+      "sha256": "8c7a7e1c61a6388b3b2810fe3f54679feca2a32ab002dec88e5e0177f17c2428"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/a8a06012-680c-4986-ad28-c0152b620522/report.json",
+      "archive": "desktop-ipc-restart/report.json",
+      "bytes": 8495,
+      "sha256": "e5aaaf53c1820d21728d638be2e3e725a9fffa8246eb32bd5343d922b76e0b58"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/a8a06012-680c-4986-ad28-c0152b620522/restart.json",
+      "archive": "desktop-ipc-restart/restart.json",
+      "bytes": 1681,
+      "sha256": "45b4c0d35b3f6d71e5b3e59b5bf1102b13c143fafad2c4e4d5d7387864971975"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/a8a06012-680c-4986-ad28-c0152b620522/restart.log",
+      "archive": "desktop-ipc-restart/restart.log",
+      "bytes": 1004,
+      "sha256": "c3cfb3614465a4b52617afb2ff7411c8d5517e41a04e0116a1c0b5a1a82b401f"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/a8a06012-680c-4986-ad28-c0152b620522/test-exports.json",
+      "archive": "desktop-ipc-restart/test-exports.json",
+      "bytes": 2181,
+      "sha256": "a7623d302be8ad1f0225b38b7ae26d92872c330dc74fc77127ead5b4bdb882fe"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/a8a06012-680c-4986-ad28-c0152b620522/test-exports.log",
+      "archive": "desktop-ipc-restart/test-exports.log",
+      "bytes": 2005,
+      "sha256": "0a9f80cd6bfd3b77e713bcbde801716787f7141a3a3024bea1e91ecce5af5477"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/4bb4e654-56e6-454e-9902-7e224eb0e785/manual-recovery-panel.png",
+      "archive": null,
+      "bytes": 107016,
+      "sha256": "73dc878b7dc0a3f7b3513fc6d6f488fed57299aaabb7f9e59ed07fa0953d869a"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/4bb4e654-56e6-454e-9902-7e224eb0e785/report.json",
+      "archive": "startup-autosave/report.json",
+      "bytes": 3097,
+      "sha256": "3d7a3283dd9df11ad42f564630c152cab49c3ce7769218253c816f72396abd66"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/4bb4e654-56e6-454e-9902-7e224eb0e785/startup-autosave.json",
+      "archive": "startup-autosave/startup-autosave.json",
+      "bytes": 2138,
+      "sha256": "e209de06d8afe15d792d66e8a1067760f307600a9ea54f4d1841e5d657e53a9d"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/4bb4e654-56e6-454e-9902-7e224eb0e785/startup-autosave.log",
+      "archive": "startup-autosave/startup-autosave.log",
+      "bytes": 1915,
+      "sha256": "93beb371c721d69f84d844e228b2730adaf510d72c6622a9b0951f89174190c8"
+    },
+    {
+      "source": "web/dev-tools/ci-39914633560-core/4bb4e654-56e6-454e-9902-7e224eb0e785/startup-without-prompt.png",
+      "archive": null,
+      "bytes": 198187,
+      "sha256": "6537fe067c9518a379838965f1a08bce5b9d0409f98d43218fbdd06eda1422eb"
+    },
+    {
+      "source": "collected metadata or exact source excerpt",
+      "archive": "job.json",
+      "bytes": 11298,
+      "sha256": "29eec68cae69060aa37aa2bdbf4e26f78067961f33dcda88ec4c89be7c88a318"
+    },
+    {
+      "source": "collected metadata or exact source excerpt",
+      "archive": "job.log",
+      "bytes": 30535,
+      "sha256": "0be92ee92657df256d795fa03659557e6afb68301eb9055253bce371576777e2"
+    },
+    {
+      "source": "collected metadata or exact source excerpt",
+      "archive": "identity.json",
+      "bytes": 387,
+      "sha256": "9901af57eb1cda5472ae330e10409a50bd5a481a1934e28e5d727586e4fe736d"
+    },
+    {
+      "source": "collected metadata or exact source excerpt",
+      "archive": "source-assertions.json",
+      "bytes": 1895,
+      "sha256": "5c404bb2d93462c71e6b0d59e5b3591a9c81a69bb3f89d05cdc6a91193197e84"
+    },
+    {
+      "source": "collected metadata or exact source excerpt",
+      "archive": "SUMMARY.json",
+      "bytes": 12212,
+      "sha256": "8735882714786e8a30922b4268303300df059feffa599f2d1c732bae8d2bacef"
+    }
+  ]
+}

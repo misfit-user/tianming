@@ -10,6 +10,9 @@ async function prepare(){
  c._tmMaybeStageTurnResult=()=>true;c._tmEndTurnTransactionCurrent=t=>!t.rolledBack&&!t.committed&&!t.saveWriteUnconfirmed;
  c._tmRequestEndTurnDesktopAutoSaveFlush=()=>{};c._tmReportEndTurnBoundaryError=()=>{};c._endTurn_render=p=>{f.shown=p.zhengwen;};
  c._endTurn_publishStagedTurnData=async()=>true;c._endTurn_clearCommittedInputs=()=>{};
+ c._tmAdoptCommittedWorldSnapshot=state=>{f.adopted=state;return true;};
+ f.txn.gm={data:JSON.parse(JSON.stringify(c.GM))};f.txn.p={data:{}};
+ f.txn.captureSession={rollbackCapture:{gm:f.txn.gm,p:f.txn.p},preEndturnState:{GM:{turn:3},P:{}}};
  loadFunctions(c,'tm-endturn-core.js',['_tmCommitEndTurnTransaction','_tmFinalizeEndTurnTransaction']);
  vm.runInContext(fs.readFileSync(path.join(ROOT,'tm-endturn-save-reconcile.js'),'utf8'),c);
  const saving=f.save().then(value=>({value}),error=>({error}));await tick();db.fire(60000);db.fire(5000);const result=await saving;
@@ -19,11 +22,13 @@ async function prepare(){
 test('unknown outcome remains blocked; an arbitrary acknowledgement cannot release it',async()=>{
  const x=await prepare();assert.equal(x.db.api.acknowledgeWriteOutcome(x.error.storageOperationId),false);
  x.manager.watch(x.f.ctx,x.f.txn,x.error);await x.manager.check();assert.equal(x.f.txn.committed,false);assert.equal(x.db.api.writeStatus().blocked,true);
+ assert(x.f.txn.gm&&x.f.txn.p&&x.f.txn.captureSession.preEndturnState&&x.f.ctx.meta.canonicalWorldPayload);assert.equal(typeof x.f.ctx.meta.acceptReconciledCommit,'function');
 });
 test('genuine late commit verifies both complete slots and finalizes the original result once',async()=>{
  const x=await prepare();x.manager.watch(x.f.ctx,x.f.txn,x.error);x.tx.complete();await tick();await tick();
  assert.equal(x.f.txn.committed,true);assert.equal(x.f.shown,x.c.GM.fullNarrative);assert.equal(x.manager.status().state,'committed');assert.equal(x.db.api.writeStatus().blocked,false);
  const writes=x.db.transactions.filter(t=>t.mode==='readwrite').length;await x.manager.check();assert.equal(x.db.transactions.filter(t=>t.mode==='readwrite').length,writes);
+ assert.equal(x.f.txn.gm,null);assert.equal(x.f.txn.p,null);assert.equal(x.f.txn.captureSession.preEndturnState,null);assert.equal(x.f.txn.captureSession.finalPayload,null);assert.equal(x.f.ctx.meta.canonicalWorldPayload,null);assert.equal(x.f.ctx.meta.acceptReconciledCommit,null);assert.equal(x.f.adopted.GM.fullNarrative,x.c.GM.fullNarrative);
 });
 test('mismatched full data keeps the safety latch instead of adopting a partial save',async()=>{
  const x=await prepare();x.tx.complete();x.db.rows('saves').get('slot_0').gameState='{"GM":{"turn":4},"P":{}}';

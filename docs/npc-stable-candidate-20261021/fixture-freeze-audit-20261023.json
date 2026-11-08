@@ -1,0 +1,24 @@
+{
+  "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "checkedAt": "2026-10-23T05:13:01.007Z",
+  "files": [
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "sha256": "41d95a231d652a43c92dde7257330738aac8a5d0bbea04261e8bfdc9bb3f602b",
+      "previousAssertionCount": 26,
+      "currentAssertionCount": 32,
+      "originalAssertionsMissingOrChanged": [],
+      "addedAssertionCount": 6,
+      "unchangedTimeoutConstants": true
+    },
+    {
+      "file": "web/scripts/smoke-start-game-data-integrity.js",
+      "sha256": "313fb24cf7709ce1bf11692ae847a49b4ff54691ffbb6667dbe9c7edd2c7e676",
+      "previousAssertionCount": 77,
+      "currentAssertionCount": 83,
+      "originalAssertionsMissingOrChanged": [],
+      "addedAssertionCount": 6,
+      "unchangedTimeoutConstants": true
+    }
+  ]
+}

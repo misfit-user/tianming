@@ -1,0 +1,13 @@
+TypeError [ERR_INVALID_ARG_TYPE]: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received undefined
+    at Hash.update (node:internal/crypto/hash:115:11)
+    at C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\check-other-officials.cjs:38:138
+    at Function.from (<anonymous>)
+    at run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\check-other-officials.cjs:38:32)
+    at Object.<anonymous> (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\docs\npc-stable-candidate-20261021\check-other-officials.cjs:132:3)
+    at Module._compile (node:internal/modules/cjs/loader:1484:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1564:10)
+    at Module.load (node:internal/modules/cjs/loader:1295:32)
+    at Module._load (node:internal/modules/cjs/loader:1111:12)
+    at c._load (node:electron/js2c/node_init:2:16955)
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb

@@ -1,0 +1,3 @@
+PASS successful work leaves live graph identity intact and before-state independently readable
+PASS failure restores complex large fields and all ordinary siblings without JSON coercion
+{"suite":"ai-atomic-snapshot-contract","passed":2}

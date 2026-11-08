@@ -27,7 +27,7 @@ const culturalSrc = culturalRestoreSource(path.resolve(ROOT, '..'));
 ok(save.indexOf('JSON.stringify(saveData2,null,2)') < 0, '案一·浏览器导出去缩进(saveData2 无 ,null,2)');
 ok(save.indexOf('JSON.stringify(saveData2)') >= 0, '案一·浏览器导出改紧凑');
 ok(mgr.indexOf('JSON.stringify(exportRec, null, 2)') < 0, '案一·exportSave 去缩进(exportRec 无 ,null,2)');
-ok(mgr.indexOf('JSON.stringify(exportRec)') >= 0, '案一·exportSave 改紧凑');
+ok(mgr.indexOf('JSON.stringify(exportRec)') >= 0 || mgr.indexOf('_tmSerializeExportParts(exportRec)') >= 0, '案一·exportSave 改紧凑(JSON.stringify 或分块序列化 _tmSerializeExportParts·后者拼回与紧凑 stringify 逐字节同·见 smoke-save-export-parts)');
 // 反解析等价(compact ↔ pretty 读端双向兼容)
 const sampleRec = { id:'slot_0', gameState:{ GM:{turn:7, chars:[{name:'甲',hp:3}], _convArchive:[{t:'x'}] }, P:{conf:{}} }, _format:'tianming-save-v1' };
 ok(deepEq(JSON.parse(JSON.stringify(sampleRec)), JSON.parse(JSON.stringify(sampleRec,null,2))), '案一·compact 与 pretty 反解析深等价');

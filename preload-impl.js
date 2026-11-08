@@ -56,13 +56,15 @@ try {
 // 遇到读档/新局 rotate，也携带旧 token 而不会被主进程误收编进新 session。
 if (!_autoSaveSessionToken) _autoSaveSessionToken = _newSessionToken();
 
-function _invokeAutoSave(data) {
+function _invokeAutoSave(data, textOnly) {
   const requestToken = _autoSaveSessionToken, requestRevision = _autoSaveSessionRevision;
-  return ipcRenderer.invoke('auto-save', {
+  const payload = {
     __tmAutoSaveEnvelope: 1,
-    sessionToken: requestToken,
-    data: data
-  }).then(function(result) {
+    sessionToken: requestToken
+  };
+  if (textOnly) payload.dataJson = data; else payload.data = data;
+  return ipcRenderer.invoke('auto-save', payload).then(function(result) {
+    if (textOnly && result && result.code === 'AUTO_SAVE_JSON_INVALID') throw new Error(result.error || '自动存档 JSON 无效');
     // Only the current request may confirm its existing session; late replies never rotate it.
     if (requestRevision === _autoSaveSessionRevision && requestToken === _autoSaveSessionToken
         && result && result.success === true && result.sessionToken && String(result.sessionToken) !== requestToken) {
@@ -74,16 +76,12 @@ function _invokeAutoSave(data) {
 
 function _invokeAutoSaveJson(json) {
   // A string crosses contextBridge without recursively copying/freezing every
-  // node of the committed world. Parse inside the isolated preload, then reuse
-  // the exact same session envelope, trusted IPC channel and main write queue.
+  // node of the committed world. Keep it as text in this renderer's isolated
+  // context too; the existing main write queue validates/parses before writing.
   // Keep this synchronous up to invoke so a later session rotation cannot adopt
   // an earlier request. Do not accept arbitrary renderer IPC channels or options.
   if (typeof json !== 'string') throw new TypeError('自动存档 JSON 必须是文本');
-  var data;
-  try { data = JSON.parse(json); }
-  catch (_) { throw new Error('自动存档 JSON 无效'); }
-  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new TypeError('自动存档正文必须是对象');
-  return _invokeAutoSave(data);
+  return _invokeAutoSave(json, true);
 }
 
 // 手动存档的文本通道，理由同上：大存档的对象图逐节点过 contextBridge 会卡上一分钟

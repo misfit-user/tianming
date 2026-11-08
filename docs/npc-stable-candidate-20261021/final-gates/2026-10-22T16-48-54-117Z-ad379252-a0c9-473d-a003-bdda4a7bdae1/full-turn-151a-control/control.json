@@ -1,0 +1,84 @@
+{
+  "kind": "single negative attribution control; never replaces original 152 failures",
+  "baselineRuntimeHead": "151a2b64ca3e2dc7317d20efba296579176cdd12",
+  "checkoutHead": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "-e",
+    "const fs=require('fs'),cp=require('child_process'),path=require('path'),crypto=require('crypto');const repo=\"C:\\\\Users\\\\37814\\\\.codex\\\\worktrees\\\\npc-composite-r123-20261011\",dir=\"C:\\\\Users\\\\37814\\\\.codex\\\\worktrees\\\\npc-composite-r123-20261011\\\\docs\\\\npc-stable-candidate-20261021\\\\final-gates\\\\2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1\\\\full-turn-151a-control\",old=new Map();for(const file of ['web/tm-npc-travel.js','web/tm-emergency-recovery-review.js']){const bytes=cp.execFileSync('git',['show','151a2b64ca3e2dc7317d20efba296579176cdd12:'+file]);old.set(path.join(repo,file),{file,bytes});}const read=fs.readFileSync;fs.readFileSync=function(file,options){const entry=typeof file==='string'&&old.get(path.resolve(file));if(entry){fs.appendFileSync(path.join(dir,'injection-hits.jsonl'),JSON.stringify({file:entry.file,sha256:crypto.createHash('sha256').update(entry.bytes).digest('hex'),bytes:entry.bytes.length})+'\\n');const encoding=typeof options==='string'?options:options&&options.encoding;return encoding?entry.bytes.toString(encoding):Buffer.from(entry.bytes);}return read.apply(this,arguments);};const test=path.join(repo,'web/scripts/smoke-full-turn-flow.js');process.argv=[process.execPath,test];require(test);"
+  ],
+  "test": "web/scripts/smoke-full-turn-flow.js",
+  "cwd": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts",
+  "overrides": {
+    "TMP": "E:\\tianming-npc-candidate-temp",
+    "TEMP": "E:\\tianming-npc-candidate-temp",
+    "TMPDIR": "E:\\tianming-npc-candidate-temp",
+    "TIANMING_RELEASE_TEMP_ROOT": "E:\\tianming-npc-candidate-temp"
+  },
+  "node": "v24.14.0",
+  "timeoutMs": 120000,
+  "startedAt": "2026-10-22T17:02:33.044Z",
+  "finishedAt": "2026-10-22T17:02:46.768Z",
+  "elapsedMs": 13719,
+  "exit": 1,
+  "signal": null,
+  "timedOut": false,
+  "injectionHits": [
+    {
+      "file": "web/tm-emergency-recovery-review.js",
+      "sha256": "ed2a6b69a67a967cbe8f376bf43ddb2d12e7f9a14e65510e646e388655cb4a2b",
+      "bytes": 47544
+    },
+    {
+      "file": "web/tm-npc-travel.js",
+      "sha256": "6187495562f09479eb21e8c468d08cd750494582d1f8ed0b171466356991ce2f",
+      "bytes": 82385
+    }
+  ],
+  "bothRuntimeSourcesActuallyInjected": true,
+  "before": [
+    {
+      "file": "web/tm-npc-travel.js",
+      "sha256": "dab485ebfa29806134e62bcfa42b7dceef771d2363d9a2cf190cab74bd0cd084"
+    },
+    {
+      "file": "web/tm-emergency-recovery-review.js",
+      "sha256": "012a629d8b6bf3b5d5f2f137b45755f8f01b6338f2010409619aa45f225171d6"
+    },
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "sha256": "5f29b407884e3ac95045b1853d7143cc6fe807f341ec0b5953b65de1fce60c6f"
+    },
+    {
+      "file": "web/scripts/headless-smoke.js",
+      "sha256": "39a832f551534caa64959133aac00e1d281ce68c82b7a5d661b9974408c944c7"
+    },
+    {
+      "file": "web/scripts/run-smokes.js",
+      "sha256": "9da339535dc007935d315b88da8f7b9e463ccfd295f358642b19499524b725de"
+    }
+  ],
+  "after": [
+    {
+      "file": "web/tm-npc-travel.js",
+      "sha256": "dab485ebfa29806134e62bcfa42b7dceef771d2363d9a2cf190cab74bd0cd084"
+    },
+    {
+      "file": "web/tm-emergency-recovery-review.js",
+      "sha256": "012a629d8b6bf3b5d5f2f137b45755f8f01b6338f2010409619aa45f225171d6"
+    },
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "sha256": "5f29b407884e3ac95045b1853d7143cc6fe807f341ec0b5953b65de1fce60c6f"
+    },
+    {
+      "file": "web/scripts/headless-smoke.js",
+      "sha256": "39a832f551534caa64959133aac00e1d281ce68c82b7a5d661b9974408c944c7"
+    },
+    {
+      "file": "web/scripts/run-smokes.js",
+      "sha256": "9da339535dc007935d315b88da8f7b9e463ccfd295f358642b19499524b725de"
+    }
+  ],
+  "sourceUnchanged": true
+}

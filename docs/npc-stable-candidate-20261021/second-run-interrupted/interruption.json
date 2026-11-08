@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "runId": "ac51973d-3f57-4d21-bd9c-60ff213b36cd",
+  "head": "91f76d2495f005d46597050d1a7c9180cbca7aab",
+  "complete": false,
+  "status": "interrupted_for_confirmed_blocking_runtime_fix",
+  "stoppedAt": "2026-10-21T16:53:37.782Z",
+  "reason": "Read-only M1 audit confirmed a position lacking stable positionId could be skipped despite explicit tenure constraints. Parent requested final repair and a fresh complete run.",
+  "lastLoggedProgress": {
+    "completed": 350,
+    "selected": 1181
+  },
+  "reportGenerated": false,
+  "termination": {
+    "runnerPid": 27616,
+    "method": "taskkill /PID 27616 /T /F after matching unique runner and expected runId in descendant command",
+    "race": "taskkill reported unsupported for two already terminating descendants; a fresh Win32_Process query confirmed no process among all identified PIDs or children remained"
+  },
+  "originalReportPath": "web/dev-tools/arch-guard/ci-w9qtg3/smoke-report.json",
+  "evidenceScope": "Only preserved stdout progress and starting runtime tree; no final results or PASS claim. Prior root full-smoke-report/full-smoke-run files still belong to first run and are intentionally not copied here."
+}

@@ -1,0 +1,1802 @@
+{
+  "body": "tm-phase8-formal tm-phase8-game-active tm-phase8-home",
+  "turn": "<button type=\"button\" class=\"et-big\">诏　付　有　司<span class=\"sub\">朕志已决　付之有司</span></button>",
+  "save": "<button class=\"float-btn show\" id=\"save-btn\" style=\"left:4.5rem;background:linear-gradient(135deg,var(--indigo-500),var(--indigo-400));\" onclick=\"TM.Save.openManager()\"><span id=\"_ico_save\"></span></button>",
+  "buttons": [
+    {
+      "text": "小",
+      "id": "",
+      "action": "_tmApplyScopeSize('court','sm', this)"
+    },
+    {
+      "text": "中",
+      "id": "",
+      "action": "_tmApplyScopeSize('court','md', this)"
+    },
+    {
+      "text": "大",
+      "id": "",
+      "action": "_tmApplyScopeSize('court','lg', this)"
+    },
+    {
+      "text": "特大",
+      "id": "",
+      "action": "_tmApplyScopeSize('court','xl', this)"
+    },
+    {
+      "text": "极小",
+      "id": "",
+      "action": "_tmApplyScopeSize('letter','xs', this)"
+    },
+    {
+      "text": "小",
+      "id": "",
+      "action": "_tmApplyScopeSize('letter','sm', this)"
+    },
+    {
+      "text": "中",
+      "id": "",
+      "action": "_tmApplyScopeSize('letter','md', this)"
+    },
+    {
+      "text": "大",
+      "id": "",
+      "action": "_tmApplyScopeSize('letter','lg', this)"
+    },
+    {
+      "text": "特大",
+      "id": "",
+      "action": "_tmApplyScopeSize('letter','xl', this)"
+    },
+    {
+      "text": "极小",
+      "id": "",
+      "action": "_tmApplyScopeSize('history','xs', this)"
+    },
+    {
+      "text": "小",
+      "id": "",
+      "action": "_tmApplyScopeSize('history','sm', this)"
+    },
+    {
+      "text": "中",
+      "id": "",
+      "action": "_tmApplyScopeSize('history','md', this)"
+    },
+    {
+      "text": "大",
+      "id": "",
+      "action": "_tmApplyScopeSize('history','lg', this)"
+    },
+    {
+      "text": "特大",
+      "id": "",
+      "action": "_tmApplyScopeSize('history','xl', this)"
+    },
+    {
+      "text": "极小",
+      "id": "",
+      "action": "_tmApplyScopeSize('settings','xs', this)"
+    },
+    {
+      "text": "小",
+      "id": "",
+      "action": "_tmApplyScopeSize('settings','sm', this)"
+    },
+    {
+      "text": "中",
+      "id": "",
+      "action": "_tmApplyScopeSize('settings','md', this)"
+    },
+    {
+      "text": "大",
+      "id": "",
+      "action": "_tmApplyScopeSize('settings','lg', this)"
+    },
+    {
+      "text": "特大",
+      "id": "",
+      "action": "_tmApplyScopeSize('settings','xl', this)"
+    },
+    {
+      "text": "音 乐 开 关",
+      "id": "",
+      "action": "AudioSystem.toggleBgm();if(window.TM&&TM.UI&&TM.UI.shell&&typeof TM.UI.shell.refreshLeft==='function')TM.UI.shell.refreshLeft();"
+    },
+    {
+      "text": "导 入 音 乐",
+      "id": "",
+      "action": "AudioSystem._pickMusicFiles();"
+    },
+    {
+      "text": "顺 序",
+      "id": "",
+      "action": "AudioSystem.setLoopMode('sequence');if(window.TM&&TM.UI&&TM.UI.shell&&typeof TM.UI.shell.refreshLeft==='function')TM.UI.shell.refreshLeft();"
+    },
+    {
+      "text": "单 曲",
+      "id": "",
+      "action": "AudioSystem.setLoopMode('single');if(window.TM&&TM.UI&&TM.UI.shell&&typeof TM.UI.shell.refreshLeft==='function')TM.UI.shell.refreshLeft();"
+    },
+    {
+      "text": "随 机",
+      "id": "",
+      "action": "AudioSystem.setLoopMode('random');if(window.TM&&TM.UI&&TM.UI.shell&&typeof TM.UI.shell.refreshLeft==='function')TM.UI.shell.refreshLeft();"
+    },
+    {
+      "text": "×",
+      "id": "",
+      "action": "TM.UI.shell.closeSideDrawer('right')"
+    },
+    {
+      "text": "全",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "朝",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "军",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "报",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "⋯",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "紧",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "宽",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "",
+      "id": "tm-pause-fab",
+      "action": null
+    },
+    {
+      "text": "×",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "诏　付　有　司朕志已决　付之有司",
+      "id": "",
+      "action": null
+    },
+    {
+      "text": "御案撰写诏书起草政令",
+      "id": "zhao-btn",
+      "action": null
+    },
+    {
+      "text": "章奏百官奏疏御览奏报",
+      "id": "zhao-btn-2",
+      "action": null
+    },
+    {
+      "text": "驿传鸿雁传书遣使通信",
+      "id": "zhao-btn-3",
+      "action": null
+    },
+    {
+      "text": "史馆史官实录回合档案",
+      "id": "zhao-btn-4",
+      "action": null
+    }
+  ],
+  "locations": [
+    {
+      "n": "赵构",
+      "id": "char_jianyan1_01",
+      "loc": "ssr-0048",
+      "controlled": true,
+      "known": 94,
+      "knownPeople": [
+        {
+          "id": "char_jianyan1_01",
+          "name": "赵构",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_02",
+          "name": "孟皇后",
+          "location": "ssr-0007",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_41",
+          "name": "康履",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_16",
+          "name": "韩世忠",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_45",
+          "name": "杨沂中",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_30",
+          "name": "汪伯彦",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_12",
+          "name": "李纲",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_31",
+          "name": "黄潜善",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_13",
+          "name": "宗泽",
+          "location": "ssr-0001",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_08",
+          "name": "赵桓",
+          "location": "ssr-0324",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_09",
+          "name": "赵佶",
+          "location": "ssr-0324",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_17",
+          "name": "岳飞",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_28",
+          "name": "张浚",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_46",
+          "name": "刘晏",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_03",
+          "name": "潘贤妃",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_05",
+          "name": "赵旉",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_37",
+          "name": "孟忠厚",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_38",
+          "name": "邢焕",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_06",
+          "name": "邢秉懿",
+          "location": "ssr-0348",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_07",
+          "name": "韦氏",
+          "location": "ssr-0348",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_40",
+          "name": "韦渊",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_b1mrgayfqm",
+          "name": "张邦昌",
+          "location": "ssr-0122",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_196",
+          "name": "张去为",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_195",
+          "name": "王继先",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_29",
+          "name": "吕颐浩",
+          "location": "ssr-0057",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_70",
+          "name": "朱胜非",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_117",
+          "name": "赵立",
+          "location": "ssr-0013",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_dali_206",
+          "name": "李观音得",
+          "location": "ssr-0379",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_129",
+          "name": "段正严",
+          "location": "ssr-0379",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_130",
+          "name": "王楷",
+          "location": "ssr-0482",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_131",
+          "name": "李阳焕",
+          "location": "ssr-0407",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_302",
+          "name": "刘庆覃",
+          "location": "ssr-0407",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_186",
+          "name": "范汝为",
+          "location": "ssr-0133",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_189",
+          "name": "曹成",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_kham_001",
+          "name": "贡保多吉",
+          "location": "ssr-0422",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_kham_003",
+          "name": "索朗旺扎",
+          "location": "ssr-0425",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_butuan_008",
+          "name": "苏戈·班瓦",
+          "location": "ssr-0559",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_mai_08",
+          "name": "纳科达·阿吉",
+          "location": "ssr-0555",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_04",
+          "name": "朱凤英",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_10",
+          "name": "朱琏",
+          "location": "ssr-0324",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_11",
+          "name": "赵谌",
+          "location": "ssr-0324",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_22",
+          "name": "吕好问",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_25",
+          "name": "林景默",
+          "location": "ssr-0062",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_34",
+          "name": "王伦",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_35",
+          "name": "耿南仲",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_42",
+          "name": "蓝珪",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_43",
+          "name": "曾择",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_44",
+          "name": "黄经臣",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_66",
+          "name": "洪皓",
+          "location": "ssr-0096",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_67",
+          "name": "陈规",
+          "location": "ssr-0119",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_q5s472esuf",
+          "name": "韩肖胄",
+          "location": "ssr-0007",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_5teotjwsta",
+          "name": "田师中",
+          "location": "ssr-0007",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_txycx4vuqy",
+          "name": "陈与义",
+          "location": "ssr-0007",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_vcwd09rh7v",
+          "name": "李宝",
+          "location": "ssr-0007",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_109",
+          "name": "李清照",
+          "location": "ssr-0019",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_111",
+          "name": "范致虚",
+          "location": "ssr-0039",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_112",
+          "name": "汪藻",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_113",
+          "name": "綦崇礼",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_114",
+          "name": "叶梦得",
+          "location": "ssr-0092",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_115",
+          "name": "滕康",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_116",
+          "name": "李回",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_118",
+          "name": "邵青",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_137",
+          "name": "富直柔",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_138",
+          "name": "卫肤敏",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_140",
+          "name": "柔福帝姬",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_141",
+          "name": "吴氏",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_142",
+          "name": "张悫",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_143",
+          "name": "谢克家",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_144",
+          "name": "张守",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_145",
+          "name": "刘珏",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_146",
+          "name": "程瑀",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_147",
+          "name": "晏敦复",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_150",
+          "name": "喻樗",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_151",
+          "name": "谯定",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_152",
+          "name": "路允迪",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_153",
+          "name": "周望",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_154",
+          "name": "卢益",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_155",
+          "name": "胡交修",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_157",
+          "name": "富季申",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_158",
+          "name": "李擢",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_159",
+          "name": "富直柔从弟",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_160",
+          "name": "杨惟忠",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_162",
+          "name": "李横",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_173",
+          "name": "关师古",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_175",
+          "name": "张玘",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_187",
+          "name": "张荣",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_190",
+          "name": "商元",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_192",
+          "name": "张氏(婕妤)",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_193",
+          "name": "赵伯琮",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_194",
+          "name": "赵令畤",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_197",
+          "name": "蓝公佐",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_203",
+          "name": "周紫芝",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_204",
+          "name": "李正民",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_205",
+          "name": "皇城司探事",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        }
+      ],
+      "materials": [
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_01"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_02"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_41"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_16"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_45"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_30"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_12"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_31"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_13"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_08"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_09"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_17"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_28"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_46"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_03"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_05"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_37"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_38"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_06"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_07"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_40"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_b1mrgayfqm"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_196"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_195"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_29"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_70"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_117"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_dali_206"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_129"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_130"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_131"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_302"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_186"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_189"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_kham_001"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_kham_003"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_butuan_008"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_mai_08"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_04"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_10"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_11"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_22"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_25"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_34"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_35"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_42"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_43"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_44"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_66"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_67"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_q5s472esuf"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_5teotjwsta"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_txycx4vuqy"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_vcwd09rh7v"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_109"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_111"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_112"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_113"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_114"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_115"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_116"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_118"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_137"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_138"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_140"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_141"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_142"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_143"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_144"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_145"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_146"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_147"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_150"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_151"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_152"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_153"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_154"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_155"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_157"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_158"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_159"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_160"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_162"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_173"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_175"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_187"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_190"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_192"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_193"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_194"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_197"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_203"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_204"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_205"
+          },
+          "label": "人物公开身份"
+        }
+      ]
+    },
+    {
+      "n": "韩世忠",
+      "id": "char_jianyan1_16",
+      "loc": "ssr-0048",
+      "controlled": false,
+      "known": 14,
+      "knownPeople": [
+        {
+          "id": "char_jianyan1_16",
+          "name": "韩世忠",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_47",
+          "name": "苗傅",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_01",
+          "name": "赵构",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_12",
+          "name": "李纲",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_69",
+          "name": "梁红玉",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_18",
+          "name": "张俊",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_55",
+          "name": "完颜宗弼",
+          "location": "ssr-0324",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_17",
+          "name": "岳飞",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_098",
+          "name": "刘光世",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_119",
+          "name": "解元",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_120",
+          "name": "呼延通",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_165",
+          "name": "姚端",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_121",
+          "name": "巨师古",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_13",
+          "name": "宗泽",
+          "location": "ssr-0001",
+          "publicIdentity": false
+        }
+      ],
+      "materials": [
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_16"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_47"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_01"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_12"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_69"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_18"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_55"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_17"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_098"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_119"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_120"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_165"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_121"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_13"
+          },
+          "label": "人物公开身份"
+        }
+      ]
+    },
+    {
+      "n": "张俊",
+      "id": "char_jianyan1_18",
+      "loc": "ssr-0048",
+      "controlled": false,
+      "known": 12,
+      "knownPeople": [
+        {
+          "id": "char_jianyan1_18",
+          "name": "张俊",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_16",
+          "name": "韩世忠",
+          "location": "ssr-0048",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_jianyan1_17",
+          "name": "岳飞",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_098",
+          "name": "刘光世",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_zs5h9vsuan",
+          "name": "王德",
+          "location": "ssr-0007",
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_166",
+          "name": "寇成",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_163",
+          "name": "王𤫉",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_121",
+          "name": "巨师古",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_160",
+          "name": "杨惟忠",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_164",
+          "name": "董平",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_170",
+          "name": "傅选",
+          "location": null,
+          "publicIdentity": false
+        },
+        {
+          "id": "char_ss_176",
+          "name": "王进",
+          "location": null,
+          "publicIdentity": false
+        }
+      ],
+      "materials": [
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_18"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_16"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_jianyan1_17"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_098"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_zs5h9vsuan"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_166"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_163"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_121"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_160"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_164"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_170"
+          },
+          "label": "人物公开身份"
+        },
+        {
+          "ref": {
+            "kind": "character_public",
+            "characterId": "char_ss_176"
+          },
+          "label": "人物公开身份"
+        }
+      ]
+    }
+  ]
+}

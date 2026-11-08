@@ -1,0 +1,25 @@
+
+BRIDGE_CASE_START {"name":"locked-electron-runtime","at":"2026-10-23T07:44:12.670Z"}
+BRIDGE_CASE_PASS {"name":"locked-electron-runtime","elapsedMs":3}
+BRIDGE_CASE_START {"name":"production-webpreferences","at":"2026-10-23T07:44:12.673Z"}
+BRIDGE_CASE_PASS {"name":"production-webpreferences","elapsedMs":1}
+BRIDGE_CASE_START {"name":"real-bridge-and-ipc","at":"2026-10-23T07:44:12.674Z"}
+BRIDGE_CASE_PASS {"name":"real-bridge-and-ipc","elapsedMs":11}
+BRIDGE_CASE_START {"name":"production-test-exports-boundary","at":"2026-10-23T07:44:12.685Z"}
+BRIDGE_CASE_PASS {"name":"production-test-exports-boundary","elapsedMs":0}
+BRIDGE_CASE_START {"name":"legacy-and-hash-save-real-ipc-roundtrip","at":"2026-10-23T07:44:12.687Z"}
+BRIDGE_CASE_PASS {"name":"legacy-and-hash-save-real-ipc-roundtrip","elapsedMs":115}
+BRIDGE_CASE_START {"name":"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk","at":"2026-10-23T07:44:12.802Z"}
+BRIDGE_CASE_PASS {"name":"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk","elapsedMs":45}
+BRIDGE_CASE_START {"name":"manual-save-world-switch-barrier-and-late-real-ipc","at":"2026-10-23T07:44:12.847Z"}
+BRIDGE_CASE_PASS {"name":"manual-save-world-switch-barrier-and-late-real-ipc","elapsedMs":53}
+BRIDGE_CASE_START {"name":"atomic-export-real-ipc-failure-and-cancel","at":"2026-10-23T07:44:12.900Z"}
+BRIDGE_CASE_PASS {"name":"atomic-export-real-ipc-failure-and-cancel","elapsedMs":26}
+BRIDGE_CASE_START {"name":"real-worker-import-cancel-timeout-error-and-recovery","at":"2026-10-23T07:44:12.926Z"}
+BRIDGE_CASE_PASS {"name":"real-worker-import-cancel-timeout-error-and-recovery","elapsedMs":499}
+BRIDGE_CASE_START {"name":"workshop-overwrite-rollback-through-real-ipc","at":"2026-10-23T07:44:13.426Z"}
+BRIDGE_CASE_PASS {"name":"workshop-overwrite-rollback-through-real-ipc","elapsedMs":133}
+BRIDGE_CASE_START {"name":"canonical-world-and-receipt-committed-before-process-exit","at":"2026-10-23T07:44:13.560Z"}
+BRIDGE_CASE_PASS {"name":"canonical-world-and-receipt-committed-before-process-exit","elapsedMs":61}
+BRIDGE_EXIT_REQUESTED {"mode":"production","at":"2026-10-23T07:44:13.621Z","code":0}
+BRIDGE_NODE_EXIT {"mode":"production","at":"2026-10-23T07:44:13.624Z","code":0}

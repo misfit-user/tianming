@@ -1,0 +1,7 @@
+PASS active same-case timeout interval immediate and frame execute with original arguments
+PASS dispose cancels only its own VM while another VM continues
+PASS dispose cancels both immediate and lexical host animation-frame handles
+PASS a late old async callback cannot schedule any timer or frame after disposal
+PASS successful disposal reports exact remaining handles and repeated disposal is empty
+PASS the actual case wrapper clears its scope after assertion failure and guards all twelve cases
+{"legacy":false,"pass":6,"fail":0,"total":6}

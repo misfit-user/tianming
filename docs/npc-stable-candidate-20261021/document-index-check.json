@@ -1,0 +1,714 @@
+{
+  "schemaVersion": 2,
+  "checkedAt": "2026-10-22T17:08:20.598Z",
+  "testedHead": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "headObserved": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "documents": [
+    {
+      "file": "docs/npc-stable-candidate-20261021/REPORT.md",
+      "sha256": "d24e96ba3c85df822b6a063e51163f18055f50a7a4d54ee3fac350e5f4b6b021"
+    },
+    {
+      "file": "docs/npc-stable-candidate-20261021/TESTS.md",
+      "sha256": "c4ee3399ee6a80efab3444a785737d43889c3c95a77e59259c6f8335969c117e"
+    },
+    {
+      "file": "docs/npc-stable-candidate-20261021/PLAY.md",
+      "sha256": "381b0124b7c7470681ecd734d20acc11437b7abf99176456994415da2f5bdac3"
+    },
+    {
+      "file": "docs/npc-stable-candidate-20261021/PR_BODY.md",
+      "sha256": "54e4cb06cd61c8f8d73bb9f78899e5bb7dad0b93b4b5e9e16856561e27d85aab"
+    }
+  ],
+  "references": [
+    {
+      "document": "REPORT.md",
+      "reference": "CURRENT.json",
+      "resolved": "docs/npc-stable-candidate-20261021/CURRENT.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "smoke-full-turn-flow.js",
+      "resolved": "web/scripts/smoke-full-turn-flow.js",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "smoke-start-game-data-integrity.js",
+      "resolved": "web/scripts/smoke-start-game-data-integrity.js",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/final-gates.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/final-gates.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/targeted-smoke-report.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/targeted-smoke-report.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/full-turn-151a-control/control.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/full-turn-151a-control/control.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "r2-player-boundaries.json",
+      "resolved": "docs/npc-stable-candidate-20261021/r2-player-boundaries.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "review-lazy-basis-2026-10-22T16-36-49-282Z/candidate-final.json",
+      "resolved": "docs/npc-stable-candidate-20261021/review-lazy-basis-2026-10-22T16-36-49-282Z/candidate-final.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "review-lazy-basis-2026-10-22T16-36-49-282Z/old-151a-final-tests.json",
+      "resolved": "docs/npc-stable-candidate-20261021/review-lazy-basis-2026-10-22T16-36-49-282Z/old-151a-final-tests.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/tm-save-stable-id-migration.js",
+      "resolved": "web/tm-save-stable-id-migration.js",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "final-gates/2026-10-22T15-58-55-222Z-bf4022e2-961c-442f-9f03-a72783c0303e/new-main-input-confirmation.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T15-58-55-222Z-bf4022e2-961c-442f-9f03-a72783c0303e/new-main-input-confirmation.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/other-officials/official-compatibility.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/other-officials/official-compatibility.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "LEGACY.md",
+      "resolved": "docs/npc-stable-candidate-20261021/LEGACY.md",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "PLAY.md",
+      "resolved": "docs/npc-stable-candidate-20261021/PLAY.md",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "TESTS.md",
+      "resolved": "docs/npc-stable-candidate-20261021/TESTS.md",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "runtime-tested.json",
+      "resolved": "docs/npc-stable-candidate-20261021/runtime-tested.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "full-smoke-run.json",
+      "resolved": "docs/npc-stable-candidate-20261021/full-smoke-run.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "full-smoke-report.json",
+      "resolved": "docs/npc-stable-candidate-20261021/full-smoke-report.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "committed-capture-release-gate.json",
+      "resolved": "docs/npc-stable-candidate-20261021/committed-capture-release-gate.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "review-progress-collapse.json",
+      "resolved": "docs/npc-stable-candidate-20261021/review-progress-collapse.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "composite-producer-waits.json",
+      "resolved": "docs/npc-stable-candidate-20261021/composite-producer-waits.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/electron-bridge/7f963b07-9b62-44a5-98e2-4a95b7147fd8/INTERRUPTED.json",
+      "resolved": "web/dev-tools/electron-bridge/7f963b07-9b62-44a5-98e2-4a95b7147fd8/INTERRUPTED.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "remote-109-composite.log",
+      "resolved": "docs/npc-stable-candidate-20261021/remote-109-composite.log",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "browser-477-formal-block/report.json",
+      "resolved": "docs/npc-stable-candidate-20261021/browser-477-formal-block/report.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "browser-477-formal-block/classification.json",
+      "resolved": "docs/npc-stable-candidate-20261021/browser-477-formal-block/classification.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "browser-477-formal-block/blocked-control.json",
+      "resolved": "docs/npc-stable-candidate-20261021/browser-477-formal-block/blocked-control.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/electron-bridge/964f3503-873f-4003-aa87-be2f10c2c4bf/blocked-control.png",
+      "resolved": "web/dev-tools/electron-bridge/964f3503-873f-4003-aa87-be2f10c2c4bf/blocked-control.png",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "remote-477-composite.log",
+      "resolved": "docs/npc-stable-candidate-20261021/remote-477-composite.log",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/ci-39786955659-composite/104a6716-12e2-43a9-a0ae-4eef5f1cf5e0/report.json",
+      "resolved": "web/dev-tools/ci-39786955659-composite/104a6716-12e2-43a9-a0ae-4eef5f1cf5e0/report.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/ci-39790789251-composite/e4d28492-04f7-41d6-ad89-9ab2010fa5d4/report.json",
+      "resolved": "web/dev-tools/ci-39790789251-composite/e4d28492-04f7-41d6-ad89-9ab2010fa5d4/report.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/ci-39790789251-composite/e4d28492-04f7-41d6-ad89-9ab2010fa5d4/blocked-control.png",
+      "resolved": "web/dev-tools/ci-39790789251-composite/e4d28492-04f7-41d6-ad89-9ab2010fa5d4/blocked-control.png",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/electron-bridge/d16f26ca-6243-4559-b133-deb545796545/INTERRUPTED.json",
+      "resolved": "web/dev-tools/electron-bridge/d16f26ca-6243-4559-b133-deb545796545/INTERRUPTED.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/ci-39800379096-composite/388f196d-e5d7-43cb-97bf-ae6da4efd6f3/report.json",
+      "resolved": "web/dev-tools/ci-39800379096-composite/388f196d-e5d7-43cb-97bf-ae6da4efd6f3/report.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "remote-60d9-composite.log",
+      "resolved": "docs/npc-stable-candidate-20261021/remote-60d9-composite.log",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/electron-bridge/cb9c1636-1455-40cc-b899-a36672a730fb/report.json",
+      "resolved": "web/dev-tools/electron-bridge/cb9c1636-1455-40cc-b899-a36672a730fb/report.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/electron-bridge/cb9c1636-1455-40cc-b899-a36672a730fb/composite-timeline.json",
+      "resolved": "web/dev-tools/electron-bridge/cb9c1636-1455-40cc-b899-a36672a730fb/composite-timeline.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/electron-bridge/cb9c1636-1455-40cc-b899-a36672a730fb/renderer.log",
+      "resolved": "web/dev-tools/electron-bridge/cb9c1636-1455-40cc-b899-a36672a730fb/renderer.log",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "remote-151a-composite.log",
+      "resolved": "docs/npc-stable-candidate-20261021/remote-151a-composite.log",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/ci-39809834192-composite/11c0fcd5-0b86-4c91-895c-7f40247961e5/report.json",
+      "resolved": "web/dev-tools/ci-39809834192-composite/11c0fcd5-0b86-4c91-895c-7f40247961e5/report.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "web/dev-tools/electron-bridge/52a5afea-754b-4f25-8651-e0b6ce4eb4a8/report.json",
+      "resolved": "web/dev-tools/electron-bridge/52a5afea-754b-4f25-8651-e0b6ce4eb4a8/report.json",
+      "status": "exists"
+    },
+    {
+      "document": "REPORT.md",
+      "reference": "final-gates/2026-10-22T15-58-55-222Z-bf4022e2-961c-442f-9f03-a72783c0303e/final-gates.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T15-58-55-222Z-bf4022e2-961c-442f-9f03-a72783c0303e/final-gates.json",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "docs/npc-stable-candidate-20261021/run-final-gates.cjs",
+      "resolved": "docs/npc-stable-candidate-20261021/run-final-gates.cjs",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/final-gates.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/final-gates.json",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/targeted-smoke-report.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/targeted-smoke-report.json",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/other-officials/official-compatibility.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/other-officials/official-compatibility.json",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/full-turn-151a-control/control.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/full-turn-151a-control/control.json",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "stdout.log",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/full-turn-151a-control/stdout.log",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "stderr.log",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/full-turn-151a-control/stderr.log",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "injection-hits.jsonl",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/full-turn-151a-control/injection-hits.jsonl",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "web/scripts/smoke-npc-meeting-office.js",
+      "resolved": "web/scripts/smoke-npc-meeting-office.js",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "web/scripts/smoke-npc-meeting-events.js",
+      "resolved": "web/scripts/smoke-npc-meeting-events.js",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "web/scripts/smoke-npc-meeting-events-boundaries.js",
+      "resolved": "web/scripts/smoke-npc-meeting-events-boundaries.js",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "web/scripts/smoke-emergency-recovery-review.js",
+      "resolved": "web/scripts/smoke-emergency-recovery-review.js",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "web/scripts/smoke-npc-composite-waits.js",
+      "resolved": "web/scripts/smoke-npc-composite-waits.js",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "web/scripts/smoke-recovery-settings-restore.js",
+      "resolved": "web/scripts/smoke-recovery-settings-restore.js",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "web/scripts/smoke-runtime-save-consistency.js",
+      "resolved": "web/scripts/smoke-runtime-save-consistency.js",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "web/scripts/smoke-save-integrity-audit.js",
+      "resolved": "web/scripts/smoke-save-integrity-audit.js",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "r2-player-boundaries.json",
+      "resolved": "docs/npc-stable-candidate-20261021/r2-player-boundaries.json",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "check-other-officials.cjs",
+      "resolved": "docs/npc-stable-candidate-20261021/check-other-officials.cjs",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "scripts/verify-electron-bridge.js",
+      "resolved": "scripts/verify-electron-bridge.js",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "CURRENT.json",
+      "resolved": "docs/npc-stable-candidate-20261021/CURRENT.json",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "REPORT.md",
+      "resolved": "docs/npc-stable-candidate-20261021/REPORT.md",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "summarize-final-composite.cjs",
+      "resolved": "docs/npc-stable-candidate-20261021/summarize-final-composite.cjs",
+      "status": "exists"
+    },
+    {
+      "document": "TESTS.md",
+      "reference": "LEGACY.md",
+      "resolved": "docs/npc-stable-candidate-20261021/LEGACY.md",
+      "status": "exists"
+    },
+    {
+      "document": "PLAY.md",
+      "reference": "REPORT.md",
+      "resolved": "docs/npc-stable-candidate-20261021/REPORT.md",
+      "status": "exists"
+    },
+    {
+      "document": "PR_BODY.md",
+      "reference": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/final-gates.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/final-gates.json",
+      "status": "exists"
+    },
+    {
+      "document": "PR_BODY.md",
+      "reference": "targeted-smoke-report.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/targeted-smoke-report.json",
+      "status": "exists"
+    },
+    {
+      "document": "PR_BODY.md",
+      "reference": "full-turn-151a-control/control.json",
+      "resolved": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/full-turn-151a-control/control.json",
+      "status": "exists"
+    },
+    {
+      "document": "PR_BODY.md",
+      "reference": "REPORT.md",
+      "resolved": "docs/npc-stable-candidate-20261021/REPORT.md",
+      "status": "exists"
+    }
+  ],
+  "summary": {
+    "references": 69,
+    "exists": 69,
+    "missing": 0
+  },
+  "finalLocalGates": {
+    "file": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/final-gates.json",
+    "sha256": "e913c2a43d22d641476307a0719e21ecdc955412e8bd5351a75dacd87f680ed3",
+    "runId": "ad379252-a0c9-473d-a003-bdda4a7bdae1",
+    "status": "failed",
+    "complete": true,
+    "exit": 1,
+    "elapsedMs": 648745,
+    "sourceUnchanged": true,
+    "inputFiles": 2390,
+    "inputHash": "03a868ded9be94a8f58769118b7e42132cac38d53b48bc6b0a823dacf6672cb6",
+    "summary": {
+      "selected": 56,
+      "pass": 54,
+      "fail": 2,
+      "waived": 0,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "results": [
+      {
+        "id": "targeted-smokes",
+        "exit": 1,
+        "elapsedMs": 424599.7523,
+        "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/targeted-smokes.log",
+        "logSha256": "40632610e50eb7aba0414e325599854f7e06e393ff1f25fe989fbbe0b2d6ba42"
+      },
+      {
+        "id": "other-officials",
+        "exit": 0,
+        "elapsedMs": 70237.695,
+        "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/other-officials.log",
+        "logSha256": "13d1b99e9feca9b4f1e8b9c1e7d1e73b2c1808c3bafb4bec8a337a1436342807"
+      },
+      {
+        "id": "architecture",
+        "exit": 0,
+        "elapsedMs": 43940.698,
+        "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/architecture.log",
+        "logSha256": "bdb618ba4999441e84614fdd5008fb411b305fbf93666803bead9e6c54d031aa"
+      },
+      {
+        "id": "official-parity",
+        "exit": 0,
+        "elapsedMs": 89371.9684,
+        "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/official-parity.log",
+        "logSha256": "0b9abe44973db8933ee4d0971e328a2ce42ca97a154309582f160e02f075600e"
+      },
+      {
+        "id": "native-manifest",
+        "exit": 0,
+        "elapsedMs": 892.8235,
+        "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/native-manifest.log",
+        "logSha256": "5caa7c52501c692aab910fd5675549a473bee0e54cc770e10582f663244ddf16"
+      },
+      {
+        "id": "startup-manifest",
+        "exit": 0,
+        "elapsedMs": 388.5384,
+        "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/startup-manifest.log",
+        "logSha256": "4828eecc10e441fdc9d7b6c0d7a6e8fbb7ad3f851e85dc4b515405e78f3a4850"
+      },
+      {
+        "id": "release-contract",
+        "exit": 0,
+        "elapsedMs": 4696.808,
+        "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/release-contract.log",
+        "logSha256": "709baa9ccc8dbfd82065a32303c307a06ffc89aeb9b8a611caffa756d8fcf571"
+      },
+      {
+        "id": "hot-baseline",
+        "exit": 0,
+        "elapsedMs": 3113.3267,
+        "log": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/hot-baseline.log",
+        "logSha256": "e51481f9216cb1602ecec809b8dc8164f472da307f238efd8dcacf4395d9f34d"
+      }
+    ],
+    "rawLogHashesVerified": true,
+    "targetedReportHashVerified": true
+  },
+  "previousFinalLocalGates": [
+    {
+      "head": "ebf58473d37fe9ff20f82d6a85c7a771b7f9d1ac",
+      "file": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T13-52-45-096Z-5f40a3b6-929b-4e29-a177-178466a98404/final-gates.json",
+      "sha256": "feb2e11a0208a7109317959d60665fa51be86660e2f778ae063265394bc48a9d",
+      "unchanged": true
+    },
+    {
+      "head": "151a2b64ca3e2dc7317d20efba296579176cdd12",
+      "file": "docs/npc-stable-candidate-20261021/final-gates/2026-10-22T15-58-55-222Z-bf4022e2-961c-442f-9f03-a72783c0303e/final-gates.json",
+      "sha256": "62dffbb2be6a1d4937fb8ef61408a13dee8814bb5c34010f815d7e1cec1699be",
+      "unchanged": true
+    }
+  ],
+  "activeFormal": {
+    "testedCandidate": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+    "status": "new frozen candidate requires independent formal acceptance; CURRENT.json maintained by root",
+    "formalAcceptancePassed": false
+  },
+  "historicalFullRun": {
+    "head": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+    "runId": "e4644794-bed1-4dfe-9a31-dd352a27f5a3",
+    "exit": 1,
+    "summary": {
+      "selected": 1181,
+      "pass": 1177,
+      "fail": 2,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "mayBeUsedAsCurrentCandidateTotal": false
+  },
+  "historicalFormal60d9": {
+    "local": {
+      "runId": "cb9c1636-1455-40cc-b899-a36672a730fb",
+      "head": "60d9c8f1e9a634eb0919562d1fa34d0c8f049e6f",
+      "complete": true,
+      "ok": false,
+      "exit": 1,
+      "elapsedMs": 1524663,
+      "failures": [
+        "Error: Error: actual saved slot did not appear (official save is about 164 MB before compression)\n    at poll (<anonymous>:1:278)\n    at js (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:12:697)\n    at async saveAndReload (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:82:5)\n    at async C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:187:44\n    at async check (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\bridge-main.cjs:83:183)\n    at async module.exports (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:184:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\bridge-main.cjs:130:42)"
+      ],
+      "report": "web/dev-tools/electron-bridge/cb9c1636-1455-40cc-b899-a36672a730fb/report.json",
+      "onsite": {
+        "day": 37,
+        "turn": 4,
+        "people": 513,
+        "planId": "plan:daily-ui:1792681546958:4",
+        "discussionStatus": "awaiting_target",
+        "actorContentPresent": true,
+        "targetContentPresent": false
+      },
+      "actualReloadSlots": [
+        1
+      ],
+      "returned": false,
+      "classification": "fixed slot2 UI display wait expired; compression just finished; only first actual reload"
+    },
+    "remote": {
+      "actionsRun": 39800379096,
+      "job": 119899046206,
+      "runId": "388f196d-e5d7-43cb-97bf-ae6da4efd6f3",
+      "checkoutHead": "da3ed7d972fda9659207c739fbadf741fa3dad8e",
+      "complete": true,
+      "ok": false,
+      "exit": 1,
+      "elapsedMs": 769352,
+      "failures": [
+        "Error: formal turn did not finish {\"busy\":true,\"turn\":4,\"day\":37}\n    at formalTurn (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:62:24)\n    at async module.exports (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:182:5)\n    at async WebContents.<anonymous> (D:\\a\\tianming\\tianming\\scripts\\electron\\bridge-main.cjs:130:42)"
+      ],
+      "report": "web/dev-tools/ci-39800379096-composite/388f196d-e5d7-43cb-97bf-ae6da4efd6f3/report.json",
+      "classification": "500 observation polls exhausted while busy at turn4/day37; no renderer crash",
+      "otherCI": "All other jobs including relief and guards succeeded, per coordinating root"
+    }
+  },
+  "previousFormal477": {
+    "local": {
+      "runId": "964f3503-873f-4003-aa87-be2f10c2c4bf",
+      "head": "477ecfacf35039c33e554a5d50caf0eff24e27d0",
+      "ok": false,
+      "complete": true,
+      "exit": 1,
+      "failures": [
+        "Error: Error: control did not become clickable: #zhao-btn-3\n    at poll (<anonymous>:1:480)\n    at js (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:12:697)\n    at async click (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:20:9)\n    at async openLetters (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:42:57)\n    at async module.exports (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:179:24)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\bridge-main.cjs:130:42)"
+      ],
+      "classification": "history modal footer Cancel offscreen; letter button clickability failure, not OOM",
+      "source": "docs/npc-stable-candidate-20261021/browser-477-formal-block/report.json"
+    },
+    "remote": {
+      "actionsRun": 39786955659,
+      "job": 119852596289,
+      "runId": "104a6716-12e2-43a9-a0ae-4eef5f1cf5e0",
+      "checkoutHead": "fe4ea74a06f51f8eaa52990983b23932bb4d12c8",
+      "ok": false,
+      "complete": true,
+      "exit": 1,
+      "failures": [
+        "Error: render-process-gone: {\"reason\":\"crashed\",\"exitCode\":-36861}\n    at WebContents.<anonymous> (D:\\a\\tianming\\tianming\\scripts\\electron\\bridge-main.cjs:96:73)\n    at WebContents.emit (node:events:530:35)"
+      ],
+      "classification": "renderer crash -36861; no dump; not proven OOM",
+      "otherJobs": "guards and other jobs success, as reported by coordinating root",
+      "overall": "failed",
+      "source": "web/dev-tools/ci-39786955659-composite/104a6716-12e2-43a9-a0ae-4eef5f1cf5e0/report.json"
+    }
+  },
+  "previousFormalEbf": {
+    "remoteComposite": {
+      "actionsRun": 39790789251,
+      "job": 119866048808,
+      "runId": "e4d28492-04f7-41d6-ad89-9ab2010fa5d4",
+      "checkoutHead": "89ce0069761c1ed5edd537c394fe3bff8227cfbd",
+      "ok": false,
+      "complete": true,
+      "exit": 1,
+      "failures": [
+        "Error: Error: control did not become clickable: #endturn .et-big\n    at poll (<anonymous>:1:485)\n    at js (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:12:697)\n    at async click (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:20:9)\n    at async formalTurn (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:51:5)\n    at async module.exports (D:\\a\\tianming\\tianming\\scripts\\electron\\npc-composite-cases.cjs:179:5)\n    at async WebContents.<anonymous> (D:\\a\\tianming\\tianming\\scripts\\electron\\bridge-main.cjs:130:42)"
+      ],
+      "classification": "production review-progress panel covers endTurn; no renderer crash in this run",
+      "report": "web/dev-tools/ci-39790789251-composite/e4d28492-04f7-41d6-ad89-9ab2010fa5d4/report.json",
+      "screenshot": "web/dev-tools/ci-39790789251-composite/e4d28492-04f7-41d6-ad89-9ab2010fa5d4/blocked-control.png"
+    },
+    "remoteRelief": {
+      "actionsRun": 39790789251,
+      "job": 119865949906,
+      "status": "failed",
+      "classification": "feature-manifest script load timed out before relief business assertions",
+      "log": "docs/npc-stable-candidate-20261021/remote-ebf-relief.log"
+    },
+    "localInterruption": {
+      "head": "ebf58473d37fe9ff20f82d6a85c7a771b7f9d1ac",
+      "at": "2026-10-22T14:09:36.283Z",
+      "reason": "Stopped own local run before UI source edits after same frozen remote run reproduced real recovery-progress panel covering endTurn. Not a completed acceptance or a local crash.",
+      "remoteRun": 39790789251,
+      "remoteArtifact": "e4d28492-04f7-41d6-ad89-9ab2010fa5d4",
+      "result": "interrupted",
+      "source": "web/dev-tools/electron-bridge/d16f26ca-6243-4559-b133-deb545796545/INTERRUPTED.json",
+      "productionPassOrFailConclusion": null
+    }
+  },
+  "latestCompleted": {
+    "local": {
+      "head": "151a2b64ca3e2dc7317d20efba296579176cdd12",
+      "runId": "52a5afea-754b-4f25-8651-e0b6ce4eb4a8",
+      "exit": 1,
+      "classification": "original1800s suite deadline during second save; onlyslot1 reload; no renderercrash"
+    },
+    "remote": {
+      "candidateHead": "151a2b64ca3e2dc7317d20efba296579176cdd12",
+      "checkoutHead": "6f67f461ed46021aa7517ba08aed2f78c88c31d9",
+      "actionsRun": 39809834192,
+      "job": 119932780629,
+      "exit": 1,
+      "classification": "both actual loads, then renderercrash -36861 before final answer/return; not proven OOM"
+    }
+  },
+  "mainIntegration": {
+    "status": "included",
+    "main": "31368256b021aa698bd99fb2f449fbfaf4e5e112",
+    "merge": "151a2b64ca3e2dc7317d20efba296579176cdd12",
+    "stableIdModuleIncluded": true,
+    "hotEntries": 1397,
+    "present": 802,
+    "absentAssets": 595,
+    "startup": 480
+  },
+  "finalGateSelection": {
+    "count": 56,
+    "executed": true,
+    "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+    "runId": "ad379252-a0c9-473d-a003-bdda4a7bdae1"
+  },
+  "summaryTool": {
+    "file": "docs/npc-stable-candidate-20261021/summarize-final-composite.cjs",
+    "sha256": "9531ce939a852c157a8a711fbf0f2cf75a34eb16cc6dac58a23c7a9c31cffd5a",
+    "executed": false,
+    "requiresTerminalReport": true
+  },
+  "pending": [
+    "Preserve/investigate two timeouts; controls never replace failure",
+    "Freeze any later harness edits before acceptance",
+    "Obtain new formal and actual full CI terminal evidence",
+    "Only then generate same-run summary"
+  ],
+  "currentFileModifiedByThisAudit": false,
+  "gatesExecutedByThisIndexAudit": false
+}

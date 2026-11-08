@@ -96,4 +96,76 @@ for(const count of [0,1,7,20])test('loading an old game preserves current recove
   await c._fullLoadGameApplyImpl({gameState:{GM:{turn:1},P:{conf:{emergencyRecovery:{mode:'auto',maxCalls:6},aiCallRetryOverrides:{sc1:0},aiSecondaryRetryCount:12,difficulty:'saved'}}}},{});
   equal(c.P.conf.emergencyRecovery,selected);equal(c.P.conf.aiCallRetryOverrides,{sc1:8});assert.equal(c.P.conf.aiSecondaryRetryCount,count);assert.equal(c.P.conf.difficulty,'saved');
 });
+function progressFixture(){
+  const listeners=new Map(),cancelled=[],active=new Map();let document,endTop=648,hasEnd=true;
+  class Element{
+    constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.attributes={};this.events={};this.style={};this.hidden=false;this.textContent='';}
+    appendChild(child){child.parentNode=this;this.children.push(child);return child;}
+    append(...children){children.forEach(child=>this.appendChild(child));}
+    replaceChildren(){this.children.forEach(child=>{child.parentNode=null;});this.children=[];}
+    setAttribute(key,value){this.attributes[key]=String(value);}
+    getAttribute(key){return Object.hasOwn(this.attributes,key)?this.attributes[key]:null;}
+    addEventListener(type,fn){(this.events[type]||=[]).push(fn);}
+    contains(child){return this===child||this.children.some(node=>node.contains(child));}
+    click(){(this.events.click||[]).forEach(fn=>fn({target:this}));}
+    focus(){document.activeElement=this;}
+    remove(){if(this.parentNode){this.parentNode.children=this.parentNode.children.filter(node=>node!==this);this.parentNode=null;}}
+  }
+  const body=new Element('body'),walk=node=>[node,...node.children.flatMap(walk)],end={getBoundingClientRect:()=>({top:endTop})};
+  document={body,activeElement:body,createElement:tag=>new Element(tag),querySelector:selector=>selector==='#endturn .et-big'&&hasEnd?end:null,
+    getElementById:id=>walk(body).find(node=>node.id===id)||null};
+  const c=vm.createContext({document,innerHeight:720,console,Number,String,TM:{
+    RecoveryReview:{status:()=>[...active.values()],cancel:id=>{cancelled.push({kind:'turn-review',id});active.delete(id);}},
+    EmergencyRecovery:{cancel:id=>{cancelled.push({kind:'recovery',id});active.delete(id);}}},
+    GM:Object.freeze({turn:3}),P:Object.freeze({conf:Object.freeze({})}),saveP(){throw Error('progress display must not save');},
+    addEventListener:(type,fn)=>listeners.set(type,(listeners.get(type)||[]).concat(fn))});
+  c.window=c;vm.runInContext(fs.readFileSync(path.resolve(__dirname,'../tm-emergency-recovery-settings.js'),'utf8'),c,{filename:'tm-emergency-recovery-settings.js'});
+  function emit(row){if(row.phase==='verified'||row.phase==='stopped')active.delete(row.id);else active.set(row.id,row);(listeners.get('tm-emergency-recovery')||[]).forEach(fn=>fn({detail:row}));}
+  return {c,document,cancelled,emit,walk,panel:()=>document.getElementById('tm-recovery-progress'),details:()=>document.getElementById('tm-recovery-progress-details'),
+    toggle:()=>walk(body).find(node=>node.getAttribute('data-recovery-collapse')!==null),
+    button:text=>walk(body).find(node=>node.tagName==='BUTTON'&&node.textContent===text),
+    resize:(height,top)=>{c.innerHeight=height;endTop=top;(listeners.get('resize')||[]).forEach(fn=>fn());},noEnd:()=>{hasEnd=false;}};
+}
+function progressRow(id='review-active',phase='investigating',kind='turn-review'){
+  return Object.freeze({id,phase,kind,call:'每回合复核',detail:'核查完整原文',calls:2,steps:1,repairs:1,estimatedTokens:32789,budget:Object.freeze({maxCalls:6,maxTokens:0})});
+}
+test('progress collapse and expansion preserve the active row and never cancel or save',()=>{
+  const f=progressFixture(),row=progressRow(),before=JSON.stringify(row);f.emit(row);
+  const collapse=f.toggle();assert.equal(collapse.tagName,'BUTTON');assert.equal(collapse.type,'button');assert.equal(collapse.textContent,'收起进度');
+  assert.equal(collapse.getAttribute('data-recovery-collapse'),'true');assert.equal(collapse.getAttribute('aria-expanded'),'true');assert.equal(collapse.getAttribute('aria-controls'),f.details().id);
+  assert.equal(collapse.getAttribute('tabindex'),null,'native button remains in the normal keyboard tab order');
+  assert.equal(collapse.events.keydown,undefined,'native Enter/Space activation is not overridden or doubled');
+  collapse.focus();collapse.click();assert.equal(f.details().hidden,true);assert.equal(f.toggle().textContent,'展开进度');
+  assert.equal(f.toggle().getAttribute('data-recovery-collapse'),'false');assert.equal(f.toggle().getAttribute('aria-expanded'),'false');
+  assert.equal(f.document.activeElement,f.toggle(),'keyboard focus follows the replacement toggle');
+  assert.equal(f.panel().style.bottom,'80px');assert(720-parseFloat(f.panel().style.bottom)<648,'collapsed badge ends above the real turn button');
+  assert.equal(f.c.TM.RecoveryReview.status()[0],row);assert.equal(f.cancelled.length,0);
+  f.toggle().click();assert.equal(f.details().hidden,false);assert.equal(f.toggle().textContent,'收起进度');assert.equal(f.document.activeElement,f.toggle());
+  assert.equal(f.c.TM.RecoveryReview.status()[0],row);assert.equal(JSON.stringify(row),before);assert.equal(f.cancelled.length,0);
+});
+test('same review updates keep progress collapsed and a new review resets the display',()=>{
+  const f=progressFixture(),row=progressRow();f.emit(row);f.toggle().click();const oldToggle=f.toggle();
+  const updated=Object.freeze({...row,phase:'verifying',detail:'核验实际修改',calls:3});f.emit(updated);
+  assert.equal(f.panel().getAttribute('data-recovery-id'),row.id);assert.equal(f.details().hidden,true);assert.equal(f.toggle().getAttribute('aria-expanded'),'false');
+  assert.equal(f.document.activeElement,f.toggle());assert(f.walk(f.details()).some(node=>node.textContent==='核验实际修改'));
+  assert.equal(f.c.TM.RecoveryReview.status()[0],updated);assert.equal(f.cancelled.length,0);
+  oldToggle.click();assert.equal(f.details().hidden,true,'detached previous update cannot change the current display');
+  f.resize(900,760);assert.equal(f.panel().style.bottom,'148px');f.resize(720,900);assert.equal(f.panel().style.bottom,'16px');
+  f.noEnd();f.resize(720,648);assert.equal(f.panel().style.bottom,'16px');
+  f.emit(progressRow('review-next'));assert.equal(f.panel().getAttribute('data-recovery-id'),'review-next');assert.equal(f.details().hidden,false);
+  assert.equal(f.toggle().getAttribute('data-recovery-collapse'),'true');assert.equal(f.toggle().getAttribute('aria-expanded'),'true');assert.equal(f.cancelled.length,0);
+});
+test('completed collapsed progress stays closable without cancelling either recovery owner',()=>{
+  for(const phase of ['verified','stopped']){const f=progressFixture();f.emit(progressRow());f.toggle().click();f.emit(progressRow('review-active',phase));
+    assert.equal(f.details().hidden,true);assert(f.button('关闭提示'));assert.equal(f.c.TM.RecoveryReview.status().length,0);
+    f.button('关闭提示').click();assert.equal(f.panel(),null);assert.equal(f.cancelled.length,0);
+    f.emit(progressRow('review-after-close'));assert.equal(f.details().hidden,false);
+  }
+});
+test('only the original explicit cancel button invokes the selected recovery owner',()=>{
+  for(const kind of ['turn-review','recovery']){const f=progressFixture(),row=progressRow('explicit-'+kind,'investigating',kind);f.emit(row);
+    f.toggle().click();assert.equal(f.cancelled.length,0);f.toggle().click();assert.equal(f.cancelled.length,0);
+    f.button(kind==='turn-review'?'取消回合复核':'取消应急恢复').click();assert.deepEqual(f.cancelled,[{kind,id:row.id}]);
+  }
+});
 (async()=>{let pass=0,fail=0;for(const t of tests)try{await t.fn();pass++;console.log('PASS '+t.name);}catch(e){fail++;console.error('FAIL '+t.name+'\n'+e.stack);}console.log(JSON.stringify({pass,fail,total:tests.length}));if(fail)process.exitCode=1;})();

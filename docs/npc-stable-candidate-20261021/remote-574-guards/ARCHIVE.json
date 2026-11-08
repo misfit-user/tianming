@@ -1,0 +1,40 @@
+{
+  "recordedAt": "2026-10-23T08:06:33.645Z",
+  "files": [
+    {
+      "path": "failure-source-analysis.json",
+      "bytes": 1857,
+      "sha256": "2066fe2507d79ae4fbf448660ae471645a520a738f48f6b3260d4d700134652d"
+    },
+    {
+      "path": "identity.json",
+      "bytes": 387,
+      "sha256": "7e1a74e6172dfb97f7b9724ff3988db7339754dedfc574fd1c36363e44886b67"
+    },
+    {
+      "path": "job.json",
+      "bytes": 5737,
+      "sha256": "c82ee273a1ca83767d5a16513415d6453e6cd8cf66a2fa8b9bb577a1e112319a"
+    },
+    {
+      "path": "job.log",
+      "bytes": 55381,
+      "sha256": "3ec18c84291676027dbc62d02f7e1d674d48cbe475fcb1adde14856eb62619e2"
+    },
+    {
+      "path": "smoke-report.json",
+      "bytes": 1175090,
+      "sha256": "6ca4208983e6356e6e77465c5fb2b5202894343a40b9078279a18b1c9892a09d"
+    },
+    {
+      "path": "source-smoke-turn-capture-work-count.js",
+      "bytes": 5955,
+      "sha256": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea"
+    },
+    {
+      "path": "SUMMARY.json",
+      "bytes": 9206,
+      "sha256": "6357b6281c4114f08bed3efca2fbe9605175f2dc36f2348fb384f64d0bc32c87"
+    }
+  ]
+}

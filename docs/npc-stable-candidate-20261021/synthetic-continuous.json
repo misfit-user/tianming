@@ -1,0 +1,28 @@
+{
+  "testedHead": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+  "sourceRun": "e4644794-bed1-4dfe-9a31-dd352a27f5a3",
+  "command": "node web/scripts/smoke-npc-meeting-events-boundaries.js",
+  "scope": "Synthetic production module event scheduling; no top-level endTurn or formal persistence claim.",
+  "measurements": [
+    {
+      "fixture": "synthetic-60-people-30-days",
+      "segmented": false,
+      "days": 30,
+      "meetings": 30,
+      "complete": 30,
+      "modelAttempts": 0,
+      "elapsedMs": 3461.2784,
+      "saveGrowthBytes": 655156
+    },
+    {
+      "fixture": "synthetic-60-people-30-days",
+      "segmented": true,
+      "days": 30,
+      "meetings": 30,
+      "complete": 30,
+      "modelAttempts": 0,
+      "elapsedMs": 7131.5938,
+      "saveGrowthBytes": 658214
+    }
+  ]
+}

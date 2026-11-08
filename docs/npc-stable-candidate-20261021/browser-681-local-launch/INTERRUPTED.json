@@ -1,0 +1,9 @@
+{
+  "head": "681e29ad804c56e4a8cb8bb22c10a34b417eb7fe",
+  "at": "2026-10-23T06:45:24.1125496Z",
+  "run": "236b4c9a-d09e-4157-a35e-cbc65d0953c8",
+  "pid": 31012,
+  "reason": "Root stopped owned test Electron after same-tree remote explicit OOM, before any runtime edits. Partial local run is not acceptance or a diagnosed local crash.",
+  "temporaryUserData": "D:\\tianming-npc-candidate-temp\\tm-bridge-series-8XFDta\\production",
+  "status": "interrupted"
+}

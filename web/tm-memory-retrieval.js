@@ -1361,47 +1361,6 @@
     };
   }
 
-  function supersededEdgeForHit(hit, opts) {
-    opts = opts || {};
-    if (!hit || !opts.GM) return null;
-    var edges = allRelationEdges(opts.GM).filter(function(e) {
-      return e && e.type === 'supersedes' && e.dst != null;
-    });
-    if (!edges.length) return null;
-    var nodes = hitNodes(hit);
-    for (var i = 0; i < edges.length; i++) {
-      var dst = normalizeNode(edges[i].dst);
-      if (!dst) continue;
-      var matched = nodes.some(function(n) {
-        return n === dst || (dst.length >= 4 && n.indexOf(dst) >= 0);
-      });
-      if (matched) return edges[i];
-    }
-    return null;
-  }
-
-  function contradictionEdgeForHit(hit, candidates, opts) {
-    opts = opts || {};
-    if (!hit || !opts.GM || !Array.isArray(candidates)) return null;
-    var edges = allRelationEdges(opts.GM).filter(function(e) {
-      return e && e.type === 'contradicts' && e.src != null && e.dst != null;
-    });
-    if (!edges.length) return null;
-    for (var i = 0; i < edges.length; i++) {
-      var edge = edges[i];
-      if (!hitMatchesNode(hit, edge.dst)) continue;
-      for (var j = 0; j < candidates.length; j++) {
-        var sourceHit = candidates[j];
-        if (sourceHit === hit) continue;
-        if (!hitMatchesNode(sourceHit, edge.src)) continue;
-        if (sourcePriorityOf(sourceHit) >= sourcePriorityOf(hit)) {
-          return { edge: edge, sourceHit: sourceHit };
-        }
-      }
-    }
-    return null;
-  }
-
   function cloneHit(hit) {
     var out = {};
     hit = hit || {};

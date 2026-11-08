@@ -48,5 +48,27 @@ ok(/GM\.turn\+\+;[\s\S]{0,300}_tmSyncGMCalendar\(GM, GM\.turn\)/.test(systems), 
 ok(/function fullLoadGame[\s\S]*?_tmSyncGMCalendar\(GM, GM\.turn \|\| 1\)/.test(lifecycle), '完整读档同步旧档/陈旧镜像');
 ok(/GM = deepClone\(gs\.GM \|\| gs\);[\s\S]{0,300}_tmSyncGMCalendar\(GM, GM\.turn \|\| 1\)/.test(manager), '降级读档路径同样同步');
 
+// Load the real cumulative clock: an onsite response can stop a formal turn
+// at a fractional day, while calendar dates still name a whole civil day.
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-sim-time.js'), 'utf8'), ctx, { filename: 'tm-sim-time.js' });
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-time-utils.js'), 'utf8'), ctx, { filename: 'tm-time-utils.js' });
+ctx.P = { time: { year: 1600, startMonth: 1, startDay: 1, daysPerTurn: 30, enableEraName: false } };
+ctx.GM = { turn: 1, eraNames: [] };
+ctx.TM.NPC = { Meetings: { nextPlayerBoundary: (from) => from === 0 ? { day: 8.5, planId: 'calendar-fixture', reason: 'meeting_event' } : null } };
+const fractional = ctx.TM.SimTime.prepare(ctx.GM);
+ctx.GM.turn++; ctx.TM.SimTime.commit(ctx.GM, fractional);
+const fractionalDate = ctx.calcDateFromTurn(ctx.GM.turn), fractionMirror = ctx._tmSyncGMCalendar(ctx.GM, ctx.GM.turn);
+ok(fractionalDate.solarDay === 9 && fractionalDate.lunarDay === 9 && fractionMirror.day === 9, '小数模拟时点只投影为所在日，旧日期镜像不保存9.5日');
+const timeUtilsDate = ctx.TimeUtils.turnToDate(ctx.GM.turn);
+ok(timeUtilsDate.day === 9 && timeUtilsDate.daysFromStart === 8.5, 'TimeUtils日期为整数，实际已过时间保留半日');
+ok(ctx.TM.SimTime.now(ctx.GM) === 8.5 && fractional.days === 8.5 && ctx.GM._tmTime.continuationEndDay === 30, '日期显示不截短实际区间与已承诺剩余时间');
+ctx.GM = JSON.parse(JSON.stringify(ctx.GM)); // Clock serialization only; formal disk load has its own gate.
+ctx.P.time.daysPerTurn = 7;
+const continuation = ctx.TM.SimTime.prepare(ctx.GM);
+ok(continuation.days === 21.5 && continuation.toDay === 30, '恢复后即使改变下回合设置，仍继续原区间的21.5日');
+ctx.GM.turn++; ctx.TM.SimTime.commit(ctx.GM, continuation);
+ok(ctx.TM.SimTime.dayAtTurn(ctx.GM, 2) === 8.5 && ctx.TM.SimTime.now(ctx.GM) === 30, '续办保留先前精确时点，不把历史区间改成整数');
+ok(ctx.TM.SimTime.commit(ctx.GM, continuation).duplicate === true && ctx.TM.SimTime.now(ctx.GM) === 30, '恢复后的重复提交不再次推进时间');
+
 console.log('[smoke-calendar-contract] ' + pass + ' PASS / ' + fail + ' FAIL');
 process.exit(fail ? 1 : 0);

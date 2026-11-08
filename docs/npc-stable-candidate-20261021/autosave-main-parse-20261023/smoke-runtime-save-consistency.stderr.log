@@ -1,0 +1,4 @@
+[AutoSave] post-turn save failed: Error: slot_0 injected failure
+    at Object.saveManyAtomic (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-runtime-save-consistency.js:557:51)
+    at evalmachine.<anonymous>:282:38
+    at async runDynamicLeaseSmokes (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-runtime-save-consistency.js:562:19)

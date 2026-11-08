@@ -21,8 +21,8 @@ let pass=0,fail=0;async function test(name,fn){try{await fn();pass++;console.log
  await test('long raw instructions survive two compressions including embedded headings and tail constraints',async()=>{
   const{aa,c}=fixture(),raw='详细说明'.repeat(500)+'\n【额外要求】\n不要删除原人物。TAIL_CONSTRAINT_987';
   c.fetch=async()=>new Response(JSON.stringify({choices:[{message:{tool_calls:[{id:'s',function:{name:'submitSummary',arguments:JSON.stringify({summary:'仅保留摘要，但不能取代完整指令。'.repeat(25)})}}]},finish_reason:'tool_calls'}]}));
-  let conv=[{role:'user',text:'【用户需求】\n'+raw+'\n\n【草稿现状】\n原数据',userInstruction:raw},...Array.from({length:10},(_,i)=>({role:'assistant',text:'进度'+i,toolCalls:[]}))];
-  const before=JSON.stringify(conv);for(let i=0;i<2;i++){const r=await aa.compactConversation(conv,{name:'原'},{cfg:{url:'https://controlled.invalid/v1',key:'test-only',model:'m'},keepTail:2});assert(r.ok);assert(r.conversation[0].text.includes(raw));conv=r.conversation.concat(Array.from({length:5},()=>({role:'assistant',text:'后续',toolCalls:[]})));}assert(before.includes(raw.replace(/\n/g,'\\n')));
+  let conv=[{role:'user',text:'【用户需求】\n'+raw+'\n\n【草稿现状】\n原数据',userInstruction:raw},...Array.from({length:10},(_,i)=>({role:'assistant',text:('进度'+i).repeat(1000),toolCalls:[]}))];
+  const before=JSON.stringify(conv);for(let i=0;i<2;i++){const r=await aa.compactConversation(conv,{name:'原'},{cfg:{url:'https://controlled.invalid/v1',key:'test-only',model:'m'},keepTail:2});assert(r.ok);assert(r.conversation[0].text.includes(raw));conv=r.conversation.concat(Array.from({length:5},()=>({role:'assistant',text:'后续'.repeat(1000),toolCalls:[]})));}assert(before.includes(raw.replace(/\n/g,'\\n')));
  });
  await test('instruction retention overflow refuses compression without sending or dropping original instructions',async()=>{
   const{aa,c}=fixture();let calls=0;c.fetch=async()=>{calls++;throw Error('must not call');};

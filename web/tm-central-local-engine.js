@@ -755,13 +755,39 @@
     }
   }
 
+  // 事件簿给人看：写区划的名字，不写内部编号（如 div_mp3yvbbrj19ga → 乌思藏都指挥使司）。
+  // 区划账（G.fiscal.regions）以编号为键、不存名字，名字在 G.adminHierarchy 各势力的区划树里。
+  function _regionLabel(regionId) {
+    if (regionId == null || regionId === '') return '某地';
+    var G = global.GM, found = '';
+    var flat = G ? _findRegion(regionId) : null;
+    if (flat && flat.name) return flat.name;
+    function walk(nodes) {
+      if (!Array.isArray(nodes)) return;
+      for (var i = 0; i < nodes.length && !found; i++) {
+        var node = nodes[i];
+        if (!node || typeof node !== 'object') continue;
+        if (node.id === regionId || node.name === regionId) { found = node.name || ''; return; }
+        walk(node.divisions);
+        walk(node.children);
+      }
+    }
+    if (G && G.adminHierarchy && typeof G.adminHierarchy === 'object') {
+      Object.keys(G.adminHierarchy).forEach(function(key) {
+        var tree = G.adminHierarchy[key];
+        if (!found && tree) walk(tree.divisions);
+      });
+    }
+    return found || String(regionId);
+  }
+
   function _formatEventMsg(kind, d) {
     d = d || {};
     switch (kind) {
-      case 'region_defiance': return (d.regionId||'某地') + ' 抗命，实际上缴锐减（合规率 ' + (d.compliance*100).toFixed(0) + '%）';
-      case 'frontier_warlord': return (d.regionId||'某地') + ' 坐大成藩镇，中央号令难至';
-      case 'self_declaration': return (d.regionId||'某地') + ' 实质自立，脱离朝廷管辖';
-      case 'embezzlement_exposed': return (d.regionId||'某地') + ' 查出贪墨案 ' + ((d.findings||[]).length) + ' 件';
+      case 'region_defiance': return _regionLabel(d.regionId) + ' 抗命，实际上缴锐减（合规率 ' + (d.compliance*100).toFixed(0) + '%）';
+      case 'frontier_warlord': return _regionLabel(d.regionId) + ' 坐大成藩镇，中央号令难至';
+      case 'self_declaration': return _regionLabel(d.regionId) + ' 实质自立，脱离朝廷管辖';
+      case 'embezzlement_exposed': return _regionLabel(d.regionId) + ' 查出贪墨案 ' + ((d.findings||[]).length) + ' 件';
       case 'central_local_reform_success': return '央地改革「' + (d.name||'') + '」已成';
       case 'central_local_reform_failure': return '央地改革「' + (d.name||'') + '」受挫';
       case 'reform_rebellion': return '改革「' + (d.name||'') + '」激起兵变';

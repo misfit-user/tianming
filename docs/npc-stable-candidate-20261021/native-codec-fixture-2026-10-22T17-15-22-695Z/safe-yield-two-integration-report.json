@@ -1,0 +1,74 @@
+{
+  "version": 2,
+  "complete": true,
+  "runId": "ccb5f4e7-4467-47fc-a217-9a363e51eb11",
+  "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "expected": [
+    "smoke-full-turn-flow.js",
+    "smoke-start-game-data-integrity.js"
+  ],
+  "generatedAt": "2026-10-22T17:26:27.389Z",
+  "args": [
+    "--all",
+    "--no-retry",
+    "--jobs",
+    "1",
+    "--run-id",
+    "ccb5f4e7-4467-47fc-a217-9a363e51eb11",
+    "--report",
+    "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\docs\\npc-stable-candidate-20261021\\native-codec-fixture-2026-10-22T17-15-22-695Z\\safe-yield-two-integration-report.json",
+    "--grep",
+    "smoke-full-turn-flow.js",
+    "--grep",
+    "smoke-start-game-data-integrity.js"
+  ],
+  "scheduling": {
+    "parallelJobs": 1,
+    "resourceIsolated": [
+      "smoke-full-turn-flow.js",
+      "smoke-start-game-data-integrity.js"
+    ]
+  },
+  "summary": {
+    "selected": 2,
+    "pass": 1,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "clusters": [
+    {
+      "sig": "（超时）",
+      "names": [
+        "smoke-start-game-data-integrity.js"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "smoke-full-turn-flow.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 109999,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[native-save-codec] PASS gzip Blob and exact production roundtrip\n[full-turn-flow] PASS\n{\n  \"turn\": 2,\n  \"busy\": false,\n  \"endTurnBusy\": false,\n  \"chars\": 217,\n  \"factions\": 22,\n  \"memorials\": 16,\n  \"approvedMemorials\": 1,\n  \"letters\": 5,\n  \"qijuHistory\": 25,\n  \"shijiHistory\": 1,\n  \"lastShijiTurn\": 1,\n  \"courtMeter\": {\n    \"thisTurnCount\": 1,\n    \"missedStreak\": 0,\n    \"diligentStreak\": 0,\n    \"lastCourtTurn\": 2,\n    \"byTurn\": {\n      \"1\": 1,\n      \"2\": 1\n    }\n  },\n  \"courtRecords\": [\n    {\n      \"turn\": 1,\n      \"targetTurn\": 1,\n      \"phase\": \"in-turn\",\n      \"topic\": \"早朝·辽饷与边备\"\n    },\n    {\n      \"turn\": 1,\n      \"targetTurn\": 2,\n      \"phase\": \"post-turn\",\n      \"topic\": \"朔朝·次月边饷部署\"\n    }\n  ],\n  \"pendingShiji\": {\n    \"aiReady\": false,\n    \"courtDone\": true,\n    \"hasPayload\": false\n  },\n  \"pipeline\": [\n    {\n      \"step\": \"prep\",\n      \"ok\": true,\n      \"ms\": 1892,\n      \"error\": \"\"\n    },\n    {\n      \"step\": \"plan-prefetch\",\n      \"ok\": true,\n      \"ms\": 0,\n      \"error\": \"\"\n    },\n    {\n      \"step\": \"ai\",\n      \"ok\": true,\n      \"ms\": 2,\n      \"error\": \"\"\n    },\n    {\n      \"step\": \"post-ai-edict\",\n      \"ok\": true,\n      \"ms\": 1337,\n      \"error\": \"\"\n    },\n    {\n      \"step\": \"systems\",\n      \"ok\": true,\n      \"ms\": 17512,\n      \"error\": \"\"\n    },\n    {\n      \"step\": \"render-and-finalize\",\n      \"ok\": true,\n      \"ms\": 1756,\n      \"error\": \"\"\n    },\n    {\n      \"step\": \"prepare-commit-barrier\",\n      \"ok\": true,\n      \"ms\": 0,\n      \"error\": \"\"\n    }\n  ],\n  \"aiCalls\": [\n    {\n      \"turn\": 1,\n      \"edictCategories\": [\n        \"political\",\n        \"military\",\n        \"diplomatic\",\n        \"economic\",\n        \"other\"\n      ],\n      \"xingluLength\": 31,\n      \"memorials\": 4,\n      \"currentCourtDecisions\": 1,\n      \"currentCourtRecords\": 1,\n      \"nextCourtRecords\": 1\n    }\n  ],\n  \"turnResults\": [\n    {\n      \"idx\": 0,\n      \"len\": 51456,\n      \"head\": \"<div class=\\\"sjc-frame\\\"><nav class=\\\"sjc-spine\\\" role=\\\"tablist\\\"><button type=\\\"button\\\" role=\\\"tab\\\" aria-selected=\\\"true\\\" aria-\"\n    }\n  ],\n  \"playerActionSummary\": {\n    \"turn\": 1,\n    \"minister\": \"袁崇焕\",\n    \"memorials\": 1,\n    \"letters\": 2,\n    \"courtRecords\": 1\n  },\n  \"postTurnCourtSummary\": {\n    \"turn\": 1,\n    \"targetTurn\": 2,\n    \"courtRecords\": 2\n  },\n  \"loadingTail\": [\n    {\n      \"turn\": 2,\n      \"msg\": \"检查历史事件\",\n      \"pct\": 93.4\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"检查职位与寿数\",\n      \"pct\": 93.7\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"处理监听队列\",\n      \"pct\": 94\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"清理回合缓存\",\n      \"pct\": 94.3\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"回合阶段 6/7 · 生成史记弹窗\",\n      \"pct\": 78\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"hide\",\n      \"pct\": 0\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"回合阶段 7/7 · prepare-commit-barrier\",\n      \"pct\": 90\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"hide\",\n      \"pct\": 0\n    }\n  ],\n  \"toasts\": [\n    \"第1回合\",\n    \"❌ 存档数据库初始化失败：stub·no-idb\",\n    \"诏令需细化：征何税（商/盐/茶/市舶）？\",\n    \"鸿雁：1 封新来函已抵达\",\n    \"回合已完整保存；附加快照或存档后处理发生错误，详情见控制台。请勿为此重新推演本回合。\"\n  ],\n  \"errors\": [\n    \"播放背景音乐失败: ReferenceError: Audio is not defined\",\n    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\",\n    \"[SaveDB] 初始化失败: Error: stub·no-idb\",\n    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",\n    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",\n    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\"\n  ],\n  \"warns\": [\n    \"  Error: [perf] authority.tick 超阈值: 576.00ms > 400ms\\n      at _defaultThresholdHandler (tm-perf.js:225:9)\\n      at _checkThreshold (tm-perf.js:217:7)\",\n    \"[endTurn systems] slow stage: 系统结算总耗时 17501ms \",\n    \"[TM.Features] [object Object]\",\n    \"[TM.Features] [object Object]\",\n    \"[cc3·agenda] AI 返回不可用·走 fallback\",\n    \"[AutoSave] 端回合 snapshot 耗 21139ms·考虑 A-2\",\n    \"[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb\",\n    \"[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb\"\n  ],\n  \"writeTurnData\": 0,\n  \"autoSave\": 0\n}\n"
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": -1,
+      "ms": 120290,
+      "timedOut": true,
+      "waivers": [],
+      "output": "[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[native-save-codec] PASS gzip Blob and exact production roundtrip\n[smoke-start-game-data-integrity] stale-map-choice-is-ignored PASS {\"chars\":217,\"facs\":22,\"vars\":21,\"mapRegions\":307,\"guokuMoney\":850000,\"neitangMoney\":2500000,\"populationMouths\":94530000,\"corruptionIndex\":61.08148869142071,\"minxinIndex\":47.688629842378084,\"huangquanIndex\":75,\"huangweiIndex\":70,\"useAIGeo\":false,\"entered\":true,\"aiDeepRead\":true,\"aiPlan\":true,\"aiMatrix\":true,\"aiFirstTurn\":true}\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[native-save-codec] PASS gzip Blob and exact production roundtrip\n[smoke-start-game-data-integrity] fresh-ai-geography-choice-is-honored PASS {\"chars\":217,\"facs\":22,\"vars\":21,\"mapRegions\":307,\"guokuMoney\":850000,\"neitangMoney\":2500000,\"populationMouths\":94530000,\"corruptionIndex\":61.08148869142071,\"minxinIndex\":47.688629842378084,\"huangquanIndex\":75,\"huangweiIndex\":70,\"useAIGeo\":true,\"entered\":true,\"aiDeepRead\":true,\"aiPlan\":true,\"aiMatrix\":true,\"aiFirstTurn\":true}\n[smoke-start-game-data-integrity] fast-start-skips-artificial-and-model-waits PASS\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] latest-start-request-wins PASS\n[smoke-start-game-data-integrity] lazy-load-failure-unlocks-and-retries PASS\n[smoke-start-game-data-integrity] strict-history-fast-path-preserved PASS\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] first-turn-candidates-before-memorials PASS\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] player-body-edit-blocks-late-initial-memorials PASS\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] scenario-source-isolation PASS\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[smoke-start-game-data-integrity] background-prewarm-nonblocking-and-stale-safe PASS\n"
+    }
+  ],
+  "skipped": []
+}

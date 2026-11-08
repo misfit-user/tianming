@@ -1,0 +1,6 @@
+PASS real preload exposes the text channel next to the object channel
+PASS text channel parses once and reuses the save-project IPC
+PASS invalid text never reaches IPC
+PASS desktopDoSave sends text on a new shell
+PASS desktopDoSave keeps the object channel on an old shell
+smoke-save-project-text-bridge ok assertions=5

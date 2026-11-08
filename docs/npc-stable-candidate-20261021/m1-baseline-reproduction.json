@@ -1,0 +1,485 @@
+{
+  "baseline": "e6d5a592fc258f3328fd810c91b61ed0a24599cf",
+  "currentHead": "e6d5a592fc258f3328fd810c91b61ed0a24599cf",
+  "scope": "Production-module action regression with controlled fixture dates; not browser or formal save acceptance.",
+  "baselineClarification": "The e6d5 merge already includes PR105 multi-appointment inference and non-weakening explicit hints. Those earlier static issues are not claimed as newly reproduced here.",
+  "fixtures": "Four named synthetic people; a three-node real-route fixture; one configured resident or field post. Request, approve, delivery, invitation and independent acceptance use production actions. No journey or receipt is injected.",
+  "before": {
+    "undeliveredApproval": {
+      "scenarioDay": 1,
+      "planId": "plan:meeting-test:3",
+      "actorId": "a",
+      "targetId": "b",
+      "journeyStatus": "in_transit",
+      "journey": {
+        "id": "journey:plan:meeting-test:3:actor:outbound",
+        "status": "in_transit",
+        "fromRegionId": "east",
+        "toRegionId": "west"
+      },
+      "actorTravel": {
+        "to": "西城",
+        "reference": {
+          "planId": "plan:meeting-test:3",
+          "journeyId": "journey:plan:meeting-test:3:actor:outbound",
+          "role": "actor",
+          "phase": "outbound",
+          "toRegionId": "west",
+          "routeVersion": "derived-bd0482a5"
+        },
+        "exactLocation": null,
+        "regionId": "east"
+      },
+      "messages": [
+        {
+          "id": "daily-message:1",
+          "kind": "meeting_request",
+          "fromId": "a",
+          "toId": "b",
+          "status": "delivered"
+        },
+        {
+          "id": "daily-message:2",
+          "kind": "meeting_response",
+          "fromId": "b",
+          "toId": "a",
+          "status": "delivered"
+        }
+      ],
+      "officeMessages": [
+        {
+          "id": "office-message:npc-fixture:2",
+          "kind": "leave_request",
+          "status": "delivered",
+          "toId": "boss"
+        },
+        {
+          "id": "office-message:npc-fixture:3",
+          "kind": "leave_response",
+          "status": "in_transit",
+          "toId": "a"
+        }
+      ],
+      "modelAttempts": 0
+    },
+    "fieldMarkerOnly": {
+      "scenarioDay": 0,
+      "planId": "plan:meeting-test:1",
+      "actorId": "a",
+      "targetId": "b",
+      "journeyStatus": "in_transit",
+      "journey": {
+        "id": "journey:plan:meeting-test:1:actor:outbound",
+        "status": "in_transit",
+        "fromRegionId": "east",
+        "toRegionId": "west"
+      },
+      "actorTravel": {
+        "to": "西城",
+        "reference": {
+          "planId": "plan:meeting-test:1",
+          "journeyId": "journey:plan:meeting-test:1:actor:outbound",
+          "role": "actor",
+          "phase": "outbound",
+          "toRegionId": "west",
+          "routeVersion": "derived-bd0482a5"
+        },
+        "exactLocation": null,
+        "regionId": "east"
+      },
+      "messages": [
+        {
+          "id": "daily-message:1",
+          "kind": "meeting_request",
+          "fromId": "a",
+          "toId": "b",
+          "status": "delivered"
+        },
+        {
+          "id": "daily-message:2",
+          "kind": "meeting_response",
+          "fromId": "b",
+          "toId": "a",
+          "status": "delivered"
+        }
+      ],
+      "officeMessages": [],
+      "modelAttempts": 0
+    },
+    "receivedValidPermission": {
+      "scenarioDay": 2,
+      "planId": "plan:meeting-test:3",
+      "actorId": "a",
+      "targetId": "b",
+      "journeyStatus": "in_transit",
+      "journey": {
+        "id": "journey:plan:meeting-test:3:actor:outbound",
+        "status": "in_transit",
+        "fromRegionId": "east",
+        "toRegionId": "west"
+      },
+      "actorTravel": {
+        "to": "西城",
+        "reference": {
+          "planId": "plan:meeting-test:3",
+          "journeyId": "journey:plan:meeting-test:3:actor:outbound",
+          "role": "actor",
+          "phase": "outbound",
+          "toRegionId": "west",
+          "routeVersion": "derived-bd0482a5"
+        },
+        "exactLocation": null,
+        "regionId": "east"
+      },
+      "messages": [
+        {
+          "id": "daily-message:1",
+          "kind": "meeting_request",
+          "fromId": "a",
+          "toId": "b",
+          "status": "delivered"
+        },
+        {
+          "id": "daily-message:2",
+          "kind": "meeting_response",
+          "fromId": "b",
+          "toId": "a",
+          "status": "delivered"
+        }
+      ],
+      "officeMessages": [
+        {
+          "id": "office-message:npc-fixture:2",
+          "kind": "leave_request",
+          "status": "delivered",
+          "toId": "boss"
+        },
+        {
+          "id": "office-message:npc-fixture:3",
+          "kind": "leave_response",
+          "status": "delivered",
+          "toId": "a"
+        }
+      ],
+      "modelAttempts": 0
+    }
+  },
+  "after": {
+    "undeliveredApproval": {
+      "scenarioDay": 1,
+      "planId": "plan:meeting-test:3",
+      "actorId": "a",
+      "targetId": "b",
+      "journeyStatus": "meeting_office_leave_not_received",
+      "journey": null,
+      "actorTravel": {
+        "to": null,
+        "reference": null,
+        "exactLocation": "east",
+        "regionId": "east"
+      },
+      "messages": [
+        {
+          "id": "daily-message:1",
+          "kind": "meeting_request",
+          "fromId": "a",
+          "toId": "b",
+          "status": "delivered"
+        },
+        {
+          "id": "daily-message:2",
+          "kind": "meeting_response",
+          "fromId": "b",
+          "toId": "a",
+          "status": "delivered"
+        }
+      ],
+      "officeMessages": [
+        {
+          "id": "office-message:npc-fixture:2",
+          "kind": "leave_request",
+          "status": "delivered",
+          "toId": "boss"
+        },
+        {
+          "id": "office-message:npc-fixture:3",
+          "kind": "leave_response",
+          "status": "in_transit",
+          "toId": "a"
+        }
+      ],
+      "modelAttempts": 0
+    },
+    "fieldMarkerOnly": {
+      "scenarioDay": 0,
+      "planId": "plan:meeting-test:1",
+      "actorId": "a",
+      "targetId": "b",
+      "journeyStatus": "meeting_office_leave_required",
+      "journey": null,
+      "actorTravel": {
+        "to": null,
+        "reference": null,
+        "exactLocation": "east",
+        "regionId": "east"
+      },
+      "messages": [
+        {
+          "id": "daily-message:1",
+          "kind": "meeting_request",
+          "fromId": "a",
+          "toId": "b",
+          "status": "delivered"
+        },
+        {
+          "id": "daily-message:2",
+          "kind": "meeting_response",
+          "fromId": "b",
+          "toId": "a",
+          "status": "delivered"
+        }
+      ],
+      "officeMessages": [],
+      "modelAttempts": 0
+    },
+    "receivedValidPermission": {
+      "scenarioDay": 2,
+      "planId": "plan:meeting-test:3",
+      "actorId": "a",
+      "targetId": "b",
+      "journeyStatus": "in_transit",
+      "journey": {
+        "id": "journey:plan:meeting-test:3:actor:outbound",
+        "status": "in_transit",
+        "fromRegionId": "east",
+        "toRegionId": "west"
+      },
+      "actorTravel": {
+        "to": "西城",
+        "reference": {
+          "planId": "plan:meeting-test:3",
+          "journeyId": "journey:plan:meeting-test:3:actor:outbound",
+          "role": "actor",
+          "phase": "outbound",
+          "toRegionId": "west",
+          "routeVersion": "derived-bd0482a5"
+        },
+        "exactLocation": null,
+        "regionId": "east"
+      },
+      "messages": [
+        {
+          "id": "daily-message:1",
+          "kind": "meeting_request",
+          "fromId": "a",
+          "toId": "b",
+          "status": "delivered"
+        },
+        {
+          "id": "daily-message:2",
+          "kind": "meeting_response",
+          "fromId": "b",
+          "toId": "a",
+          "status": "delivered"
+        }
+      ],
+      "officeMessages": [
+        {
+          "id": "office-message:npc-fixture:2",
+          "kind": "leave_request",
+          "status": "delivered",
+          "toId": "boss"
+        },
+        {
+          "id": "office-message:npc-fixture:3",
+          "kind": "leave_response",
+          "status": "delivered",
+          "toId": "a"
+        }
+      ],
+      "modelAttempts": 0
+    }
+  },
+  "runtimeFiles": {
+    "e6d5a592fc258f3328fd810c91b61ed0a24599cf": [
+      {
+        "file": "web/generated/tm-ai-change-applier.bundle.js",
+        "sha256": "556edc97650375e463d990cc15569410cfda48936b64f10d275b1068f6112dcc"
+      },
+      {
+        "file": "web/tm-ai-change-army.js",
+        "sha256": "4bfec6374b6f0a287a130356a6c674978857f6852ea60fb2be05096c67d93414"
+      },
+      {
+        "file": "web/tm-ai-change-narrative.js",
+        "sha256": "d5ee2b17a969f13096bb73bf0bdc40d000761a56a23652d14857a0c11e504b91"
+      },
+      {
+        "file": "web/tm-ai-change-pathutils.js",
+        "sha256": "89a60e594ccd7bcb4e298923c5faaad5cadfbef09fa9c381667315b092f282d5"
+      },
+      {
+        "file": "web/tm-help-social.js",
+        "sha256": "80ea076cde9c396011e840d8364f3c395a0467e9461f1ac254f73c5333713d9f"
+      },
+      {
+        "file": "web/tm-map-locations.js",
+        "sha256": "d31d241d8ce3e1df99481f7f6ece280f88dfeadcafe1bbea9be7f2283d1db7db"
+      },
+      {
+        "file": "web/tm-map-route-days.js",
+        "sha256": "7aa64b46dbdcc8b0bceda640ea7cb9296d944552795bcfaf2f414063d749446f"
+      },
+      {
+        "file": "web/tm-mechanics-memory.js",
+        "sha256": "fe73e30f22af7f540458e2ea5370288673b52ca963222150bad18167d48da221"
+      },
+      {
+        "file": "web/tm-npc-action-ledger.js",
+        "sha256": "2be319337f8d2aeeb4c97de234ba299ba64de56279d0ffbc89e0b11f7bca94bd"
+      },
+      {
+        "file": "web/tm-npc-daily-activities.js",
+        "sha256": "ba4c3fbe16ceb2ef977d1fb381765f9dc9f90b43e4f6e009fb82a5d902da17d5"
+      },
+      {
+        "file": "web/tm-npc-decision-ai-driven.js",
+        "sha256": "149122cf898331322b0980dbeac45bfa5bb86829e028e3f552b301935e89523f"
+      },
+      {
+        "file": "web/tm-npc-decision.js",
+        "sha256": "c249d2ca82cc6a5a821f660e48172e679daddc4fd4203a33695878c78d1cbb90"
+      },
+      {
+        "file": "web/tm-npc-engine.js",
+        "sha256": "9a30da92bbdc61734629a4dd70fd7b82c14176eb0dd5d0700ca20a87399a04b6"
+      },
+      {
+        "file": "web/tm-npc-travel.js",
+        "sha256": "d3434d8fb49e17754477ca64cea85dfeacb1c8567b73d824d4004adce12da537"
+      },
+      {
+        "file": "web/tm-office-holder-state.js",
+        "sha256": "83e031b5c8af9d1ba41691a9c198e4624017264f979b190ed679d59024b65842"
+      },
+      {
+        "file": "web/tm-office-system.js",
+        "sha256": "ce1057a6af6404fdb88ee9a05a7f8e255de6b1e14c78619cdb2b730ca850dc14"
+      },
+      {
+        "file": "web/tm-office-tenure.js",
+        "sha256": "c0dea6152e8a21cf8c31576acd27ec159b2822555e854ed85ee1c3b1f747dadd"
+      },
+      {
+        "file": "web/tm-political-actions.js",
+        "sha256": "00a060f6353d1283f964627f8e477f538cff0cfc038dcd5f57ce1ff676aaa908"
+      },
+      {
+        "file": "web/tm-post-turn-jobs.js",
+        "sha256": "efcad561a913125f83db4a1467749841f9cd40133e119277842b0d74b115542f"
+      },
+      {
+        "file": "web/tm-public-treasury.js",
+        "sha256": "60e7ae194ee08fd944faec5c3386fac6923658048a9395cfbfc9fe016a8fef29"
+      },
+      {
+        "file": "web/tm-relations.js",
+        "sha256": "dca56960d411b3d92436fecedc86da0e5e3f449d0edfa88addf047c6f29a21cc"
+      },
+      {
+        "file": "web/tm-sim-time.js",
+        "sha256": "d744d2d5d1147effb83363016347200ee38a3cf11ba464e322c9a1d435a0241b"
+      }
+    ],
+    "current": [
+      {
+        "file": "web/generated/tm-ai-change-applier.bundle.js",
+        "sha256": "556edc97650375e463d990cc15569410cfda48936b64f10d275b1068f6112dcc"
+      },
+      {
+        "file": "web/tm-ai-change-army.js",
+        "sha256": "4bfec6374b6f0a287a130356a6c674978857f6852ea60fb2be05096c67d93414"
+      },
+      {
+        "file": "web/tm-ai-change-narrative.js",
+        "sha256": "d5ee2b17a969f13096bb73bf0bdc40d000761a56a23652d14857a0c11e504b91"
+      },
+      {
+        "file": "web/tm-ai-change-pathutils.js",
+        "sha256": "89a60e594ccd7bcb4e298923c5faaad5cadfbef09fa9c381667315b092f282d5"
+      },
+      {
+        "file": "web/tm-help-social.js",
+        "sha256": "80ea076cde9c396011e840d8364f3c395a0467e9461f1ac254f73c5333713d9f"
+      },
+      {
+        "file": "web/tm-map-locations.js",
+        "sha256": "d31d241d8ce3e1df99481f7f6ece280f88dfeadcafe1bbea9be7f2283d1db7db"
+      },
+      {
+        "file": "web/tm-map-route-days.js",
+        "sha256": "7aa64b46dbdcc8b0bceda640ea7cb9296d944552795bcfaf2f414063d749446f"
+      },
+      {
+        "file": "web/tm-mechanics-memory.js",
+        "sha256": "71ba316623394b4614af49d22b1a7162654237e4bc3f3c90cddee35f3fc1785b"
+      },
+      {
+        "file": "web/tm-npc-action-ledger.js",
+        "sha256": "2be319337f8d2aeeb4c97de234ba299ba64de56279d0ffbc89e0b11f7bca94bd"
+      },
+      {
+        "file": "web/tm-npc-daily-activities.js",
+        "sha256": "1970a354a24bef4d946b064934320cd11d6dc300a1e91c0d78a1a6cdd8db9b08"
+      },
+      {
+        "file": "web/tm-npc-decision-ai-driven.js",
+        "sha256": "7d9934da2eb8083ee56d247e8758adc0d0782f250b6e39dff7ae3e83897fd60d"
+      },
+      {
+        "file": "web/tm-npc-decision.js",
+        "sha256": "c249d2ca82cc6a5a821f660e48172e679daddc4fd4203a33695878c78d1cbb90"
+      },
+      {
+        "file": "web/tm-npc-engine.js",
+        "sha256": "9a30da92bbdc61734629a4dd70fd7b82c14176eb0dd5d0700ca20a87399a04b6"
+      },
+      {
+        "file": "web/tm-npc-travel.js",
+        "sha256": "2564e245d275ba58c182cdcba11de9f02b24557769252fa8b3590d5c39233992"
+      },
+      {
+        "file": "web/tm-office-holder-state.js",
+        "sha256": "83e031b5c8af9d1ba41691a9c198e4624017264f979b190ed679d59024b65842"
+      },
+      {
+        "file": "web/tm-office-system.js",
+        "sha256": "ce1057a6af6404fdb88ee9a05a7f8e255de6b1e14c78619cdb2b730ca850dc14"
+      },
+      {
+        "file": "web/tm-office-tenure.js",
+        "sha256": "73ab98ec089448f627879925a667095095b69bc84afc4e015b1bfc0bef5e6c97"
+      },
+      {
+        "file": "web/tm-political-actions.js",
+        "sha256": "00a060f6353d1283f964627f8e477f538cff0cfc038dcd5f57ce1ff676aaa908"
+      },
+      {
+        "file": "web/tm-post-turn-jobs.js",
+        "sha256": "efcad561a913125f83db4a1467749841f9cd40133e119277842b0d74b115542f"
+      },
+      {
+        "file": "web/tm-public-treasury.js",
+        "sha256": "60e7ae194ee08fd944faec5c3386fac6923658048a9395cfbfc9fe016a8fef29"
+      },
+      {
+        "file": "web/tm-relations.js",
+        "sha256": "dca56960d411b3d92436fecedc86da0e5e3f449d0edfa88addf047c6f29a21cc"
+      },
+      {
+        "file": "web/tm-sim-time.js",
+        "sha256": "57478e7c6b7c0660e876a79b90cc49f555731c10f2a6cd32674dd2aee689d213"
+      }
+    ]
+  }
+}

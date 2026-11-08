@@ -12,6 +12,7 @@ const report = { runId: path.basename(reportDir), repo, head: cp.execFileSync('g
   status: cp.execFileSync('git', ['status', '--short'], { cwd: repo, encoding: 'utf8' }).trim(), platform: process.platform, node: process.version,
   baseline: argv.includes('--baseline'), complete: false, results: [] };
 try {
+  if (argv.includes('--npc-composite')) modes.splice(0, modes.length, 'npc-composite');
   if (argv.includes('--npc-daily')) modes.splice(0, modes.length, 'npc-daily');
   if (argv.includes('--npc-travel')) modes.splice(0, modes.length, 'npc-travel');
   if (argv.includes('--office-duty')) modes.splice(0, modes.length, 'office-duty');
@@ -65,7 +66,7 @@ try {
     // Full ES-driver stress is distinct from Chromium's ordinary software WebGL fallback.
     const electronArgs = argv.includes('--software-gpu') ? ['--use-gl=angle', '--use-angle=swiftshader'] : argv.includes('--software-webgl') ? ['--disable-gpu'] : [];
     const modeStartedAt = Date.now();
-    const run = cp.spawnSync(runtime, [...electronArgs, path.join(__dirname, 'electron/bridge-main.cjs')], { cwd: repo, env, encoding: 'utf8', windowsHide: true, timeout: ['authoring-efficiency','relief-pilot'].includes(mode) ? 620000 : ['authoring-boundaries','authoring-continuation','authoring-autoapply','authoring-efficiency'].includes(mode) ? 195000 : mode === 'strategic-map' ? 620000 : mode === 'shanhe-load' ? 255000 : mode === 'circuit-book' || mode === 'circuit-tour' ? 315000 : mode === 'map-core-controls' || mode === 'startup-project-fallback' || mode === 'authoring-regions' ? 195000 : mode === 'shanhe-map' || mode === 'shanhe-pointer' ? 150000 : mode === 'relief-inspect' ? 1860000 : mode === 'relief-pilot' ? 210000 : mode === 'native-start-neutral-atlas' ? 210000 : mode === 'office-duty' ? 150000 : 90000, maxBuffer: 8 * 1024 * 1024 });
+    const run = cp.spawnSync(runtime, [...electronArgs, path.join(__dirname, 'electron/bridge-main.cjs')], { cwd: repo, env, encoding: 'utf8', windowsHide: true, timeout: mode === 'npc-composite' ? 1830000 : ['authoring-efficiency','relief-pilot'].includes(mode) ? 620000 : ['authoring-boundaries','authoring-continuation','authoring-autoapply','authoring-efficiency'].includes(mode) ? 195000 : mode === 'strategic-map' ? 620000 : mode === 'shanhe-load' ? 255000 : mode === 'circuit-book' || mode === 'circuit-tour' ? 315000 : mode === 'map-core-controls' || mode === 'startup-project-fallback' || mode === 'authoring-regions' ? 195000 : mode === 'shanhe-map' || mode === 'shanhe-pointer' ? 150000 : mode === 'relief-inspect' ? 1860000 : mode === 'relief-pilot' ? 210000 : mode === 'native-start-neutral-atlas' ? 210000 : mode === 'office-duty' ? 150000 : 90000, maxBuffer: 8 * 1024 * 1024 });
     fs.writeFileSync(path.join(reportDir, mode + '.log'), (run.stdout || '') + (run.stderr || ''));
     const detail = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
     const ok = !run.error && !run.signal && run.status === 0 && detail && detail.complete === true && detail.ok === true && detail.mode === mode;

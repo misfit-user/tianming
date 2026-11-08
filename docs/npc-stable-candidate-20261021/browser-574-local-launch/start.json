@@ -1,0 +1,13 @@
+{
+  "cpuProfile": false,
+  "inputSha256": "bbce0d44c14a150e8c3893867469f0cc0cd501887ccdfdcf11eca21988b7819d",
+  "heapSampling": false,
+  "preciseMemory": true,
+  "command": "node scripts/verify-electron-bridge.js --npc-composite",
+  "startedAt": "2026-10-23T08:08:26.0451912Z",
+  "trackedPatch": "web/scripts/smoke-turn-capture-work-count.js",
+  "patchSha256": "489a946ea40e64054185e01258cb428c5ec1930f90892910e3a4e9e76361a733",
+  "head": "574fcf05447d6daf0e6a99f64ea4a70b119a496e",
+  "temp": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\dev-tools\\candidate-temp",
+  "tempReason": "Task-owned ignored workspace C temp; no existing profiles deleted"
+}

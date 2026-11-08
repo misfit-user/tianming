@@ -1,0 +1,12 @@
+PASS profiles preserve complete ancestry without heap objects or collected allocation history
+PASS requested sampling uses existing CDP, one MiB interval and ten second polls without an explicit GC command or altered limits
+PASS overlapping interval and stage requests send only one command and persist it once
+PASS dispose stops timers, detaches once and late samples cannot write or fail the closed run
+PASS a failed diagnostic records an error and fails explicitly without changing domain outcomes
+PASS actual bridge diagnostic handler preserves a later renderer OOM instead of ending the run early
+PASS an existing debugger attachment is not stolen or detached
+PASS stage observers preserve original this, argument identities, return values and Promise identity
+PASS stage observers propagate exact synchronous errors and record Promise rejections once
+PASS allocation diagnostics are opt-in, disabled in ordinary CI and retain original gate deadlines
+PASS visible result evidence follows actual background settlement and normal UI reopening
+{"pass":11,"fail":0,"total":11}

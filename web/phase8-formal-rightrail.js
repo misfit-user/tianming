@@ -311,11 +311,6 @@
     }).join('') + '</div>';
   }
 
-  function rightIssueBar(label, value){
-    var n = Math.max(0, Math.min(100, Number(value) || 0));
-    return '<div class="tmrp-bar"><span>' + esc(label) + '</span><i><b style="width:' + n + '%"></b></i><em>' + esc(Math.round(n)) + '</em></div>';
-  }
-
   function rightIssuePersonButton(p, selectedKey){
     var key = personKey(p);
     var active = String(key) === String(selectedKey);
@@ -327,66 +322,10 @@
       '</button>';
   }
 
-  function rightWenduiGroup(title, note, list, selectedKey){
-    return '<section class="tmrp-card tmrp-group-card"><div class="tmrp-card-title"><span>' + esc(title) + '</span><small>' + esc(note || (list.length + ' 人')) + '</small></div>' +
-      '<div class="tmrp-scroll compact">' +
-      (list.length ? list.map(function(p){ return rightIssuePersonButton(p, selectedKey); }).join('') : '<div class="tmrp-empty">暂无记录。</div>') +
-      '</div></section>';
-  }
-
   function rightWenduiHistory(name){
     var gm = window.GM || {};
     var hist = gm.wenduiHistory && gm.wenduiHistory[name];
     return Array.isArray(hist) ? hist : [];
-  }
-
-  function rightHistoryCard(h){
-    var role = h && h.role ? String(h.role) : '';
-    var who = role === 'npc' ? '臣' : (role === 'player' ? '上' : '记');
-    var text = typeof h === 'string' ? h : (h && (h.content || h.text || h.message || h.line || h.summary)) || '';
-    var delta = h && h.loyaltyDelta != null ? ('忠诚 ' + (Number(h.loyaltyDelta) > 0 ? '+' : '') + h.loyaltyDelta) : '';
-    return '<div class="tmrp-log"><b>' + esc(who) + '</b><span>' + esc(compactText(text, 110) || '无内容') + '</span>' + (delta ? '<em>' + esc(delta) + '</em>' : '') + '</div>';
-  }
-
-  function rightIssueTopicList(){
-    var rows = [];
-    var seen = {};
-    function add(title, type, text){
-      title = String(title || '').trim();
-      if (!title || seen[title]) return;
-      seen[title] = true;
-      rows.push({ title:title, type:type || '朝政', text:text || '' });
-    }
-    getIssues().filter(function(x){ return !issueIsResolved(x); }).slice(0, 8).forEach(function(x){
-      add(x.title, x.category || x.dept || x.severity, x.text || x.detail);
-    });
-    getMemorials().slice(0, 8).forEach(function(x){
-      add(x.title, x.dept || x.type || '奏疏', x.text || x.content);
-    });
-    var gm = window.GM || {};
-    (Array.isArray(gm._ccHeldItems) ? gm._ccHeldItems : []).slice(0, 5).forEach(function(x){
-      add(x.title || x.topic, x.dept || x.type || '留中', x.content || x.detail);
-    });
-    return rows.slice(0, 10);
-  }
-
-  function rightChaoyiRecords(){
-    var gm = window.GM || {};
-    var out = [];
-    (Array.isArray(gm.recentChaoyi) ? gm.recentChaoyi : []).forEach(function(r, i){
-      r = r || {};
-      out.push({ id:'recent-' + i, kind:r.kind || r.mode || '朝议', topic:r.topic || r.title || '未题', decision:r.decision || r.result || '', text:r.line || r.text || r.content || '' });
-    });
-    (Array.isArray(gm._courtRecords) ? gm._courtRecords : []).slice(-8).reverse().forEach(function(r, i){
-      r = r || {};
-      out.push({ id:'court-' + i, kind:r.mode || r.type || '朝议', topic:r.topic || r.title || '朝议记录', decision:r.finalRuling || r.decision || r.result || '', text:r.transcript || r.summary || r.content || '' });
-    });
-    (Array.isArray(gm.qijuHistory) ? gm.qijuHistory : []).forEach(function(r, i){
-      var text = String((r && (r.content || r.text || r.zhengwen)) || '');
-      if (!/朝议|常朝|廷议|御前会议|朔朝/.test(text)) return;
-      out.push({ id:'qiju-' + i, kind:'起居注', topic:r.title || compactText(text, 24) || '朝议', decision:r.date || '', text:text });
-    });
-    return out.slice(0, 6);
   }
 
   function rightSelectedWenduiPerson(){
@@ -791,11 +730,6 @@
     var ctx = rightArmyContext();
     var mine = raw.filter(function(a){ return rightArmyBelongsToPlayer(a, ctx); });
     return mine.length || !raw.length ? mine : raw;
-  }
-
-  function rightFindArmy(key){
-    var row = rightFindArmyRecord(key, false);
-    return row ? row.army : null;
   }
 
   function rightArmyRowsForRender(armies){

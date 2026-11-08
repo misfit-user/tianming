@@ -1,0 +1,217 @@
+{
+  "createdAt": "2026-10-21T16:38:22.613Z",
+  "before": [
+    {
+      "path": "scenarios/天启七年·九月（官方）.json",
+      "bytes": 16384821,
+      "sha256": "1f53cca788d63ef1ef8305613ca38d5b3d2202cab1497b1a948a261c2d70ac9e"
+    },
+    {
+      "path": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "bytes": 90986044,
+      "sha256": "7c8e661f3d05147df8a70e1d9018855f422f89a57cca93fc39d9d302a304c2e7"
+    },
+    {
+      "path": "scenarios/晚唐·开成五年（官方）.json",
+      "bytes": 53247392,
+      "sha256": "9aef64b6d357dda850abce920ab90c8e5bd501636ddbe2aef6d8ac70cccd5fc4"
+    },
+    {
+      "path": "web/bundled-scenarios/天启七年·九月（官方）.json",
+      "missing": true
+    },
+    {
+      "path": "web/bundled-scenarios/绍宋·建炎元年八月（官方）.json",
+      "missing": true
+    },
+    {
+      "path": "web/bundled-scenarios/晚唐·开成五年（官方）.json",
+      "missing": true
+    },
+    {
+      "path": "web/scenarios/tianqi7-1627.js",
+      "bytes": 10023482,
+      "sha256": "ca13e4bc396b92035decd9fccad945730fa965137c9a4275250842e1fa81644f"
+    },
+    {
+      "path": "web/scenarios/shaosong-jianyan-1127.js",
+      "bytes": 50885358,
+      "sha256": "35df28df7e86ff88426d1b6af77ce0e74ef3f2dddbf80b7729765d5d3378b9b5"
+    },
+    {
+      "path": "web/scenarios/tang840-840.js",
+      "bytes": 31914537,
+      "sha256": "eab1a297502a0b001c0d6c629381b316ebb6c4d9aa32c33160c3d671739879fe"
+    },
+    {
+      "path": "web/preview/official-scenarios-bundle.js",
+      "bytes": 644,
+      "sha256": "e681d92378101abe1340ffb342ede85c37e24af8b8d0438c1397a2da641df990"
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-data.js",
+      "bytes": 16402076,
+      "sha256": "017eabbcc27c22d47c57fa179b480a543fac1ee039e2cd812112d3f4a86c8fd0"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.json",
+      "bytes": 6387,
+      "sha256": "71376b21a38f8ee5a1e6f4d91ace67c0d1b77f684b2e2b7a6e374fa85d751943"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.js",
+      "bytes": 6008,
+      "sha256": "d447497ded314e6033e29a736d9bf4f9043377d197b53efe190ccd501d93ef67"
+    },
+    {
+      "path": "web/startup-script-phases.json",
+      "bytes": 390653,
+      "sha256": "ffd137298193d5c3fa2c1695fad365aec9c8d343a17e9ec079070f4a59aee0d5"
+    },
+    {
+      "path": "web/tm-start-runtime-manifest.json",
+      "bytes": 138846,
+      "sha256": "5356e644b197bcd0452e28c5dc7462f206aab0fadbae885676e8d9a242910ee0"
+    }
+  ],
+  "after": [
+    {
+      "path": "scenarios/天启七年·九月（官方）.json",
+      "bytes": 16384821,
+      "sha256": "1f53cca788d63ef1ef8305613ca38d5b3d2202cab1497b1a948a261c2d70ac9e"
+    },
+    {
+      "path": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "bytes": 90986044,
+      "sha256": "7c8e661f3d05147df8a70e1d9018855f422f89a57cca93fc39d9d302a304c2e7"
+    },
+    {
+      "path": "scenarios/晚唐·开成五年（官方）.json",
+      "bytes": 53247392,
+      "sha256": "9aef64b6d357dda850abce920ab90c8e5bd501636ddbe2aef6d8ac70cccd5fc4"
+    },
+    {
+      "path": "web/bundled-scenarios/天启七年·九月（官方）.json",
+      "bytes": 16384821,
+      "sha256": "1f53cca788d63ef1ef8305613ca38d5b3d2202cab1497b1a948a261c2d70ac9e"
+    },
+    {
+      "path": "web/bundled-scenarios/绍宋·建炎元年八月（官方）.json",
+      "bytes": 90986044,
+      "sha256": "7c8e661f3d05147df8a70e1d9018855f422f89a57cca93fc39d9d302a304c2e7"
+    },
+    {
+      "path": "web/bundled-scenarios/晚唐·开成五年（官方）.json",
+      "bytes": 53247392,
+      "sha256": "9aef64b6d357dda850abce920ab90c8e5bd501636ddbe2aef6d8ac70cccd5fc4"
+    },
+    {
+      "path": "web/scenarios/tianqi7-1627.js",
+      "bytes": 10023482,
+      "sha256": "ca13e4bc396b92035decd9fccad945730fa965137c9a4275250842e1fa81644f"
+    },
+    {
+      "path": "web/scenarios/shaosong-jianyan-1127.js",
+      "bytes": 50885358,
+      "sha256": "35df28df7e86ff88426d1b6af77ce0e74ef3f2dddbf80b7729765d5d3378b9b5"
+    },
+    {
+      "path": "web/scenarios/tang840-840.js",
+      "bytes": 31914537,
+      "sha256": "eab1a297502a0b001c0d6c629381b316ebb6c4d9aa32c33160c3d671739879fe"
+    },
+    {
+      "path": "web/preview/official-scenarios-bundle.js",
+      "bytes": 644,
+      "sha256": "e681d92378101abe1340ffb342ede85c37e24af8b8d0438c1397a2da641df990"
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-data.js",
+      "bytes": 16402076,
+      "sha256": "017eabbcc27c22d47c57fa179b480a543fac1ee039e2cd812112d3f4a86c8fd0"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.json",
+      "bytes": 6387,
+      "sha256": "71376b21a38f8ee5a1e6f4d91ace67c0d1b77f684b2e2b7a6e374fa85d751943"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.js",
+      "bytes": 6008,
+      "sha256": "d447497ded314e6033e29a736d9bf4f9043377d197b53efe190ccd501d93ef67"
+    },
+    {
+      "path": "web/startup-script-phases.json",
+      "bytes": 390732,
+      "sha256": "3a3043c5f1d7bb9ab24c723fc3b69b76f1963b829c5c26e53e3a4c1d4f0f2cc0"
+    },
+    {
+      "path": "web/tm-start-runtime-manifest.json",
+      "bytes": 138846,
+      "sha256": "5356e644b197bcd0452e28c5dc7462f206aab0fadbae885676e8d9a242910ee0"
+    }
+  ],
+  "changes": [
+    {
+      "path": "web/bundled-scenarios/天启七年·九月（官方）.json",
+      "bytes": 16384821,
+      "sha256": "1f53cca788d63ef1ef8305613ca38d5b3d2202cab1497b1a948a261c2d70ac9e"
+    },
+    {
+      "path": "web/bundled-scenarios/绍宋·建炎元年八月（官方）.json",
+      "bytes": 90986044,
+      "sha256": "7c8e661f3d05147df8a70e1d9018855f422f89a57cca93fc39d9d302a304c2e7"
+    },
+    {
+      "path": "web/bundled-scenarios/晚唐·开成五年（官方）.json",
+      "bytes": 53247392,
+      "sha256": "9aef64b6d357dda850abce920ab90c8e5bd501636ddbe2aef6d8ac70cccd5fc4"
+    },
+    {
+      "path": "web/startup-script-phases.json",
+      "bytes": 390732,
+      "sha256": "3a3043c5f1d7bb9ab24c723fc3b69b76f1963b829c5c26e53e3a4c1d4f0f2cc0"
+    }
+  ],
+  "startupChanges": [
+    {
+      "script": "tm-npc-decision-ai-driven.js",
+      "addedProvides": [
+        "_npcPlanningActualOutcome",
+        "_npcPlanningSummarizeDirection"
+      ],
+      "removedProvides": []
+    }
+  ],
+  "relativeProvenance": true,
+  "commands": [
+    {
+      "command": [
+        "node",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "exit": 0,
+      "stdout": "[official-sync] wrote web\\bundled-scenarios\\天启七年·九月（官方）.json\n[official-sync] wrote web\\bundled-scenarios\\绍宋·建炎元年八月（官方）.json\n[official-sync] wrote web\\bundled-scenarios\\晚唐·开成五年（官方）.json\n[official-sync] sync PASS · sources=3 artifacts=10\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/build-startup-phase-manifest.js"
+      ],
+      "exit": 0,
+      "stdout": "[startup-phase-manifest] wrote startup-script-phases.json scripts=479 deferred=9\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "scripts/build-native-preparation-manifest.cjs",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "PASS native preparation manifest matches actual runtime bytes\n",
+      "stderr": ""
+    }
+  ]
+}

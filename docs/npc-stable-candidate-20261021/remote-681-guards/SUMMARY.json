@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-23T06:42:31.874Z",
+  "scope": "Completed remote681 guards only. No composite browser, other required CI, local final gate, merge or release claim.",
+  "candidateHead": "681e29ad804c56e4a8cb8bb22c10a34b417eb7fe",
+  "testedCheckout": "c6bc2c2ed51d790c6b113661b051bb44f70db805",
+  "candidateTree": "c2d970526573df1d5eec6b9fe0c76fb0862796a7",
+  "testedTree": "c2d970526573df1d5eec6b9fe0c76fb0862796a7",
+  "treeIdentical": true,
+  "mergeParents": [
+    "b0c80e5ae005912effbc947af027d021505c1dbd",
+    "681e29ad804c56e4a8cb8bb22c10a34b417eb7fe"
+  ],
+  "ciRunId": 39911614851,
+  "jobId": 120275686011,
+  "status": "completed",
+  "conclusion": "success",
+  "startedAt": "2026-10-23T06:27:47Z",
+  "completedAt": "2026-10-23T06:40:09Z",
+  "environment": {
+    "node": "v22.23.3",
+    "platform": "linux",
+    "arch": "x64",
+    "runnerLabel": "ubuntu-latest"
+  },
+  "command": "node scripts/ci-smokes.js --jobs 2",
+  "smokeRunId": "2f937feb-4b88-45d5-9bc8-6c407cd430ea",
+  "args": [
+    "--all",
+    "--no-retry",
+    "--run-id",
+    "2f937feb-4b88-45d5-9bc8-6c407cd430ea",
+    "--report",
+    "/home/runner/work/tianming/tianming/web/dev-tools/arch-guard/ci-KnKHVR/smoke-report.json",
+    "--jobs",
+    "2"
+  ],
+  "summary": {
+    "selected": 1188,
+    "pass": 1186,
+    "fail": 0,
+    "waived": 2,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "executed": 1188,
+  "waivers": [
+    {
+      "name": "smoke-audio-bgm.js",
+      "waivers": [
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/tianming-hegui.mp3"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/gucheng-junqi.mp3"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/changhe-zhangu.mp3"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/audio/bgm/yunkai-wanli.mp3"
+        }
+      ]
+    },
+    {
+      "name": "smoke-mapeditor-ui.js",
+      "waivers": [
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+        },
+        {
+          "code": "optional-asset-absent",
+          "path": "assets/fonts/MaShanZheng-Regular.ttf"
+        }
+      ]
+    }
+  ],
+  "waiversUnchangedFrom923": true,
+  "waiverComparisonScope": "Only waiver list compared with prior923; all current counts and outcomes are read from681 artifact.",
+  "scheduling": {
+    "parallelJobs": 2,
+    "resourceIsolated": [
+      "smoke-deploy-manifest-atomicity.js",
+      "smoke-full-turn-flow.js",
+      "smoke-npc-composite-official.js",
+      "smoke-office-seat-dept-prefix.js",
+      "smoke-official-bundle-parity.js",
+      "smoke-perf-save-preparation.js",
+      "smoke-production-dependencies.js",
+      "smoke-start-game-data-integrity.js",
+      "smoke-tang840-opening-ledgers.js",
+      "smoke-workshop-lock-recovery.js"
+    ]
+  },
+  "focused": [
+    {
+      "name": "smoke-emergency-recovery-review.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 1631,
+      "timedOut": false,
+      "flaky": false,
+      "suiteSummaries": [
+        "{\"pass\":62,\"fail\":0,\"total\":62}"
+      ]
+    },
+    {
+      "name": "smoke-full-turn-flow.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 54729,
+      "timedOut": false,
+      "flaky": false,
+      "suiteSummaries": []
+    },
+    {
+      "name": "smoke-npc-composite-diagnostics.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 41,
+      "timedOut": false,
+      "flaky": false,
+      "suiteSummaries": [
+        "{\"pass\":11,\"fail\":0,\"total\":11}"
+      ]
+    },
+    {
+      "name": "smoke-npc-composite-waits.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 151,
+      "timedOut": false,
+      "flaky": false,
+      "suiteSummaries": [
+        "{\"pass\":90,\"fail\":0,\"total\":90}"
+      ]
+    },
+    {
+      "name": "smoke-npc-entry-feature-barrier.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 160,
+      "timedOut": false,
+      "flaky": false,
+      "suiteSummaries": []
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 49807,
+      "timedOut": false,
+      "flaky": false,
+      "suiteSummaries": []
+    },
+    {
+      "name": "smoke-territory-batch-resolution.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 98,
+      "timedOut": false,
+      "flaky": false,
+      "suiteSummaries": []
+    }
+  ],
+  "artifact": {
+    "id": 12482799092,
+    "name": "audit-evidence-c6bc2c2ed51d790c6b113661b051bb44f70db805",
+    "compressedBytes": 347735,
+    "downloadedTo": "web/dev-tools/ci-39911614851-guards"
+  },
+  "files": [
+    {
+      "file": "smoke-report.json",
+      "bytes": 1170531,
+      "sha256": "9d563d5c62d77c4dea35249e4c510885ec5136bbb7bd679048fa24c945f8ac91"
+    },
+    {
+      "file": "guards.log",
+      "bytes": 58983,
+      "sha256": "58cbb1889d45cfb476d5c14d53935b0701df6b809e46b2e19bd51dced9a45841"
+    },
+    {
+      "file": "job.json",
+      "bytes": 5737,
+      "sha256": "fbec62a753ffa9881d9fa87db8af19831ec253a9d013e5b9bb9e9cccc344bfcb"
+    },
+    {
+      "file": "repro-adapted-results.json",
+      "bytes": 4516,
+      "sha256": "a2354a24c82018dbb53500d99bf5c67b75ccebe9a2ce72362911fc702fe80631"
+    }
+  ]
+}

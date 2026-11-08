@@ -1,0 +1,20 @@
+smoke-save-saved-clone
+  ✓ 快照函数抽取成功
+  ✓ ① _savedAffinityMap 引用(同一对象·未二次克隆)
+  ✓ ① _savedHarem 引用(同一对象)
+  ✓ ③ APPEND_ONLY qijuHistory 引用
+  ✓ ④ 普通 mutable affinityMap 深拷(新对象)
+  ✓ ② SKIP _facIndex 排除
+  ✓ ② SKIP 优先于 _saved(_savedMapData 排除·不被引用进档)
+  ✓ ② SKIP _aiTelemetry 排除
+  ✓ ⑤ 函数排除
+  ✓ ⑤ primitive 透传
+  ✓ ★ 只深拷 1 次(普通 mutable)·_saved* 镜像零二次克隆(原会多拷 2 个)
+  ✓ ★ committed detach 模式会脱离 append-only 与 _saved 镜像
+  ✓ ★ committed detach 快照不随 live GM 后续修改
+  ✓ ⑥ 统一 _buildSaveState 构造器存在
+  ✓ ⑥ desktopDoSave 复用 _buildSaveState(project)
+  ✓ ⑥ builder 先脱离 live GM/P，再执行存档准备
+  ✓ ⑥ 手动档裸 deepClone(GM) 已清(saveData 路径)
+
+结果: 17 通过 / 0 失败

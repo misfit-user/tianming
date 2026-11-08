@@ -1,0 +1,49 @@
+{
+  "diagnosticOnly": true,
+  "explicitGc": true,
+  "gameStarted": false,
+  "productionAcceptance": false,
+  "head": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+  "sourceCommit": null,
+  "sourcePath": "web/tm-endturn-render.js",
+  "sourceSha256": "276a0ef562f460ffcea381992c508644b7e332cf2f994e8793452c07c7a2a4a9",
+  "functionSha256": "9ae20789aec560fa30f269750639582199fd4034e9b40281b39999ddd8c2393e",
+  "versions": {
+    "node": "20.18.3",
+    "acorn": "8.14.0",
+    "ada": "2.9.2",
+    "ares": "1.34.4",
+    "base64": "0.5.2",
+    "brotli": "1.0.9",
+    "cjs_module_lexer": "1.4.1",
+    "cldr": "44.1",
+    "icu": "74.2",
+    "llhttp": "8.1.2",
+    "modules": "130",
+    "napi": "9",
+    "nghttp2": "1.61.0",
+    "openssl": "0.0.0",
+    "simdutf": "5.6.4",
+    "tz": "2024a",
+    "undici": "6.21.1",
+    "unicode": "15.1",
+    "uv": "1.46.0",
+    "uvwasi": "0.0.21",
+    "v8": "13.0.245.25-electron.0",
+    "zlib": "1.3.0.1-motley",
+    "electron": "33.4.11",
+    "chrome": "130.0.6723.191"
+  },
+  "startedAt": "2026-10-23T07:26:29.861Z",
+  "finishedAt": "2026-10-23T07:26:29.916Z",
+  "whilePending": {
+    "stateRetained": false,
+    "payloadRetained": false,
+    "backgroundRequests": 0
+  },
+  "afterProducer": {
+    "stateRetained": false,
+    "payloadRetained": false,
+    "backgroundRequests": 1
+  }
+}

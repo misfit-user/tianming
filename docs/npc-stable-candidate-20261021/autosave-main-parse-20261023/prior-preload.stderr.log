@@ -1,0 +1,7 @@
+AssertionError [ERR_ASSERTION]: preload must not allocate a parsed copy of the whole text body
+
+1 !== 0
+
+    at C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-autosave-text-bridge.js:64:78
+    at async check (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-autosave-text-bridge.js:8:34)
+    at async main (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-autosave-text-bridge.js:61:3)

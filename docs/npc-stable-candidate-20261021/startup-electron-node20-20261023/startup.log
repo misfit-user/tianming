@@ -1,0 +1,10 @@
+[run-smokes] 共 1185 个 smoke · 选中 1 · 跳过 0 · 并发 1 · 超时 120s
+[run-smokes] 独占执行硬时限用例（不改用例内部压力/期限）：smoke-start-game-data-integrity.js
+  [1/1] PASS    smoke-start-game-data-integrity.js (103.3s)
+
+[run-smokes] 完成：1 PASS · 0 FAIL · 0 SKIP · 0 WAIVED / 1 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 103s(并行墙钟更短)
+
+--- 最慢 Top 10 ---
+  103.3s  smoke-start-game-data-integrity.js
+
+[run-smokes] 报告 → ../docs/npc-stable-candidate-20261021/startup-electron-node20-20261023/startup-report.json

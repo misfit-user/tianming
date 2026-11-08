@@ -1,0 +1,54 @@
+{
+  "recordedAt": "2026-10-23T05:52:27.685Z",
+  "scope": "Diagnostic implementation checks only, not game acceptance or an OOM fix",
+  "diagnosticSmoke": {
+    "head": "8a001de799b447ce18338fed4becbe9a40be9aca",
+    "command": "node web/scripts/smoke-npc-composite-diagnostics.js",
+    "summary": {
+      "pass": 11,
+      "fail": 0,
+      "total": 11
+    },
+    "exitCodeReportedByExecutor": 0,
+    "elapsedSecondsReportedByExecutor": 0.639,
+    "executor": "root agent",
+    "rawOutput": "diagnostic-smoke-8a.log"
+  },
+  "realProtocolProbe": {
+    "startedAt": "2026-10-23T05:41:49.761Z",
+    "finishedAt": "2026-10-23T05:41:50.484Z",
+    "ok": true,
+    "electron": "33.4.11",
+    "node": "20.18.3",
+    "scope": "real CDP protocol on a blank isolated window; no game/world/UI acceptance",
+    "samplingInterval": 1048576,
+    "sampledLiveBytes": 28312416,
+    "nodeCount": 10,
+    "verifiedOwnAllocationStack": true,
+    "sourceIdentityBoundary": "Executed before commit8a; probe report records runtime versions but not a Git SHA. Do not retroactively label it as a post-commit full game test."
+  },
+  "files": [
+    {
+      "file": "probe-report.json",
+      "bytes": 3036,
+      "sha256": "43bccc1b03a7754893ef81179186dce347584751550d0ad9ad2e79df268ff39f"
+    },
+    {
+      "file": "allocation-profile-0003.json",
+      "bytes": 2298,
+      "sha256": "2e04c6b9121ebc39b495f84f3ba72c765001f3b891531afc47a4c6f3459f97d9"
+    },
+    {
+      "file": "diagnostic-smoke-8a.log",
+      "bytes": 1048,
+      "sha256": "eae313910b3fbfd3b431f32417d728624bac98c90a7c9b9711fb36d8fd98fcaa"
+    }
+  ],
+  "gcCorrection": {
+    "recordedAt": "2026-10-23T06:21:58.084Z",
+    "source": "upstream-v8-gc.json",
+    "scope": "matching observed V8 base tag13.0.245.25, not an audit of every Electron patch",
+    "finding": "CDP HeapProfiler.startSampling sets kSamplingForceGC; GetAllocationProfile follows a CollectAllGarbage path. Absence of an explicit HeapProfiler.collectGarbage command does not establish absence of GC.",
+    "consequence": "The historical no-GC test label was too broad. Raw logs remain unchanged; sampled formal success is diagnostic only and cannot replace normal unprofiled acceptance."
+  }
+}

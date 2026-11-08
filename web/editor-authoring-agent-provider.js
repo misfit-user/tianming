@@ -13,6 +13,13 @@
     return url.indexOf('anthropic.com') >= 0 || url.indexOf('api.anthropic') >= 0;
   }
 
+  // Anthropic 端点规整：已写到 /messages 原样；以 /v1 结尾补 /messages；否则补 /v1/messages（不再拼成 /v1/v1/messages）
+  function _anthropicEndpoint(url) {
+    if (/\/messages(\?|#|$)/.test(url)) return url;
+    var base = String(url || '').replace(/\/+$/, '');
+    return /\/v1$/i.test(base) ? base + '/messages' : base + '/v1/messages';
+  }
+
   // OpenAI 兼容端点规整：裸域名→/v1/chat/completions·.../v1→/chat/completions·完整端点原样。
   // 让第三方中转的各种 URL 写法都能拼对（成功调用中转的常见坑）。
   function _openaiEndpoint(url) {
@@ -445,7 +452,71 @@
     });
     return { content: content, stop_reason: finish, usage: usage };
   }
-  function _readResponse(r, signal) {
+  // 旁听（国师重做 S4 · 实时显示）：收流时把已到的增量先交给界面显示。只读、出错即闭嘴；
+  //   不改变任何解析——工具是否执行、执行什么，仍以收齐后的完整响应为准。
+  function _deltaPeeker(onDelta) {
+    var buf = '', fields = [], dead = false, began = false;
+    function emit(ev) { try { onDelta(ev); } catch (_) {} }
+    function handle(d) {
+      if (!d || typeof d !== 'object') return;
+      if (Array.isArray(d.choices)) {
+        var c = d.choices[0];
+        if (!c || (c.index != null && String(c.index) !== '0') || !c.delta) return;   // 整段快照不是增量，不旁听
+        var delta = c.delta, think = delta.reasoning_content != null ? delta.reasoning_content : delta.reasoning;
+        if (typeof think === 'string' && think) emit({ kind: 'think', text: think });
+        if (typeof delta.content === 'string' && delta.content) emit({ kind: 'text', text: delta.content });
+        if (Array.isArray(delta.tool_calls)) delta.tool_calls.forEach(function(tc, i) {
+          var fn = (tc && tc.function) || {}, at = tc && tc.index != null ? tc.index : i;
+          if (typeof fn.name === 'string' && fn.name) emit({ kind: 'tool', index: at, name: fn.name });
+          if (typeof fn.arguments === 'string' && fn.arguments) emit({ kind: 'args', index: at, text: fn.arguments });
+        });
+      } else if (Array.isArray(d.candidates)) {
+        var cand = d.candidates[0], parts = cand && cand.content && cand.content.parts;
+        (Array.isArray(parts) ? parts : []).forEach(function(part) {
+          if (!part) return;
+          if (typeof part.text === 'string' && part.text) emit({ kind: part.thought ? 'think' : 'text', text: part.text });
+        });
+      } else if (d.type === 'content_block_start' && d.content_block) {
+        if (d.content_block.type === 'tool_use' && d.content_block.name) emit({ kind: 'tool', index: d.index, name: d.content_block.name });
+      } else if (d.type === 'content_block_delta' && d.delta) {
+        var t = d.delta.type;
+        if (t === 'text_delta' && typeof d.delta.text === 'string') emit({ kind: 'text', text: d.delta.text });
+        else if (t === 'thinking_delta' && typeof d.delta.thinking === 'string') emit({ kind: 'think', text: d.delta.thinking });
+        else if (t === 'input_json_delta' && typeof d.delta.partial_json === 'string') emit({ kind: 'args', index: d.index, text: d.delta.partial_json });
+      }
+    }
+    function flush() {
+      if (fields.length) { try { handle(JSON.parse(fields.join('\n'))); } catch (_) {} }
+      fields = [];
+    }
+    function line(l) {
+      if (!l) { flush(); return; }
+      if (l.indexOf('data:') !== 0) return;   // 注释 / event: / id: 不用看
+      var v = l.slice(5).replace(/^ /, '');
+      if (v === '[DONE]') { flush(); return; }
+      // 一行即完整 JSON 就当场显示（也兼容漏写事件间空行的中转）；否则攒成多行 data 等空行
+      if (!fields.length) { try { handle(JSON.parse(v)); return; } catch (_) {} }
+      fields.push(v);
+    }
+    return {
+      feed: function(piece) {
+        if (dead) return;
+        try {
+          buf += piece;
+          if (!began) {
+            var head = buf.replace(/^\uFEFF/, '').replace(/^\s+/, '');
+            if (!head) return;
+            began = true;
+            if (/^[\[{]/.test(head)) { dead = true; buf = ''; return; }   // 整段 JSON：不是事件流，不旁听
+          }
+          var at;
+          while ((at = buf.indexOf('\n')) >= 0) { line(buf.slice(0, at).replace(/\r$/, '')); buf = buf.slice(at + 1); }
+          if (buf.length > 4 * 1024 * 1024) { dead = true; buf = ''; }
+        } catch (_) { dead = true; }
+      }
+    };
+  }
+  function _readResponse(r, signal, onDelta) {
     // 原有模拟/桥接 Response 可只提供 json()；真实 Fetch Response 走受控正文读取。
     if (typeof r.text !== 'function') return Promise.resolve().then(function() { return r.json(); });
     var maxBytes = 64 * 1024 * 1024; // 兼容图像工具响应；避免损坏/无界中转把整个编辑器撑满。
@@ -455,6 +526,7 @@
       return _decodeResponse(text);
     });
     var reader = r.body.getReader(), decoder = new TextDecoder(), chunks = [], bytes = 0, tail = '';
+    var peek = typeof onDelta === 'function' ? _deltaPeeker(onDelta) : null;
     function terminal(text) {
       if (!/\[DONE\]|message_stop/.test(text)) return false;
       // 漏空行中转的 DONE 行也须完整收到换行；完整响应仍由解码器逐项校验。
@@ -484,6 +556,7 @@
             bytes += row.value.byteLength;
             if (bytes > maxBytes) throw _responseError('too-large', 'API 返回内容过大，本轮工具未执行。');
             var piece = decoder.decode(row.value, { stream: true }); chunks.push(piece);
+            if (peek) peek.feed(piece);
             var probe = tail + piece;
             if (terminal(probe)) { end(null, _decodeResponse(chunks.join('')), true); return; }
             tail = probe.slice(-2048); read();
@@ -534,7 +607,11 @@
       }
       return Promise.resolve().then(function() {
         if(typeof opts.beforeRequest==='function')return opts.beforeRequest({bodyBytes:new TextEncoder().encode(String(fopt.body||'')).length,retry:recovery.attempts>0});
-      }).then(function() { if(outerSignal&&outerSignal.aborted)throw _abortError(outerSignal.reason); _telemetry(opts, { type: 'request', retry: recovery.attempts++ > 0 }); return global.fetch(url, fopt); }).then(function(r) {
+      }).then(function() {
+        if(outerSignal&&outerSignal.aborted)throw _abortError(outerSignal.reason); _telemetry(opts, { type: 'request', retry: recovery.attempts++ > 0 });
+        if (typeof opts.onDelta === 'function') { try { opts.onDelta({ kind: 'reset' }); } catch (_) {} }   // 重取：界面上旁听到的半截作废
+        return global.fetch(url, fopt);
+      }).then(function(r) {
         if (!r.ok) {
           return r.text().then(function(t) {
             var err = new Error('HTTP ' + r.status + ': ' + String(t).slice(0, 200));
@@ -544,7 +621,7 @@
             throw err;
           });
         }
-        return _readResponse(r, fopt.signal);
+        return _readResponse(r, fopt.signal, opts.onDelta);
       }).then(function(data) {
         cleanup();
         if (outerSignal && outerSignal.aborted) throw _abortError(outerSignal.reason);
@@ -598,6 +675,8 @@
     // 三路 provider：gemini 原生 / anthropic 原生(api.anthropic.com) / openai-compat（含一切第三方中转）
     var gemini = _isGeminiNative(cfg.url);
     var anthropic = !gemini && _isAnthropic(cfg.url);
+    // S4 · 实时显示：请求真流式，边收边旁听（Gemini 原生要换端点，不开）；中转不认就自动关掉整段重取
+    var wantStream = opts.stream === true && !gemini, streamOff = false;
     var endpoint, headers, body;
     if (gemini) {
       endpoint = _geminiEndpoint(cfg.url, cfg.model);
@@ -605,14 +684,17 @@
       if (!/[?&]key=/i.test(endpoint)) headers['x-goog-api-key'] = cfg.key;
       body = _toGemini(conversation, system, tools, maxTok, cfg.temp);
     } else if (anthropic) {
-      endpoint = cfg.url.indexOf('/messages') < 0 ? cfg.url + '/v1/messages' : cfg.url;
-      headers = { 'Content-Type': 'application/json', 'x-api-key': cfg.key, 'anthropic-version': '2023-06-01' };
+      endpoint = _anthropicEndpoint(cfg.url);
+      // 网页版直连 api.anthropic.com 要这个头才过跨域；桌面版带着也无妨
+      headers = { 'Content-Type': 'application/json', 'x-api-key': cfg.key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
       body = _toAnthropic(conversation, system, tools, maxTok, cfg.model);
+      if (wantStream) body.stream = true;
     } else {
       endpoint = _openaiEndpoint(cfg.url);
       headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key };
       body = _toOpenAI(conversation, system, tools, maxTok, cfg.model, cfg.temp);
       if (opts.explicitStream === true) body.stream = true;
+      if (wantStream) { body.stream = true; body.stream_options = { include_usage: true }; }   // 流式下要用量得明说
     }
     try { if (global.TM && global.TM.AIOptions) body = global.TM.AIOptions.apply(body, cfg, gemini ? 'gemini' : anthropic ? 'anthropic' : 'openai'); }
     catch (optionError) { return Promise.reject(optionError); }
@@ -626,6 +708,7 @@
       parsed.responseInfo.maxTokens = maxTok;
       parsed.responseInfo.usage = parsed.usage; // _reportedUsage 已剔除服务端任意字段。
       parsed.explicitStream = !anthropic && !gemini && (streamRepaired || opts.explicitStream === true);
+      if (streamOff) parsed.streamOff = true;   // 告诉 loop：这条路不认流式，本次余下几轮别再开
       // 异常时复用既有桌面日志通道；仅固定结构统计，落盘失败不影响原请求/草稿。
       if (parsed.responseInfo.kind === 'empty' || streamRepaired) _logWire(parsed.responseInfo);
       return parsed;
@@ -644,7 +727,9 @@
       delete fbBody.tools; delete fbBody.tool_choice; delete fbBody.toolConfig;
       if (global.TM && global.TM.AIOptions) fbBody = global.TM.AIOptions.apply(fbBody, cfg, gemini ? 'gemini' : anthropic ? 'anthropic' : 'openai');
       if (!anthropic && !gemini && (streamRepaired || opts.explicitStream === true)) fbBody.stream = true;
-      return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(fbBody) }, opts).then(function(data) {
+      // 文本兜底的正文是工具调用 JSON，不该当成国师的话实时显示
+      if (typeof opts.onDelta === 'function') { try { opts.onDelta({ kind: 'reset' }); } catch (_) {} }
+      return _fetchJSON(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(fbBody) }, Object.assign({}, opts, { onDelta: null })).then(function(data) {
         var parsed = _parseResp(data);
         parsed.fallback = true; parsed.responseInfo.format = 'json-compat';
         if (parsed.truncated || parsed.badToolJson || parsed.interrupted) { parsed.fallback = true; return parsed; }
@@ -675,9 +760,20 @@
       // 刀G8 · 超限识别:400+超窗文案 → 不做注定失败的文本兜底(更长)·标 overflow 供 loop 压缩自救
       var _msg0 = String((e && e.message) || '');
       var _ovf0 = !!(e && e.status === 400 && _OVERFLOW_RE.test(_msg0));
+      // S4 · 实时显示退路：中转不认流式（400 里提到 stream，或事件协议本身对不上）→ 关掉流式整段重取一次。
+      //   不当作「模型不支持 tools」，也不进文本兜底；之后几轮由 loop 记着不再开。
+      //   正文损坏/断流（invalid-json、incomplete-stream）不在此列：_fetchJSON 已按「只重取一次」处理，不能再多花一次。
+      if (wantStream && !streamOff && !streamRepaired && opts.explicitStream !== true && e && (
+          (e.status === 400 && /stream/i.test(_msg0))
+          || /^authoring-response-(unsupported-stream|mixed-stream|after-completion)$/.test(e.code || ''))) {
+        streamOff = true; delete body.stream; delete body.stream_options;
+        _telemetry(opts, { type: 'stream-off', code: e.code || ('http-' + e.status) });
+        if (typeof opts.onDelta === 'function') { try { opts.onDelta({ kind: 'stream-off' }); } catch (_) {} }
+        return (usedTextFallback ? fallbackTextCall() : nativeCall()).catch(handleFailure);
+      }
       // 真实中转曾将未声明 stream 的请求只回传 choices:[] + DONE。
       // 同一输入/工具/预算显式协商流式一次；仍无候选则原样失败，不能造空助手续轮。
-      if (!anthropic && !gemini && !streamRepaired && opts.explicitStream !== true && e && e.code === 'authoring-response-missing-candidate' && e.wire && e.wire.choices === 0) {
+      if (!anthropic && !gemini && !streamRepaired && opts.explicitStream !== true && body.stream !== true && e && e.code === 'authoring-response-missing-candidate' && e.wire && e.wire.choices === 0) {
         _logWire({ action: 'retry-explicit-stream', wire: e.wire, maxTokens: maxTok });
         streamRepaired = true; body.stream = true;
         return (usedTextFallback ? fallbackTextCall() : nativeCall()).catch(handleFailure);
@@ -725,7 +821,7 @@
         }
         return {
           ok: true,
-          provider: _isAnthropic(cfg.url) ? 'anthropic' : 'openai-compat',
+          provider: _isGeminiNative(cfg.url) ? 'gemini' : (_isAnthropic(cfg.url) ? 'anthropic' : 'openai-compat'),
           model: cfg.model,
           detail: '连通成功 · ' + (r.fallback ? '端点不支持原生 tools，已用文本兜底（仍可用）' : '原生 tool-calling 可用')
         };

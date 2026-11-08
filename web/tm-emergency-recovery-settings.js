@@ -37,16 +37,36 @@
       if(signal.aborted){finish(false);return;}document.body.appendChild(box);yes.focus();
     });
   }
-  var panel=null;
+  var panel=null,progressRow=null,progressId=null,collapsed=false;
+  function positionProgress(){
+    if(!panel)return;
+    var bottom=16;
+    if(collapsed){var end=document.querySelector('#endturn .et-big'),rect=end&&end.getBoundingClientRect();if(rect&&Number.isFinite(rect.top)&&Number.isFinite(root.innerHeight))bottom=Math.max(16,root.innerHeight-rect.top+8);}
+    panel.style.bottom=collapsed?bottom+'px':'1rem';panel.style.padding=collapsed?'.35rem .5rem':'.8rem';
+  }
+  function renderProgress(focusToggle){
+    var row=progressRow;if(!row)return;
+    if(!panel){panel=el('aside');panel.id='tm-recovery-progress';panel.setAttribute('role','status');panel.style.cssText='position:fixed;right:1rem;bottom:1rem;max-width:min(32rem,90vw);z-index:2147483500;background:var(--bg,#222);color:var(--txt,#eee);padding:.8rem;border:1px solid #888;';document.body.appendChild(panel);}
+    panel.replaceChildren();panel.setAttribute('data-recovery-id',String(row.id||''));
+    var toggle=el('button',collapsed?'展开进度':'收起进度');toggle.type='button';toggle.setAttribute('data-recovery-collapse',collapsed?'false':'true');toggle.setAttribute('aria-expanded',String(!collapsed));toggle.setAttribute('aria-controls','tm-recovery-progress-details');panel.appendChild(toggle);
+    toggle.addEventListener('click',function(){if(progressRow!==row)return;collapsed=!collapsed;renderProgress(true);});
+    var details=el('div');details.id='tm-recovery-progress-details';details.hidden=collapsed;panel.appendChild(details);
+    details.appendChild(el('strong',(row.kind==='turn-review'?'回合复核 · ':'应急恢复 · ')+String(row.call)));
+    details.appendChild(el('div',row.detail||row.phase));details.appendChild(el('small','额外调用 '+row.calls+(row.budget?'/'+row.budget.maxCalls:'')+' · 工具步骤 '+row.steps+' · 候选 '+row.repairs+' · 估算 Token '+(row.estimatedTokens||0)+(row.budget?'/'+(row.budget.maxTokens===0?'不设上限':row.budget.maxTokens):'')));
+    if(!collapsed||row.phase==='verified'||row.phase==='stopped'){
+      var stop=el('button',row.phase==='verified'||row.phase==='stopped'?'关闭提示':row.kind==='turn-review'?'取消回合复核':'取消应急恢复');stop.type='button';panel.appendChild(stop);
+      stop.addEventListener('click',function(){if(row.phase!=='verified'&&row.phase!=='stopped')(row.kind==='turn-review'&&TM.RecoveryReview?TM.RecoveryReview.cancel(row.id):TM.EmergencyRecovery.cancel(row.id));else{panel.remove();panel=null;progressRow=null;collapsed=false;}});
+    }
+    positionProgress();if(focusToggle)toggle.focus();
+  }
   function progress(event){
     if(!root.document||!document.body)return;
     var row=event.detail;if(!row)return;
-    if(!panel){panel=el('aside');panel.id='tm-recovery-progress';panel.setAttribute('role','status');panel.style.cssText='position:fixed;right:1rem;bottom:1rem;max-width:min(32rem,90vw);z-index:2147483500;background:var(--bg,#222);color:var(--txt,#eee);padding:.8rem;border:1px solid #888;';document.body.appendChild(panel);}
-    panel.replaceChildren();panel.appendChild(el('strong',(row.kind==='turn-review'?'回合复核 · ':'应急恢复 · ')+String(row.call)));
-    panel.appendChild(el('div',row.detail||row.phase));panel.appendChild(el('small','额外调用 '+row.calls+(row.budget?'/'+row.budget.maxCalls:'')+' · 工具步骤 '+row.steps+' · 候选 '+row.repairs+' · 估算 Token '+(row.estimatedTokens||0)+(row.budget?'/'+(row.budget.maxTokens===0?'不设上限':row.budget.maxTokens):'')));
-    var stop=el('button',row.phase==='verified'||row.phase==='stopped'?'关闭提示':row.kind==='turn-review'?'取消回合复核':'取消应急恢复');stop.type='button';panel.appendChild(stop);
-    stop.addEventListener('click',function(){if(row.phase!=='verified'&&row.phase!=='stopped')(row.kind==='turn-review'&&TM.RecoveryReview?TM.RecoveryReview.cancel(row.id):TM.EmergencyRecovery.cancel(row.id));else{panel.remove();panel=null;}});
+    var focused=document.activeElement,focusToggle=!!(panel&&focused&&panel.contains(focused)&&focused.getAttribute('data-recovery-collapse')!==null);
+    if(!panel||progressId!==row.id)collapsed=false;
+    progressId=row.id;progressRow=row;renderProgress(focusToggle);
   }
   if(root.addEventListener)root.addEventListener('tm-emergency-recovery',progress);
+  if(root.addEventListener)root.addEventListener('resize',positionProgress);
   TM.RecoverySettings={mount:mount,read:read,close:close,ask:ask};
 })(typeof window!=='undefined'?window:globalThis);

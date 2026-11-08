@@ -1,0 +1,27 @@
+{
+  "status": "prepared_not_executed",
+  "createdAt": "2026-10-23T05:17:07.942Z",
+  "expectedHead": "9232aa314d9db1b6fd346e3b241f4afcf1676ec4",
+  "runtimeImplementationHead": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "executable": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\node_modules\\electron\\dist\\electron.exe",
+  "args": [
+    "docs/npc-stable-candidate-20261021/run-final-gates.cjs",
+    "--run",
+    "--expected-head",
+    "9232aa314d9db1b6fd346e3b241f4afcf1676ec4",
+    "--temp-root",
+    "E:\\tianming-npc-candidate-temp"
+  ],
+  "cwd": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011",
+  "environmentOverridesForChildOnly": {
+    "ELECTRON_RUN_AS_NODE": "1"
+  },
+  "precondition": "Run only after the separate real Electron browser has ended. Do not set ELECTRON_RUN_AS_NODE for that browser.",
+  "limits": {
+    "smokeSeconds": 120,
+    "jobs": 1,
+    "retries": 0,
+    "waivers": 0
+  },
+  "scope": "56 current targeted smokes and static contracts, not full CI, browser, packaging or milestone acceptance."
+}

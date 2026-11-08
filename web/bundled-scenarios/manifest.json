@@ -20,8 +20,8 @@
         "factions": 22,
         "regions": 307
       },
-      "bytes": 10025642,
-      "sha256": "e2fb0f1ec1bcce644e90a5164eb33f5de04d7b414b84a3282f7c81e992b37540",
+      "bytes": 10025796,
+      "sha256": "c62ca36e382e346a776fe46ea358282507d9488ce80e458a6a645eb0809b043e",
       "sourceBytes": 16389192,
       "sourceSha256": "c5bfb773918fbe63dc249544b919129c6eb2008eebdd6d1737cbce7ed1310b11"
     },
@@ -43,8 +43,8 @@
         "factions": 39,
         "regions": 566
       },
-      "bytes": 50892328,
-      "sha256": "af7fc682202f4e4210f8fc5be8ae2bf55382986baedbe3cd9dec4cc48a2e837b",
+      "bytes": 50892482,
+      "sha256": "e71cdfaa5c13871b90b8790d6084f0cd3fd694d7984d68cfa85797c3881660ad",
       "sourceBytes": 90999865,
       "sourceSha256": "ba8eb7e1d266f2f1bf7d5a94ef9020109f0569a3c691a0e1b0a3b6f76aafef4c"
     },
@@ -66,8 +66,8 @@
         "factions": 42,
         "regions": 575
       },
-      "bytes": 31914375,
-      "sha256": "f116e1c7db99cf648bcc9d8a89756643b26195b7b21b095edda96859801a045e",
+      "bytes": 31914529,
+      "sha256": "04408e8a60da28d94dab08dc2b95a416c83d6af276520ed3f3b0e68d931134f7",
       "sourceBytes": 53247384,
       "sourceSha256": "e1b60e602c81e466cc0d2845858d8d69411a5834f0e76375475e1c834a26fa1a"
     }

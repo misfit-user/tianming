@@ -1,0 +1,11 @@
+PASS unknown outcome remains blocked; an arbitrary acknowledgement cannot release it
+PASS genuine late commit verifies both complete slots and finalizes the original result once
+PASS mismatched full data keeps the safety latch instead of adopting a partial save
+PASS confirmed late abort calls the existing rollback owner and never publishes a new result
+PASS world switches cannot accept late disk results or clear the old safety latch
+PASS contradictory duplicate terminal callbacks cannot turn a confirmed commit into abort
+PASS failed readback does not unlock writes or replace the completed narrative
+PASS a temporarily failed completion callback remains retryable after real outcome acknowledgement
+PASS same-object timeline changes still reject an old terminal result
+PASS post-commit display error never causes replay of a confirmed transaction
+{"pass":10,"fail":0,"total":10}

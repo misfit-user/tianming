@@ -1,0 +1,10 @@
+{
+  "cpuProfile": false,
+  "preciseMemory": true,
+  "heapSampling": false,
+  "head": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+  "command": "node scripts/verify-electron-bridge.js --npc-composite",
+  "startedAt": "2026-10-23T07:08:34.3746963Z",
+  "temp": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\dev-tools\\candidate-temp",
+  "tempReason": "Task-owned ignored workspace temp on C has more free space than D and E; no existing profiles deleted"
+}

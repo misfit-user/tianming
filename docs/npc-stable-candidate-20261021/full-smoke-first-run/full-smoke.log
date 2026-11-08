@@ -1,0 +1,89 @@
+[ci-smokes] run=ceba4470-7170-4912-b8bf-f14eefdae4a2 HEAD=e6d5a592fc258f3328fd810c91b61ed0a24599cf report=C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\dev-tools\arch-guard\ci-7ZHrC3\smoke-report.json
+[run-smokes] 共 1181 个 smoke · 选中 1181 · 跳过 0 · 并发 2 · 超时 120s
+  [25/1181] PASS    smoke-agent-mode-s12.js (0.3s)
+  [50/1181] PASS    smoke-ai-err-human.js (0.2s)
+  [75/1181] PASS    smoke-army-pressure.js (0.2s)
+  [100/1181] PASS    smoke-authoring-completion-recovery.js (0.8s)
+  [125/1181] PASS    smoke-battle-deterministic.js (0.3s)
+  [150/1181] PASS    smoke-border-risk.js (0.3s)
+  [175/1181] PASS    smoke-changchao-line-salvage.js (0.2s)
+  [200/1181] PASS    smoke-circuit-governor-effects-tianqi.js (29.2s)
+  [225/1181] PASS    smoke-class-roving-coalesce.js (0.2s)
+  [250/1181] PASS    smoke-corruption-pardon-and-restore.js (0.2s)
+  [275/1181] PASS    smoke-declared-currency-ledger.js (0.2s)
+  [300/1181] PASS    smoke-dev-sync-git-paths.js (3.1s)
+  [304/1181] FAIL    smoke-division-reassign.js (0.2s)
+  [325/1181] PASS    smoke-edict-office-tree-writeback.js (0.7s)
+  [350/1181] PASS    smoke-endturn-callai.js (0.3s)
+  [375/1181] PASS    smoke-endturn-systems-tail-guards.js (0.2s)
+  [400/1181] PASS    smoke-faction-living-world.js (2.4s)
+  [425/1181] PASS    smoke-family-mode-e3.js (0.3s)
+  [450/1181] PASS    smoke-fixed-fit-modern-viewport-units.js (0.2s)
+  [475/1181] PASS    smoke-gameplay-promotion.js (1.0s)
+  [500/1181] PASS    smoke-guoshi-memskills.js (0.2s)
+  [525/1181] PASS    smoke-huji-governance-executor-causes-backlash.js (0.4s)
+  [550/1181] PASS    smoke-keyi-open-atomicity.js (0.3s)
+  [575/1181] PASS    smoke-map-editor-scenario-library.js (7.6s)
+  [583/1181] FAIL    smoke-map-route-days.js (0.2s)
+  [600/1181] PASS    smoke-memory-boundary-upgrade.js (0.7s)
+  [625/1181] PASS    smoke-memory-governance-live-chain.js (0.3s)
+  [650/1181] PASS    smoke-memory-sc1-precontext-trace.js (0.3s)
+  [675/1181] PASS    smoke-memory-workshop-audit-filters.js (0.3s)
+  [700/1181] PASS    smoke-minxin-hard-link-consumers.js (0.2s)
+  [725/1181] PASS    smoke-neitang-inner-treasury-compat.js (0.2s)
+  [750/1181] PASS    smoke-npc-family-tier-behavior-effects.js (0.3s)
+  [775/1181] PASS    smoke-office-duty-evidence.js (0.5s)
+  [800/1181] PASS    smoke-official-scenario-lazy-loader.js (0.8s)
+  [825/1181] PASS    smoke-party-class-drift-bidirectional.js (0.3s)
+  [850/1181] PASS    smoke-phase8-listener-lifecycle.js (0.3s)
+  [875/1181] PASS    smoke-personnel-dismissal-official.js (62.7s)
+  [900/1181] PASS    smoke-public-treasury-custody.js (1.4s)
+  [925/1181] PASS    smoke-renli-corvee-demand-baseline.js (0.3s)
+  [950/1181] PASS    smoke-renwu-nian-conspiracies.js (0.3s)
+  [975/1181] PASS    smoke-runtime-save-consistency.js (0.5s)
+  [1000/1181] PASS    smoke-save-slim.js (0.7s)
+  [1025/1181] PASS    smoke-secondary-task-retries.js (2.4s)
+  [1050/1181] PASS    smoke-sovereign-address-sensing.js (0.2s)
+  [1064/1181] FAIL    smoke-startup-phase-observability.js (0.7s)
+  [1075/1181] PASS    smoke-talent-cohorts.js (0.2s)
+  [1100/1181] PASS    smoke-tier3-supplement.js (0.2s)
+  [1125/1181] PASS    smoke-turn-stream-reliability.js (1.2s)
+  [1150/1181] PASS    smoke-wentian-workorder.js (0.2s)
+[run-smokes] 独占执行硬时限用例（不改用例内部压力/期限）：smoke-deploy-manifest-atomicity.js, smoke-full-turn-flow.js, smoke-perf-save-preparation.js, smoke-production-dependencies.js, smoke-start-game-data-integrity.js, smoke-tang840-opening-ledgers.js, smoke-workshop-lock-recovery.js
+  [1175/1181] PASS    smoke-deploy-manifest-atomicity.js (35.8s)
+  [1176/1181] TIMEOUT smoke-full-turn-flow.js (120.5s)
+  [1177/1181] FAIL    smoke-perf-save-preparation.js (290.6s)
+  [1178/1181] FAIL    smoke-production-dependencies.js (30.5s)
+  [1179/1181] TIMEOUT smoke-start-game-data-integrity.js (120.5s)
+  [1181/1181] PASS    smoke-workshop-lock-recovery.js (14.6s)
+
+[run-smokes] 完成：1172 PASS · 7 FAIL · 0 SKIP · 2 WAIVED / 1181 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 2527s(并行墙钟更短)
+
+--- 失败聚类（5 簇）---
+  ×2  Error: ENOENT: no such file or directory, open '<path>'
+      smoke-division-reassign.js
+      smoke-map-route-days.js
+  ×2  （超时）
+      smoke-full-turn-flow.js
+      smoke-start-game-data-integrity.js
+  ×1  at checkExecSyncError (node:child_process:#:#)
+      smoke-startup-phase-observability.js
+  ×1  AssertionError [ERR_ASSERTION]: both full official scenarios, short/long history, both formats, restore and failure checks must all execute
+      smoke-perf-save-preparation.js
+  ×1  AssertionError [ERR_ASSERTION]: {"error":"spawnSync <path> Files\\nodejs\\node.exe ETIMEDOUT","signal":"SIGTERM","stderr":"npm warn Unknown project config \"ele
+      smoke-production-dependencies.js
+
+--- 最慢 Top 10 ---
+  290.6s  smoke-perf-save-preparation.js
+  120.5s  smoke-full-turn-flow.js
+  120.5s  smoke-start-game-data-integrity.js
+  96.5s  smoke-npc-composite-official.js
+  96.4s  smoke-map-circuit-book-shaosong.js
+  76.5s  smoke-office-seat-dept-prefix.js
+  76.2s  smoke-edict-data-writeback.js
+  70.1s  smoke-tang840-opening-ledgers.js
+  67.8s  smoke-circuit-governance-shaosong.js
+  65.4s  smoke-circuit-governor-effects-tang.js
+
+[run-smokes] 报告 → dev-tools/arch-guard/ci-7ZHrC3/smoke-report.json
+[ci-smokes] FAIL smoke-evidence-runner-failed

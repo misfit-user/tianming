@@ -1,0 +1,208 @@
+{
+  "head": "7c6525075d3f07ab435562e21a8d3d74c0e9b413",
+  "node": "v24.14.0",
+  "startedAt": "2026-10-22T12:28:42.363Z",
+  "scope": "Original bounds, assertions and storage behavior retained; oversized recovery input serialization short-circuit regression.",
+  "hardTimeoutMs": 120000,
+  "runtimeSource": "web/tm-endturn-response-recovery.js",
+  "runtimeHashBefore": "8a15dd82804e920c06a1c50aab1bcb992f93f2e4fcbecd1ae5cae4a4fb5b91bc",
+  "testHashes": {
+    "web/scripts/smoke-full-turn-flow.js": "5f29b407884e3ac95045b1853d7143cc6fe807f341ec0b5953b65de1fce60c6f",
+    "web/scripts/smoke-turn-response-recovery.js": "9ad6177a08ece1c661769313227c7eb5da9d35721fbea5374c91c5c537ce06b4",
+    "web/scripts/smoke-recovery-vault.js": "79d11df680cc1e2abe6c4415d4595dd0de834c47ba9ad6ec98dc6c3f7a1a4367",
+    "web/scripts/smoke-round19-cross-system-rollback.js": "de673ab34819cbd90ca61022de5bc2679750bbe46407d48295141b94f77ec987",
+    "web/scripts/smoke-ai-atomic-snapshot-contract.js": "7a497f69c6e4d2779e5371648fb89e844a16c35d2063bb98ebf23f2bed758fc7",
+    "web/scripts/smoke-save-commit-boundary.js": "83450d865c45ab7872a1e993b6fa85d929587df57a062c138a571063e77b50e4",
+    "web/scripts/smoke-storage-atomic-batch.js": "b897380467a9a29f18826edbc16baded8b072b18f7e803bbf275af16ea260cc3",
+    "web/scripts/smoke-runtime-save-consistency.js": "5b96c8fcf7ee85a3605f0fabee15c1da3b418a5e69436f70956b2da7f2b15a87"
+  },
+  "results": [
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-full-turn-flow.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 61061,
+      "log": "docs/npc-stable-candidate-20261021/smoke-full-turn-flow-recovery-input-gate.log",
+      "passLines": [
+        "[full-turn-flow] PASS",
+        "    \"❌ 存档数据库初始化失败：stub·no-idb\",",
+        "    \"播放背景音乐失败: ReferenceError: Audio is not defined\",",
+        "    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\",",
+        "    \"[SaveDB] 初始化失败: Error: stub·no-idb\",",
+        "    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",",
+        "    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",",
+        "    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\"",
+        "    \"[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb\""
+      ],
+      "tail": ": 1\n    }\n  ],\n  \"turnResults\": [\n    {\n      \"idx\": 0,\n      \"len\": 51454,\n      \"head\": \"<div class=\\\"sjc-frame\\\"><nav class=\\\"sjc-spine\\\" role=\\\"tablist\\\"><button type=\\\"button\\\" role=\\\"tab\\\" aria-selected=\\\"true\\\" aria-\"\n    }\n  ],\n  \"playerActionSummary\": {\n    \"turn\": 1,\n    \"minister\": \"袁崇焕\",\n    \"memorials\": 1,\n    \"letters\": 2,\n    \"courtRecords\": 1\n  },\n  \"postTurnCourtSummary\": {\n    \"turn\": 1,\n    \"targetTurn\": 2,\n    \"courtRecords\": 2\n  },\n  \"loadingTail\": [\n    {\n      \"turn\": 2,\n      \"msg\": \"检查历史事件\",\n      \"pct\": 93.4\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"检查职位与寿数\",\n      \"pct\": 93.7\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"处理监听队列\",\n      \"pct\": 94\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"清理回合缓存\",\n      \"pct\": 94.3\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"回合阶段 6/7 · 生成史记弹窗\",\n      \"pct\": 78\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"hide\",\n      \"pct\": 0\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"回合阶段 7/7 · prepare-commit-barrier\",\n      \"pct\": 90\n    },\n    {\n      \"turn\": 2,\n      \"msg\": \"hide\",\n      \"pct\": 0\n    }\n  ],\n  \"toasts\": [\n    \"第1回合\",\n    \"❌ 存档数据库初始化失败：stub·no-idb\",\n    \"诏令需细化：征何税（商/盐/茶/市舶）？\",\n    \"鸿雁：1 封新来函已抵达\",\n    \"回合已完整保存；附加快照或存档后处理发生错误，详情见控制台。请勿为此重新推演本回合。\"\n  ],\n  \"errors\": [\n    \"播放背景音乐失败: ReferenceError: Audio is not defined\",\n    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\",\n    \"[SaveDB] 初始化失败: Error: stub·no-idb\",\n    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",\n    \"播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor\",\n    \"[SaveDB] IndexedDB打开失败: Error: stub·no-idb\"\n  ],\n  \"warns\": [\n    \"  Error: [perf] guoku.tick 超阈值: 1656.00ms > 800ms\\n      at _defaultThresholdHandler (tm-perf.js:225:9)\\n      at _checkThreshold (tm-perf.js:217:7)\",\n    \"[endTurn systems] slow stage: 系统结算总耗时 10761ms \",\n    \"[cc3·agenda] AI 返回不可用·走 fallback\",\n    \"[AutoSave] 端回合 snapshot 耗 1157ms·考虑 A-2\",\n    \"[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb\",\n    \"[TM.Features] [object Object]\",\n    \"[TM.Features] [object Object]\",\n    \"[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb\"\n  ],\n  \"writeTurnData\": 0,\n  \"autoSave\": 0\n}\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-turn-response-recovery.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 2630,
+      "log": "docs/npc-stable-candidate-20261021/smoke-turn-response-recovery-recovery-input-gate.log",
+      "passLines": [
+        "PASS accepted baseline retains exactly the original JSON bytes and SHA-256 identity",
+        "PASS oversized strings and numeric arrays stop before the tail without disabling live requests",
+        "PASS native toJSON, special values and repeated references keep their original fingerprint",
+        "PASS cycles and BigInt still disable unavailable fingerprints without reusable checkpoints",
+        "PASS the exact final length check still rejects key and escaping overhead missed by the lower bound",
+        "PASS full JSON is reused after confirmed rollback without a second paid request",
+        "PASS consumer mutations cannot damage the preserved response",
+        "PASS successful calls in the same attempt are never merged into one response",
+        "PASS any change to prompt, output budget, schema or endpoint prevents reuse",
+        "PASS changed world, model, mode or player options invalidate the entire recovery set",
+        "PASS a newly loaded identical world is not treated as the rolled-back instance",
+        "PASS validation errors, cancellations and uncertain persistence never arm recovery",
+        "PASS length-truncated, filtered, refused and unconfirmed completions are not reusable",
+        "PASS long Chinese narrative is replayed byte-for-byte with no shortening",
+        "PASS oversized checkpoint is skipped rather than truncating the live response",
+        "PASS lack of SHA-256 support leaves the original full request path intact",
+        "PASS committed turns and unconfirmed rollbacks cannot be replayed",
+        "PASS expiry, explicit discard and changed post-court choice prevent reuse",
+        "PASS a changed wire request after context repair is not cached under the original prompt",
+        "PASS native Agent tool arguments survive recovery unchanged, without executing tools early",
+        "PASS non-finite tool arguments are never silently converted into reusable null values",
+        "PASS uncacheable optional metadata does not suppress or repeat a normal request",
+        "PASS tool definitions changed during inference do not populate the old request checkpoint"
+      ],
+      "tail": "apsedMs\":0.0548,\"heapBefore\":18558584,\"heapAfter\":18565672,\"rssBefore\":76296192,\"rssAfter\":76308480,\"processPeakRssKB\":76316}\n{\"case\":\"baseline-size-early-stop\",\"kind\":\"numbers\",\"limitChars\":32000000,\"tailVisits\":0,\"digests\":0,\"elapsedMs\":1501.1422,\"heapBefore\":51815840,\"heapAfter\":120572064,\"rssBefore\":118681600,\"rssAfter\":243548160,\"processPeakRssKB\":355672}\nPASS oversized strings and numeric arrays stop before the tail without disabling live requests\nPASS native toJSON, special values and repeated references keep their original fingerprint\nPASS cycles and BigInt still disable unavailable fingerprints without reusable checkpoints\nPASS the exact final length check still rejects key and escaping overhead missed by the lower bound\nPASS full JSON is reused after confirmed rollback without a second paid request\nPASS consumer mutations cannot damage the preserved response\nPASS successful calls in the same attempt are never merged into one response\nPASS any change to prompt, output budget, schema or endpoint prevents reuse\nPASS changed world, model, mode or player options invalidate the entire recovery set\nPASS a newly loaded identical world is not treated as the rolled-back instance\nPASS validation errors, cancellations and uncertain persistence never arm recovery\nPASS length-truncated, filtered, refused and unconfirmed completions are not reusable\nPASS long Chinese narrative is replayed byte-for-byte with no shortening\nPASS oversized checkpoint is skipped rather than truncating the live response\nPASS lack of SHA-256 support leaves the original full request path intact\nPASS committed turns and unconfirmed rollbacks cannot be replayed\nPASS expiry, explicit discard and changed post-court choice prevent reuse\nPASS a changed wire request after context repair is not cached under the original prompt\nPASS native Agent tool arguments survive recovery unchanged, without executing tools early\nPASS non-finite tool arguments are never silently converted into reusable null values\nPASS uncacheable optional metadata does not suppress or repeat a normal request\nPASS tool definitions changed during inference do not populate the old request checkpoint\n{\"pass\":23,\"fail\":0,\"total\":23}\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-recovery-vault.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 372,
+      "log": "docs/npc-stable-candidate-20261021/smoke-recovery-vault-recovery-input-gate.log",
+      "passLines": [
+        "PASS confirmed rollback checkpoints survive a new page context and replay exact full content",
+        "PASS corrupted stored response is rejected rather than replayed",
+        "PASS foreign worlds, changed baselines and expired responses are not adopted",
+        "PASS successful final commit removes only its matching recovery checkpoint",
+        "PASS the local persistence switch clears candidates and does not affect ordinary generation",
+        "PASS invalid or oversized checkpoint rows never create a persistent entry",
+        "PASS disabled or unavailable persistent storage preserves complete uncached requests"
+      ],
+      "tail": "PASS confirmed rollback checkpoints survive a new page context and replay exact full content\nPASS corrupted stored response is rejected rather than replayed\nPASS foreign worlds, changed baselines and expired responses are not adopted\nPASS successful final commit removes only its matching recovery checkpoint\nPASS the local persistence switch clears candidates and does not affect ordinary generation\nPASS invalid or oversized checkpoint rows never create a persistent entry\nPASS disabled or unavailable persistent storage preserves complete uncached requests\n{\"pass\":7,\"fail\":0,\"total\":7}\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-round19-cross-system-rollback.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 257,
+      "log": "docs/npc-stable-candidate-20261021/smoke-round19-cross-system-rollback-recovery-input-gate.log",
+      "passLines": [
+        "[smoke-round19-cross-system-rollback] PASS assertions=45"
+      ],
+      "tail": "[econLinkage] 已加载：层层剥夺+区域财政树+下拨生命周期+俸禄流+贪腐流+抄家触发+事件总线\n[smoke-round19-cross-system-rollback] PASS assertions=45\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-ai-atomic-snapshot-contract.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 380,
+      "log": "docs/npc-stable-candidate-20261021/smoke-ai-atomic-snapshot-contract-recovery-input-gate.log",
+      "passLines": [
+        "PASS successful work leaves live graph identity intact and before-state independently readable",
+        "PASS failure restores complex large fields and all ordinary siblings without JSON coercion",
+        "{\"suite\":\"ai-atomic-snapshot-contract\",\"passed\":2}"
+      ],
+      "tail": "PASS successful work leaves live graph identity intact and before-state independently readable\nPASS failure restores complex large fields and all ordinary siblings without JSON coercion\n{\"suite\":\"ai-atomic-snapshot-contract\",\"passed\":2}\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-save-commit-boundary.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 511,
+      "log": "docs/npc-stable-candidate-20261021/smoke-save-commit-boundary-recovery-input-gate.log",
+      "passLines": [
+        "PASS commit receipt is delivered once, only after both slots commit",
+        "PASS commit observation precedes cleanup but save still waits for cleanup completion",
+        "PASS cleanup errors cannot change a confirmed commit into failure",
+        "PASS observer exceptions do not undo or reject committed data",
+        "PASS aborted writes never notify success or create committed slots",
+        "PASS local committed journal cleanup failure preserves new slots and a committed marker",
+        "PASS partial local write failure restores the original slots without a commit receipt",
+        "PASS auxiliary snapshot rejection does not roll back a committed full world",
+        "PASS auxiliary false result is reported without changing the durable world result",
+        "PASS failed primary write never starts the auxiliary snapshot",
+        "PASS snapshot and cleanup overlap only after durable commit and are both awaited",
+        "PASS a world switch during snapshot cannot publish old-world save markers",
+        "PASS legacy boolean SaveDB success retains the full snapshot path",
+        "PASS mismatched callback receipt cannot start snapshot or bypass a failed primary save",
+        "PASS a staged display failure cannot interrupt retirement of the world transaction",
+        "PASS failure of instrumentation after commit does not erase the observed commit",
+        "PASS an async observer rejection is handled without rejecting the successful write",
+        "PASS synchronous put failure aborts the transaction before any partial slot commit",
+        "PASS failed supplementary memory does not prevent canonical save or snapshot",
+        "PASS unresolved memory never blocks the turn and late success schedules a same-world save",
+        "PASS a failed auxiliary turn-data file preserves its payload in the successful main save",
+        "PASS an empty auxiliary result is a reported warning, not silent success of that task",
+        "PASS actual finalizer keeps committed world and full presentation when auxiliary snapshot fails",
+        "PASS a matching durable receipt blocks rollback but a foreign receipt does not"
+      ],
+      "tail": "PASS commit receipt is delivered once, only after both slots commit\nPASS commit observation precedes cleanup but save still waits for cleanup completion\nPASS cleanup errors cannot change a confirmed commit into failure\nPASS observer exceptions do not undo or reject committed data\nPASS aborted writes never notify success or create committed slots\nPASS local committed journal cleanup failure preserves new slots and a committed marker\nPASS partial local write failure restores the original slots without a commit receipt\nPASS auxiliary snapshot rejection does not roll back a committed full world\nPASS auxiliary false result is reported without changing the durable world result\nPASS failed primary write never starts the auxiliary snapshot\nPASS snapshot and cleanup overlap only after durable commit and are both awaited\nPASS a world switch during snapshot cannot publish old-world save markers\nPASS legacy boolean SaveDB success retains the full snapshot path\nPASS mismatched callback receipt cannot start snapshot or bypass a failed primary save\nPASS a staged display failure cannot interrupt retirement of the world transaction\nPASS failure of instrumentation after commit does not erase the observed commit\nPASS an async observer rejection is handled without rejecting the successful write\nPASS synchronous put failure aborts the transaction before any partial slot commit\nPASS failed supplementary memory does not prevent canonical save or snapshot\nPASS unresolved memory never blocks the turn and late success schedules a same-world save\nPASS a failed auxiliary turn-data file preserves its payload in the successful main save\nPASS an empty auxiliary result is a reported warning, not silent success of that task\nPASS actual finalizer keeps committed world and full presentation when auxiliary snapshot fails\nPASS a matching durable receipt blocks rollback but a foreign receipt does not\n{\"pass\":24,\"fail\":0,\"total\":24}\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-storage-atomic-batch.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 1452,
+      "log": "docs/npc-stable-candidate-20261021/smoke-storage-atomic-batch-recovery-input-gate.log",
+      "passLines": [
+        "[smoke-storage-atomic-batch] PASS assertions=33"
+      ],
+      "tail": "[smoke-storage-atomic-batch] PASS assertions=33\n"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-runtime-save-consistency.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "timedOut": false,
+      "ms": 294,
+      "log": "docs/npc-stable-candidate-20261021/smoke-runtime-save-consistency-recovery-input-gate.log",
+      "passLines": [
+        "  ok - 校验/读取失败保留 autosave 安全回退",
+        "  ok - 读档回滚自身失败时 barrier 保持 rejected，半恢复世界不能被手动保存入口放行",
+        "[AutoSave] post-turn save failed: Error: slot_0 injected failure",
+        "[smoke-runtime-save-consistency] 84 passed / 0 failed"
+      ],
+      "tail": "al 恢复档\n  ok - Electron autoSave 生产写口只剩消费 committed snapshot 的 60s runner\n  ok - 保存全部只原子写 tm_api 一次\n  ok - 同一次持久化包含新主 key + 新 secondary key\n=== 4. dynamic write lease regressions ===\n  ok - 保存/玩法共享的 load barrier 在 hydration 完成前保持未决\n  ok - hydration 完成后 load barrier 才放行等待中的操作\n  ok - 读档—保存循环不推进玩法，Huji 单次推进且 IntegrationBridge 不再重复结算\n  ok - storage envelope metadata never enters validated runtime P/GM\n  ok - loaded-world invariant gate rejects duplicate stable character IDs before UI opens\n  ok - critical migration partial write rolls back P/GM/session and rebinds every runtime singleton to the old world\n  ok - 读档回滚自身失败时 barrier 保持 rejected，半恢复世界不能被手动保存入口放行\n  ok - 重叠读档被同步拒绝且不能替换第一条仍在进行的完成屏障\n  ok - 真实 save helper 只快照 Phase5 后状态并同时写 autosave/slot_0\n  ok - desktop receipt commits with canonical worlds and publish cleanup never mutates the world payload\n  ok - load recovery publishes only matching, non-future receipts and leaves other branches untouched\n  ok - receipt recovery failure is explicit and leaves the durable receipt available for a transactional retry\n[AutoSave] post-turn save failed: Error: slot_0 injected failure\n    at Object.saveManyAtomic (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-runtime-save-consistency.js:557:51)\n    at evalmachine.<anonymous>:282:38\n    at async runDynamicLeaseSmokes (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\scripts\\smoke-runtime-save-consistency.js:562:19)\n  ok - canonical batch failure discards desktop staging and leaves no formal publish marker\n  ok - a post-commit load switch preserves staging and its durable receipt for the original campaign\n[SaveDB] IndexedDB就绪 (v6)\n  ok - stale quota recovery neither deletes an older autosave nor retries put\n  ok - stale pre_endturn completion fails closed and cannot overwrite the newer record or marker\n  ok - first wrapped request atomically adopts its token when sidecar is absent\n  ok - full-load/new-game synchronously invalidates an in-flight session\n  ok - invalidated old IPC cannot rename over canonical auto-save\n  ok - current session writes and reloads the canonical envelope\n\n[smoke-runtime-save-consistency] 84 passed / 0 failed\n"
+    }
+  ],
+  "finishedAt": "2026-10-22T12:29:49.348Z",
+  "runtimeHashAfter": "8a15dd82804e920c06a1c50aab1bcb992f93f2e4fcbecd1ae5cae4a4fb5b91bc",
+  "runtimeUnchanged": true
+}

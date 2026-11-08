@@ -1,0 +1,46 @@
+PASS mandatory review runs even with zero warnings and emergency mode off, in one model call
+PASS review can create a missing party through the same world editor and verify real persistence
+PASS a full 93417-token review is not blocked by the old 48000-token emergency budget
+PASS an explicit fixed-review token budget is enforced before any model call
+PASS heuristic false positives are adjudicated without fabricating wars or payments
+PASS review planning overlaps other work and commits only at join, preserving unrelated follow-up edits
+PASS a conflicting follow-up value forces another Agent check within the same budget
+PASS failed second write rolls back the first correction and cannot claim review success
+PASS made-up evidence and uncovered diagnostics cannot be submitted
+PASS game switching discards a pending proposal
+PASS cancelling removes live review ownership and rejects late writes
+PASS main write failure can be repaired and replayed through the real atomic applier
+PASS fiscal narrative hints reach the Agent without guessing a debit from the public treasury
+PASS Agent repairs an edict with neither account debited, posting only the declared palace account
+PASS Agent can post a missed public payment through the same fiscal owner
+PASS a failed palace debit cannot switch to the wealthy public treasury or leave partial edits
+PASS production main stage starts review on an ordinary successful write even without warnings
+PASS production infer returns before review finishes, then corrects and saves in the background
+PASS full Agent mode returns its main result immediately and later updates the saved narrative
+PASS exhausted background review preserves the committed turn and its original evidence
+PASS starting another turn cancels a late background proposal before it can write
+PASS review absence or failure is advisory once the main result exists
+PASS a rejected atomic write is retained for background repair without fabricating success
+PASS complete long annals, political chronicle and other generated results are actually sent, without prefix clipping
+PASS late annals and new inference results force review even when the initial proposal made no changes
+PASS an ok/verified tool receipt cannot hide a no-op or wrong actual value
+PASS Agent receives real before/after data and can correct a semantically wrong first modification
+PASS successful writes without remaining verification budget do not receive a completion receipt
+PASS every actual correction must be covered by the second Agent verdict
+PASS a field overwritten while the verifying model responds cannot be approved
+PASS corrected annals are read back and propagated while the original generated text remains evidence
+PASS post-write evidence exposes unintended changes rather than trusting the tool self-report
+PASS a later distinct inference source is reviewed even when its text duplicates an earlier source
+PASS state evidence read during planning remains available unchanged during after-write verification
+PASS prepared review retires full worlds before handoff and preserves copied conflict evidence through replanning
+PASS failed replacement snapshot leaves no old basis or read owner and cannot commit its superseded proposal
+PASS cancellation releases private snapshot owners while late responses retain identity checks and cannot write
+PASS unread GM maps and P scenarios freeze immediately without parsing and each root materializes only once
+PASS root JSON facts preserve dates, undefined, nonfinite numbers, sparse arrays, aliases and actual toJSON keys
+PASS all current roots are captured before any toJSON runs, preserving accessor and key-order semantics
+PASS an inherited root toJSON retains the former whole-object copy semantics
+PASS a captured own root toJSON from the original double-read getter sees the complete root object
+PASS unread cycle, BigInt and throwing toJSON fail during freezing without deferred reads
+PASS real read_state uses frozen unread GM and P roots, then conflict replanning and verified writeback use current facts
+PASS switching worlds with unread frozen roots still releases GM/P basis and rejects the late write
+{"pass":45,"fail":17,"total":62}

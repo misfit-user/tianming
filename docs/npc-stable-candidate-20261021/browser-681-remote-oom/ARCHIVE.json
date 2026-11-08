@@ -1,0 +1,95 @@
+{
+  "at": "2026-10-23T06:46:26.612Z",
+  "head": "681e29ad804c56e4a8cb8bb22c10a34b417eb7fe",
+  "checkout": "c6bc2c2ed51d790c6b113661b051bb44f70db805",
+  "tree": "c2d970526573df1d5eec6b9fe0c76fb0862796a7",
+  "run": 39911614851,
+  "job": 120275686068,
+  "artifact": 12483188926,
+  "heapSampling": false,
+  "status": "failed",
+  "reason": "Explicit renderer OOM after both actual loads and third top-level commit; no second background review call began before crash",
+  "entries": [
+    {
+      "source": "web/dev-tools/ci-39911614851-composite/0c1c3c6f-5b99-4850-8676-28ce721d4e03/report.json",
+      "file": "report.json",
+      "sourceBytes": 3320,
+      "sourceSha256": "c9ec272599fec653202384bb4bfa05e338e0e40a2d40910d0b5dcb707852e4b3",
+      "archiveBytes": 3320,
+      "archiveSha256": "c9ec272599fec653202384bb4bfa05e338e0e40a2d40910d0b5dcb707852e4b3",
+      "transform": "byte copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39911614851-composite/0c1c3c6f-5b99-4850-8676-28ce721d4e03/npc-composite.json",
+      "file": "npc-composite.json",
+      "sourceBytes": 2349,
+      "sourceSha256": "3c3281abfafa2d4af8881cebd9245c13086d9702f79f49b62529ce0175ab8de9",
+      "archiveBytes": 2349,
+      "archiveSha256": "3c3281abfafa2d4af8881cebd9245c13086d9702f79f49b62529ce0175ab8de9",
+      "transform": "byte copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39911614851-composite/0c1c3c6f-5b99-4850-8676-28ce721d4e03/npc-composite.log",
+      "file": "npc-composite.log",
+      "sourceBytes": 1872,
+      "sourceSha256": "860f84f465be987ca6dc737290b2a524cf431d8bc1e3643122611d413f2cbb0b",
+      "archiveBytes": 1872,
+      "archiveSha256": "860f84f465be987ca6dc737290b2a524cf431d8bc1e3643122611d413f2cbb0b",
+      "transform": "byte copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39911614851-composite/0c1c3c6f-5b99-4850-8676-28ce721d4e03/renderer.log",
+      "file": "renderer.log",
+      "sourceBytes": 23790,
+      "sourceSha256": "2023ec760a3e866bd6495c6240340850e5c1ebaf08e6d1283e8e3948c2930de1",
+      "archiveBytes": 23790,
+      "archiveSha256": "2023ec760a3e866bd6495c6240340850e5c1ebaf08e6d1283e8e3948c2930de1",
+      "transform": "byte copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39911614851-composite/0c1c3c6f-5b99-4850-8676-28ce721d4e03/progress.log",
+      "file": "progress.log",
+      "sourceBytes": 50908,
+      "sourceSha256": "f08a93a546b258cbb6516052f7dd9b4755f1ae3bb81ee5c0b065b68783a94ac8",
+      "archiveBytes": 50908,
+      "archiveSha256": "f08a93a546b258cbb6516052f7dd9b4755f1ae3bb81ee5c0b065b68783a94ac8",
+      "transform": "byte copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39911614851-composite/0c1c3c6f-5b99-4850-8676-28ce721d4e03/renderer-heap.jsonl",
+      "file": "renderer-heap.jsonl",
+      "sourceBytes": 68361,
+      "sourceSha256": "658473f840ab9e79a6d5272649b89fcf4bb532d7ffa5612b7c562f30894ce5e1",
+      "archiveBytes": 68361,
+      "archiveSha256": "658473f840ab9e79a6d5272649b89fcf4bb532d7ffa5612b7c562f30894ce5e1",
+      "transform": "byte copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39911614851-composite/0c1c3c6f-5b99-4850-8676-28ce721d4e03/process-memory.jsonl",
+      "file": "process-memory.jsonl",
+      "sourceBytes": 137195,
+      "sourceSha256": "628dcf92575f9a3419f069dca8777457e220becfbce909493184bfd4fe61069c",
+      "archiveBytes": 137195,
+      "archiveSha256": "628dcf92575f9a3419f069dca8777457e220becfbce909493184bfd4fe61069c",
+      "transform": "byte copy"
+    },
+    {
+      "source": "web/dev-tools/ci-39911614851-composite/0c1c3c6f-5b99-4850-8676-28ce721d4e03/composite-timeline.json",
+      "file": "composite-timeline.json",
+      "sourceBytes": 3260833,
+      "sourceSha256": "6d9772876c0b45fc95a4c0c3b1ca93dc539c5d7cf88dd1a1bf7a4d6f1a56f83f",
+      "archiveBytes": 1933575,
+      "archiveSha256": "7fcb877cecf98700da35d1fab6f959be60983192ec05680b724ebccd1d70a320",
+      "transform": "JSON whitespace compacted; all fields retained"
+    },
+    {
+      "source": "web/dev-tools/ci-39911614851-composite/0c1c3c6f-5b99-4850-8676-28ce721d4e03/03-onsite-question.png",
+      "file": "03-onsite-question.png",
+      "sourceBytes": 536392,
+      "sourceSha256": "5e63125c1b97e3177038f6c8edc1ee5cfdac686ea0f0f22e4a60155e1fe67dbd",
+      "archiveBytes": 536392,
+      "archiveSha256": "5e63125c1b97e3177038f6c8edc1ee5cfdac686ea0f0f22e4a60155e1fe67dbd",
+      "transform": "byte copy"
+    }
+  ]
+}

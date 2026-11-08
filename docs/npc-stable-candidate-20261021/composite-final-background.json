@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-22T17:18:14Z",
+  "baseHead": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "worktree": "C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011",
+  "scope": "Test-only final review and save settlement barrier. Production runtime and suite budgets are unchanged.",
+  "files": [
+    {
+      "path": "scripts/electron/npc-composite-waits.cjs",
+      "sha256": "aa5ab500b69ce8bcc30201d600424056f29cbf8e1e5689d44f267b3358da4103",
+      "crlf": 0
+    },
+    {
+      "path": "scripts/electron/npc-composite-cases.cjs",
+      "sha256": "883caeaf4619dfe937f81a9458071be54d339176c204a9a6cc964e161bf06958",
+      "crlf": 1
+    },
+    {
+      "path": "web/scripts/smoke-npc-composite-waits.js",
+      "sha256": "b0da78afdfcf4d4a7015afc4e39c4e342eaea13c7ac112c94e03e3de496ed595",
+      "crlf": 0
+    }
+  ],
+  "scopeFiles": [
+    "scripts/electron/npc-composite-waits.cjs",
+    "scripts/electron/npc-composite-cases.cjs",
+    "web/scripts/smoke-npc-composite-waits.js"
+  ],
+  "evidenceProvenance": {
+    "stdout": "Full, untruncated output strings returned by exec_command and retained in the functions session store. No reconstructed lines.",
+    "recordedAtMeaning": "File assembly time; individual test wall-clock start/end timestamps were not separately captured.",
+    "testsRerunForDocumentation": false
+  },
+  "executions": [
+    {
+      "name": "final-background-before-log-fragment-coverage",
+      "command": "node web/scripts/smoke-npc-composite-waits.js",
+      "shell": "powershell",
+      "exitCode": 0,
+      "toolChunkId": "f7a94e",
+      "wallTimeSeconds": 1.6644861,
+      "summary": {
+        "pass": 79,
+        "fail": 0,
+        "total": 79
+      },
+      "hashes": {
+        "scripts/electron/npc-composite-waits.cjs": "242a30acc5fc0de0bd9b1a315e4a08bee8d45b2fe373b32d61efcee2ac369306",
+        "scripts/electron/npc-composite-cases.cjs": "883caeaf4619dfe937f81a9458071be54d339176c204a9a6cc964e161bf06958",
+        "web/scripts/smoke-npc-composite-waits.js": "955d10514848a6a9eb86df3c1f18e35e30e2f5138027566bc1bf066bcd427182"
+      },
+      "stdoutCompleteness": "full tool output",
+      "stdout": "PASS real turn Promise stays pending after turn advancement and commit until final work settles\nPASS global save producer waits through prompt, background jobs and UI refresh and requires true\nPASS fulfilled save without strict true is rejected: false\nPASS fulfilled save without strict true is rejected: undefined\nPASS fulfilled save without strict true is rejected: [object Object]\nPASS turn fulfillment cannot certify no-commit\nPASS turn fulfillment cannot certify false-commit\nPASS turn fulfillment cannot certify rollback\nPASS turn fulfillment cannot certify unconfirmed\nPASS a nominal true commit with a foreign canonical receipt still fails\nPASS rejected and synchronously throwing producers preserve failure and original behavior\nPASS save completion rejects cross-world mutation: GM\nPASS save completion rejects cross-world mutation: P\nPASS save completion rejects cross-world mutation: generation\nPASS save completion rejects cross-world mutation: timeline\nPASS duplicate and wrong-slot calls fail while every original invocation still executes exactly once\nPASS a duplicate call after settlement cannot reuse the previous passing ticket\nPASS load requires its real true receipt and an idle replacement world with an advancing generation\nPASS one suite deadline covers all producers, including unstarted UI calls, and never resets\nPASS finished, failed and timed-out observers release world references and expose only primitive receipts\nPASS economy reconciles every genuine turn across load generations and fractional day boundaries\nPASS economy rejects both observations omit the same turn\nPASS economy rejects both observations duplicate one turn and omit another\nPASS economy rejects an extra systems call\nPASS economy rejects an extra economy call\nPASS economy rejects systems throws even if its caller later commits\nPASS economy rejects economy throws even if its caller later commits\nPASS economy rejects unsettled systems work\nPASS economy rejects entry belongs to another load\nPASS economy rejects entry belongs to another campaign\nPASS economy rejects entry belongs to another timeline\nPASS economy rejects settlement finishes after a load\nPASS economy rejects settlement finishes in another campaign\nPASS economy rejects days were configured instead of the actual fractional interval\nPASS economy rejects zero days\nPASS economy rejects non-finite days\nPASS economy rejects wrong start day\nPASS economy rejects wrong end day\nPASS economy rejects economy ran before time commit\nPASS economy rejects a nonpositive completed interval\nPASS economy rejects a failed top-level turn\nPASS economy rejects a missing genuine commit\nPASS economy rejects commit belongs to another load\nPASS economy rejects duplicate completed turn identity\nPASS economy rejects missing source sample\nPASS settlement entry is visible while pending and original Promise, receiver and arguments are preserved\nPASS settlement throws and rejections remain original and leave failed observations, including falsy errors\nPASS settlement observations retain only primitive identity and numeric province samples across world replacement\nPASS final background waits for review, canonical save and actual desktop acknowledgement, then two equal reads\nPASS final background cannot pass with native write still pending after outer flags clear\nPASS final background cannot pass with unwritten canonical revision\nPASS final background cannot pass with unwritten current turn\nPASS final background cannot pass with no acknowledged desktop write\nPASS final background cannot pass with empty canonical world\nPASS final background cannot pass with mismatched canonical session\nPASS final background cannot pass with mismatched canonical load\nPASS final background cannot pass with mismatched canonical transaction\nPASS final background cannot pass with pending canonical request\nPASS final background cannot pass with scheduled canonical timer\nPASS final background cannot pass with scheduled desktop flush\nPASS final background cannot pass with deferred desktop flush\nPASS final background cannot pass with active world transaction\nPASS final background detects a microtask rearm between two apparently idle reads\nPASS final background rejects a new canonical failure even when old saved and committed revisions match\nPASS final background rejects a fixture error that arrives after the gameplay assertions\nPASS a failed canonical producer cannot reuse an older matching saved revision\nPASS a failed desktop producer cannot reuse an older matching saved revision\nPASS a naturally scheduled canonical retry must finish before the final desktop revision is accepted\nPASS a stale canonical no-write cannot substitute for the current durable revision\nPASS final background rejects cross-world change of _tmLoadGen\nPASS final background rejects cross-world change of _tmAutoSaveSessionToken\nPASS final background rejects cross-world change of turn\nPASS final background rejects cross-world change of _campaignId\nPASS final background rejects cross-world change of _timelineId\nPASS missing modules and undefined observation fields fail closed instead of looking idle\nPASS required jobs settle naturally; failed receipts and other background work remain explicit without retries\nPASS an unresolved existing producer remains bounded by the original deadline and cannot revive the observer later\nPASS old failure history and a pending persisted review are reported without claiming all reviews approved\nPASS the actual Electron suite, outer process and CI limits retain 1800 seconds, 1830 seconds and 45 minutes\n{\"pass\":79,\"fail\":0,\"total\":79}\n"
+    },
+    {
+      "name": "final-frozen-background-and-log-fragments",
+      "command": "node web/scripts/smoke-npc-composite-waits.js",
+      "shell": "powershell",
+      "exitCode": 0,
+      "toolChunkId": "4c5fb1",
+      "wallTimeSeconds": 1.4908879,
+      "summary": {
+        "pass": 80,
+        "fail": 0,
+        "total": 80
+      },
+      "hashes": {
+        "scripts/electron/npc-composite-waits.cjs": "3582a452df18045d73d97705c02aa8a01b1d7558dac0067763e7de1b18b8ef08",
+        "scripts/electron/npc-composite-cases.cjs": "883caeaf4619dfe937f81a9458071be54d339176c204a9a6cc964e161bf06958",
+        "web/scripts/smoke-npc-composite-waits.js": "a38371d95e8342121f056e91c1179242837491544941a783431d5fc621fd35b6"
+      },
+      "stdoutCompleteness": "full tool output",
+      "stdout": "PASS real turn Promise stays pending after turn advancement and commit until final work settles\nPASS global save producer waits through prompt, background jobs and UI refresh and requires true\nPASS fulfilled save without strict true is rejected: false\nPASS fulfilled save without strict true is rejected: undefined\nPASS fulfilled save without strict true is rejected: [object Object]\nPASS turn fulfillment cannot certify no-commit\nPASS turn fulfillment cannot certify false-commit\nPASS turn fulfillment cannot certify rollback\nPASS turn fulfillment cannot certify unconfirmed\nPASS a nominal true commit with a foreign canonical receipt still fails\nPASS rejected and synchronously throwing producers preserve failure and original behavior\nPASS save completion rejects cross-world mutation: GM\nPASS save completion rejects cross-world mutation: P\nPASS save completion rejects cross-world mutation: generation\nPASS save completion rejects cross-world mutation: timeline\nPASS duplicate and wrong-slot calls fail while every original invocation still executes exactly once\nPASS a duplicate call after settlement cannot reuse the previous passing ticket\nPASS load requires its real true receipt and an idle replacement world with an advancing generation\nPASS one suite deadline covers all producers, including unstarted UI calls, and never resets\nPASS finished, failed and timed-out observers release world references and expose only primitive receipts\nPASS economy reconciles every genuine turn across load generations and fractional day boundaries\nPASS economy rejects both observations omit the same turn\nPASS economy rejects both observations duplicate one turn and omit another\nPASS economy rejects an extra systems call\nPASS economy rejects an extra economy call\nPASS economy rejects systems throws even if its caller later commits\nPASS economy rejects economy throws even if its caller later commits\nPASS economy rejects unsettled systems work\nPASS economy rejects entry belongs to another load\nPASS economy rejects entry belongs to another campaign\nPASS economy rejects entry belongs to another timeline\nPASS economy rejects settlement finishes after a load\nPASS economy rejects settlement finishes in another campaign\nPASS economy rejects days were configured instead of the actual fractional interval\nPASS economy rejects zero days\nPASS economy rejects non-finite days\nPASS economy rejects wrong start day\nPASS economy rejects wrong end day\nPASS economy rejects economy ran before time commit\nPASS economy rejects a nonpositive completed interval\nPASS economy rejects a failed top-level turn\nPASS economy rejects a missing genuine commit\nPASS economy rejects commit belongs to another load\nPASS economy rejects duplicate completed turn identity\nPASS economy rejects missing source sample\nPASS settlement entry is visible while pending and original Promise, receiver and arguments are preserved\nPASS settlement throws and rejections remain original and leave failed observations, including falsy errors\nPASS settlement observations retain only primitive identity and numeric province samples across world replacement\nPASS final background waits for review, canonical save and actual desktop acknowledgement, then two equal reads\nPASS final background cannot pass with native write still pending after outer flags clear\nPASS final background cannot pass with unwritten canonical revision\nPASS final background cannot pass with unwritten current turn\nPASS final background cannot pass with no acknowledged desktop write\nPASS final background cannot pass with empty canonical world\nPASS final background cannot pass with mismatched canonical session\nPASS final background cannot pass with mismatched canonical load\nPASS final background cannot pass with mismatched canonical transaction\nPASS final background cannot pass with pending canonical request\nPASS final background cannot pass with scheduled canonical timer\nPASS final background cannot pass with scheduled desktop flush\nPASS final background cannot pass with deferred desktop flush\nPASS final background cannot pass with active world transaction\nPASS final background detects a microtask rearm between two apparently idle reads\nPASS final background rejects a new canonical failure even when old saved and committed revisions match\nPASS final background rejects a fixture error that arrives after the gameplay assertions\nPASS a failed canonical producer cannot reuse an older matching saved revision\nPASS a failed desktop producer cannot reuse an older matching saved revision\nPASS a naturally scheduled canonical retry must finish before the final desktop revision is accepted\nPASS a stale canonical no-write cannot substitute for the current durable revision\nPASS final background rejects cross-world change of _tmLoadGen\nPASS final background rejects cross-world change of _tmAutoSaveSessionToken\nPASS final background rejects cross-world change of turn\nPASS final background rejects cross-world change of _campaignId\nPASS final background rejects cross-world change of _timelineId\nPASS missing modules and undefined observation fields fail closed instead of looking idle\nPASS required jobs settle naturally; failed receipts and other background work remain explicit without retries\nPASS an unresolved existing producer remains bounded by the original deadline and cannot revive the observer later\nPASS old failure history and a pending persisted review are reported without claiming all reviews approved\nPASS background evidence reconstructs exactly without exceeding the actual renderer log line cap\nPASS the actual Electron suite, outer process and CI limits retain 1800 seconds, 1830 seconds and 45 minutes\n{\"pass\":80,\"fail\":0,\"total\":80}\n"
+    },
+    {
+      "name": "syntax-before-log-fragment-only-change",
+      "command": "node --check scripts/electron/npc-composite-waits.cjs",
+      "exitCode": 0,
+      "toolChunkId": "c47bf4",
+      "stdoutCompleteness": "full tool output",
+      "stdout": ""
+    },
+    {
+      "name": "syntax-before-log-fragment-only-change",
+      "command": "node --check scripts/electron/npc-composite-cases.cjs",
+      "exitCode": 0,
+      "toolChunkId": "71a381",
+      "stdoutCompleteness": "full tool output",
+      "stdout": ""
+    },
+    {
+      "name": "syntax-before-log-fragment-only-change",
+      "command": "node --check web/scripts/smoke-npc-composite-waits.js",
+      "exitCode": 0,
+      "toolChunkId": "e69031",
+      "stdoutCompleteness": "full tool output",
+      "stdout": ""
+    },
+    {
+      "name": "final-hash-and-whitespace-observation",
+      "command": "node -e \"const fs=require('fs'),crypto=require('crypto'),cp=require('child_process');const files=['scripts/electron/npc-composite-waits.cjs','scripts/electron/npc-composite-cases.cjs','web/scripts/smoke-npc-composite-waits.js'];console.log(JSON.stringify({head:cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),files:files.map(path=>{const b=fs.readFileSync(path);return{path,sha256:crypto.createHash('sha256').update(b).digest('hex'),crlf:(b.toString().match(/\\r\\n/g)||[]).length}})}));\"; git diff --check -- scripts/electron/npc-composite-waits.cjs scripts/electron/npc-composite-cases.cjs web/scripts/smoke-npc-composite-waits.js",
+      "exitCode": 0,
+      "toolChunkId": "0501e0",
+      "stdoutCompleteness": "full tool output",
+      "stdout": "{\"head\":\"1524724fc45ccd1e04ae61717db9f789f267ca9b\",\"files\":[{\"path\":\"scripts/electron/npc-composite-waits.cjs\",\"sha256\":\"3582a452df18045d73d97705c02aa8a01b1d7558dac0067763e7de1b18b8ef08\",\"crlf\":0},{\"path\":\"scripts/electron/npc-composite-cases.cjs\",\"sha256\":\"883caeaf4619dfe937f81a9458071be54d339176c204a9a6cc964e161bf06958\",\"crlf\":1},{\"path\":\"web/scripts/smoke-npc-composite-waits.js\",\"sha256\":\"a38371d95e8342121f056e91c1179242837491544941a783431d5fc621fd35b6\",\"crlf\":0}]}\n"
+    }
+  ],
+  "implementation": {
+    "helper": "waitForCompositeBackground(root, deadlineAt, observedSince, clock)",
+    "callSite": "The final completed-return check waits after the physical return/UI assertions and before the last fixtureErrors/economy assertions and completed-evidence.",
+    "observedSince": "startedAt of the last actual completed top-level UI turn, not merely the later barrier start; final-turn failures that occurred just before the barrier are rejected.",
+    "idleConditions": [
+      "TM.RecoveryReview.status() has no active rows",
+      "isWorldTransactionActive() is false",
+      "background pending/inFlight/timer empty",
+      "desktop inFlight/promise/flushTimer/deferred empty",
+      "native write pending/timedOut empty",
+      "sc25/sc25c have naturally settled statuses"
+    ],
+    "durableConditions": [
+      "latest canonical snapshot exists with GM/P",
+      "positive canonical revision equals actual desktop lastSavedRevision",
+      "canonical turn and desktop lastSavedTurn equal live turn",
+      "positive actual desktop lastDoneMs",
+      "campaign/timeline/session/load/turn/transaction identity matches the current canonical world"
+    ],
+    "primitiveSessionRead": "_tmAutoSaveSessionToken; no _tmGetDesktopAutoSaveSessionToken call",
+    "failureConditions": [
+      "new or final-turn background failure records",
+      "late fixture protocol errors",
+      "changed world identity/day/turn/load/session",
+      "observed canonical/desktop producer rejection or negative result without a legitimate canonical retry/no-write state or the strictly evidenced pre-dispatch desktop supersession described below",
+      "missing observation modules/fields",
+      "same absolute suite deadline expires"
+    ],
+    "naturalRetry": "The helper only awaits existing Promises. A canonical retry already scheduled by production may finish naturally. A clearly stale/deferred/skipped no-write result is recorded and never substitutes for the final durable revision predicate.",
+    "requiredJobBoundary": "sc25/sc25c pending/running work is observed until natural settlement. failed/retryable remain explicitly recorded; settlement does not claim these jobs succeeded. Other jobs are also reported and may remain pending.",
+    "stableCompletion": "Two identical ready snapshots across an actual requestAnimationFrame boundary; rearmed work or a newer revision resets the match.",
+    "budgets": {
+      "suiteMs": 1800000,
+      "outerMs": 1830000,
+      "ciMinutes": 45,
+      "changed": false,
+      "additionalOperationTimeouts": false,
+      "fixedSleepsAdded": false
+    },
+    "productionCallsNotInvoked": [
+      "requestBackgroundAutosave",
+      "_tmDrainBackgroundAutosaves",
+      "_tmAwaitBackgroundAutosaves",
+      "_tmRunDesktopAutoSaveTick",
+      "_awaitPostTurnJobsForSave",
+      "_tmGetDesktopAutoSaveSessionToken",
+      "TM.RecoveryReview.cancel"
+    ],
+    "noRetainedWorldCopies": true
+  },
+  "machineEvidence": {
+    "prefix": "COMPOSITE_FINAL_BACKGROUND ",
+    "destination": "Existing renderer.log console capture, plus final-review-and-save-settled in composite-timeline.json.",
+    "fragments": {
+      "payloadCharactersPerFragment": 1000,
+      "fields": [
+        "phase",
+        "observation",
+        "part",
+        "parts",
+        "payload"
+      ],
+      "partIndexBase": 0,
+      "reconstruction": "For one observation, sort by part and concatenate payload; JSON.parse produces the complete compact state/producer receipt record.",
+      "reason": "bridge-main.cjs truncates individual renderer messages to 2500 characters; the new test proves each fragment fits and reconstruction is exact."
+    },
+    "finalFields": [
+      "world identity",
+      "canonical revision/turn/transaction identity",
+      "desktop saved revision/turn/acknowledgement time",
+      "last persisted review status",
+      "required and other job statuses",
+      "failure records",
+      "observed producer receipt outcomes"
+    ],
+    "historyApprovalClaim": false
+  },
+  "independentReview": {
+    "reviewer": "/root/final_evidence",
+    "mode": "read-only",
+    "predicateAndAwaitBlockingFindings": 0,
+    "finalFragmentHashConfirmation": "The 80-test revision hashes were confirmed by /root/final_evidence. No blocking findings in that predicate, producer receipts, shared deadline or fragment format. The subsequent supersession delta is recorded separately below.",
+    "boundary": "Settled means this named review/save scope has no in-flight work and the current revision is saved. It does not assert every historical review is verified or every other job succeeded."
+  },
+  "supersessionRevision": {
+    "recordedAtUtc": "2026-10-22T17:30:43Z",
+    "sourceFindings": [
+      {
+        "path": "web/tm-save-lifecycle.js",
+        "line": 2566,
+        "finding": "After a successful native write, a superseded snapshot returns {ok:true,stale:true}; it does not update the current saved revision."
+      },
+      {
+        "path": "main-impl.js",
+        "line": 3325,
+        "finding": "The specific native write-time cross-world failure requires a session token mismatch. Adopting a same-world canonical snapshot alone does not rotate the session."
+      },
+      {
+        "path": "web/tm-save-lifecycle.js",
+        "line": 2557,
+        "finding": "A queued operation whose snapshot is replaced before dispatch returns a caught DESKTOP_AUTOSAVE_STALE error and sends no native write."
+      }
+    ],
+    "observerRule": "A negative desktop receipt is retained as negative. It may be marked superseded only for the exact DESKTOP_AUTOSAVE_STALE code, an observed strictly advancing canonical revision, unchanged primitive world and canonical identity, and evidence of a new deferred/flush timer/different in-flight desktop Promise. The final current revision must still receive a genuine durable acknowledgement. No error-message-only exemption exists.",
+    "ordinaryWriteFailuresStillRejected": true,
+    "crossWorldFailuresStillRejected": true,
+    "noDeadlineOrRetryChanges": true,
+    "finalFiles": [
+      {
+        "path": "scripts/electron/npc-composite-waits.cjs",
+        "sha256": "aa5ab500b69ce8bcc30201d600424056f29cbf8e1e5689d44f267b3358da4103",
+        "crlf": 0
+      },
+      {
+        "path": "scripts/electron/npc-composite-cases.cjs",
+        "sha256": "883caeaf4619dfe937f81a9458071be54d339176c204a9a6cc964e161bf06958",
+        "crlf": 1
+      },
+      {
+        "path": "web/scripts/smoke-npc-composite-waits.js",
+        "sha256": "b0da78afdfcf4d4a7015afc4e39c4e342eaea13c7ac112c94e03e3de496ed595",
+        "crlf": 0
+      }
+    ],
+    "tests": {
+      "command": "node web/scripts/smoke-npc-composite-waits.js",
+      "exitCode": 0,
+      "toolChunkId": "ead5c6",
+      "wallTimeSeconds": 1.5233261,
+      "summary": {
+        "pass": 87,
+        "fail": 0,
+        "total": 87
+      },
+      "stdoutCompleteness": "full untruncated exec_command output retained in session store",
+      "stdout": "PASS real turn Promise stays pending after turn advancement and commit until final work settles\nPASS global save producer waits through prompt, background jobs and UI refresh and requires true\nPASS fulfilled save without strict true is rejected: false\nPASS fulfilled save without strict true is rejected: undefined\nPASS fulfilled save without strict true is rejected: [object Object]\nPASS turn fulfillment cannot certify no-commit\nPASS turn fulfillment cannot certify false-commit\nPASS turn fulfillment cannot certify rollback\nPASS turn fulfillment cannot certify unconfirmed\nPASS a nominal true commit with a foreign canonical receipt still fails\nPASS rejected and synchronously throwing producers preserve failure and original behavior\nPASS save completion rejects cross-world mutation: GM\nPASS save completion rejects cross-world mutation: P\nPASS save completion rejects cross-world mutation: generation\nPASS save completion rejects cross-world mutation: timeline\nPASS duplicate and wrong-slot calls fail while every original invocation still executes exactly once\nPASS a duplicate call after settlement cannot reuse the previous passing ticket\nPASS load requires its real true receipt and an idle replacement world with an advancing generation\nPASS one suite deadline covers all producers, including unstarted UI calls, and never resets\nPASS finished, failed and timed-out observers release world references and expose only primitive receipts\nPASS economy reconciles every genuine turn across load generations and fractional day boundaries\nPASS economy rejects both observations omit the same turn\nPASS economy rejects both observations duplicate one turn and omit another\nPASS economy rejects an extra systems call\nPASS economy rejects an extra economy call\nPASS economy rejects systems throws even if its caller later commits\nPASS economy rejects economy throws even if its caller later commits\nPASS economy rejects unsettled systems work\nPASS economy rejects entry belongs to another load\nPASS economy rejects entry belongs to another campaign\nPASS economy rejects entry belongs to another timeline\nPASS economy rejects settlement finishes after a load\nPASS economy rejects settlement finishes in another campaign\nPASS economy rejects days were configured instead of the actual fractional interval\nPASS economy rejects zero days\nPASS economy rejects non-finite days\nPASS economy rejects wrong start day\nPASS economy rejects wrong end day\nPASS economy rejects economy ran before time commit\nPASS economy rejects a nonpositive completed interval\nPASS economy rejects a failed top-level turn\nPASS economy rejects a missing genuine commit\nPASS economy rejects commit belongs to another load\nPASS economy rejects duplicate completed turn identity\nPASS economy rejects missing source sample\nPASS settlement entry is visible while pending and original Promise, receiver and arguments are preserved\nPASS settlement throws and rejections remain original and leave failed observations, including falsy errors\nPASS settlement observations retain only primitive identity and numeric province samples across world replacement\nPASS final background waits for review, canonical save and actual desktop acknowledgement, then two equal reads\nPASS final background cannot pass with native write still pending after outer flags clear\nPASS final background cannot pass with unwritten canonical revision\nPASS final background cannot pass with unwritten current turn\nPASS final background cannot pass with no acknowledged desktop write\nPASS final background cannot pass with empty canonical world\nPASS final background cannot pass with mismatched canonical session\nPASS final background cannot pass with mismatched canonical load\nPASS final background cannot pass with mismatched canonical transaction\nPASS final background cannot pass with pending canonical request\nPASS final background cannot pass with scheduled canonical timer\nPASS final background cannot pass with scheduled desktop flush\nPASS final background cannot pass with deferred desktop flush\nPASS final background cannot pass with active world transaction\nPASS final background detects a microtask rearm between two apparently idle reads\nPASS final background rejects a new canonical failure even when old saved and committed revisions match\nPASS final background rejects a fixture error that arrives after the gameplay assertions\nPASS a failed canonical producer cannot reuse an older matching saved revision\nPASS a failed desktop producer cannot reuse an older matching saved revision\nPASS a naturally scheduled canonical retry must finish before the final desktop revision is accepted\nPASS a stale canonical no-write cannot substitute for the current durable revision\nPASS a superseded pre-dispatch desktop write waits for its queued newer revision and keeps the negative receipt\nPASS a negative desktop receipt cannot be excused without valid supersession revision\nPASS a negative desktop receipt cannot be excused without valid supersession flush\nPASS a negative desktop receipt cannot be excused without valid supersession code\nPASS a negative desktop receipt cannot be excused without valid supersession world\nPASS a negative desktop receipt cannot be excused without valid supersession identity\nPASS the real successful stale desktop shape still requires the newer revision to be durably saved\nPASS final background rejects cross-world change of _tmLoadGen\nPASS final background rejects cross-world change of _tmAutoSaveSessionToken\nPASS final background rejects cross-world change of turn\nPASS final background rejects cross-world change of _campaignId\nPASS final background rejects cross-world change of _timelineId\nPASS missing modules and undefined observation fields fail closed instead of looking idle\nPASS required jobs settle naturally; failed receipts and other background work remain explicit without retries\nPASS an unresolved existing producer remains bounded by the original deadline and cannot revive the observer later\nPASS old failure history and a pending persisted review are reported without claiming all reviews approved\nPASS background evidence reconstructs exactly without exceeding the actual renderer log line cap\nPASS the actual Electron suite, outer process and CI limits retain 1800 seconds, 1830 seconds and 45 minutes\n{\"pass\":87,\"fail\":0,\"total\":87}\n"
+    },
+    "productionFixtureProbe": {
+      "command": "@'\nconst {fixture,tick}=require('./web/scripts/lib-desktop-autosave-reliability');\n(async()=>{\n const f=fixture();let release;f.setReply(()=>new Promise(resolve=>release=resolve));const g=f.c.GM,p=f.c.P,token=f.c._tmAutoSaveSessionToken,before=f.c._autoSaveCommittedRevision;\n const operation=f.save();await tick();f.c.GM.fullNarrative+='same-world new canonical';f.adopt();release({success:true,sessionToken:token});const receipt=await operation;\n console.log(JSON.stringify({case:'new canonical during native write',sameGM:g===f.c.GM,sameP:p===f.c.P,sameToken:token===f.c._tmAutoSaveSessionToken,beforeRevision:before,afterRevision:f.c._autoSaveCommittedRevision,receipt,savedRevision:f.c._autoSaveLastSavedRevision}));\n const a=fixture(),old=a.c._autoSaveCommittedRevision;const queued=a.save();a.adopt();a.c._autoSaveDeferred=true;const rejected=await queued;\n console.log(JSON.stringify({case:'new canonical before queued dispatch',beforeRevision:old,afterRevision:a.c._autoSaveCommittedRevision,ok:rejected.ok,errorCode:rejected.error&&rejected.error.code,errorMessage:rejected.error&&rejected.error.message,nativeCalls:a.calls.length,queuedNewFlush:a.c._autoSaveDeferred}));\n})().catch(e=>{console.error(e);process.exitCode=1;});\n'@ | node",
+      "exitCode": 0,
+      "toolChunkId": "123ec3",
+      "wallTimeSeconds": 1.5342894999999999,
+      "stdoutCompleteness": "full untruncated exec_command output retained in session store",
+      "stdout": "{\"case\":\"new canonical during native write\",\"sameGM\":true,\"sameP\":true,\"sameToken\":true,\"beforeRevision\":1,\"afterRevision\":2,\"receipt\":{\"ok\":true,\"stale\":true,\"turn\":8},\"savedRevision\":-1}\n{\"case\":\"new canonical before queued dispatch\",\"beforeRevision\":1,\"afterRevision\":2,\"ok\":false,\"errorCode\":\"DESKTOP_AUTOSAVE_STALE\",\"errorMessage\":\"桌面自动存档对应的世界或会话已变化，旧快照未发送\",\"nativeCalls\":0,\"queuedNewFlush\":true}\n",
+      "fixtureBoundary": "Runs the production preload/lifecycle functions in the existing local VM fixture. The second case explicitly sets the deferred flag as fixture setup; it does not claim an automatically scheduled replacement write was observed. No real native disk write or model call is made."
+    },
+    "independentReview": {
+      "reviewer": "/root",
+      "mode": "read-only",
+      "blockingFindings": 0,
+      "confirmed": "The root agent independently reviewed the typed stale delta and actual production return branches. It accepted the advancing revision, unchanged world/canonical identity and new-flush evidence, while retaining the requirement that the latest revision really be saved. No additional change was requested."
+    }
+  },
+  "validationBounds": {
+    "fullElectronRunPerformedByThisAgent": false,
+    "heavyTestsPerformed": false,
+    "productionRuntimeEdited": false,
+    "committedByThisAgent": false
+  },
+  "strictTransportRevision": {
+    "recordedAtUtc": "2026-10-23T05:13:13.947Z",
+    "scope": "Test-only final background observer; no production save changes, no retry or timeout changes",
+    "finding": "A full 12-entry transport ring with repeated phase and timestamp could hide an acknowledged event followed by a rejected event. The slice alignment alone did not prove a single appended event.",
+    "rule": "A negative DESKTOP_AUTOSAVE_STALE receipt is accepted as superseded only after exactly one strictly newer rejected event with unchanged ring alignment. A wrapped ring additionally needs a unique old tail entry; ambiguous histories fail closed. Same-world revision advance, replacement flush and final durable current revision remain required.",
+    "before": {
+      "command": "node web/scripts/smoke-npc-composite-waits.js",
+      "chunk_id": "45e311",
+      "wall_time_seconds": 1.102819,
+      "exit_code": 1,
+      "original_token_count": 1671,
+      "output": "PASS real turn Promise stays pending after turn advancement and commit until final work settles\nPASS global save producer waits through prompt, background jobs and UI refresh and requires true\nPASS fulfilled save without strict true is rejected: false\nPASS fulfilled save without strict true is rejected: undefined\nPASS fulfilled save without strict true is rejected: [object Object]\nPASS turn fulfillment cannot certify no-commit\nPASS turn fulfillment cannot certify false-commit\nPASS turn fulfillment cannot certify rollback\nPASS turn fulfillment cannot certify unconfirmed\nPASS a nominal true commit with a foreign canonical receipt still fails\nPASS rejected and synchronously throwing producers preserve failure and original behavior\nPASS save completion rejects cross-world mutation: GM\nPASS save completion rejects cross-world mutation: P\nPASS save completion rejects cross-world mutation: generation\nPASS save completion rejects cross-world mutation: timeline\nPASS duplicate and wrong-slot calls fail while every original invocation still executes exactly once\nPASS a duplicate call after settlement cannot reuse the previous passing ticket\nPASS load requires its real true receipt and an idle replacement world with an advancing generation\nPASS one suite deadline covers all producers, including unstarted UI calls, and never resets\nPASS finished, failed and timed-out observers release world references and expose only primitive receipts\nPASS economy reconciles every genuine turn across load generations and fractional day boundaries\nPASS economy rejects both observations omit the same turn\nPASS economy rejects both observations duplicate one turn and omit another\nPASS economy rejects an extra systems call\nPASS economy rejects an extra economy call\nPASS economy rejects systems throws even if its caller later commits\nPASS economy rejects economy throws even if its caller later commits\nPASS economy rejects unsettled systems work\nPASS economy rejects entry belongs to another load\nPASS economy rejects entry belongs to another campaign\nPASS economy rejects entry belongs to another timeline\nPASS economy rejects settlement finishes after a load\nPASS economy rejects settlement finishes in another campaign\nPASS economy rejects days were configured instead of the actual fractional interval\nPASS economy rejects zero days\nPASS economy rejects non-finite days\nPASS economy rejects wrong start day\nPASS economy rejects wrong end day\nPASS economy rejects economy ran before time commit\nPASS economy rejects a nonpositive completed interval\nPASS economy rejects a failed top-level turn\nPASS economy rejects a missing genuine commit\nPASS economy rejects commit belongs to another load\nPASS economy rejects duplicate completed turn identity\nPASS economy rejects missing source sample\nPASS settlement entry is visible while pending and original Promise, receiver and arguments are preserved\nPASS settlement throws and rejections remain original and leave failed observations, including falsy errors\nPASS settlement observations retain only primitive identity and numeric province samples across world replacement\nPASS final background waits for review, canonical save and actual desktop acknowledgement, then two equal reads\nPASS final background cannot pass with native write still pending after outer flags clear\nPASS final background cannot pass with unwritten canonical revision\nPASS final background cannot pass with unwritten current turn\nPASS final background cannot pass with no acknowledged desktop write\nPASS final background cannot pass with empty canonical world\nPASS final background cannot pass with mismatched canonical session\nPASS final background cannot pass with mismatched canonical load\nPASS final background cannot pass with mismatched canonical transaction\nPASS final background cannot pass with pending canonical request\nPASS final background cannot pass with scheduled canonical timer\nPASS final background cannot pass with scheduled desktop flush\nPASS final background cannot pass with deferred desktop flush\nPASS final background cannot pass with active world transaction\nPASS final background detects a microtask rearm between two apparently idle reads\nPASS final background rejects a new canonical failure even when old saved and committed revisions match\nPASS final background rejects a fixture error that arrives after the gameplay assertions\nPASS a failed canonical producer cannot reuse an older matching saved revision\nPASS a failed desktop producer cannot reuse an older matching saved revision\nPASS a naturally scheduled canonical retry must finish before the final desktop revision is accepted\nPASS a stale canonical no-write cannot substitute for the current durable revision\nPASS a superseded pre-dispatch desktop write waits for its queued newer revision and keeps the negative receipt\nPASS a negative desktop receipt cannot be excused without valid supersession revision\nPASS a negative desktop receipt cannot be excused without valid supersession flush\nPASS a negative desktop receipt cannot be excused without valid supersession code\nPASS a negative desktop receipt cannot be excused without valid supersession world\nPASS a negative desktop receipt cannot be excused without valid supersession identity\nPASS a real foreign-success acknowledgement cannot be labelled pre-dispatch supersession\nPASS an uncorrelatable full transport ring cannot justify superseding a negative desktop receipt\nFAIL identical millisecond entries in a full ring cannot hide an acknowledgement before rejection\nAssertionError [ERR_ASSERTION]: Missing expected rejection.\nPASS the real successful stale desktop shape still requires the newer revision to be durably saved\nPASS final background rejects cross-world change of _tmLoadGen\nPASS final background rejects cross-world change of _tmAutoSaveSessionToken\nPASS final background rejects cross-world change of turn\nPASS final background rejects cross-world change of _campaignId\nPASS final background rejects cross-world change of _timelineId\nPASS missing modules and undefined observation fields fail closed instead of looking idle\nPASS required jobs settle naturally; failed receipts and other background work remain explicit without retries\nPASS an unresolved existing producer remains bounded by the original deadline and cannot revive the observer later\nPASS old failure history and a pending persisted review are reported without claiming all reviews approved\nPASS background evidence reconstructs exactly without exceeding the actual renderer log line cap\nPASS the actual Electron suite, outer process and CI limits retain 1800 seconds, 1830 seconds and 45 minutes\n{\"pass\":89,\"fail\":1,\"total\":90}\n"
+    },
+    "after": {
+      "command": "node web/scripts/smoke-npc-composite-waits.js; node --check scripts/electron/npc-composite-waits.cjs; node --check scripts/electron/npc-composite-cases.cjs; git diff --check",
+      "chunk_id": "77f244",
+      "wall_time_seconds": 1.5473084,
+      "exit_code": 0,
+      "original_token_count": 1656,
+      "output": "PASS real turn Promise stays pending after turn advancement and commit until final work settles\nPASS global save producer waits through prompt, background jobs and UI refresh and requires true\nPASS fulfilled save without strict true is rejected: false\nPASS fulfilled save without strict true is rejected: undefined\nPASS fulfilled save without strict true is rejected: [object Object]\nPASS turn fulfillment cannot certify no-commit\nPASS turn fulfillment cannot certify false-commit\nPASS turn fulfillment cannot certify rollback\nPASS turn fulfillment cannot certify unconfirmed\nPASS a nominal true commit with a foreign canonical receipt still fails\nPASS rejected and synchronously throwing producers preserve failure and original behavior\nPASS save completion rejects cross-world mutation: GM\nPASS save completion rejects cross-world mutation: P\nPASS save completion rejects cross-world mutation: generation\nPASS save completion rejects cross-world mutation: timeline\nPASS duplicate and wrong-slot calls fail while every original invocation still executes exactly once\nPASS a duplicate call after settlement cannot reuse the previous passing ticket\nPASS load requires its real true receipt and an idle replacement world with an advancing generation\nPASS one suite deadline covers all producers, including unstarted UI calls, and never resets\nPASS finished, failed and timed-out observers release world references and expose only primitive receipts\nPASS economy reconciles every genuine turn across load generations and fractional day boundaries\nPASS economy rejects both observations omit the same turn\nPASS economy rejects both observations duplicate one turn and omit another\nPASS economy rejects an extra systems call\nPASS economy rejects an extra economy call\nPASS economy rejects systems throws even if its caller later commits\nPASS economy rejects economy throws even if its caller later commits\nPASS economy rejects unsettled systems work\nPASS economy rejects entry belongs to another load\nPASS economy rejects entry belongs to another campaign\nPASS economy rejects entry belongs to another timeline\nPASS economy rejects settlement finishes after a load\nPASS economy rejects settlement finishes in another campaign\nPASS economy rejects days were configured instead of the actual fractional interval\nPASS economy rejects zero days\nPASS economy rejects non-finite days\nPASS economy rejects wrong start day\nPASS economy rejects wrong end day\nPASS economy rejects economy ran before time commit\nPASS economy rejects a nonpositive completed interval\nPASS economy rejects a failed top-level turn\nPASS economy rejects a missing genuine commit\nPASS economy rejects commit belongs to another load\nPASS economy rejects duplicate completed turn identity\nPASS economy rejects missing source sample\nPASS settlement entry is visible while pending and original Promise, receiver and arguments are preserved\nPASS settlement throws and rejections remain original and leave failed observations, including falsy errors\nPASS settlement observations retain only primitive identity and numeric province samples across world replacement\nPASS final background waits for review, canonical save and actual desktop acknowledgement, then two equal reads\nPASS final background cannot pass with native write still pending after outer flags clear\nPASS final background cannot pass with unwritten canonical revision\nPASS final background cannot pass with unwritten current turn\nPASS final background cannot pass with no acknowledged desktop write\nPASS final background cannot pass with empty canonical world\nPASS final background cannot pass with mismatched canonical session\nPASS final background cannot pass with mismatched canonical load\nPASS final background cannot pass with mismatched canonical transaction\nPASS final background cannot pass with pending canonical request\nPASS final background cannot pass with scheduled canonical timer\nPASS final background cannot pass with scheduled desktop flush\nPASS final background cannot pass with deferred desktop flush\nPASS final background cannot pass with active world transaction\nPASS final background detects a microtask rearm between two apparently idle reads\nPASS final background rejects a new canonical failure even when old saved and committed revisions match\nPASS final background rejects a fixture error that arrives after the gameplay assertions\nPASS a failed canonical producer cannot reuse an older matching saved revision\nPASS a failed desktop producer cannot reuse an older matching saved revision\nPASS a naturally scheduled canonical retry must finish before the final desktop revision is accepted\nPASS a stale canonical no-write cannot substitute for the current durable revision\nPASS a superseded pre-dispatch desktop write waits for its queued newer revision and keeps the negative receipt\nPASS a negative desktop receipt cannot be excused without valid supersession revision\nPASS a negative desktop receipt cannot be excused without valid supersession flush\nPASS a negative desktop receipt cannot be excused without valid supersession code\nPASS a negative desktop receipt cannot be excused without valid supersession world\nPASS a negative desktop receipt cannot be excused without valid supersession identity\nPASS a real foreign-success acknowledgement cannot be labelled pre-dispatch supersession\nPASS an uncorrelatable full transport ring cannot justify superseding a negative desktop receipt\nPASS identical millisecond entries in a full ring cannot hide an acknowledgement before rejection\nPASS the real successful stale desktop shape still requires the newer revision to be durably saved\nPASS final background rejects cross-world change of _tmLoadGen\nPASS final background rejects cross-world change of _tmAutoSaveSessionToken\nPASS final background rejects cross-world change of turn\nPASS final background rejects cross-world change of _campaignId\nPASS final background rejects cross-world change of _timelineId\nPASS missing modules and undefined observation fields fail closed instead of looking idle\nPASS required jobs settle naturally; failed receipts and other background work remain explicit without retries\nPASS an unresolved existing producer remains bounded by the original deadline and cannot revive the observer later\nPASS old failure history and a pending persisted review are reported without claiming all reviews approved\nPASS background evidence reconstructs exactly without exceeding the actual renderer log line cap\nPASS the actual Electron suite, outer process and CI limits retain 1800 seconds, 1830 seconds and 45 minutes\n{\"pass\":90,\"fail\":0,\"total\":90}\n"
+    },
+    "productionBranchesReviewed": [
+      "web/tm-save-lifecycle.js:_tmAwaitDesktopAutoSaveReply",
+      "web/tm-save-lifecycle.js:_tmRunDesktopAutoSaveTick",
+      "web/scripts/lib-desktop-autosave-reliability.js"
+    ],
+    "verificationBoundary": "Actual production desktop return branches run in the existing VM fixture. Browser and native disk write have not been run by this reviewer.",
+    "reviewer": "/root/review_waits",
+    "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+    "environment": {
+      "node": "v24.14.0",
+      "platform": "win32"
+    },
+    "finalFiles": [
+      {
+        "path": "scripts/electron/npc-composite-waits.cjs",
+        "sha256": "1a66068d083985acd9cd99e24840d28b6b307223726e875cd72b12fa784ad48d",
+        "crlf": 0
+      },
+      {
+        "path": "scripts/electron/npc-composite-cases.cjs",
+        "sha256": "883caeaf4619dfe937f81a9458071be54d339176c204a9a6cc964e161bf06958",
+        "crlf": 1
+      },
+      {
+        "path": "web/scripts/smoke-npc-composite-waits.js",
+        "sha256": "69d8826b9d705e7c34617c5adc06c3aa0b35875c8f9f9f10419ee8b14c1586f2",
+        "crlf": 0
+      }
+    ]
+  }
+}

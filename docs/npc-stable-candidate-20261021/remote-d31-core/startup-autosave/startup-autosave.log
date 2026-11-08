@@ -1,0 +1,19 @@
+
+BRIDGE_CASE_START {"name":"locked-electron-runtime","at":"2026-10-23T06:57:54.268Z"}
+BRIDGE_CASE_PASS {"name":"locked-electron-runtime","elapsedMs":4}
+BRIDGE_CASE_START {"name":"production-webpreferences","at":"2026-10-23T06:57:54.273Z"}
+BRIDGE_CASE_PASS {"name":"production-webpreferences","elapsedMs":0}
+BRIDGE_CASE_START {"name":"real-bridge-and-ipc","at":"2026-10-23T06:57:54.273Z"}
+BRIDGE_CASE_PASS {"name":"real-bridge-and-ipc","elapsedMs":15}
+BRIDGE_CASE_START {"name":"production-test-exports-boundary","at":"2026-10-23T06:57:54.288Z"}
+BRIDGE_CASE_PASS {"name":"production-test-exports-boundary","elapsedMs":0}
+BRIDGE_CASE_START {"name":"real running T1 autosave exists and the validated native reader can read it","at":"2026-10-23T06:58:06.385Z"}
+BRIDGE_CASE_PASS {"name":"real running T1 autosave exists and the validated native reader can read it","elapsedMs":4028}
+BRIDGE_CASE_START {"name":"restart 1 keeps the menu open and preserves the autosave without prompting or loading","at":"2026-10-23T06:58:10.413Z"}
+BRIDGE_CASE_PASS {"name":"restart 1 keeps the menu open and preserves the autosave without prompting or loading","elapsedMs":1389}
+BRIDGE_CASE_START {"name":"restart 2 keeps the menu open and preserves the autosave without prompting or loading","at":"2026-10-23T06:58:11.802Z"}
+BRIDGE_CASE_PASS {"name":"restart 2 keeps the menu open and preserves the autosave without prompting or loading","elapsedMs":1242}
+BRIDGE_CASE_START {"name":"the existing load manager exposes a styled manual desktop-backup entry and restores the full game","at":"2026-10-23T06:58:13.045Z"}
+BRIDGE_CASE_PASS {"name":"the existing load manager exposes a styled manual desktop-backup entry and restores the full game","elapsedMs":10063}
+BRIDGE_EXIT_REQUESTED {"mode":"startup-autosave","at":"2026-10-23T06:58:23.110Z","code":0}
+BRIDGE_NODE_EXIT {"mode":"startup-autosave","at":"2026-10-23T06:58:23.145Z","code":0}

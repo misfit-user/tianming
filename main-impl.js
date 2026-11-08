@@ -2803,6 +2803,22 @@ function createWindow() {
   });
 
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  // 渲染层 console.error / 未捕获异常同样落进桌面日志（2026-10-13）：玩家过回合报错只剩一句 toast，
+  // 之前主进程日志里查不到渲染层堆栈。Electron 33 事件签名是 (event, level, message, line, sourceId)，
+  // 新版改成 (details)，两种都接。只收 warning 以上，避免把普通 console.log 全写盘。
+  try {
+    mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+      let lvl = level, msg = message, ln = line, src = sourceId;
+      if (event && typeof event === 'object' && event.message !== undefined && level === undefined) {
+        lvl = event.level; msg = event.message; ln = event.lineNumber; src = event.sourceId;
+      }
+      const isError = lvl === 3 || lvl === 'error';
+      const isWarn = lvl === 2 || lvl === 'warning';
+      if (!isError && !isWarn) return;
+      const where = src ? ' (' + String(src).split(/[\\/]/).pop() + ':' + ln + ')' : '';
+      appendDebugLog(isError ? 'error' : 'warn', 'renderer', String(msg).slice(0, 8000) + where);
+    });
+  } catch (_) {}
   mainWindow.webContents.on('will-navigate', (event, targetUrl) => {
     if (!isTrustedRendererUrl(targetUrl)) event.preventDefault();
   });
@@ -3278,13 +3294,27 @@ ipcMain.on('auto-save-session-rotate', (event, requestedToken) => {
 let autoSaveWriteQueue = Promise.resolve();
 ipcMain.handle('auto-save', (event, payload) => {
   const wrapped = !!(payload && payload.__tmAutoSaveEnvelope === 1);
-  const data = wrapped ? payload.data : payload;
+  const textOnly = wrapped && Object.prototype.hasOwnProperty.call(payload, 'dataJson');
+  let data = wrapped ? payload.data : payload;
+  const json = textOnly ? payload.dataJson : null;
   let requestToken = normalizeAutoSaveSessionToken(wrapped ? payload.sessionToken : (data && data._tmAutoSaveSessionToken));
   // 所有 renderer 调用共享同一 .tmp；主进程串行化才可保证 write+rename 这一对不互踩。
   const task = autoSaveWriteQueue.then(async () => {
     try {
-      ensureSaveDir();
       let currentToken = getAutoSaveSessionToken();
+      if (textOnly) {
+        // Validate in the existing serial main-process queue, not in the
+        // renderer/preload heap. Invalid input changes neither files nor session.
+        if (Object.prototype.hasOwnProperty.call(payload, 'data') || typeof json !== 'string') {
+          return { success: false, code: 'AUTO_SAVE_JSON_INVALID', error: '自动存档 JSON 请求必须只有文本正文' };
+        }
+        try { data = JSON.parse(json); }
+        catch (_) { return { success: false, code: 'AUTO_SAVE_JSON_INVALID', error: '自动存档 JSON 无效' }; }
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          return { success: false, code: 'AUTO_SAVE_JSON_INVALID', error: '自动存档正文必须是对象' };
+        }
+      }
+      ensureSaveDir();
       // 新桥第一次运行且尚无 sidecar 时，由主进程创建 token 并随回包同步给 preload。
       if (wrapped && !requestToken && !currentToken) {
         requestToken = persistAutoSaveSessionToken(crypto.randomUUID());

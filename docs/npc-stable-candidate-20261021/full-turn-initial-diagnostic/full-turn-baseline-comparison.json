@@ -1,0 +1,776 @@
+{
+  "currentHead": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+  "baseline": "e6d5a592fc258f3328fd810c91b61ed0a24599cf",
+  "command": "node --require docs/.../trace-full-turn-preload.cjs web/scripts/smoke-full-turn-flow.js",
+  "hardTimeoutMs": 120000,
+  "assertionsAndTestSourceUnchanged": true,
+  "methodology": "External synchronous VM timing and periodic state observation. Baseline reads only changed web/package files from git show in memory. No working-tree file is replaced. This is diagnostic evidence, not a replacement CI gate.",
+  "results": [
+    {
+      "label": "current",
+      "head": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+      "startedAt": "2026-10-21T17:27:49.167Z",
+      "ms": 120306,
+      "exit": null,
+      "signal": "SIGTERM",
+      "error": "spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT",
+      "trace": "full-turn-trace-current.jsonl",
+      "output": "full-turn-output-current.log",
+      "lastEvents": [
+        {
+          "ms": 15397,
+          "event": "vm_return",
+          "stage": "endTurn();",
+          "elapsedMs": 2,
+          "promise": true,
+          "state": {
+            "turn": 1,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "aiCalls": 0,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 1,
+                "msg": "进入游戏世界...",
+                "pct": 95
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放背景音乐失败: ReferenceError: Audio is not defined",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+              "[SaveDB] 初始化失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[map-render-skip] shell=true stage=true visible=false",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb",
+              "[TMContentManager] web load workshop failed Error: 打开网页工坊库失败"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0
+          }
+        },
+        {
+          "ms": 15398,
+          "event": "vm_begin",
+          "stage": "_postTurnCourtChoose(true);"
+        },
+        {
+          "ms": 17505,
+          "event": "vm_return",
+          "stage": "_postTurnCourtChoose(true);",
+          "elapsedMs": 2107,
+          "promise": false,
+          "state": {
+            "turn": 1,
+            "running": true,
+            "busy": true,
+            "endTurnBusy": true,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 0,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 1,
+                "msg": "进入游戏世界...",
+                "pct": 95
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放背景音乐失败: ReferenceError: Audio is not defined",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+              "[SaveDB] 初始化失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[map-render-skip] shell=true stage=true visible=false",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb",
+              "[TMContentManager] web load workshop failed Error: 打开网页工坊库失败"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 17506,
+          "event": "vm_begin",
+          "stage": "(function(){ var startTurn = 1; if (!Array.isArray(GM._courtRecords)) GM._courtRecords = []; var postRecord = { turn: startTurn, targetTurn: start"
+        },
+        {
+          "ms": 17509,
+          "event": "vm_return",
+          "stage": "(function(){ var startTurn = 1; if (!Array.isArray(GM._courtRecords)) GM._courtRecords = []; var postRecord = { turn: startTurn, targetTurn: start",
+          "elapsedMs": 2,
+          "promise": false,
+          "state": {
+            "turn": 1,
+            "running": true,
+            "busy": true,
+            "endTurnBusy": true,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 0,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 1,
+                "msg": "进入游戏世界...",
+                "pct": 95
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放背景音乐失败: ReferenceError: Audio is not defined",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+              "[SaveDB] 初始化失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[map-render-skip] shell=true stage=true visible=false",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb",
+              "[TMContentManager] web load workshop failed Error: 打开网页工坊库失败"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 45413,
+          "event": "vm_begin",
+          "stage": "_onPostTurnCourtEnd();"
+        },
+        {
+          "ms": 45416,
+          "event": "vm_return",
+          "stage": "_onPostTurnCourtEnd();",
+          "elapsedMs": 3,
+          "promise": true,
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+              "[SaveDB] 初始化失败: Error: stub·no-idb",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor"
+            ],
+            "warnTail": [
+              "[perf.threshold] 捕获: [perf] authority.tick 超阈值: 648.00ms > 400ms",
+              "  Error: [perf] authority.tick 超阈值: 648.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+              "[endTurn systems] slow stage: 系统结算总耗时 18105ms "
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 48127,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "[SaveDB] 初始化失败: Error: stub·no-idb",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor"
+            ],
+            "warnTail": [
+              "[perf.threshold] 捕获: [perf] authority.tick 超阈值: 648.00ms > 400ms",
+              "  Error: [perf] authority.tick 超阈值: 648.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+              "[endTurn systems] slow stage: 系统结算总耗时 18105ms "
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 53132,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "[SaveDB] 初始化失败: Error: stub·no-idb",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor"
+            ],
+            "warnTail": [
+              "[perf.threshold] 捕获: [perf] authority.tick 超阈值: 648.00ms > 400ms",
+              "  Error: [perf] authority.tick 超阈值: 648.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+              "[endTurn systems] slow stage: 系统结算总耗时 18105ms "
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 103674,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": true
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[cc3·agenda] AI 返回不可用·走 fallback",
+              "[AutoSave] 端回合 snapshot 耗 17587ms·考虑 A-2",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        }
+      ],
+      "slowVmCalls": [
+        {
+          "stage": "scenarios/tianqi7-1627.js",
+          "ms": 484,
+          "at": 3552
+        },
+        {
+          "stage": "_pendingUseMap = true; _pendingMapModeSid = 'sc-tianqi7-1627'; _pendingMapModeAt = Date.now(); doActualStart('sc-tianqi7-1627');",
+          "ms": 8019,
+          "at": 11600
+        },
+        {
+          "stage": "_postTurnCourtChoose(true);",
+          "ms": 2107,
+          "at": 17505
+        }
+      ]
+    },
+    {
+      "label": "baseline",
+      "head": "e6d5a592fc258f3328fd810c91b61ed0a24599cf",
+      "startedAt": "2026-10-21T17:29:49.488Z",
+      "ms": 120280,
+      "exit": null,
+      "signal": "SIGTERM",
+      "error": "spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT",
+      "trace": "full-turn-trace-baseline.jsonl",
+      "output": "full-turn-output-baseline.log",
+      "lastEvents": [
+        {
+          "ms": 19886,
+          "event": "vm_return",
+          "stage": "endTurn();",
+          "elapsedMs": 4,
+          "promise": true,
+          "state": {
+            "turn": 1,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "aiCalls": 0,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 1,
+                "msg": "进入游戏世界...",
+                "pct": 95
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放背景音乐失败: ReferenceError: Audio is not defined",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+              "[SaveDB] 初始化失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[map-render-skip] shell=true stage=true visible=false",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb",
+              "[TMContentManager] web load workshop failed Error: 打开网页工坊库失败"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0
+          }
+        },
+        {
+          "ms": 19888,
+          "event": "vm_begin",
+          "stage": "_postTurnCourtChoose(true);"
+        },
+        {
+          "ms": 22140,
+          "event": "vm_return",
+          "stage": "_postTurnCourtChoose(true);",
+          "elapsedMs": 2252,
+          "promise": false,
+          "state": {
+            "turn": 1,
+            "running": true,
+            "busy": true,
+            "endTurnBusy": true,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 0,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 1,
+                "msg": "进入游戏世界...",
+                "pct": 95
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放背景音乐失败: ReferenceError: Audio is not defined",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+              "[SaveDB] 初始化失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[map-render-skip] shell=true stage=true visible=false",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb",
+              "[TMContentManager] web load workshop failed Error: 打开网页工坊库失败"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 22141,
+          "event": "vm_begin",
+          "stage": "(function(){ var startTurn = 1; if (!Array.isArray(GM._courtRecords)) GM._courtRecords = []; var postRecord = { turn: startTurn, targetTurn: start"
+        },
+        {
+          "ms": 22144,
+          "event": "vm_return",
+          "stage": "(function(){ var startTurn = 1; if (!Array.isArray(GM._courtRecords)) GM._courtRecords = []; var postRecord = { turn: startTurn, targetTurn: start",
+          "elapsedMs": 3,
+          "promise": false,
+          "state": {
+            "turn": 1,
+            "running": true,
+            "busy": true,
+            "endTurnBusy": true,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 0,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 1,
+                "msg": "进入游戏世界...",
+                "pct": 95
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 1,
+                "msg": "hide",
+                "pct": 0
+              }
+            ],
+            "errorTail": [
+              "播放背景音乐失败: ReferenceError: Audio is not defined",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+              "[SaveDB] 初始化失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[map-render-skip] shell=true stage=true visible=false",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb",
+              "[TMContentManager] web load workshop failed Error: 打开网页工坊库失败"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 49166,
+          "event": "vm_begin",
+          "stage": "_onPostTurnCourtEnd();"
+        },
+        {
+          "ms": 49170,
+          "event": "vm_return",
+          "stage": "_onPostTurnCourtEnd();",
+          "elapsedMs": 4,
+          "promise": true,
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+              "[SaveDB] 初始化失败: Error: stub·no-idb",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor"
+            ],
+            "warnTail": [
+              "[perf.threshold] 捕获: [perf] authority.tick 超阈值: 569.00ms > 400ms",
+              "  Error: [perf] authority.tick 超阈值: 569.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+              "[endTurn systems] slow stage: 系统结算总耗时 17819ms "
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 51832,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "[SaveDB] 初始化失败: Error: stub·no-idb",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor"
+            ],
+            "warnTail": [
+              "[perf.threshold] 捕获: [perf] authority.tick 超阈值: 569.00ms > 400ms",
+              "  Error: [perf] authority.tick 超阈值: 569.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+              "[endTurn systems] slow stage: 系统结算总耗时 17819ms "
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 56834,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": false
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "[SaveDB] 初始化失败: Error: stub·no-idb",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor"
+            ],
+            "warnTail": [
+              "[perf.threshold] 捕获: [perf] authority.tick 超阈值: 569.00ms > 400ms",
+              "  Error: [perf] authority.tick 超阈值: 569.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+              "[endTurn systems] slow stage: 系统结算总耗时 17819ms "
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        },
+        {
+          "ms": 108057,
+          "event": "heartbeat",
+          "currentStage": "_onPostTurnCourtEnd();",
+          "state": {
+            "turn": 2,
+            "running": true,
+            "busy": false,
+            "endTurnBusy": false,
+            "pending": {
+              "aiReady": false,
+              "payload": false,
+              "courtDone": true
+            },
+            "aiCalls": 1,
+            "steps": [],
+            "loading": [
+              {
+                "turn": 2,
+                "msg": "回合阶段 6/7 · 生成史记弹窗",
+                "pct": 78
+              },
+              {
+                "turn": 2,
+                "msg": "hide",
+                "pct": 0
+              },
+              {
+                "turn": 2,
+                "msg": "回合阶段 7/7 · prepare-commit-barrier",
+                "pct": 90
+              }
+            ],
+            "errorTail": [
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+              "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+            ],
+            "warnTail": [
+              "[cc3·agenda] AI 返回不可用·走 fallback",
+              "[AutoSave] 端回合 snapshot 耗 17336ms·考虑 A-2",
+              "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb"
+            ],
+            "writeTurnData": 0,
+            "autoSave": 0,
+            "preEndTurnSave": 1
+          }
+        }
+      ],
+      "slowVmCalls": [
+        {
+          "stage": "scenarios/tianqi7-1627.js",
+          "ms": 479,
+          "at": 8484
+        },
+        {
+          "stage": "_pendingUseMap = true; _pendingMapModeSid = 'sc-tianqi7-1627'; _pendingMapModeAt = Date.now(); doActualStart('sc-tianqi7-1627');",
+          "ms": 7401,
+          "at": 15891
+        },
+        {
+          "stage": "_postTurnCourtChoose(true);",
+          "ms": 2252,
+          "at": 22140
+        }
+      ]
+    }
+  ]
+}

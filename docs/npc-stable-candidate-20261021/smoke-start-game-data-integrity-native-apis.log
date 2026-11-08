@@ -1,0 +1,54 @@
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[smoke-start-game-data-integrity] stale-map-choice-is-ignored PASS {"chars":217,"facs":22,"vars":21,"mapRegions":307,"guokuMoney":850000,"neitangMoney":2500000,"populationMouths":94530000,"corruptionIndex":61.08148869142071,"minxinIndex":47.688629842378084,"huangquanIndex":75,"huangweiIndex":70,"useAIGeo":false,"entered":true,"aiDeepRead":true,"aiPlan":true,"aiMatrix":true,"aiFirstTurn":true}
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[smoke-start-game-data-integrity] fresh-ai-geography-choice-is-honored PASS {"chars":217,"facs":22,"vars":21,"mapRegions":307,"guokuMoney":850000,"neitangMoney":2500000,"populationMouths":94530000,"corruptionIndex":61.08148869142071,"minxinIndex":47.688629842378084,"huangquanIndex":75,"huangweiIndex":70,"useAIGeo":true,"entered":true,"aiDeepRead":true,"aiPlan":true,"aiMatrix":true,"aiFirstTurn":true}
+[smoke-start-game-data-integrity] fast-start-skips-artificial-and-model-waits PASS
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[smoke-start-game-data-integrity] latest-start-request-wins PASS
+[smoke-start-game-data-integrity] lazy-load-failure-unlocks-and-retries PASS
+[smoke-start-game-data-integrity] strict-history-fast-path-preserved PASS
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[smoke-start-game-data-integrity] first-turn-candidates-before-memorials PASS
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[smoke-start-game-data-integrity] player-body-edit-blocks-late-initial-memorials PASS
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[smoke-start-game-data-integrity] scenario-source-isolation PASS
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[smoke-start-game-data-integrity] background-prewarm-nonblocking-and-stale-safe PASS
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[smoke-start-game-data-integrity] deepread-config-is-immutable PASS
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[smoke-start-game-data-integrity] deepread-stale-call-aborts-and-stops-queue PASS

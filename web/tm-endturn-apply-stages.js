@@ -48,6 +48,18 @@
     } catch (e) { try { console.warn('[落地核对] surface failed', e); } catch (_) {} }
   }
 
+  // 逐条落账后交给每回合复核的材料：没落地的条目不算「主写回失败」——已落地的条目不能整批重放，
+  // 改作待复核事项交给复核者，由它据证据用 apply_changes 补落改正后的条目。
+  function _reviewMaterial(applyRes) {
+    var failed = applyRes && applyRes.applied && Array.isArray(applyRes.applied.failed) ? applyRes.applied.failed : [];
+    if (!failed.length) return applyRes;
+    var applied = Object.assign({}, applyRes.applied, { failed: [] });
+    applied.reviewRequired = (Array.isArray(applyRes.applied.reviewRequired) ? applyRes.applied.reviewRequired : []).concat(failed.map(function (f) {
+      return { kind: 'unlanded-writeback', detail: f };
+    }));
+    return Object.assign({}, applyRes, { applied: applied });
+  }
+
   // _unappliedChanges 的单一写主；其他模块运行时动态调用本入口，避免各自闯入内部子树。
   ns.recordUnappliedChange = function(entry, source) {
     _surfaceUnappliedChanges({ applied:{ failed:[entry || { reason:'unknown writeback failure' }] } }, source || 'endturn-writeback');
@@ -347,6 +359,21 @@
       if(recovered.error && /^(AI_ABORTED|AI_STALE_WORLD|AI_REQUEST_DEADLINE|RECOVERY_DECLINED)$/.test(recovered.error.code))throw recovered.error;
       assertCurrent();if (recovered.ok) { current=recovered.value; validation=global.validateAIWriteBackBatch(current,{source:'emergency-final-preflight'}); }
     }
+    // 逐条落账：修不好的坏条目单条剔掉（记账），其余照常进入写回；只有整批形状坏了才算预检失败。
+    if (!validation.ok && opts.perItem === true) {
+      var pruned = global.validateAIWriteBackBatch(current, { source:'endturn-writeback-prune', prune:true }).pruned;
+      if (pruned && pruned.ok) {
+        assertCurrent();
+        return {
+          ok:true,
+          output:pruned.output,
+          repairAttempts:attempts,
+          dropped:pruned.dropped.map(function(failure) {
+            return Object.assign({ attempts:attempts, reason:failure.reason || failure.code }, failure);
+          })
+        };
+      }
+    }
     if (!validation.ok) {
       var error = new Error('AI 主写回预检失败；本回合未修改世界状态，可重新生成本回合');
       error.code = 'ai-writeback-preflight-failed';
@@ -441,7 +468,8 @@ inst._imprisonedTurn = GM.turn||0;
   ns.stages._applyCore_reconcile = async function(ctx) {
     var p1 = ctx.results.sc1 || null;
     if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeOutput(p1);
-        var _strictPreflight = await _validateAndRepairMainWriteback(p1, { source:'endturn-full-p1', id:'sc1', deadlineAt:ctx.meta&&ctx.meta.sc1RecoveryDeadline, signal:ctx.signal || ctx.meta && ctx.meta.signal });
+        // 主写回逐条落账：坏条目单条剔掉记账，其余照常落地，不再一条坏就整批撤回。
+        var _strictPreflight = await _validateAndRepairMainWriteback(p1, { source:'endturn-full-p1', id:'sc1', deadlineAt:ctx.meta&&ctx.meta.sc1RecoveryDeadline, signal:ctx.signal || ctx.meta && ctx.meta.signal, perItem:true });
         p1 = _strictPreflight.output;
         ctx.results.sc1 = p1;
         // char_updates 的 alive/dead 先在原始 p1 上规范化：后续既有 applyCharacterDeaths(p1)
@@ -454,6 +482,7 @@ inst._imprisonedTurn = GM.turn||0;
           if (typeof applyAITurnChanges === 'function') {
             var _mainWritebackBatch1 = {
               _strictValidation: true,
+              _commitMode: 'per-item',
               _deferNarrativeRepairs: !!(ctx.meta && ctx.meta.requireTurnReview),
               narrative: p1.shizhengji || '',
               changes: Array.isArray(p1.changes) ? p1.changes : [],
@@ -493,6 +522,11 @@ inst._imprisonedTurn = GM.turn||0;
               regent_decisions: Array.isArray(p1.regent_decisions) ? p1.regent_decisions : []
             };
             var _applyRes1 = applyAITurnChanges(_mainWritebackBatch1);
+            if (_applyRes1 && _strictPreflight.dropped && _strictPreflight.dropped.length) {
+              _applyRes1.applied = _applyRes1.applied || {};
+              _applyRes1.applied.failed = _strictPreflight.dropped.concat(Array.isArray(_applyRes1.applied.failed) ? _applyRes1.applied.failed : []);
+              if (_applyRes1.ok === true) _applyRes1.partial = true;
+            }
             if (_applyRes1 && !_applyRes1.ok && ctx.meta && ctx.meta.requireTurnReview && TM.RecoveryReview) {
               TM.RecoveryReview.prepareRepair(_applyRes1,_mainWritebackBatch1,p1,ctx);
               ctx.meta.deferredMainOutput=p1;
@@ -503,7 +537,8 @@ inst._imprisonedTurn = GM.turn||0;
               Array.prototype.push.apply(_applyRes1.applied.failed, _deathNorm1.failed);
             }
             _surfaceUnappliedChanges(_applyRes1, 'sc1主应用');  // 【落地核对】接住失败清单·让静默 #1 可见
-            if (!_applyRes1 || _applyRes1.ok !== true || (_applyRes1.applied && _applyRes1.applied.failed && _applyRes1.applied.failed.length)) {
+            // 逐条落账后，没落地的条目已在上面记账；只有整批被拒（世界形状写坏、条目之外出错）才中止写回。
+            if (!_applyRes1 || _applyRes1.ok !== true) {
               // 把失败条目的 reason/target 摘要塞进 Error.message，避免玩家只看到
               // 一句「AI 主写回未能原子提交」却猜不到是哪几条、为啥失败。
               var _failed1 = (_applyRes1 && _applyRes1.applied && Array.isArray(_applyRes1.applied.failed)) ? _applyRes1.applied.failed : [];
@@ -520,7 +555,7 @@ inst._imprisonedTurn = GM.turn||0;
           }
           if (_applyRes1 && _applyRes1.ok && ctx.meta && ctx.meta.requireTurnReview) {
             try {
-              if (global.TM && TM.RecoveryReview) TM.RecoveryReview.prepare(_applyRes1,p1,ctx);
+              if (global.TM && TM.RecoveryReview) TM.RecoveryReview.prepare(_reviewMaterial(_applyRes1),p1,ctx);
               else ctx.meta.emergencyReview={status:'pending',nonBlocking:true,reason:'复核模块尚未加载'};
             } catch(reviewError) {ctx.meta.emergencyReview={status:'pending',nonBlocking:true,reason:String(reviewError.message||reviewError)};console.warn('[TurnReview] 复核准备延后，主推演继续:',reviewError.message);}
           }
@@ -1034,6 +1069,7 @@ inst._imprisonedTurn = GM.turn||0;
             var _patched = _patch.personnel_changes.length + _patch.office_assignments.length + _patch.fiscal_adjustments.length + _patch.military_changes.length + _patch.sentiment_changes.length + _patch.population_changes.length + _patch.war_events.length + _patch.revolt_events.length + _patch.disaster_events.length + _patch.diplomacy_events.length + _patch.keju_events.length + _patch.party_events.length + _patch.edict_events.length + _patch.court_ceremony_events.length + _patch.construction_events.length + _patch.omen_events.length + _patch.marriage_birth_events.length + _patch.conspiracy_events.length + _patch.currency_events.length + _patch.religion_events.length;
             if ((_patch.personnel_changes.length + _patch.office_assignments.length + _patch.fiscal_adjustments.length + _patch.military_changes.length) > 0 && typeof applyAITurnChanges === 'function') {
               var _applyRes2 = applyAITurnChanges({
+                _commitMode: 'per-item',
                 personnel_changes: _patch.personnel_changes,
                 office_assignments: _patch.office_assignments,
                 fiscal_adjustments: _patch.fiscal_adjustments,
@@ -1043,7 +1079,7 @@ inst._imprisonedTurn = GM.turn||0;
                 shizhengji: ''
               });
               _surfaceUnappliedChanges(_applyRes2, 'reconcile补录');  // 【落地核对】二审补录也接住失败清单
-              if (!_applyRes2 || _applyRes2.ok !== true || (_applyRes2.applied && _applyRes2.applied.failed && _applyRes2.applied.failed.length)) {
+              if (!_applyRes2 || _applyRes2.ok !== true) {
                 var _failed2 = (_applyRes2 && _applyRes2.applied && Array.isArray(_applyRes2.applied.failed)) ? _applyRes2.applied.failed : [];
                 var _reasons2 = {};
                 _failed2.forEach(function(f){ var r=(f && f.reason) || 'unknown'; _reasons2[r]=(_reasons2[r]||0)+1; });

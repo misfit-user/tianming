@@ -111,7 +111,8 @@
         var c = text[i];
         if (esc) { esc = false; continue; }
         if (c === "\\") { esc = true; continue; }
-        if (c === '"') { inStr = !inStr; continue; }
+        // 字符串收尾的引号后面（跳过空白）只会是 , : } ] 或到头；别的字跟着的是没转义的引号，不算收尾（11-08 主推演写成 …-->"</tableEdit>"，旧判法当成截断直接拒收、中止回合）
+        if (c === '"') { if (!inStr || /^\s*(?:[,:}\]]|$)/.test(text.slice(i + 1, i + 41))) inStr = !inStr; continue; }
         if (inStr) continue;
         if (c === open) depth++;
         else if (c === close) depth--;
@@ -460,6 +461,8 @@
           }
         } catch(_dStatsE) {}
         if (data && data.choices && data.choices[0] && data.choices[0].message) raw = data.choices[0].message.content || '';
+        // 2026-11-08·断处续（tm-ai-continuation.js·docs/llm-duanchu-xu-20261108.md）：JSON 回答没收尾就接着写，拼全了才就地写回 data，拼不出照旧往下走
+        if (!opts._noContinuation && raw && global.TM && TM.AIContinuation) raw = await TM.AIContinuation.continueIfCut(body, data, raw, { id: opts.id, label: label, url: callUrl, key: key, tier: opts.tier, priority: opts.priority, timeoutMs: opts.timeoutMs, signal: opts.signal, deadlineAt: opts.retryBudget && opts.retryBudget.deadlineAt });
         // 2026-06-07·超大响应源头封顶(防御纵深·配合 robustParseJSON 护栏)。
         // 第三方中转/模型复读可吐回数 MB~数十 MB 的垃圾响应;回合「深度推演」阶段众多子调用拿它去解析/入账,
         // 内存峰值叠加可把 Electron 渲染进程撑爆 → 深推时突然黑屏、必须重启。合法子调用 ≤8000 tokens(数十 KB)。
@@ -1003,21 +1006,6 @@
           if (!Array.isArray(v)) missing.push(k);
         });
         return missing;
-      }
-      // Phase 0 D-3 (doc 字面)·SC1 重试用 simpler schema·与增量 retry 互补
-      // 调用时机·SC1 第一次完全失败·走 _trySc1Rescue 之前
-      // 区别·_trySc1Rescue 走 sc1_rescue subcall 用极简硬编码 schema·此函数 retry SC1 主调用但用 core tier
-      async function _trySc1RetryWithSimplerSchema(reason) {
-        if (GM && GM._turnAiResults && GM._turnAiResults._sc1SimpleRetried) return null;
-        if (GM && GM._turnAiResults) GM._turnAiResults._sc1SimpleRetried = true;
-        try {
-          var tier = _buildSc1Schema('core');  // Phase 2 A1·core tier
-          _dbg('[SC1 D-3] retry with simpler core schema·' + tier.fields.length + ' fields');
-          if (typeof recordSubcallError === 'function') recordSubcallError('sc1', 'simpler_schema_retry', new Error('retry with core schema'));
-          // 重用 _trySc1Rescue·它内部用极简 schema (字段集是 core 的超集)·达到 D-3 效果
-          var rescue = await _trySc1Rescue(reason);
-          return rescue;
-        } catch(_d3Err) { _dbg('[SC1 D-3] simpler schema retry fail:', _d3Err); return null; }
       }
       async function _runIncrementalSc1Retry(p1, missingFields, buildingBatch) {
         // Phase 7 Q4·应对 R-B 误判循环·只在 missing >3 才 retry·一次性
@@ -3737,6 +3725,7 @@
             data1.choices[0].finish_reason=_sc1AttemptOptions._normalRecoveryTicket.streamComplete?'stop':'length';
             TM.RecoveryAdapters.markResponse(data1,_sc1AttemptOptions);
           }
+          if (global.TM && TM.AIContinuation) c1 = await TM.AIContinuation.continueIfCut(_sc1Body, data1, c1, { id: 'sc1', url: url, key: P.ai.key, tier: 'primary', priority: 'critical', timeoutMs: _sc1PolicyForStream.timeoutMs, signal: ctx.signal || (ctx.meta && ctx.meta.signal) || null }); // 断处续：流式那条路同一规矩
           // 流式模式无 usage·不记 token
         } catch(_se) {
           var _streamCompatibility = [400,422].indexOf(Number(_se && _se.status)) >= 0 && /stream|response_format|json_schema/i.test(String(_se && _se.message || ''));
@@ -4034,6 +4023,8 @@
         var _dateText1d = ''; try { _dateText1d = (typeof getTSText === 'function') ? getTSText(GM.turn || 1) : ''; } catch(_) {}
         var tp1d = '【实录·时政记专项】\n';
         if (TM.EdictOutcomes) tp1d += TM.EdictOutcomes.narrativeFacts(GM, GM.turn);
+        // 史官成文在主写回之后：把账上实际动了的数目（库存期初与本回合动用、已落账收支、指标、人事、没落地的声明）交给史官
+        try { if (TM.TurnLedgerFacts) tp1d += TM.TurnLedgerFacts.block(GM, { turn: GM.turn, oldVars: ctx && ctx.input && ctx.input.oldVars, before: _unappliedBeforeSc1 }); } catch (_tlfE) { _dbg('[SC1d] ledger facts fail', _tlfE); }
         tp1d += '你只负责把 SC1 已判定的结构化账本改写为史官文本，不得新增任何事实、数值、死亡、任免、战事或地块变化。\n';
         tp1d += '本回合：T' + (GM.turn || 1) + (_dateText1d ? (' · ' + _dateText1d) : '') + '\n';
         tp1d += '玩家诏令/行止原始摘要：' + _packSc1d({ edicts: edicts || {}, xinglu: xinglu || '' }, 2500) + '\n';
@@ -4486,6 +4477,9 @@
         tp1c += '\u25C6 fengwen_snippets\uFF08\u98CE\u95FB\u5F55\u4E8B\u00B7\u5E38\u6001 12-20 \u6761\uFF09\u2014\u2014\n';
         tp1c += '  人物和势力的活动风闻——源自坊间耳目、朝堂风议、往来密函等，通过起居注/耳报/邸报/坊间传闻报入。\n';
         tp1c += '  字段：{type, text(30-60字古典中文风), credibility(0.3-0.95), actors:["人名或势力名"], source:"坊间/朝堂/耳目/邸报/密札/边关", mood?:"忧/喜/怒/恐/亲/仇(传递给 actors 记忆的主导情绪)"}\n';
+        // 文风设置（tm-wenfeng.js）：「照旧」时不加
+        var _wfFw = (typeof TM !== 'undefined' && TM.Wenfeng) ? TM.Wenfeng.directive('fengwen') : '';
+        if (_wfFw) tp1c += '  ' + _wfFw + '\n';
         tp1c += '  type 分类：弹劾/荐举/奏议/结党/造谣/私访/宴饮/游宴/诗社/学论/求婚/母祭/丹道/药释/巡视/巡者/赑搜/司法/核查/捐俸/财行/家事/置产/居着/雅集/密联/战报/边报/和亲/质子/朝贡/互市/盟约/遣使/揭私\n';
         tp1c += '  \u4F8B\uFF1A{type:"\u8BD7\u793E", text:"\u897F\u6E56\u4E09\u96C5\u96C6\u4E8E\u5317\u5C71\uFF0C\u67D0\u7532\u8D4B\u300A\u79CB\u6C34\u300B\uFF0C\u67D0\u4E59\u6B21\u97F5\uFF0C\u67D0\u4E19\u7ACB\u5212\u70B9\u65AD\u53E5\u3002", credibility:0.75, actors:["\u67D0\u7532","\u67D0\u4E59"], source:"\u574A\u95F4", mood:"\u559C"}\n';
         tp1c += '  \u3010\u786C\u89C4\u5219\u00B7\u98CE\u95FB\u8986\u76D6\u8981\u6C42\u3011\n';
@@ -4910,6 +4904,8 @@
       ctx.results.sc1c = (GM._turnAiResults && GM._turnAiResults.subcall1c) || ctx.results.sc1c || null;
       ctx.results.sc1d = (GM._turnAiResults && GM._turnAiResults.subcall1d) || ctx.results.sc1d || null;
       ctx.followup.p1Summary = p1Summary || "";
+      // 主写回之前已有的未落地条目（如同回合早先失败那次留下的）：史官成文只认这次主写回新添的
+      var _unappliedBeforeSc1 = (GM && Array.isArray(GM._unappliedChanges)) ? GM._unappliedChanges.slice() : [];
       if (typeof afterSc1 === "function") {
         var _applyStarted = Date.now();
         try {

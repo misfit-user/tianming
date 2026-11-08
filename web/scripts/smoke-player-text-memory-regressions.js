@@ -55,7 +55,7 @@ test('failed memory can be explicitly retried without discarding completed sibli
 test('an explicit failed result is not marked done',async()=>{
  const c=jobs();c._enqueuePostTurnJob('sc25c',async()=>({ok:false,error:Error('failed result')}));await assert.rejects(c._awaitPostTurnJobsForSave());assert.notEqual(c.GM._postTurnJobs.pending[0].status,'done');
 });
-test('ambiguous multiple top-level JSON remains rejected rather than arbitrarily chosen',()=>{
- const c=textContext();c._dbg=()=>{};extracted(c,'tm-utils.js',['robustParseJSON']);assert.equal(c.robustParseJSON('{"shizhengji":"one"} {"shizhengji":"two"}'),null);
+test('multiple top-level JSON: a parsable main object wins, an unparsable main is rejected rather than arbitrarily chosen',()=>{
+ const c=textContext();c._dbg=()=>{};extracted(c,'tm-utils.js',['robustParseJSON']);assert.deepEqual(c.robustParseJSON('{"shizhengji":"one"} {"shizhengji":"two"}'),{shizhengji:'one'});assert.equal(c.robustParseJSON('{"shizhengji":one} {"shizhengji":"two"}'),null);
 });
 run(tests);

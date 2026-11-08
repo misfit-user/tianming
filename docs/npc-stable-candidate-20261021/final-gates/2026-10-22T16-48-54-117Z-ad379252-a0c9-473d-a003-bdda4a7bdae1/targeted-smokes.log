@@ -1,0 +1,27 @@
+[run-smokes] 共 1185 个 smoke · 选中 56 · 跳过 0 · 并发 1 · 超时 120s
+  [25/56] PASS    smoke-office-duty-integration.js (0.5s)
+  [50/56] PASS    smoke-save-slim.js (0.5s)
+[run-smokes] 独占执行硬时限用例（不改用例内部压力/期限）：smoke-full-turn-flow.js, smoke-start-game-data-integrity.js
+  [55/56] TIMEOUT smoke-full-turn-flow.js (120.4s)
+  [56/56] TIMEOUT smoke-start-game-data-integrity.js (120.5s)
+
+[run-smokes] 完成：54 PASS · 2 FAIL · 0 SKIP · 0 WAIVED / 56 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 424s(并行墙钟更短)
+
+--- 失败聚类（1 簇）---
+  ×2  （超时）
+      smoke-full-turn-flow.js
+      smoke-start-game-data-integrity.js
+
+--- 最慢 Top 10 ---
+  120.5s  smoke-start-game-data-integrity.js
+  120.4s  smoke-full-turn-flow.js
+  93.7s  smoke-npc-composite-official.js
+  24.1s  smoke-public-treasury-scale.js
+  18.1s  smoke-npc-meeting-events-boundaries.js
+  6.8s  smoke-turn-response-recovery.js
+  3.6s  smoke-npc-action-loop.js
+  3.5s  smoke-npc-meeting-office.js
+  3.1s  smoke-emergency-recovery-review.js
+  2.2s  smoke-npc-daily-lifecycle.js
+
+[run-smokes] 报告 → ../docs/npc-stable-candidate-20261021/final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/targeted-smoke-report.json

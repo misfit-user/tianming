@@ -296,14 +296,6 @@
     return '    <memory ' + attrs.join(' ') + '>' + xml(hit.text) + '</memory>\n';
   }
 
-  function renderSection(key, hits) {
-    if (!hits.length) return '';
-    var meta = SECTION_META[key] || [key, key];
-    return '  <' + meta[0] + ' label="' + xml(meta[1]) + '">\n' +
-      hits.map(renderHit).join('') +
-      '  </' + meta[0] + '>\n';
-  }
-
   function perfCount(name, delta) {
     var perf = root.TM && root.TM.perf;
     if (perf && typeof perf.count === 'function') perf.count(name, delta == null ? 1 : delta);

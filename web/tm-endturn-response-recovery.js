@@ -7,6 +7,7 @@
   if (TM.Endturn.ResponseRecovery) return;
   var active = null, retained = null, last = null, sequence = 0;
   var LIMITS = { entries: 64, responseChars: 1000000, totalChars: 8000000, inputChars: 32000000, requestChars: 1000000, identityChars: 8000000, ttlMs: 30 * 60000 };
+  var inputTooLarge = {};
   function generation() { return root._tmLoadGen || 0; }
   function current(s) {
     return !!s && root.GM === s.gm && root.P === s.p && generation() === s.generation
@@ -25,9 +26,22 @@
   function baseline(txn, options) {
     var gm = Object.assign({}, txn.gm.data);
     ['busy', '_endTurnBusy', '_endTurnCommitPending', '_lastEndTurnRollback'].forEach(function(k) { delete gm[k]; });
+    var minimumChars = 0;
     return JSON.stringify({ version: 1, gm: gm, p: txn.p.data,
       scenario: txn.p.descriptors && txn.p.descriptors.scenario && txn.p.descriptors.scenario.value,
-      postTurnCourt: options && options.postTurnCourt });
+      postTurnCourt: options && options.postTurnCourt }, function(key, value) {
+      // Count only characters guaranteed in the native JSON output. Keys,
+      // punctuation and string escaping are deliberately omitted. This can
+      // stop an already oversized optional fingerprint without constructing
+      // its complete string; accepted input still uses the exact native JSON.
+      // Native stringify owns toJSON, aliases and unsupported-value errors.
+      if (value === null) minimumChars += 4;
+      else if (typeof value === 'string') minimumChars += value.length + 2;
+      else if (typeof value === 'number') minimumChars += Number.isFinite(value) ? String(value).length : 4;
+      else if (typeof value === 'boolean') minimumChars += value ? 4 : 5;
+      if (minimumChars > LIMITS.inputChars) throw inputTooLarge;
+      return value;
+    });
   }
   async function begin(txn, options) {
     var previous = retained, start = ++sequence;
@@ -50,7 +64,7 @@
         records: new Map(), reuse: reuse, ordinals: new Map(), chars: 0, identityChars: 0, hits: 0, stored: 0, skipped: 0 };
       last = { state: 'running', available: reuse ? reuse.size : 0, hits: 0 };
       return true;
-    } catch (_) { last = { state: 'disabled', reason: 'fingerprint_unavailable' }; return false; }
+    } catch (error) { last = { state: 'disabled', reason: error === inputTooLarge ? 'input_size' : 'fingerprint_unavailable' }; return false; }
   }
   function safeFailure(e) {
     if (!e || e.writebackFailures || e.validity) return false;

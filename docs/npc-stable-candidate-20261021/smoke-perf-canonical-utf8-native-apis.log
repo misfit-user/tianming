@@ -1,0 +1,12 @@
+PASS Unicode/order/freeze/roundtrip; gzip=true
+PASS Unicode/order/freeze/roundtrip; gzip=false
+PASS one explicit UTF-8 encoding; gzip=true
+PASS one explicit UTF-8 encoding; gzip=false
+PASS legacy FNV with missing crypto
+PASS legacy FNV with missing TextEncoder
+PASS legacy FNV with missing both
+PASS compression error keeps exact JSON and byte counts
+PASS digest failure rejects; subsequent independent save recovers
+PASS invalid/throwing input never produces a payload
+PASS async digest freezes JSON before mutation and keeps concurrent identities separate
+{"passed":11,"failed":0}

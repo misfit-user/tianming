@@ -236,10 +236,6 @@
     return { status: status, ruling: ruling, loyaltyDelta: loyaltyDelta, memoryNote: memoryNote };
   }
 
-  function _ensureMemoryArray(char) {
-    if (!Array.isArray(char._memorialMemory)) char._memorialMemory = [];
-  }
-
   // 生成 + 立即 resolve (一回合一轮·NPC 不积压)
   function generateNpcMemorials() {
     var boundary=global.TM&&TM.PoliticalActions;

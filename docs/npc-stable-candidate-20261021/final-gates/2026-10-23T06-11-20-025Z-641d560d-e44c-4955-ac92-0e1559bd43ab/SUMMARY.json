@@ -1,0 +1,303 @@
+{
+  "recordedAt": "2026-10-23T06:17:25.870Z",
+  "head": "f4359559260a76417e75a5de76c094fc2248ed4c",
+  "runId": "641d560d-e44c-4955-ac92-0e1559bd43ab",
+  "status": "passed",
+  "complete": true,
+  "startedAt": "2026-10-23T06:11:20.025Z",
+  "finishedAt": "2026-10-23T06:16:47.246Z",
+  "elapsedMs": 327221,
+  "environment": {
+    "node": "v20.18.3",
+    "platform": "win32",
+    "arch": "x64",
+    "root": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011",
+    "overrides": {
+      "TMP": "D:\\tianming-npc-candidate-temp",
+      "TEMP": "D:\\tianming-npc-candidate-temp",
+      "TMPDIR": "D:\\tianming-npc-candidate-temp",
+      "TIANMING_RELEASE_TEMP_ROOT": "D:\\tianming-npc-candidate-temp"
+    },
+    "inheritedNodeOptions": null,
+    "engine": "locked Electron33.4.11 as Node20.18.3; child-only ELECTRON_RUN_AS_NODE=1"
+  },
+  "sourceUnchanged": true,
+  "inputFileCount": 2395,
+  "inputSha256": "3fd173af0f52ab806c2aead280f38d7fb417e410451c2b82e4a144c7dade7971",
+  "afterSha256": "3fd173af0f52ab806c2aead280f38d7fb417e410451c2b82e4a144c7dade7971",
+  "targetedSummary": {
+    "selected": 59,
+    "pass": 59,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "id": "targeted-smokes",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 210927.8739
+    },
+    {
+      "id": "other-officials",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 33750.4226
+    },
+    {
+      "id": "architecture",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 20489.1205
+    },
+    {
+      "id": "official-parity",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 48154.6064
+    },
+    {
+      "id": "native-manifest",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 1212.2133
+    },
+    {
+      "id": "startup-manifest",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 285.1936
+    },
+    {
+      "id": "release-contract",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 3664.939
+    },
+    {
+      "id": "hot-baseline",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 1844.1706
+    }
+  ],
+  "focused": [
+    {
+      "name": "smoke-full-turn-flow.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 57258,
+      "timedOut": false,
+      "flaky": false
+    },
+    {
+      "name": "smoke-npc-composite-diagnostics.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 212,
+      "timedOut": false,
+      "flaky": false
+    },
+    {
+      "name": "smoke-npc-composite-official.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 51218,
+      "timedOut": false,
+      "flaky": false
+    },
+    {
+      "name": "smoke-npc-entry-feature-barrier.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 323,
+      "timedOut": false,
+      "flaky": false
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 53455,
+      "timedOut": false,
+      "flaky": false
+    },
+    {
+      "name": "smoke-territory-batch-resolution.js",
+      "pass": true,
+      "exit": 0,
+      "ms": 311,
+      "timedOut": false,
+      "flaky": false
+    }
+  ],
+  "officialCompatibility": {
+    "kind": "official-load-location-duty-save-compatibility",
+    "testedHead": "f4359559260a76417e75a5de76c094fc2248ed4c",
+    "boundary": "Headless synchronous production startup plus save-builder/restore-fields only; no IndexedDB, fullLoadGame, Electron buttons, complete meeting or 30-day-world claim for these two scenarios.",
+    "reports": [
+      {
+        "runtimeIdentity": {
+          "files": 480,
+          "sha256": "a6da7d7f5d3f6df478a955506ffd7df1d9a1a11958bc61ef931dd93b5c58e734"
+        },
+        "scenarioId": "sc-tianqi7-1627",
+        "scenarioName": "天启七年·九月——君王初立，权阉当国",
+        "scriptLoads": [
+          {
+            "relative": "scenarios/tianqi7-1627.js",
+            "sha256": "ca13e4bc396b92035decd9fccad945730fa965137c9a4275250842e1fa81644f",
+            "bytes": 10023482
+          }
+        ],
+        "expected": {
+          "people": 217,
+          "factions": 22,
+          "regions": 307
+        },
+        "loaded": {
+          "people": 217,
+          "factions": 22,
+          "regions": 307,
+          "exactLocations": 163
+        },
+        "pair": {
+          "actorId": "char_mp3yvbca4b5xh",
+          "actorName": "魏忠贤",
+          "targetId": "char_mp3yvbcafjqjs",
+          "targetName": "黄立极",
+          "location": "ming-01-p01"
+        },
+        "duties": {
+          "status": "resolved",
+          "rows": [
+            {
+              "positionId": "political-office:fac_mp9rsc3fd62j6:off_mp9rsc2h1h3ed%2F%E7%A7%89%E7%AC%94%E5%A4%AA%E7%9B%91%C2%B7%E6%8F%90%E7%9D%A3%E4%B8%9C%E5%8E%82%C2%B7%E4%B8%8A%E5%85%AC%231",
+              "positionName": "秉笔太监·提督东厂·上公",
+              "organizationId": "fac_mp9rsc3fd62j6",
+              "appointmentId": "",
+              "appointmentStartedTurn": 1,
+              "dutyMode": "unconfigured",
+              "usualDutyLocationId": "",
+              "returnLocationId": "",
+              "jurisdictionIds": [],
+              "configured": false,
+              "configurationStatus": "legacy_unspecified"
+            },
+            {
+              "positionId": "political-office:fac_mp9rsc3fd62j6:off_mp9rsc2h1h3ed%2F%E7%A7%89%E7%AC%94%E5%A4%AA%E7%9B%91%C2%B7%E4%B8%9C%E5%8E%82%E6%8E%8C%E5%88%91%232",
+              "positionName": "秉笔太监·东厂掌刑",
+              "organizationId": "fac_mp9rsc3fd62j6",
+              "appointmentId": "",
+              "appointmentStartedTurn": 1,
+              "dutyMode": "unconfigured",
+              "usualDutyLocationId": "",
+              "returnLocationId": "",
+              "jurisdictionIds": [],
+              "configured": false,
+              "configurationStatus": "legacy_unspecified"
+            }
+          ]
+        },
+        "migratedPostIds": [
+          "political-office:fac_mp9rsc3fd62j6:off_mp9rsc2h1h3ed%2F%E7%A7%89%E7%AC%94%E5%A4%AA%E7%9B%91%C2%B7%E6%8F%90%E7%9D%A3%E4%B8%9C%E5%8E%82%C2%B7%E4%B8%8A%E5%85%AC%231",
+          "political-office:fac_mp9rsc3fd62j6:off_mp9rsc2h1h3ed%2F%E7%A7%89%E7%AC%94%E5%A4%AA%E7%9B%91%C2%B7%E4%B8%9C%E5%8E%82%E6%8E%8C%E5%88%91%232"
+        ],
+        "activity": {
+          "id": "plan:official-compat:sc-tianqi7-1627",
+          "kind": "greeting",
+          "status": "in_transit",
+          "messages": [
+            {
+              "id": "daily-message:1",
+              "status": "in_transit",
+              "toId": "char_mp3yvbcafjqjs"
+            }
+          ]
+        },
+        "save": {
+          "format": "idb-snapshot-schema",
+          "bytes": 35120581,
+          "restore": "_buildSaveState + JSON transport + _restoreSavedFields",
+          "worldReplaced": true,
+          "staleLeaseRejected": true,
+          "replayReceiptsUnchanged": true,
+          "formalPersistence": false
+        },
+        "modelAttempts": 0,
+        "elapsedMs": 7636,
+        "scope": "headless official lazy-load/synchronous-start/location/tenure/activity-entry/save-builder/restore-fields compatibility; no IndexedDB, fullLoadGame, formal UI, top-level endTurn or full composite claim"
+      },
+      {
+        "runtimeIdentity": {
+          "files": 480,
+          "sha256": "a6da7d7f5d3f6df478a955506ffd7df1d9a1a11958bc61ef931dd93b5c58e734"
+        },
+        "scenarioId": "sc-tang840-840",
+        "scenarioName": "晚唐·开成五年——山海诸邦",
+        "scriptLoads": [
+          {
+            "relative": "scenarios/tang840-840.js",
+            "sha256": "eab1a297502a0b001c0d6c629381b316ebb6c4d9aa32c33160c3d671739879fe",
+            "bytes": 31914537
+          }
+        ],
+        "expected": {
+          "people": 142,
+          "factions": 42,
+          "regions": 575
+        },
+        "loaded": {
+          "people": 142,
+          "factions": 42,
+          "regions": 575,
+          "exactLocations": 53
+        },
+        "pair": {
+          "actorId": "char-fa56fad119b5",
+          "actorName": "嗢没斯",
+          "targetId": "char-f48749d0f1cf",
+          "targetName": "㕎馺可汗",
+          "location": "斡耳朵八里"
+        },
+        "duties": {
+          "status": "resolved",
+          "rows": []
+        },
+        "migratedPostIds": [],
+        "activity": {
+          "id": "plan:official-compat:sc-tang840-840",
+          "kind": "greeting",
+          "status": "in_transit",
+          "messages": [
+            {
+              "id": "daily-message:1",
+              "status": "in_transit",
+              "toId": "char-f48749d0f1cf"
+            }
+          ]
+        },
+        "save": {
+          "format": "idb-snapshot-schema",
+          "bytes": 108827261,
+          "restore": "_buildSaveState + JSON transport + _restoreSavedFields",
+          "worldReplaced": true,
+          "staleLeaseRejected": true,
+          "replayReceiptsUnchanged": true,
+          "formalPersistence": false
+        },
+        "modelAttempts": 0,
+        "elapsedMs": 24268,
+        "scope": "headless official lazy-load/synchronous-start/location/tenure/activity-entry/save-builder/restore-fields compatibility; no IndexedDB, fullLoadGame, formal UI, top-level endTurn or full composite claim"
+      }
+    ]
+  },
+  "checkerAdaptation": "../../official-checker-cache-adaptation.json",
+  "priorAttempt": "../2026-10-23T06-03-03-362Z-68aae9ea-3f38-4e9a-9951-22d24d60defb/",
+  "scope": "Complete local59 targeted smoke and static gate run only; not a formal unprofiled browser, full CI, paid model or all-world acceptance.",
+  "reportSha256": "e27306a913f9274e35e7e42ea491e48cd2348e231b66a416f34791122a83efd0",
+  "targetedReportSha256": "905a4905d7d85d83b33f985226a0981b132bd7d5dd2bd56c54621850f8141ffc"
+}

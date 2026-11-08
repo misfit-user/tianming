@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "runId": "fad96787-97f8-4f56-8c89-910434b72ef4",
+  "scope": "Observed formal official runtime only; timings are hardware-specific; sampled heap maxima are not a leak proof or a continuous peak.",
+  "elapsedMs": 657452,
+  "simulatedDays": 60,
+  "population": 513,
+  "activityCount": 15,
+  "activityKinds": {
+    "greeting": 13,
+    "assistance": 1,
+    "meeting": 1
+  },
+  "activityStatuses": {
+    "cancelled": 7,
+    "done": 8
+  },
+  "pending": [],
+  "rendererHeap": {
+    "sampleCount": 408,
+    "maxObservedUsedBytes": 3063140828,
+    "lastObservedUsedBytes": 1384335472,
+    "limitBytes": 4294705152
+  },
+  "processMemory": {
+    "sampleCount": 127,
+    "maxObservedTabWorkingSetKiB": 4688876,
+    "lastTabWorkingSetKiB": 2210296
+  },
+  "modelAttempts": {
+    "transport": 90,
+    "categories": {
+      "other-direct-producer": 33,
+      "tagged-world-subcall": 45,
+      "routine-review": 6,
+      "npc-direction": 6
+    },
+    "ordinaryComposite": 0,
+    "externalNetwork": 0
+  },
+  "planning": {
+    "uniqueObserved": 495,
+    "finalStatusCounts": {
+      "no_change": 2,
+      "expired": 493
+    },
+    "finalPendingCount": 0
+  },
+  "activityStorageProjection": {
+    "slot1UTF16CodeUnits": 114066,
+    "slot2UTF16CodeUnits": 128185,
+    "notFullSaveBytes": true
+  },
+  "economy": {
+    "turns": 3,
+    "systems": 3,
+    "provinceEconomy": 3,
+    "intervals": [
+      {
+        "ticketId": 1,
+        "beforeTurn": 1,
+        "afterTurn": 2,
+        "load": 0,
+        "campaignId": "tmc_80630a69-d45e-4cbe-94a3-b5856a39b2d2",
+        "timelineId": "tml_418c515f_0511_4770_aa50_ca6ef71dd37a",
+        "beforeDay": 0,
+        "afterDay": 30,
+        "days": 30
+      },
+      {
+        "ticketId": 4,
+        "beforeTurn": 2,
+        "afterTurn": 3,
+        "load": 1,
+        "campaignId": "tmc_80630a69-d45e-4cbe-94a3-b5856a39b2d2",
+        "timelineId": "tml_073621f4_c6cc_40a5_a0f1_73b5fbd90f0a",
+        "beforeDay": 30,
+        "afterDay": 37,
+        "days": 7
+      },
+      {
+        "ticketId": 7,
+        "beforeTurn": 3,
+        "afterTurn": 4,
+        "load": 2,
+        "campaignId": "tmc_80630a69-d45e-4cbe-94a3-b5856a39b2d2",
+        "timelineId": "tml_f7e46f66_6284_4094_8532_6c99ccecf953",
+        "beforeDay": 37,
+        "afterDay": 60,
+        "days": 23
+      }
+    ]
+  },
+  "profiling": {
+    "preciseMemory": true,
+    "heapSampling": false,
+    "protocolForcesGC": false,
+    "cpuProfile": false
+  }
+}

@@ -1,0 +1,95 @@
+FAIL background pending sources are saved before a second frozen basis or model request is allocated
+Error: production review must await its pending canonical save
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:381:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background save wait rechecks load-generation before any new basis or model call
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:391:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background save wait rechecks world before any new basis or model call
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:391:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background save wait rechecks player-state before any new basis or model call
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:391:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background save wait rechecks turn before any new basis or model call
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:391:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background save wait rechecks api before any new basis or model call
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:391:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background save wait rechecks busy before any new basis or model call
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:391:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background save wait rechecks cancel before any new basis or model call
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:391:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background save wait rechecks signal before any new basis or model call
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:391:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL a rejected save barrier preserves its original error and does not create a fresh save retry
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:405:54)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background error preserves pending sources and error without re-planning or leaking a live review
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:414:41)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background deferred preserves pending sources and error without re-planning or leaking a live review
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:414:41)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background unavailable preserves pending sources and error without re-planning or leaking a live review
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'verified'
+- 'pending'
+
+    at Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:416:55)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL background empty-queue preserves pending sources and error without re-planning or leaking a live review
+Error: save barrier must be entered
+    at until (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:364:133)
+    at async Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:414:41)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL unaccepted world-lease-unavailable request cannot be treated as a successful empty save queue
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+2 !== 1
+
+    at Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:425:10)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL unaccepted different-world-save-pending request cannot be treated as a successful empty save queue
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+2 !== 1
+
+    at Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:425:10)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)
+FAIL actual production background queue commits its detached pending evidence before review resumes
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+2 !== 1
+
+    at Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:445:10)
+    at async run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:70)

@@ -1,0 +1,14 @@
+FAIL unread GM maps and P scenarios freeze immediately without parsing and each root materializes only once
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+2 !== 0
+
+    at Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:301:9)
+    at run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:78)
+FAIL root JSON facts preserve dates, undefined, nonfinite numbers, sparse arrays, aliases and actual toJSON keys
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+1 !== 0
+
+    at Object.fn (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\smoke-emergency-recovery-review.js:313:9)
+    at run (C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\scripts\lib-emergency-recovery.js:24:78)

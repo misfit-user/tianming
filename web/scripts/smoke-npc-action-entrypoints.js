@@ -37,7 +37,7 @@ async function office(){
 }
 function saveRoundtrip(c){
  c.setTimeout=()=>0;c.clearTimeout=()=>{};c.localStorage={getItem:()=>null,setItem(){},removeItem(){}};c.generateMemorials=()=>{};
- ['tm-utils.js','tm-save-world-validation.js','tm-save-lifecycle.js'].forEach(c.load);
+ ['tm-utils.js','tm-save-stable-id-migration.js','tm-save-world-validation.js','tm-save-lifecycle.js'].forEach(c.load);
  const snapshot=c._buildSaveState({format:'idb',prepare:false,detach:true}),money=c.GM.guoku.money,count=c.GM._npcPlans.length,receipts=Object.keys(c.GM._npcActionState.receipts).length;
  c.GM=JSON.parse(JSON.stringify(snapshot.GM));c._restoreSavedFields({});
  eq(c.GM._npcPlans.length,count,'actual save builder and restore preserve plans');eq(Object.keys(c.GM._npcActionState.receipts).length,receipts,'actual save builder preserves durable operation index');eq(c.GM.guoku.money,money,'load has no inferred monetary effects');

@@ -78,12 +78,12 @@ jobs:
   electron-bridge-cases:
     name: electron-cases (${{ matrix.group }})
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: ${{ matrix.group == 'npc-composite' && 45 || 30 }}
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
-        group: [core, battle, court, authoring, maps, official-authoring, relief]
+        group: [core, battle, court, npc-composite, authoring, maps, official-authoring, relief]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -131,6 +131,13 @@ jobs:
       - name: Zero API local introduction, independent player response and sourced assistance
         if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --npc-daily
+      - name: Official NPC composite meeting, onsite choices, two real reloads and thirty days
+        if: matrix.group == 'npc-composite'
+        env:
+          TM_BRIDGE_MEMORY_DIAGNOSTICS: '1'
+          TM_BRIDGE_HEAP_SAMPLING: '0'
+          TM_BRIDGE_CPU_PROFILE: '0'
+        run: node scripts/verify-electron-bridge.js --npc-composite
       - name: Edict office creation, recursive tree, appointment target and native save recovery
         if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --office-writeback

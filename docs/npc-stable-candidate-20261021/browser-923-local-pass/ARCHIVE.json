@@ -1,0 +1,90 @@
+{
+  "recordedAt": "2026-10-23T05:38:38.934Z",
+  "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de",
+  "rows": [
+    {
+      "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de/report.json",
+      "file": "report.json",
+      "sourceBytes": 85933,
+      "sourceSha256": "6632ac5ba900452cd88355129905603ee4ce6da1289e9eb56f1189f08d063ed9",
+      "storedBytes": 85933,
+      "storedSha256": "6632ac5ba900452cd88355129905603ee4ce6da1289e9eb56f1189f08d063ed9",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de/composite-timeline.json",
+      "file": "composite-timeline.json",
+      "sourceBytes": 5076133,
+      "sourceSha256": "fec4874e0fe387cd5e18a9f6a2eac06375601043e659ec3175e0f2c2a8adcf83",
+      "storedBytes": 2997441,
+      "storedSha256": "508622ff96a57e6787e1bae102a32b4f485eb2038f51dbe97093fc488d7e09ce",
+      "transform": "Whitespace-only JSON compaction; every parsed field retained"
+    },
+    {
+      "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de/renderer.log",
+      "file": "renderer.log",
+      "sourceBytes": 274375,
+      "sourceSha256": "dee8151d684a0a7bbbd6816d9594a0382685c5e13a3bb39802876f8cd94c0447",
+      "storedBytes": 274375,
+      "storedSha256": "dee8151d684a0a7bbbd6816d9594a0382685c5e13a3bb39802876f8cd94c0447",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de/process-memory.jsonl",
+      "file": "process-memory.jsonl",
+      "sourceBytes": 256229,
+      "sourceSha256": "8393499bb86f728d2d2ee4bb0ee451896b78858142d44a7d6fed8218df1b6da6",
+      "storedBytes": 256229,
+      "storedSha256": "8393499bb86f728d2d2ee4bb0ee451896b78858142d44a7d6fed8218df1b6da6",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de/renderer-heap.jsonl",
+      "file": "renderer-heap.jsonl",
+      "sourceBytes": 77915,
+      "sourceSha256": "ee44e3981fa12d3bd210e14960161f6378c6943b1c89aa03a400a293dc5e91c0",
+      "storedBytes": 77915,
+      "storedSha256": "ee44e3981fa12d3bd210e14960161f6378c6943b1c89aa03a400a293dc5e91c0",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de/01-official-start.png",
+      "file": "01-official-start.png",
+      "sourceBytes": 967319,
+      "sourceSha256": "14cee6cbade8ba9d7c4d80b9dc5c3de61bcb8eb97f4391d4b5539e9639c1f6c1",
+      "storedBytes": 967319,
+      "storedSha256": "14cee6cbade8ba9d7c4d80b9dc5c3de61bcb8eb97f4391d4b5539e9639c1f6c1",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de/02-meeting-request.png",
+      "file": "02-meeting-request.png",
+      "sourceBytes": 1055800,
+      "sourceSha256": "d53db5fa076f2a985c7bdcc0bfffecae4178c5de6ab49603afa0c0ace31e53cb",
+      "storedBytes": 1055800,
+      "storedSha256": "d53db5fa076f2a985c7bdcc0bfffecae4178c5de6ab49603afa0c0ace31e53cb",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de/03-onsite-question.png",
+      "file": "03-onsite-question.png",
+      "sourceBytes": 1004815,
+      "sourceSha256": "a40b792d85c6d56e516ed0d73060c117609998fa0eb867495e05316a6f80d483",
+      "storedBytes": 1004815,
+      "storedSha256": "a40b792d85c6d56e516ed0d73060c117609998fa0eb867495e05316a6f80d483",
+      "transform": "byte-identical copy"
+    },
+    {
+      "source": "web/dev-tools/electron-bridge/67c9b63c-d08f-4183-b3aa-5e97109fc8de/04-completed-return.png",
+      "file": "04-completed-return.png",
+      "sourceBytes": 1504745,
+      "sourceSha256": "32b00c5b2d0bf7e9a1265f43ce0576af7610eaff2e09a592e40ff7ec6ec10497",
+      "storedBytes": 1504745,
+      "storedSha256": "32b00c5b2d0bf7e9a1265f43ce0576af7610eaff2e09a592e40ff7ec6ec10497",
+      "transform": "byte-identical copy"
+    }
+  ],
+  "excluded": [
+    "crash-dumps: remain in original tool artifact, not copied into delivery docs"
+  ]
+}

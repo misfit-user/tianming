@@ -1001,19 +1001,6 @@
    * @param {string} vassalTypeName - 封臣类型名称
    * @returns {array} - 返回关联的官职名称数组
    */
-  function getRelatedOfficialsForVassalType(vassalTypeName) {
-    if (!scriptData.vassalSystem || !scriptData.vassalSystem.vassalTypes) return [];
-
-    var vassalType = scriptData.vassalSystem.vassalTypes.find(function(vt) {
-      return vt.name === vassalTypeName;
-    });
-
-    if (vassalType && vassalType.relatedOfficials) {
-      return Array.isArray(vassalType.relatedOfficials) ? vassalType.relatedOfficials : [];
-    }
-
-    return [];
-  }
 
   async function aiGenerateVassalTypes() {
     var _apiCfg = {}; try { _apiCfg = JSON.parse(localStorage.getItem('tm_api') || '{}'); } catch(e) {}

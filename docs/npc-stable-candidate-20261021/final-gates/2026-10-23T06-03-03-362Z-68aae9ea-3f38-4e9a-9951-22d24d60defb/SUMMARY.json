@@ -1,0 +1,93 @@
+{
+  "recordedAt": "2026-10-23T06:09:30.065Z",
+  "head": "f4359559260a76417e75a5de76c094fc2248ed4c",
+  "runId": "68aae9ea-3f38-4e9a-9951-22d24d60defb",
+  "status": "failed",
+  "complete": true,
+  "elapsedMs": 333403,
+  "environment": {
+    "node": "v20.18.3",
+    "platform": "win32",
+    "arch": "x64",
+    "root": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011",
+    "overrides": {
+      "TMP": "D:\\tianming-npc-candidate-temp",
+      "TEMP": "D:\\tianming-npc-candidate-temp",
+      "TMPDIR": "D:\\tianming-npc-candidate-temp",
+      "TIANMING_RELEASE_TEMP_ROOT": "D:\\tianming-npc-candidate-temp"
+    },
+    "inheritedNodeOptions": null
+  },
+  "sourceUnchanged": true,
+  "inputFileCount": 2395,
+  "inputSha256": "03ccefdd31b4fdcd4b1c5eaefc1fc867e5017c3cdc2eef3e45b03bb78bfbc53c",
+  "afterSha256": "03ccefdd31b4fdcd4b1c5eaefc1fc867e5017c3cdc2eef3e45b03bb78bfbc53c",
+  "targetedSummary": {
+    "selected": 59,
+    "pass": 59,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "id": "targeted-smokes",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 228663.8229
+    },
+    {
+      "id": "other-officials",
+      "pass": false,
+      "exit": 1,
+      "elapsedMs": 1803.4472
+    },
+    {
+      "id": "architecture",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 21925.7976
+    },
+    {
+      "id": "official-parity",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 54520.3167
+    },
+    {
+      "id": "native-manifest",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 1459.8346
+    },
+    {
+      "id": "startup-manifest",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 354.1161
+    },
+    {
+      "id": "release-contract",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 4909.0599
+    },
+    {
+      "id": "hot-baseline",
+      "pass": true,
+      "exit": 0,
+      "elapsedMs": 2196.3111
+    }
+  ],
+  "failureClassification": {
+    "kind": "documentation compatibility checker shape mismatch",
+    "file": "docs/npc-stable-candidate-20261021/check-other-officials.cjs",
+    "line": 38,
+    "observation": "Hash.update(row.source) receives undefined because main now stores vm.Script directly in compiledScripts. Official scenario checks did not reach startup or assertions in this step.",
+    "boundary": "Does not establish an official game defect, environment failure or test pass. Original failure report retained."
+  },
+  "reportSha256": "f05888b7a399449b47afd61095985677c5914a802a9a57fd79bc033f19df8cf0",
+  "targetedReportSha256": "dba2f49d7edc794064eb2c117f63382506318a7ebdabeb54e1e1a05b25f832a6"
+}

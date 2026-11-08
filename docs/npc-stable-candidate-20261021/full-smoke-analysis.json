@@ -1,0 +1,646 @@
+{
+  "head": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+  "finalRunId": "e4644794-bed1-4dfe-9a31-dd352a27f5a3",
+  "summary": {
+    "selected": 1181,
+    "pass": 1177,
+    "fail": 2,
+    "waived": 2,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "gatePassed": false,
+  "allTestsExecuted": true,
+  "originalDeadlinesPreserved": true,
+  "codeAndFixturesFrozen": {
+    "schemaVersion": 1,
+    "startedAt": "2026-10-21T17:03:15.580Z",
+    "finishedAt": "2026-10-21T17:26:49.997Z",
+    "exitCode": 1,
+    "signal": null,
+    "command": [
+      "node",
+      "web/scripts/ci-smokes.js",
+      "--jobs",
+      "2"
+    ],
+    "runtimeUnchanged": true,
+    "discoveryUnchanged": true,
+    "generatedTestDataUnchanged": true,
+    "beforeTreeSha256": "12ffa580b23b8d922ed42949d4e46ec2f9c76d47b9a182335d3ed21f8914bc7f",
+    "afterTreeSha256": "12ffa580b23b8d922ed42949d4e46ec2f9c76d47b9a182335d3ed21f8914bc7f",
+    "testedHead": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+    "reportFile": "web/dev-tools/arch-guard/ci-nFRIyt/smoke-report.json",
+    "retainedReport": "docs/npc-stable-candidate-20261021/full-smoke-report.json",
+    "log": "docs/npc-stable-candidate-20261021/full-smoke.log",
+    "reportSummary": {
+      "summary": {
+        "selected": 1181,
+        "pass": 1177,
+        "fail": 2,
+        "waived": 2,
+        "flaky": 0,
+        "suspect": 0,
+        "skipped": 0
+      },
+      "runId": "e4644794-bed1-4dfe-9a31-dd352a27f5a3",
+      "head": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b"
+    }
+  },
+  "firstRunFailuresOnFinalTree": [
+    {
+      "name": "smoke-division-reassign.js",
+      "pass": true,
+      "exit": 0,
+      "timedOut": false,
+      "ms": 25892
+    },
+    {
+      "name": "smoke-full-turn-flow.js",
+      "pass": false,
+      "exit": -1,
+      "timedOut": true,
+      "ms": 120308
+    },
+    {
+      "name": "smoke-map-route-days.js",
+      "pass": true,
+      "exit": 0,
+      "timedOut": false,
+      "ms": 3312
+    },
+    {
+      "name": "smoke-perf-save-preparation.js",
+      "pass": true,
+      "exit": 0,
+      "timedOut": false,
+      "ms": 234720
+    },
+    {
+      "name": "smoke-production-dependencies.js",
+      "pass": true,
+      "exit": 0,
+      "timedOut": false,
+      "ms": 3606
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "pass": false,
+      "exit": -1,
+      "timedOut": true,
+      "ms": 120448
+    },
+    {
+      "name": "smoke-startup-phase-observability.js",
+      "pass": true,
+      "exit": 0,
+      "timedOut": false,
+      "ms": 571
+    }
+  ],
+  "diagnostics": {
+    "prefetchMsOutsideBothChildDeadlines": 4744,
+    "results": [
+      {
+        "label": "current",
+        "head": "e32ba8d19705b5ec9fcc2ac202386c012ac8c67b",
+        "wallMs": 120311,
+        "exit": null,
+        "signal": "SIGTERM",
+        "lastObservedMs": 118399,
+        "endTurnCalledAtMs": 15224,
+        "courtCloseCalledAtMs": 44833,
+        "turn": 2,
+        "save": {
+          "hasEndTurnSavePromise": true,
+          "hasCanonicalPayload": true,
+          "receiptState": "committed"
+        },
+        "promises": {
+          "_endTurn_saveSnapshot": {
+            "status": "fulfilled",
+            "calledAtMs": 84973,
+            "settledAtMs": 118392,
+            "result": true
+          },
+          "createCanonicalPayload": {
+            "status": "fulfilled",
+            "calledAtMs": 86416,
+            "settledAtMs": 102045
+          },
+          "saveManyAtomic": {
+            "status": "fulfilled",
+            "calledAtMs": 102047,
+            "settledAtMs": 102787,
+            "result": true
+          }
+        },
+        "saveDB": {
+          "available": false,
+          "blocked": false
+        },
+        "jobs": [
+          {
+            "id": "borderInvasionAI",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "partyInference",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "edict_efficacy",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "npc_behavior",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          }
+        ],
+        "modelDiagnostics": {
+          "rawPatternHits": 2,
+          "excludedNonError": "[CharFullSchema] 初始化 217 位角色完整字段",
+          "actualObservedFallbackCount": 1,
+          "observedProtocolRejections": [
+            "[cc3·agenda] AI 返回不可用·走 fallback"
+          ]
+        },
+        "warnings": [
+          "[TM.Features] [object Object]",
+          "[TM.Features] [object Object]",
+          "[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb"
+        ],
+        "errors": [
+          "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+          "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+          "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+        ]
+      },
+      {
+        "label": "baseline",
+        "head": "e6d5a592fc258f3328fd810c91b61ed0a24599cf",
+        "wallMs": 120090,
+        "exit": 0,
+        "signal": null,
+        "lastObservedMs": 119658,
+        "endTurnCalledAtMs": 15802,
+        "courtCloseCalledAtMs": 45010,
+        "turn": 2,
+        "save": {
+          "hasEndTurnSavePromise": true,
+          "hasCanonicalPayload": true,
+          "receiptState": "committed"
+        },
+        "promises": {
+          "_endTurn_saveSnapshot": {
+            "status": "fulfilled",
+            "calledAtMs": 85189,
+            "settledAtMs": 114885,
+            "result": true
+          },
+          "createCanonicalPayload": {
+            "status": "fulfilled",
+            "calledAtMs": 86432,
+            "settledAtMs": 101757
+          },
+          "saveManyAtomic": {
+            "status": "fulfilled",
+            "calledAtMs": 101759,
+            "settledAtMs": 102636,
+            "result": true
+          }
+        },
+        "saveDB": {
+          "available": false,
+          "blocked": false
+        },
+        "jobs": [
+          {
+            "id": "borderInvasionAI",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-mxuc-1-佃农与流民-general-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-mxuc-1-军户-general-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-西安府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-延安府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-凤翔府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-汉中府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-平凉府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-巩昌府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-庆阳府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-临洮府-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-庄浪卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-洮州卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-岷州卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-甘州卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-肃州卫-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-宁夏镇-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "revoltIdentity_revolt-mxchain-榆林镇-common-t1",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "partyInference",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "edict_efficacy",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          },
+          {
+            "id": "npc_behavior",
+            "status": "done",
+            "attempts": 1,
+            "totalAttempts": 1,
+            "maxAttempts": 2,
+            "error": null
+          }
+        ],
+        "modelDiagnostics": {
+          "rawPatternHits": 2,
+          "excludedNonError": "[CharFullSchema] 初始化 217 位角色完整字段",
+          "actualObservedFallbackCount": 1,
+          "observedProtocolRejections": [
+            "[cc3·agenda] AI 返回不可用·走 fallback"
+          ]
+        },
+        "warnings": [
+          "[TM.Features] [object Object]",
+          "[TM.Features] [object Object]",
+          "[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb"
+        ],
+        "errors": [
+          "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+          "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+          "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+        ]
+      }
+    ],
+    "interpretation": [
+      "The full-turn-flow failure remains a real failed gate on the final candidate.",
+      "The corrected 120-second baseline comparison completed just before the deadline; this does not prove the current failure is pre-existing or purely environmental.",
+      "Both runs reached turn 2 and recorded committed canonical save receipts; all observed post-turn jobs finished in one attempt.",
+      "The sampled model diagnostics contain one agenda fallback and one non-error schema initialization log. The raw broad regex hit count of two is not two model errors.",
+      "Both headless runs deliberately have unavailable IndexedDB and fall back to localStorage; the auxiliary time-snapshot reports stub-no-idb. These are test-fixture facts, not evidence that real desktop saves fail.",
+      "The start-game-data-integrity timeout was not baseline-compared; its cause remains unclassified.",
+      "No runtime/test assertions, test deadlines, or waivers were changed for these diagnostics."
+    ],
+    "cache": "web/dev-tools/arch-guard/full-turn-baseline-cache-e6d5a592.json (ignored; reconstructed from Git, not delivery source)"
+  },
+  "savePerformanceInputIdentity": [
+    {
+      "path": "web/scripts/smoke-perf-save-preparation.js",
+      "baselineGitBlob": "5f4accbe614acae8ab8742b2ad03b9445bdd8c58",
+      "currentGitBlob": "5f4accbe614acae8ab8742b2ad03b9445bdd8c58",
+      "identical": true
+    },
+    {
+      "path": "web/scripts/lib-perf-round1.js",
+      "baselineGitBlob": "dc9ed86ed57507ea6164a1e819b18a3787fe4aa4",
+      "currentGitBlob": "dc9ed86ed57507ea6164a1e819b18a3787fe4aa4",
+      "identical": true
+    },
+    {
+      "path": "web/tm-save-lifecycle.js",
+      "baselineGitBlob": "9fa896ad9c3eb26ac912969a88839e0ee868c7e1",
+      "currentGitBlob": "9fa896ad9c3eb26ac912969a88839e0ee868c7e1",
+      "identical": true
+    },
+    {
+      "path": "web/tm-utils.js",
+      "baselineGitBlob": "c2f10f6b1fc055fb876b768634594135be281662",
+      "currentGitBlob": "c2f10f6b1fc055fb876b768634594135be281662",
+      "identical": true
+    },
+    {
+      "path": "web/tm-huji-engine.js",
+      "baselineGitBlob": "201332c6819348f185230f7fd97643e74c575b6c",
+      "currentGitBlob": "201332c6819348f185230f7fd97643e74c575b6c",
+      "identical": true
+    },
+    {
+      "path": "web/tm-patches-start.js",
+      "baselineGitBlob": "ec215ef0d88480ecaeedf948a2b021ec027d73ed",
+      "currentGitBlob": "ec215ef0d88480ecaeedf948a2b021ec027d73ed",
+      "identical": true
+    },
+    {
+      "path": "web/tm-chronicle-system.js",
+      "baselineGitBlob": "2cae20bb22e9ed9ba4add4a6897417a9e98460ab",
+      "currentGitBlob": "2cae20bb22e9ed9ba4add4a6897417a9e98460ab",
+      "identical": true
+    },
+    {
+      "path": "web/tm-event-system.js",
+      "baselineGitBlob": "0039e816c8b9419a07c0b7a982c210f90eb4a36c",
+      "currentGitBlob": "0039e816c8b9419a07c0b7a982c210f90eb4a36c",
+      "identical": true
+    },
+    {
+      "path": "web/tm-help-social.js",
+      "baselineGitBlob": "1285ffcc1fbf498ef05db53ed1c3ce1e2d4932ef",
+      "currentGitBlob": "1285ffcc1fbf498ef05db53ed1c3ce1e2d4932ef",
+      "identical": true
+    },
+    {
+      "path": "web/tm-feudal-warfare.js",
+      "baselineGitBlob": "a2f045fc7cf5e77af5533b410a9fa482e780fdb8",
+      "currentGitBlob": "a2f045fc7cf5e77af5533b410a9fa482e780fdb8",
+      "identical": true
+    },
+    {
+      "path": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "baselineGitBlob": "14d7751e46d2917d75a8685cfe34761d9c234b3e",
+      "currentGitBlob": "14d7751e46d2917d75a8685cfe34761d9c234b3e",
+      "identical": true
+    },
+    {
+      "path": "scenarios/天启七年·九月（官方）.json",
+      "baselineGitBlob": "7926f2fb724e25d9ac3cb5e70b5a85cd2f57d5d1",
+      "currentGitBlob": "7926f2fb724e25d9ac3cb5e70b5a85cd2f57d5d1",
+      "identical": true
+    }
+  ],
+  "savePerformanceInputIdentityAllMatch": true
+}

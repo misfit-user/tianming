@@ -1,0 +1,88 @@
+{
+  "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "runId": "ccb5f4e7-4467-47fc-a217-9a363e51eb11",
+  "startedAt": "2026-10-22T17:22:36.714Z",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "web/scripts/run-smokes.js",
+    "--all",
+    "--no-retry",
+    "--jobs",
+    "1",
+    "--run-id",
+    "ccb5f4e7-4467-47fc-a217-9a363e51eb11",
+    "--report",
+    "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\docs\\npc-stable-candidate-20261021\\native-codec-fixture-2026-10-22T17-15-22-695Z\\safe-yield-two-integration-report.json",
+    "--grep",
+    "smoke-full-turn-flow.js",
+    "--grep",
+    "smoke-start-game-data-integrity.js"
+  ],
+  "node": "v24.14.0",
+  "timeoutMs": 120000,
+  "retries": 0,
+  "overrides": {
+    "TMP": "E:\\tianming-npc-candidate-temp",
+    "TEMP": "E:\\tianming-npc-candidate-temp",
+    "TMPDIR": "E:\\tianming-npc-candidate-temp",
+    "TIANMING_RELEASE_TEMP_ROOT": "E:\\tianming-npc-candidate-temp"
+  },
+  "before": [
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "sha256": "41d95a231d652a43c92dde7257330738aac8a5d0bbea04261e8bfdc9bb3f602b"
+    },
+    {
+      "file": "web/scripts/smoke-start-game-data-integrity.js",
+      "sha256": "20a68ab59fd133d694613ff9be41c6803d62760baf63f25f6c8d0d5febcf815f"
+    },
+    {
+      "file": "web/scripts/headless-smoke.js",
+      "sha256": "39a832f551534caa64959133aac00e1d281ce68c82b7a5d661b9974408c944c7"
+    },
+    {
+      "file": "web/tm-storage.js",
+      "sha256": "320b212981a47a76739ffb587bd4375765a46e1e528b40e3ae695472fa583ba9"
+    },
+    {
+      "file": "web/tm-npc-travel.js",
+      "sha256": "dab485ebfa29806134e62bcfa42b7dceef771d2363d9a2cf190cab74bd0cd084"
+    },
+    {
+      "file": "web/tm-emergency-recovery-review.js",
+      "sha256": "012a629d8b6bf3b5d5f2f137b45755f8f01b6338f2010409619aa45f225171d6"
+    }
+  ],
+  "scope": "single validation per test after restoring original synchronous startup order; prior results retained",
+  "finishedAt": "2026-10-22T17:26:27.435Z",
+  "elapsedMs": 230721,
+  "exitCode": 1,
+  "signal": null,
+  "after": [
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "sha256": "41d95a231d652a43c92dde7257330738aac8a5d0bbea04261e8bfdc9bb3f602b"
+    },
+    {
+      "file": "web/scripts/smoke-start-game-data-integrity.js",
+      "sha256": "20a68ab59fd133d694613ff9be41c6803d62760baf63f25f6c8d0d5febcf815f"
+    },
+    {
+      "file": "web/scripts/headless-smoke.js",
+      "sha256": "39a832f551534caa64959133aac00e1d281ce68c82b7a5d661b9974408c944c7"
+    },
+    {
+      "file": "web/tm-storage.js",
+      "sha256": "320b212981a47a76739ffb587bd4375765a46e1e528b40e3ae695472fa583ba9"
+    },
+    {
+      "file": "web/tm-npc-travel.js",
+      "sha256": "dab485ebfa29806134e62bcfa42b7dceef771d2363d9a2cf190cab74bd0cd084"
+    },
+    {
+      "file": "web/tm-emergency-recovery-review.js",
+      "sha256": "012a629d8b6bf3b5d5f2f137b45755f8f01b6338f2010409619aa45f225171d6"
+    }
+  ],
+  "sourceUnchanged": true
+}

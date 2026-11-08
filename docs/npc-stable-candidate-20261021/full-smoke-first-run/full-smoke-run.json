@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-21T16:10:48.414Z",
+  "finishedAt": "2026-10-21T16:37:35.044Z",
+  "exitCode": 1,
+  "signal": null,
+  "command": [
+    "node",
+    "web/scripts/ci-smokes.js",
+    "--jobs",
+    "2"
+  ],
+  "runtimeUnchanged": false,
+  "discoveryUnchanged": true,
+  "beforeTreeSha256": "495eafcdcdc89a5d51e852f57fc73c470126a6b8c6b7103f7e6e88cae4ce4e11",
+  "afterTreeSha256": "b60ef386315c821e37daafb08dfd1c6ed684396b49f9cd512d0d79ae918f7b8a",
+  "testedHead": "e6d5a592fc258f3328fd810c91b61ed0a24599cf",
+  "reportFile": "web/dev-tools/arch-guard/ci-7ZHrC3/smoke-report.json",
+  "retainedReport": "docs/npc-stable-candidate-20261021/full-smoke-report.json",
+  "log": "docs/npc-stable-candidate-20261021/full-smoke.log",
+  "reportSummary": {
+    "summary": {
+      "selected": 1181,
+      "pass": 1172,
+      "fail": 7,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "runId": "ceba4470-7170-4912-b8bf-f14eefdae4a2",
+    "head": "e6d5a592fc258f3328fd810c91b61ed0a24599cf"
+  }
+}

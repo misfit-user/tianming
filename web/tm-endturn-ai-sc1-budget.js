@@ -110,14 +110,6 @@
     };
   }
 
-  function userMessageIndex(body) {
-    var messages = Array.isArray(body && body.messages) ? body.messages : [];
-    for (var i = messages.length - 1; i >= 0; i--) {
-      if (messages[i] && messages[i].role === 'user' && typeof messages[i].content === 'string') return i;
-    }
-    return -1;
-  }
-
   function assertMandatoryPrefix(system, completionTokens) {
     // This is only a lower-bound preflight. It never trims instructions, alters
     // output capacity, or replaces the final fully assembled request guard.

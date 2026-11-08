@@ -1,0 +1,287 @@
+{
+  "candidateHead": "d31d47787573e9cb48935a1e8d3e6ccdca56b90f",
+  "actualCheckout": "815bfb626364dd6d0f15b9cab6833099740c8f08",
+  "runId": "611c2c4c-4779-43d3-b115-96f8f77ff39a",
+  "sourceDirectory": "web/dev-tools/ci-39914633560-composite/611c2c4c-4779-43d3-b115-96f8f77ff39a",
+  "sourceHashes": {
+    "renderer.log": "38cfcc35a39eca49cbb57f8fb788d3f745175cae7882b31c8417339fd95a5447",
+    "report.json": "3c9a8364eec04a8bdc8b0449d497cecaf6bb82e7f10da7299a3b0d525adb0d8f",
+    "renderer-heap.jsonl": "de49b77da21e05949ccc860ff5c3ab1d976f423e5750a6273560056fd4ee69c8"
+  },
+  "unprofiled": true,
+  "explicitGc": false,
+  "commitRelease": "2026-10-23T07:09:02.510Z 1 COMPOSITE_COMMIT_RELEASE {\"turn\":4,\"day\":60,\"at\":1792739342509,\"committed\":true,\"committedCaptureReleased\":true,\"captureSessionReleased\":true}",
+  "reviewCalls2": "2026-10-23T07:10:07.282Z 1 [TurnReview] investigating calls=2 tokens=33134 limit=unlimited sources=12/25 核查检验器与回合遗漏（与后续推演并行）",
+  "observations": [
+    {
+      "observation": 1,
+      "at": "2026-10-23T07:10:15.203Z",
+      "world": {
+        "turn": 4,
+        "day": 60,
+        "load": 2,
+        "campaignId": "tmc_923860f5-0a37-4711-88e2-22070f118500",
+        "timelineId": "tml_835f2331_406f_4757_94d0_51abc4ca5799",
+        "sessionToken": "e2e9d2eb-74a6-4fac-95c7-be64f8c5198d",
+        "running": true
+      },
+      "review": [
+        {
+          "id": "review-3",
+          "phase": "investigating",
+          "calls": 2
+        }
+      ],
+      "background": {
+        "pending": false,
+        "inFlight": false,
+        "timer": false
+      },
+      "desktop": {
+        "inFlight": false,
+        "promise": false,
+        "timer": false,
+        "deferred": false,
+        "nativePending": false,
+        "nativeTimedOut": false
+      },
+      "canonical": {
+        "present": true,
+        "revision": 15,
+        "turn": 4,
+        "transactionId": "background:tmc_923860f5-0a37-4711-88e2-22070f118500:tml_835f2331_406f_4757_94d0_51abc4ca5799:4:6",
+        "identity": {
+          "campaignId": "tmc_923860f5-0a37-4711-88e2-22070f118500",
+          "timelineId": "tml_835f2331_406f_4757_94d0_51abc4ca5799",
+          "sessionToken": "e2e9d2eb-74a6-4fac-95c7-be64f8c5198d",
+          "load": 2,
+          "turn": 4,
+          "transactionId": "background:tmc_923860f5-0a37-4711-88e2-22070f118500:tml_835f2331_406f_4757_94d0_51abc4ca5799:4:6"
+        }
+      },
+      "saved": {
+        "revision": 15,
+        "turn": 4,
+        "at": 1792739414899
+      },
+      "requiredJobs": [
+        {
+          "id": "sc25c",
+          "status": "running",
+          "attempts": 1,
+          "turn": 3,
+          "load": 2,
+          "settled": false,
+          "hasPromise": true
+        },
+        {
+          "id": "sc25",
+          "status": "done",
+          "attempts": 1,
+          "turn": 3,
+          "load": 2,
+          "settled": true,
+          "hasPromise": true
+        }
+      ],
+      "otherJobCounts": {
+        "running": 152,
+        "done": 20
+      },
+      "producerReceipts": []
+    },
+    {
+      "observation": 2,
+      "at": "2026-10-23T07:11:03.681Z",
+      "world": {
+        "turn": 4,
+        "day": 60,
+        "load": 2,
+        "campaignId": "tmc_923860f5-0a37-4711-88e2-22070f118500",
+        "timelineId": "tml_835f2331_406f_4757_94d0_51abc4ca5799",
+        "sessionToken": "e2e9d2eb-74a6-4fac-95c7-be64f8c5198d",
+        "running": true
+      },
+      "review": [
+        {
+          "id": "review-3",
+          "phase": "investigating",
+          "calls": 2
+        }
+      ],
+      "background": {
+        "pending": true,
+        "inFlight": false,
+        "timer": true
+      },
+      "desktop": {
+        "inFlight": false,
+        "promise": false,
+        "timer": false,
+        "deferred": false,
+        "nativePending": false,
+        "nativeTimedOut": false
+      },
+      "canonical": {
+        "present": true,
+        "revision": 15,
+        "turn": 4,
+        "transactionId": "background:tmc_923860f5-0a37-4711-88e2-22070f118500:tml_835f2331_406f_4757_94d0_51abc4ca5799:4:6",
+        "identity": {
+          "campaignId": "tmc_923860f5-0a37-4711-88e2-22070f118500",
+          "timelineId": "tml_835f2331_406f_4757_94d0_51abc4ca5799",
+          "sessionToken": "e2e9d2eb-74a6-4fac-95c7-be64f8c5198d",
+          "load": 2,
+          "turn": 4,
+          "transactionId": "background:tmc_923860f5-0a37-4711-88e2-22070f118500:tml_835f2331_406f_4757_94d0_51abc4ca5799:4:6"
+        }
+      },
+      "saved": {
+        "revision": 15,
+        "turn": 4,
+        "at": 1792739456708
+      },
+      "requiredJobs": [
+        {
+          "id": "sc25c",
+          "status": "done",
+          "attempts": 1,
+          "turn": 3,
+          "load": 2,
+          "settled": true,
+          "hasPromise": true
+        },
+        {
+          "id": "sc25",
+          "status": "done",
+          "attempts": 1,
+          "turn": 3,
+          "load": 2,
+          "settled": true,
+          "hasPromise": true
+        }
+      ],
+      "otherJobCounts": {
+        "running": 2,
+        "done": 170
+      },
+      "producerReceipts": [
+        {
+          "kind": "sc25c",
+          "status": "fulfilled",
+          "ok": true,
+          "stale": false,
+          "deferred": false,
+          "skipped": false,
+          "error": null,
+          "errorCode": "",
+          "superseded": false
+        }
+      ]
+    },
+    {
+      "observation": 3,
+      "at": "2026-10-23T07:11:10.698Z",
+      "world": {
+        "turn": 4,
+        "day": 60,
+        "load": 2,
+        "campaignId": "tmc_923860f5-0a37-4711-88e2-22070f118500",
+        "timelineId": "tml_835f2331_406f_4757_94d0_51abc4ca5799",
+        "sessionToken": "e2e9d2eb-74a6-4fac-95c7-be64f8c5198d",
+        "running": true
+      },
+      "review": [
+        {
+          "id": "review-3",
+          "phase": "investigating",
+          "calls": 2
+        }
+      ],
+      "background": {
+        "pending": false,
+        "inFlight": true,
+        "timer": false
+      },
+      "desktop": {
+        "inFlight": false,
+        "promise": false,
+        "timer": false,
+        "deferred": false,
+        "nativePending": false,
+        "nativeTimedOut": false
+      },
+      "canonical": {
+        "present": true,
+        "revision": 15,
+        "turn": 4,
+        "transactionId": "background:tmc_923860f5-0a37-4711-88e2-22070f118500:tml_835f2331_406f_4757_94d0_51abc4ca5799:4:6",
+        "identity": {
+          "campaignId": "tmc_923860f5-0a37-4711-88e2-22070f118500",
+          "timelineId": "tml_835f2331_406f_4757_94d0_51abc4ca5799",
+          "sessionToken": "e2e9d2eb-74a6-4fac-95c7-be64f8c5198d",
+          "load": 2,
+          "turn": 4,
+          "transactionId": "background:tmc_923860f5-0a37-4711-88e2-22070f118500:tml_835f2331_406f_4757_94d0_51abc4ca5799:4:6"
+        }
+      },
+      "saved": {
+        "revision": 15,
+        "turn": 4,
+        "at": 1792739456708
+      },
+      "requiredJobs": [
+        {
+          "id": "sc25c",
+          "status": "done",
+          "attempts": 1,
+          "turn": 3,
+          "load": 2,
+          "settled": true,
+          "hasPromise": true
+        },
+        {
+          "id": "sc25",
+          "status": "done",
+          "attempts": 1,
+          "turn": 3,
+          "load": 2,
+          "settled": true,
+          "hasPromise": true
+        }
+      ],
+      "otherJobCounts": {
+        "running": 2,
+        "done": 170
+      },
+      "producerReceipts": [
+        {
+          "kind": "sc25c",
+          "status": "fulfilled",
+          "ok": true,
+          "stale": false,
+          "deferred": false,
+          "skipped": false,
+          "error": null,
+          "errorCode": "",
+          "superseded": false
+        }
+      ]
+    }
+  ],
+  "lastHeapSample": {
+    "at": "2026-10-23T07:10:15.172Z",
+    "operation": "(()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStat",
+    "heap": {
+      "limit": 4294705152,
+      "used": 2708189932,
+      "total": 2737172892
+    }
+  },
+  "failedAt": "2026-10-23T07:11:22.637Z",
+  "failure": [
+    "Error: render-process-gone: {\"reason\":\"oom\",\"exitCode\":-536870904}\n    at WebContents.<anonymous> (D:\\a\\tianming\\tianming\\scripts\\electron\\bridge-main.cjs:113:73)\n    at WebContents.emit (node:events:530:35)"
+  ],
+  "exactFailedAllocationIdentified": false,
+  "qualification": "Observer establishes a new save overlapped review call 2; it does not capture request.reasons or a JS stack for the fatal allocation."
+}

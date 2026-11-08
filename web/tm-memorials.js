@@ -436,7 +436,9 @@ async function genMemorialsAI(count){
     prompt += '  ※ 忠臣/谏官奏疏：' + _charRangeText('memLoyal') + '·必须达到下限·越忠诚越长(让玩家体验"又臭又长"的忠言)\n';
     prompt += '  ※ 佞臣/普通奏疏：' + _charRangeText('memNormal') + '·必须达到下限·简洁得体\n';
     prompt += '  ※ 密折：' + _charRangeText('memSecret') + '·必须达到下限·言简意赅但暗含深意\n';
-    prompt += '  ※ 全部使用文言(半文言亦可)·善用四六骈句、对偶排比\n';
+    // 文风设置（tm-wenfeng.js）：玩家选了别的档就换成那一档的说法；「照旧」时这一行原样不变
+    var _wfMem = (typeof TM !== 'undefined' && TM.Wenfeng) ? TM.Wenfeng.directive('documents') : '';
+    prompt += _wfMem ? '  ※ ' + _wfMem + '\n' : '  ※ 全部使用文言(半文言亦可)·善用四六骈句、对偶排比\n';
     prompt += '  ※ 奏疏正文中适当分段(每段一个论点)·便于阅读\n';
     prompt += '  ※※ 字数硬性要求·不可仅以套话凑字·须有实质内容(论点+论据+对策)\n';
     prompt += '  ※※ 字数严重不足者视为废稿·将被驳回重写\n';
@@ -655,7 +657,8 @@ async function genMemorialsAI(count){
           // 远方NPC奏疏——进入驿递队列
           mem._remoteFrom = ch.location;
           mem._generatedTurn = GM.turn;
-          var days = (typeof calcLetterDays === 'function') ? calcLetterDays(ch.location, capital, 'normal') : 5;
+          // 奏疏经通政司走官驿急递（日行三百里），不按私人捎信的脚程
+          var days = (typeof calcLetterDays === 'function') ? calcLetterDays(ch.location, capital, 'urgent') : 5;
           var dpv = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 15;
           mem._deliveryTurn = GM.turn + Math.max(1, Math.ceil(days / dpv));
           mem.status = 'in_transit';

@@ -1,0 +1,1642 @@
+{
+  "complete": true,
+  "ok": true,
+  "mode": "npc-composite",
+  "baseline": false,
+  "versions": {
+    "node": "20.18.3",
+    "acorn": "8.14.0",
+    "ada": "2.9.2",
+    "ares": "1.34.4",
+    "base64": "0.5.2",
+    "brotli": "1.0.9",
+    "cjs_module_lexer": "1.4.1",
+    "cldr": "44.1",
+    "icu": "74.2",
+    "llhttp": "8.1.2",
+    "modules": "130",
+    "napi": "9",
+    "nghttp2": "1.61.0",
+    "openssl": "0.0.0",
+    "simdutf": "5.6.4",
+    "tz": "2024a",
+    "undici": "6.21.1",
+    "unicode": "15.1",
+    "uv": "1.46.0",
+    "uvwasi": "0.0.21",
+    "v8": "13.0.245.25-electron.0",
+    "zlib": "1.3.0.1-motley",
+    "electron": "33.4.11",
+    "chrome": "130.0.6723.191"
+  },
+  "results": [
+    {
+      "name": "locked-electron-runtime",
+      "status": "PASS"
+    },
+    {
+      "name": "production-webpreferences",
+      "status": "PASS"
+    },
+    {
+      "name": "observed-turn-data-protocol",
+      "value": 2,
+      "status": "PASS",
+      "required": 2
+    },
+    {
+      "name": "real-bridge-and-ipc",
+      "status": "PASS"
+    },
+    {
+      "name": "production-test-exports-boundary",
+      "status": "PASS"
+    },
+    {
+      "name": "official Shaosong population, current player, map and real formal entry are preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "formal assistance creates the source, NPC independently receives and responds",
+      "status": "PASS"
+    },
+    {
+      "name": "formal departure has a real route, and the travel save actually loads a new world",
+      "status": "PASS"
+    },
+    {
+      "name": "onsite player question uses a current UI ticket and awaits an independent answer",
+      "status": "PASS"
+    },
+    {
+      "name": "official-composite-model-boundary",
+      "status": "PASS",
+      "value": {
+        "transport": [
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "You calibrate a historical simulation game state.\nFor updates and member/leader/origin references use existing snapshot identities. New part",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "relation_adjustments",
+              "class_updates",
+              "party_create",
+              "class_emerge",
+              "party_updates",
+              "faction_updates",
+              "court_issue_updates",
+              "issue_goal_links",
+              "class_character_relation_updates",
+              "notes"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是剧作师·负责推进主要 NPC 的情节弧。基于以下 NPC 的当前状态+近 5 回合所涉编年事件·为每位 NPC 推进/起草未来 3-5 回合的心理走向。\n\n【当前时间】建炎元年秋八月初一\n\n【NPC 快照】\n[\n  {\n    \"name\": \"赵构\",\n    \"zi\": ",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc0",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc0",
+            "responseKeys": [
+              "tensions",
+              "consequences",
+              "memoryQueries"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc1q",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1q",
+            "responseKeys": [
+              "dialogue_commitments",
+              "collective_resolutions",
+              "npc_dialogue_intent",
+              "required_sc1_actions"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "【官制按需细查·辅助主推演】你是主推演的前置助手。下面是本回合官制态势概览与玩家本回合的官制操作。\n请判断哪些官署在本回合最关键（被玩家动过、与大事相关、要害出缺或失职），用 query_office 工具逐一细查（至多 4 个）。其详情将供主推演使用。只查关键的，勿滥查。\n\n【",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "tool_calls"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc05",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc05",
+            "responseKeys": [
+              "causal_chains",
+              "unresolved",
+              "patterns",
+              "player_impact",
+              "npc_memories",
+              "momentum"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc1",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1",
+            "responseKeys": [
+              "turn_summary",
+              "shizhengji_basis",
+              "shilu_text",
+              "szj_title",
+              "shizhengji",
+              "szj_summary",
+              "player_status",
+              "player_inner",
+              "events",
+              "resource_changes",
+              "char_updates",
+              "edict_feedback",
+              "fiscal_adjustments",
+              "personnel_changes",
+              "changes"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc1b",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1b",
+            "responseKeys": [
+              "cultural_works",
+              "npc_letters",
+              "npc_correspondence",
+              "npc_interactions"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc1c",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1c",
+            "responseKeys": [
+              "faction_events",
+              "faction_ai_outcomes",
+              "faction_interactions_advanced",
+              "faction_relation_changes",
+              "faction_succession",
+              "npc_schemes",
+              "hidden_moves",
+              "scheme_actions",
+              "fengwen_snippets"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "【辅臣拟议】\n你扮演当朝中枢辅臣（佐理机务的首席文臣·按本朝制度而定·勿用后世专名如内阁/票拟）。下列奏疏已呈御前·请为每封拟一句简短处理建议（依议/驳之/缓议/会官详议/下有司核议/留中再观）·并略陈一句理由。\n要带你自己的立场与分寸（循资守成或锐意任事·护党或秉公·畏事或敢任",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "【奏疏代拟】\n下列地方民情积压已由有司具题待呈御前。请以各自上奏者(大臣)的口吻·按本朝制度(勿用内阁/票拟等后世专名)·为每封代拟一道正经奏疏正文：陈情(实情与缘由)→略陈成因隐患→提出处置建议(安抚/赈济/蠲免/查劾/付廷议等)·150-240字·纯中文文言奏疏体·不夹英文字",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "0",
+              "1",
+              "2"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是天命每回合固定执行的复核与补全 Agent。本回合推演已经生成，主写回是否成功见 mode 与实际回执；初核与后续推演并行工作。你的职责是核查误判、真实遗漏、诏令未执行以及检验器覆盖不到的内容，并主动修正和补充游戏世界。不能仅复述警告或因无警告就省略检查。核查原诏书、推演、实",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "tools"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc1d",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1d",
+            "responseKeys": [
+              "shilu_text",
+              "szj_title",
+              "shizhengji",
+              "szj_summary",
+              "basis_refs"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc15",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc15",
+            "responseKeys": [
+              "mood_shifts",
+              "relationship_changes",
+              "hidden_moves",
+              "faction_undercurrents",
+              "npc_schemes",
+              "rumors",
+              "npc_cognition"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc16",
+            "label": "根据公开的组织和战争事实整理战略候选。候选是供具体人物判断的建议，不是命令、既定结果或他人内心。不得推知隐秘通信、私财、未送达回应。\n{\"turn\":1,\"factions\":[{\"id\":\"fac_song\",\"name\":\"大宋\"},{\"id\":\"fac_jin\",\"name",
+            "stream": false,
+            "responseKind": "sc16",
+            "responseKeys": [
+              "faction_priorities",
+              "faction_actions",
+              "faction_directives",
+              "diplomatic_shifts",
+              "power_balance_shift"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc18",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc18",
+            "responseKeys": [
+              "military_situation",
+              "war_probability",
+              "supplementary_army_changes",
+              "faction_military_actions",
+              "battleResults",
+              "power_balance_shift"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc2",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc2",
+            "responseKeys": [
+              "zhengwen",
+              "houren_xishuo"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc07",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc07",
+            "responseKeys": [
+              "npc_cognition"
+            ]
+          },
+          {
+            "day": 0,
+            "path": "/v1/chat/completions",
+            "kind": "sc_audit",
+            "label": "You are a strict data consistency auditor. Return JSON only.\n【任务·跨 sub-call 数据一致性审核】\n\n<subcall-1-core>\n  <faction-events>[]</faction-events>",
+            "stream": false,
+            "responseKind": "sc_audit",
+            "responseKeys": [
+              "conflicts",
+              "auto_patches",
+              "needs_rerun"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc25c",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc25c",
+            "responseKeys": [
+              "immediate_foreshadow",
+              "turn_memory",
+              "state_board",
+              "imperial_candidates",
+              "event_weights",
+              "trend"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc25c",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc25c",
+            "responseKeys": [
+              "consolidated",
+              "key_threads",
+              "npc_trajectories",
+              "faction_vectors",
+              "unresolved_tensions",
+              "player_reputation_drift",
+              "next_turn_focus"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是天命推演引擎的党争演绎官。朝堂之上党争激荡·以下各党皆是活的政治势力——你为每党决断本回合作为(宁少勿滥·每党 0-2 个动作)。\n【朝局】回合T2·建炎·皇威28.02·皇权35.05\n【党1·主和当国派 (汪黄)】纲领「南渡避祸·与金通和·罢主战·收兵权·安行在」·处世「",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "parties"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "建炎元年秋九月初一第2回合。\n局势：renewal-fragile，统一50% 集权45% 稳定50% 经济37% 文化50%\n税压52\n资源：帑廪:100，内帑:150，户口:6500，吏治:66，民心:35，皇权:35，皇威:28，金军威胁等级:75，主战派士气:40，务实派",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "建炎元年秋九月初一第2回合。\n局势：renewal-fragile，统一50% 集权45% 稳定50% 经济37% 文化50%\n税压52\n资源：帑廪:100，内帑:150，户口:6500，吏治:66，民心:35，皇权:35，皇威:28，金军威胁等级:75，主战派士气:40，务实派",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "依据收到的信息选择行动，允许无事、等待、拒绝和改条件。禁止替玩家作决定。私人请求不表示对方同意；完成必须由程序核验。\n共享批次只含公开背景；未列出的私人事实不可推测为已知。\n行为类型：appoint,dismiss,transfer,reward,punish,declare_w",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "planning"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "依据收到的信息选择行动，允许无事、等待、拒绝和改条件。禁止替玩家作决定。私人请求不表示对方同意；完成必须由程序核验。\n共享批次只含公开背景；未列出的私人事实不可推测为已知。\n行为类型：appoint,dismiss,transfer,reward,punish,declare_w",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "planning"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "依据收到的信息选择行动，允许无事、等待、拒绝和改条件。禁止替玩家作决定。私人请求不表示对方同意；完成必须由程序核验。\n共享批次只含公开背景；未列出的私人事实不可推测为已知。\n行为类型：appoint,dismiss,transfer,reward,punish,declare_w",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是天命每回合固定执行的复核与补全 Agent。本回合推演已经生成，主写回是否成功见 mode 与实际回执；初核与后续推演并行工作。你的职责是核查误判、真实遗漏、诏令未执行以及检验器覆盖不到的内容，并主动修正和补充游戏世界。不能仅复述警告或因无警告就省略检查。核查原诏书、推演、实",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "tools"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "You calibrate a historical simulation game state.\nFor updates and member/leader/origin references use existing snapshot identities. New part",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "relation_adjustments",
+              "class_updates",
+              "party_create",
+              "class_emerge",
+              "party_updates",
+              "faction_updates",
+              "court_issue_updates",
+              "issue_goal_links",
+              "class_character_relation_updates",
+              "notes"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc0",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc0",
+            "responseKeys": [
+              "tensions",
+              "consequences",
+              "memoryQueries"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc1q",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1q",
+            "responseKeys": [
+              "dialogue_commitments",
+              "collective_resolutions",
+              "npc_dialogue_intent",
+              "required_sc1_actions"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "【官制按需细查·辅助主推演】你是主推演的前置助手。下面是本回合官制态势概览与玩家本回合的官制操作。\n请判断哪些官署在本回合最关键（被玩家动过、与大事相关、要害出缺或失职），用 query_office 工具逐一细查（至多 4 个）。其详情将供主推演使用。只查关键的，勿滥查。\n\n【",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "tool_calls"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc05",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc05",
+            "responseKeys": [
+              "causal_chains",
+              "unresolved",
+              "patterns",
+              "player_impact",
+              "npc_memories",
+              "momentum"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc1",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1",
+            "responseKeys": [
+              "turn_summary",
+              "shizhengji_basis",
+              "shilu_text",
+              "szj_title",
+              "shizhengji",
+              "szj_summary",
+              "player_status",
+              "player_inner",
+              "events",
+              "resource_changes",
+              "char_updates",
+              "edict_feedback",
+              "fiscal_adjustments",
+              "personnel_changes",
+              "changes"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc1b",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1b",
+            "responseKeys": [
+              "cultural_works",
+              "npc_letters",
+              "npc_correspondence",
+              "npc_interactions"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc1c",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1c",
+            "responseKeys": [
+              "faction_events",
+              "faction_ai_outcomes",
+              "faction_interactions_advanced",
+              "faction_relation_changes",
+              "faction_succession",
+              "npc_schemes",
+              "hidden_moves",
+              "scheme_actions",
+              "fengwen_snippets"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是天命每回合固定执行的复核与补全 Agent。本回合推演已经生成，主写回是否成功见 mode 与实际回执；初核与后续推演并行工作。你的职责是核查误判、真实遗漏、诏令未执行以及检验器覆盖不到的内容，并主动修正和补充游戏世界。不能仅复述警告或因无警告就省略检查。核查原诏书、推演、实",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "tools"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc1d",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1d",
+            "responseKeys": [
+              "shilu_text",
+              "szj_title",
+              "shizhengji",
+              "szj_summary",
+              "basis_refs"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc15",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc15",
+            "responseKeys": [
+              "mood_shifts",
+              "relationship_changes",
+              "hidden_moves",
+              "faction_undercurrents",
+              "npc_schemes",
+              "rumors",
+              "npc_cognition"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc16",
+            "label": "根据公开的组织和战争事实整理战略候选。候选是供具体人物判断的建议，不是命令、既定结果或他人内心。不得推知隐秘通信、私财、未送达回应。\n{\"turn\":2,\"factions\":[{\"id\":\"fac_song\",\"name\":\"大宋\"},{\"id\":\"fac_jin\",\"name",
+            "stream": false,
+            "responseKind": "sc16",
+            "responseKeys": [
+              "faction_priorities",
+              "faction_actions",
+              "faction_directives",
+              "diplomatic_shifts",
+              "power_balance_shift"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc18",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc18",
+            "responseKeys": [
+              "military_situation",
+              "war_probability",
+              "supplementary_army_changes",
+              "faction_military_actions",
+              "battleResults",
+              "power_balance_shift"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc2",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc2",
+            "responseKeys": [
+              "zhengwen",
+              "houren_xishuo"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc07",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc07",
+            "responseKeys": [
+              "npc_cognition"
+            ]
+          },
+          {
+            "day": 30,
+            "path": "/v1/chat/completions",
+            "kind": "sc_audit",
+            "label": "You are a strict data consistency auditor. Return JSON only.\n【任务·跨 sub-call 数据一致性审核】\n\n<subcall-1-core>\n  <faction-events>[]</faction-events>",
+            "stream": false,
+            "responseKind": "sc_audit",
+            "responseKeys": [
+              "conflicts",
+              "auto_patches",
+              "needs_rerun"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是天命推演引擎的党争演绎官。朝堂之上党争激荡·以下各党皆是活的政治势力——你为每党决断本回合作为(宁少勿滥·每党 0-2 个动作)。\n【朝局】回合T3·建炎·皇威28.024666666666665·皇权35.099999999999994\n【党1·主和当国派 (汪黄)】纲领「",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "parties"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc25c",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc25c",
+            "responseKeys": [
+              "immediate_foreshadow",
+              "turn_memory",
+              "state_board",
+              "imperial_candidates",
+              "event_weights",
+              "trend"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc25c",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc25c",
+            "responseKeys": [
+              "consolidated",
+              "key_threads",
+              "npc_trajectories",
+              "faction_vectors",
+              "unresolved_tensions",
+              "player_reputation_drift",
+              "next_turn_focus"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "建炎元年秋九月初八第3回合。\n局势：renewal-fragile，统一50% 集权45% 稳定50% 经济36% 文化50%\n税压52\n资源：帑廪:100，内帑:150，户口:6500，吏治:66，民心:35，皇权:35，皇威:28，金军威胁等级:75，主战派士气:40，务实派",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是剧作师·负责推进主要 NPC 的情节弧。基于以下 NPC 的当前状态+近 5 回合所涉编年事件·为每位 NPC 推进/起草未来 3-5 回合的心理走向。\n\n【当前时间】建炎元年秋九月初八\n\n【NPC 快照】\n[\n  {\n    \"name\": \"赵构\",\n    \"zi\": ",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "建炎元年秋九月初八第3回合。\n局势：renewal-fragile，统一50% 集权45% 稳定50% 经济36% 文化50%\n税压52\n资源：帑廪:100，内帑:150，户口:6500，吏治:66，民心:35，皇权:35，皇威:28，金军威胁等级:75，主战派士气:40，务实派",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是天命每回合固定执行的复核与补全 Agent。本回合推演已经生成，主写回是否成功见 mode 与实际回执；初核与后续推演并行工作。你的职责是核查误判、真实遗漏、诏令未执行以及检验器覆盖不到的内容，并主动修正和补充游戏世界。不能仅复述警告或因无警告就省略检查。核查原诏书、推演、实",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "tools"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "依据收到的信息选择行动，允许无事、等待、拒绝和改条件。禁止替玩家作决定。私人请求不表示对方同意；完成必须由程序核验。\n共享批次只含公开背景；未列出的私人事实不可推测为已知。\n行为类型：appoint,dismiss,transfer,reward,punish,declare_w",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "planning"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是推演 AI。基于以下三系统快照·为 NPC 势力/党派/将领分别规划未来 3 回合的自主行动。务必让势力 actions 丰富多元·不仅限军事·含日常治理/经济/外交/仪轨/季节性活动。\n\n【三系统快照·JSON】\n{\n  \"turn\": 3,\n  \"date\": \"\",\n ",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "factionActions",
+              "partyActions",
+              "generalActions"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是剧作师·负责推进主要 NPC 的情节弧。基于以下 NPC 的当前状态+近 5 回合所涉编年事件·为每位 NPC 推进/起草未来 3-5 回合的心理走向。\n\n【当前时间】建炎元年秋九月初八\n\n【NPC 快照】\n[\n  {\n    \"name\": \"赵构\",\n    \"zi\": ",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "You calibrate a historical simulation game state.\nFor updates and member/leader/origin references use existing snapshot identities. New part",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "relation_adjustments",
+              "class_updates",
+              "party_create",
+              "class_emerge",
+              "party_updates",
+              "faction_updates",
+              "court_issue_updates",
+              "issue_goal_links",
+              "class_character_relation_updates",
+              "notes"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc0",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc0",
+            "responseKeys": [
+              "tensions",
+              "consequences",
+              "memoryQueries"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc1q",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1q",
+            "responseKeys": [
+              "dialogue_commitments",
+              "collective_resolutions",
+              "npc_dialogue_intent",
+              "required_sc1_actions"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "【官制按需细查·辅助主推演】你是主推演的前置助手。下面是本回合官制态势概览与玩家本回合的官制操作。\n请判断哪些官署在本回合最关键（被玩家动过、与大事相关、要害出缺或失职），用 query_office 工具逐一细查（至多 4 个）。其详情将供主推演使用。只查关键的，勿滥查。\n\n【",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "tool_calls"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc05",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc05",
+            "responseKeys": [
+              "causal_chains",
+              "unresolved",
+              "patterns",
+              "player_impact",
+              "npc_memories",
+              "momentum"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc1",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1",
+            "responseKeys": [
+              "turn_summary",
+              "shizhengji_basis",
+              "shilu_text",
+              "szj_title",
+              "shizhengji",
+              "szj_summary",
+              "player_status",
+              "player_inner",
+              "events",
+              "resource_changes",
+              "char_updates",
+              "edict_feedback",
+              "fiscal_adjustments",
+              "personnel_changes",
+              "changes"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc1b",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1b",
+            "responseKeys": [
+              "cultural_works",
+              "npc_letters",
+              "npc_correspondence",
+              "npc_interactions"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc1c",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1c",
+            "responseKeys": [
+              "faction_events",
+              "faction_ai_outcomes",
+              "faction_interactions_advanced",
+              "faction_relation_changes",
+              "faction_succession",
+              "npc_schemes",
+              "hidden_moves",
+              "scheme_actions",
+              "fengwen_snippets"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是天命每回合固定执行的复核与补全 Agent。本回合推演已经生成，主写回是否成功见 mode 与实际回执；初核与后续推演并行工作。你的职责是核查误判、真实遗漏、诏令未执行以及检验器覆盖不到的内容，并主动修正和补充游戏世界。不能仅复述警告或因无警告就省略检查。核查原诏书、推演、实",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "tools"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc1d",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc1d",
+            "responseKeys": [
+              "shilu_text",
+              "szj_title",
+              "shizhengji",
+              "szj_summary",
+              "basis_refs"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc15",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc15",
+            "responseKeys": [
+              "mood_shifts",
+              "relationship_changes",
+              "hidden_moves",
+              "faction_undercurrents",
+              "npc_schemes",
+              "rumors",
+              "npc_cognition"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc16",
+            "label": "根据公开的组织和战争事实整理战略候选。候选是供具体人物判断的建议，不是命令、既定结果或他人内心。不得推知隐秘通信、私财、未送达回应。\n{\"turn\":3,\"factions\":[{\"id\":\"fac_song\",\"name\":\"大宋\"},{\"id\":\"fac_jin\",\"name",
+            "stream": false,
+            "responseKind": "sc16",
+            "responseKeys": [
+              "faction_priorities",
+              "faction_actions",
+              "faction_directives",
+              "diplomatic_shifts",
+              "power_balance_shift"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc18",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc18",
+            "responseKeys": [
+              "military_situation",
+              "war_probability",
+              "supplementary_army_changes",
+              "faction_military_actions",
+              "battleResults",
+              "power_balance_shift"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc2",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc2",
+            "responseKeys": [
+              "zhengwen",
+              "houren_xishuo"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc07",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc07",
+            "responseKeys": [
+              "npc_cognition"
+            ]
+          },
+          {
+            "day": 37,
+            "path": "/v1/chat/completions",
+            "kind": "sc_audit",
+            "label": "You are a strict data consistency auditor. Return JSON only.\n【任务·跨 sub-call 数据一致性审核】\n\n<subcall-1-core>\n  <faction-events>[]</faction-events>",
+            "stream": false,
+            "responseKind": "sc_audit",
+            "responseKeys": [
+              "conflicts",
+              "auto_patches",
+              "needs_rerun"
+            ]
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是天命推演引擎的党争演绎官。朝堂之上党争激荡·以下各党皆是活的政治势力——你为每党决断本回合作为(宁少勿滥·每党 0-2 个动作)。\n【朝局】回合T4·建炎·皇威28.04·皇权35.11166666666666\n【党1·主和当国派 (汪黄)】纲领「南渡避祸·与金通和·罢主战·",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "parties"
+            ]
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "sc25c",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc25c",
+            "responseKeys": [
+              "immediate_foreshadow",
+              "turn_memory",
+              "state_board",
+              "imperial_candidates",
+              "event_weights",
+              "trend"
+            ]
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "sc25c",
+            "label": "【演义模式】请以演义小说风格推演，允许虚构情节和战征细节，强调戏剧冲突。你是历史模拟AI。剧本:绍宋·建炎元年八月——亳州明道宫，九龙井醒时代:南宋·建炎初角色:宋高宗·赵构\n难度:普通文风:文学化\n\n【模式：演义】\n• AI创作自由度最大，可架空历史\n• NPC性格可夸张戏剧化",
+            "stream": false,
+            "responseKind": "sc25c",
+            "responseKeys": [
+              "consolidated",
+              "key_threads",
+              "npc_trajectories",
+              "faction_vectors",
+              "unresolved_tensions",
+              "player_reputation_drift",
+              "next_turn_focus"
+            ]
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "建炎元年冬十月初一第4回合。\n局势：renewal-fragile，统一50% 集权45% 稳定50% 经济34% 文化50%\n税压52\n资源：帑廪:100，内帑:150，户口:6500，吏治:66，民心:35，皇权:35，皇威:28，金军威胁等级:75，主战派士气:40，务实派",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "建炎元年冬十月初一第4回合。\n局势：renewal-fragile，统一50% 集权45% 稳定50% 经济34% 文化50%\n税压52\n资源：帑廪:100，内帑:150，户口:6500，吏治:66，民心:35，皇权:35，皇威:28，金军威胁等级:75，主战派士气:40，务实派",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是天命每回合固定执行的复核与补全 Agent。本回合推演已经生成，主写回是否成功见 mode 与实际回执；初核与后续推演并行工作。你的职责是核查误判、真实遗漏、诏令未执行以及检验器覆盖不到的内容，并主动修正和补充游戏世界。不能仅复述警告或因无警告就省略检查。核查原诏书、推演、实",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "tools"
+            ]
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "依据收到的信息选择行动，允许无事、等待、拒绝和改条件。禁止替玩家作决定。私人请求不表示对方同意；完成必须由程序核验。\n共享批次只含公开背景；未列出的私人事实不可推测为已知。\n行为类型：appoint,dismiss,transfer,reward,punish,declare_w",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": []
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          },
+          {
+            "day": 60,
+            "path": "/v1/chat/completions",
+            "kind": "",
+            "label": "你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达",
+            "stream": false,
+            "responseKind": "direct-producer",
+            "responseKeys": [
+              "rationale",
+              "actions",
+              "proposals",
+              "proposalResponses"
+            ]
+          }
+        ],
+        "fixtureErrors": [],
+        "provinceEconomy": [
+          {
+            "turn": 2,
+            "day": 30,
+            "load": 0,
+            "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+            "timelineId": "tml_2eccbabd_b743_47c7_94da_ffa6bd592568",
+            "beforeDay": 30,
+            "days": 30,
+            "status": "completed",
+            "province": "万安军",
+            "before": {
+              "population": 1180,
+              "wealth": 34,
+              "stability": 73,
+              "development": 27,
+              "corruption": 40.5,
+              "unrest": 11
+            },
+            "afterWorld": {
+              "turn": 2,
+              "day": 30,
+              "load": 0,
+              "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+              "timelineId": "tml_2eccbabd_b743_47c7_94da_ffa6bd592568"
+            },
+            "afterDay": 30,
+            "after": {
+              "population": 10000,
+              "wealth": 33,
+              "stability": 74.3,
+              "development": 26.5,
+              "corruption": 40.8,
+              "unrest": 10.5
+            },
+            "error": null
+          },
+          {
+            "turn": 3,
+            "day": 37,
+            "load": 1,
+            "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+            "timelineId": "tml_78985a8f_b125_4a2f_af9e_672391e1468c",
+            "beforeDay": 37,
+            "days": 7,
+            "status": "completed",
+            "province": "万安军",
+            "before": {
+              "population": 10000,
+              "wealth": 33,
+              "stability": 74.3,
+              "development": 26.5,
+              "corruption": 40.916666666666664,
+              "unrest": 10.5
+            },
+            "afterWorld": {
+              "turn": 3,
+              "day": 37,
+              "load": 1,
+              "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+              "timelineId": "tml_78985a8f_b125_4a2f_af9e_672391e1468c"
+            },
+            "afterDay": 37,
+            "after": {
+              "population": 10000,
+              "wealth": 32.766666666666666,
+              "stability": 74.60333333333332,
+              "development": 26.383333333333333,
+              "corruption": 40.986666666666665,
+              "unrest": 10.383333333333333
+            },
+            "error": null
+          },
+          {
+            "turn": 4,
+            "day": 60,
+            "load": 2,
+            "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+            "timelineId": "tml_61f12501_2ea4_40be_810d_ad41862f9258",
+            "beforeDay": 60,
+            "days": 23,
+            "status": "completed",
+            "province": "万安军",
+            "before": {
+              "population": 10000,
+              "wealth": 32.766666666666666,
+              "stability": 74.60333333333332,
+              "development": 26.383333333333333,
+              "corruption": 41.37,
+              "unrest": 10.383333333333333
+            },
+            "afterWorld": {
+              "turn": 4,
+              "day": 60,
+              "load": 2,
+              "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+              "timelineId": "tml_61f12501_2ea4_40be_810d_ad41862f9258"
+            },
+            "afterDay": 60,
+            "after": {
+              "population": 10000,
+              "wealth": 32,
+              "stability": 75.6,
+              "development": 26,
+              "corruption": 41.599999999999994,
+              "unrest": 10
+            },
+            "error": null
+          }
+        ],
+        "systems": [
+          {
+            "turn": 1,
+            "day": 0,
+            "load": 0,
+            "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+            "timelineId": "tml_2eccbabd_b743_47c7_94da_ffa6bd592568",
+            "beforeDay": 0,
+            "days": 30,
+            "status": "completed",
+            "afterWorld": {
+              "turn": 2,
+              "day": 30,
+              "load": 0,
+              "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+              "timelineId": "tml_2eccbabd_b743_47c7_94da_ffa6bd592568"
+            },
+            "afterDay": 30,
+            "error": null
+          },
+          {
+            "turn": 2,
+            "day": 30,
+            "load": 1,
+            "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+            "timelineId": "tml_78985a8f_b125_4a2f_af9e_672391e1468c",
+            "beforeDay": 30,
+            "days": 7,
+            "status": "completed",
+            "afterWorld": {
+              "turn": 3,
+              "day": 37,
+              "load": 1,
+              "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+              "timelineId": "tml_78985a8f_b125_4a2f_af9e_672391e1468c"
+            },
+            "afterDay": 37,
+            "error": null
+          },
+          {
+            "turn": 3,
+            "day": 37,
+            "load": 2,
+            "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+            "timelineId": "tml_61f12501_2ea4_40be_810d_ad41862f9258",
+            "beforeDay": 37,
+            "days": 23,
+            "status": "completed",
+            "afterWorld": {
+              "turn": 4,
+              "day": 60,
+              "load": 2,
+              "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+              "timelineId": "tml_61f12501_2ea4_40be_810d_ad41862f9258"
+            },
+            "afterDay": 60,
+            "error": null
+          }
+        ],
+        "reviewCancels": [],
+        "economyReconciliation": {
+          "turns": 3,
+          "systems": 3,
+          "provinceEconomy": 3,
+          "intervals": [
+            {
+              "ticketId": 1,
+              "beforeTurn": 1,
+              "afterTurn": 2,
+              "load": 0,
+              "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+              "timelineId": "tml_2eccbabd_b743_47c7_94da_ffa6bd592568",
+              "beforeDay": 0,
+              "afterDay": 30,
+              "days": 30
+            },
+            {
+              "ticketId": 4,
+              "beforeTurn": 2,
+              "afterTurn": 3,
+              "load": 1,
+              "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+              "timelineId": "tml_78985a8f_b125_4a2f_af9e_672391e1468c",
+              "beforeDay": 30,
+              "afterDay": 37,
+              "days": 7
+            },
+            {
+              "ticketId": 7,
+              "beforeTurn": 3,
+              "afterTurn": 4,
+              "load": 2,
+              "campaignId": "tmc_450f3c71-e7dc-487b-a053-3af5543a789c",
+              "timelineId": "tml_61f12501_2ea4_40be_810d_ad41862f9258",
+              "beforeDay": 37,
+              "afterDay": 60,
+              "days": 23
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "NPC answers the real question, both return, and the official population continues through 30 days",
+      "status": "PASS"
+    }
+  ],
+  "failures": [],
+  "timing": {
+    "startedAt": "2026-10-23T08:08:27.518Z",
+    "assertionsFinishedAt": "2026-10-23T08:37:10.469Z",
+    "elapsedMs": 1722951,
+    "nodeUptimeSeconds": 1723.4322093
+  },
+  "securityScope": "real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data",
+  "temporaryUserData": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\web\\dev-tools\\candidate-temp\\tm-bridge-series-GrWHoZ\\production"
+}

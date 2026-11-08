@@ -27,6 +27,20 @@ function loadHeadlessHelpers() {
 const helpers = loadHeadlessHelpers();
 
 function installNodeExtras(win) {
+  // Match Electron native encoding/checksum APIs; legacy fallbacks have their own canonical-UTF8 smoke.
+  win.TextEncoder = TextEncoder;
+  win.TextDecoder = TextDecoder;
+  win.crypto = require('crypto').webcrypto;
+  // The Electron codec uses these native Web APIs as a group. Keep legacy
+  // no-compression behavior in the dedicated storage fallback tests.
+  Object.assign(win, { Blob, Response, CompressionStream, DecompressionStream });
+  assert(win.Blob === Blob && win.Response === Response
+    && win.CompressionStream === CompressionStream && win.DecompressionStream === DecompressionStream
+    && [win.Blob, win.Response, win.CompressionStream, win.DecompressionStream].every(api => typeof api === 'function'),
+    'integration fixture requires the actual native save codec APIs');
+  assert(typeof win.TextEncoder === 'function' && typeof win.TextDecoder === 'function'
+    && win.crypto && win.crypto.subtle && typeof win.crypto.subtle.digest === 'function',
+    'integration fixture requires native UTF-8 and Web Crypto APIs');
   win.location.href = 'http://localhost/index.html';
   win.location.search = '';
   win.document.body.insertAdjacentHTML = function () {};
@@ -54,20 +68,67 @@ function installNodeExtras(win) {
   };
 }
 
+async function verifyNativeSaveCodec(sandbox) {
+  assert(sandbox.SaveCompression.supported && sandbox.SaveCompression.decompressionSupported,
+    'the production save codec must detect native compression and decompression');
+  const text = JSON.stringify({ text: '完整保存与🙂\n'.repeat(512), zero: 0, empty: '', array: [1, null, false] });
+  const compressed = await sandbox.SaveCompression.compress(text);
+  assert(compressed instanceof Blob && compressed instanceof sandbox.Blob, 'production compression must return a real native Blob, never its string fallback');
+  assert(compressed.size > 0 && compressed.size < new TextEncoder().encode(text).byteLength, 'real gzip must reduce this repeated fixture');
+  const bytes = new Uint8Array(await new sandbox.Response(compressed).arrayBuffer());
+  assert(bytes.byteLength === compressed.size && bytes[0] === 0x1f && bytes[1] === 0x8b, 'native Response must expose the actual gzip bytes');
+  assert(await sandbox.SaveCompression.decompress(compressed) === text, 'the production native codec must restore the entire exact JSON');
+  console.log('[native-save-codec] PASS gzip Blob and exact production roundtrip');
+}
+
+function ownGameTimers(win) {
+  let disposed = false;
+  const timeouts = new Set(), intervals = new Set(), immediates = new Set(), frames = new Set();
+  function clearTimer(id) { if (timeouts.delete(id) || intervals.delete(id) || frames.delete(id)) clearTimeout(id); }
+  win.setTimeout = function(fn, ms, ...args) {
+    if (disposed) return null;
+    if (typeof fn !== 'function') return setTimeout(fn, ms, ...args);
+    const id = setTimeout(function() { timeouts.delete(id); if (!disposed) fn(...args); }, ms);
+    timeouts.add(id); return id;
+  };
+  win.clearTimeout = clearTimer;
+  win.setInterval = function(fn, ms, ...args) {
+    if (disposed) return null;
+    if (typeof fn !== 'function') return setInterval(fn, ms, ...args);
+    const id = setInterval(function() { if (!disposed) fn.apply(this, args); }, ms);
+    intervals.add(id); return id;
+  };
+  win.clearInterval = clearTimer;
+  win.setImmediate = function(fn, ...args) {
+    if (disposed) return null;
+    if (typeof fn !== 'function') return setImmediate(fn, ...args);
+    const id = setImmediate(function() { immediates.delete(id); if (!disposed) fn.apply(this, args); });
+    immediates.add(id); return id;
+  };
+  win.clearImmediate = function(id) { if (immediates.delete(id)) clearImmediate(id); };
+  // Preserve makeStubs' host timeout-backed frame semantics (16ms, no timestamp).
+  win.requestAnimationFrame = function(fn) {
+    if (disposed) return null;
+    if (typeof fn !== 'function') return setTimeout(fn, 16);
+    const id = setTimeout(function() { frames.delete(id); if (!disposed) fn.call(this); }, 16);
+    frames.add(id); return id;
+  };
+  win.cancelAnimationFrame = clearTimer;
+  win = null;
+  return function dispose() {
+    const remaining = { timeouts: timeouts.size, intervals: intervals.size, immediates: immediates.size, frames: frames.size };
+    disposed = true;
+    timeouts.forEach(clearTimeout); intervals.forEach(clearInterval); immediates.forEach(clearImmediate); frames.forEach(clearTimeout);
+    timeouts.clear(); intervals.clear(); immediates.clear(); frames.clear();
+    return remaining;
+  };
+}
+
 const compiledScripts = new Map(); // Reuse parsed code only; every case still owns a fresh world and VM.
-let disposeGame = function() {};
-function loadGame(selectedSid = SID) {
-  // Each case owns a VM. Release its timers before the next complete game boots.
-  disposeGame();
-  const env = helpers.makeStubs();
-  const pending = new Set(), intervals = new Set();
-  env.win.setTimeout = function(fn, ms, ...args) { const id = setTimeout(function(){ pending.delete(id); fn(...args); }, ms); pending.add(id); return id; };
-  env.win.clearTimeout = function(id) { pending.delete(id); clearTimeout(id); };
-  env.win.setInterval = function(fn, ms, ...args) { const id = setInterval(fn, ms, ...args); intervals.add(id); return id; };
-  env.win.clearInterval = function(id) { intervals.delete(id); clearInterval(id); };
-  disposeGame = function() { pending.forEach(clearTimeout); intervals.forEach(clearInterval); pending.clear(); intervals.clear(); };
-  installNodeExtras(env.win);
-  const sandbox = vm.createContext(env.win);
+// The files are immutable during this process; only parsed code is shared, never VM state.
+const bootScripts = new Map();
+function getBootScripts(selectedSid) {
+  if (bootScripts.has(selectedSid)) return bootScripts.get(selectedSid);
   const scripts = helpers.parseIndexHtmlScripts({ includeLazyScenarios: false });
   const cutoff = scripts.findIndex((src) => path.basename(src) === 'tm-test-harness.js');
   const loadScripts = cutoff >= 0 ? scripts.slice(0, cutoff) : scripts;
@@ -81,16 +142,32 @@ function loadGame(selectedSid = SID) {
   if (!loadScripts.includes(selected.scriptUrl)) loadScripts.push(selected.scriptUrl);
   }
 
+  bootScripts.set(selectedSid, Object.freeze(loadScripts));
+  return bootScripts.get(selectedSid);
+}
+let disposeGame = function() {};
+function loadGame(selectedSid = SID) {
+  // Each case owns a VM. Release its timers before the next complete game boots.
+  disposeGame();
+  const env = helpers.makeStubs();
+  disposeGame = ownGameTimers(env.win);
+  installNodeExtras(env.win);
+  const sandbox = vm.createContext(env.win);
+  const loadScripts = getBootScripts(selectedSid);
+
   loadScripts.forEach((src) => {
     const abs = path.join(ROOT, src);
     assert(fs.existsSync(abs), 'script missing: ' + src);
-    const code = fs.readFileSync(abs, 'utf8');
+    let compiled = compiledScripts.get(src);
+    if (!compiled) {
+      const code = fs.readFileSync(abs, 'utf8');
+      compiled = new vm.Script(code, { filename: src, displayErrors: true });
+      compiledScripts.set(src, compiled);
+    }
     const scriptNode = sandbox.document.createElement('script');
     scriptNode.src = new URL(src, 'http://localhost/index.html').href;
     sandbox.document.currentScript = scriptNode;
-    let compiled = compiledScripts.get(src);
-    if (!compiled || compiled.source !== code) { compiled = { source: code, script: new vm.Script(code, { filename: src, displayErrors: true }) }; compiledScripts.set(src, compiled); }
-    try { compiled.script.runInContext(sandbox, { displayErrors: true, timeout: 10000 }); } finally { sandbox.document.currentScript = null; }
+    try { compiled.runInContext(sandbox, { displayErrors: true, timeout: 10000 }); } finally { sandbox.document.currentScript = null; }
   });
 
   vm.runInContext(`
@@ -212,6 +289,7 @@ async function runCase(label, setup, expect) {
   attachTianqiMap(sandbox);   // 显式挂入天启地图(bundle 剥离·真游戏 fetch·headless 须补)·方能验开局绑图
   vm.runInContext(`doActualStart('${SID}')`, sandbox, { timeout: START_VM_TIMEOUT_MS });
   await delay(120);
+  await verifyNativeSaveCodec(sandbox);
   const state = countState(sandbox);
   expect(state);
   console.log('[smoke-start-game-data-integrity] ' + label + ' PASS ' + JSON.stringify(state));
@@ -711,8 +789,18 @@ async function runScenarioSourceIsolationCase() {
   console.log('[smoke-start-game-data-integrity] scenario-source-isolation PASS');
 }
 
+async function withGameScope(fn, ...args) {
+  let completed = false;
+  try { const result = await fn(...args); completed = true; return result; }
+  finally {
+    const dispose = disposeGame; disposeGame = function() {};
+    const remaining = dispose();
+    console.log('[startup-timer-scope] ' + JSON.stringify({ case: fn === runCase ? args[0] : fn.name, assertionsCompleted: completed, remaining }));
+  }
+}
+
 (async function main() {
-  await runCase('stale-map-choice-is-ignored', function (sandbox) {
+  await withGameScope(runCase, 'stale-map-choice-is-ignored', function (sandbox) {
     sandbox._pendingUseMap = false;
   }, function (state) {
     assert(state.chars >= 100, 'stale choice lost characters: ' + state.chars);
@@ -731,7 +819,7 @@ async function runScenarioSourceIsolationCase() {
     assert(state.aiDeepRead && state.aiPlan && state.aiMatrix && state.aiFirstTurn, 'API prewarm branch did not run');
   });
 
-  await runCase('fresh-ai-geography-choice-is-honored', function (sandbox) {
+  await withGameScope(runCase, 'fresh-ai-geography-choice-is-honored', function (sandbox) {
     sandbox._pendingUseMap = false;
     sandbox._pendingMapModeSid = SID;
     sandbox._pendingMapModeAt = Date.now();
@@ -750,16 +838,16 @@ async function runScenarioSourceIsolationCase() {
     assert(state.entered, 'AI geography did not enter game');
     assert(state.aiDeepRead && state.aiPlan && state.aiMatrix && state.aiFirstTurn, 'API prewarm branch did not run');
   });
-  await runFastStartGateCase();
-  await runStartRequestRaceCase();
-  await runLazyLoadFailureUnlockCase();
-  await runStrictHistoryFastPathCase();
-  await runMemorialCandidateOrderingCase();
-  await runMemorialInteractionGuardCase();
-  await runScenarioSourceIsolationCase();
-  await runBackgroundPrewarmCase();
-  await runDeepReadImmutableConfigCase();
-  await runDeepReadStaleCallCase();
+  await withGameScope(runFastStartGateCase);
+  await withGameScope(runStartRequestRaceCase);
+  await withGameScope(runLazyLoadFailureUnlockCase);
+  await withGameScope(runStrictHistoryFastPathCase);
+  await withGameScope(runMemorialCandidateOrderingCase);
+  await withGameScope(runMemorialInteractionGuardCase);
+  await withGameScope(runScenarioSourceIsolationCase);
+  await withGameScope(runBackgroundPrewarmCase);
+  await withGameScope(runDeepReadImmutableConfigCase);
+  await withGameScope(runDeepReadStaleCallCase);
   process.exit(0);
 })().catch((e) => {
   console.error('[smoke-start-game-data-integrity] FAIL ' + (e && e.message || e));

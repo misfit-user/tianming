@@ -1,0 +1,107 @@
+{
+  "recordedAt": "2026-10-23T07:47:47.837Z",
+  "files": [
+    {
+      "source": "web/dev-tools/ci-39919665284-core/8c88661f-3754-49ef-9168-014e4acd9a32/manual-recovery-panel.png",
+      "archive": null,
+      "bytes": 107016,
+      "sha256": "73dc878b7dc0a3f7b3513fc6d6f488fed57299aaabb7f9e59ed07fa0953d869a"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/8c88661f-3754-49ef-9168-014e4acd9a32/report.json",
+      "archive": "startup-autosave/report.json",
+      "bytes": 3097,
+      "sha256": "6dd07bb1a1ba804406d9c2914f15e5937187bbe9d1162ec2c4dfa80379c2be12"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/8c88661f-3754-49ef-9168-014e4acd9a32/startup-autosave.json",
+      "archive": "startup-autosave/startup-autosave.json",
+      "bytes": 2138,
+      "sha256": "45ca79a0c087fa166a27ac3cba44be9b7d157475fecf1e6499e04ddab03cb5d3"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/8c88661f-3754-49ef-9168-014e4acd9a32/startup-autosave.log",
+      "archive": "startup-autosave/startup-autosave.log",
+      "bytes": 1914,
+      "sha256": "5b5ad08ce59f23310a11eb237a5a2ed54bdfdfab44e7d3fab9d03636ba6af3bd"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/8c88661f-3754-49ef-9168-014e4acd9a32/startup-without-prompt.png",
+      "archive": null,
+      "bytes": 198129,
+      "sha256": "d148f2e8bc3fa7e404dba9cdf8ca1fe0dd04bdc2da5134e85606e5893ab3c5eb"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/ec3c0fb7-e683-4131-871a-34539f803f2b/production.json",
+      "archive": "desktop-ipc-restart/production.json",
+      "bytes": 2293,
+      "sha256": "8c99f136dbc7961029a9a1ec94b3d7a7b5ea4f547c275611294f19471889069a"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/ec3c0fb7-e683-4131-871a-34539f803f2b/production.log",
+      "archive": "desktop-ipc-restart/production.log",
+      "bytes": 2221,
+      "sha256": "bfa4bde3203f82a134ef61bec5091de5430f38e6e542ae12ac637ee3b06d36bc"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/ec3c0fb7-e683-4131-871a-34539f803f2b/report.json",
+      "archive": "desktop-ipc-restart/report.json",
+      "bytes": 8495,
+      "sha256": "394db0fdefbd081e35fb642143013575881cde49bbdb9dd174a795a2a4c963d2"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/ec3c0fb7-e683-4131-871a-34539f803f2b/restart.json",
+      "archive": "desktop-ipc-restart/restart.json",
+      "bytes": 1681,
+      "sha256": "7e6b65ce899abf5f3e0ad5c40c2a40429f6973b38e3d21a6e9e0f3859ebf75f3"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/ec3c0fb7-e683-4131-871a-34539f803f2b/restart.log",
+      "archive": "desktop-ipc-restart/restart.log",
+      "bytes": 1004,
+      "sha256": "8d2e9a8fdf776a14065040bed7ee2076b52e68bdef6b4e6b7a10e76886c3554e"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/ec3c0fb7-e683-4131-871a-34539f803f2b/test-exports.json",
+      "archive": "desktop-ipc-restart/test-exports.json",
+      "bytes": 2182,
+      "sha256": "970def0dfa6ac55bf42bdfe31634144792a62ec3e133aaa4aaa96dd93f2f5420"
+    },
+    {
+      "source": "web/dev-tools/ci-39919665284-core/ec3c0fb7-e683-4131-871a-34539f803f2b/test-exports.log",
+      "archive": "desktop-ipc-restart/test-exports.log",
+      "bytes": 2005,
+      "sha256": "22251e7e00706d0c316468b5e0933884b1db792e0298138388de1265b9e14e24"
+    },
+    {
+      "source": "collected current metadata or exact source excerpt",
+      "archive": "job.json",
+      "bytes": 11298,
+      "sha256": "07f4525a4cc24935ac617a7af824f62126a7271c77fd4b136c578f01c293199f"
+    },
+    {
+      "source": "collected current metadata or exact source excerpt",
+      "archive": "job.log",
+      "bytes": 30537,
+      "sha256": "068ab23b4dd3df79673470c328497fadde780b8a9feb286af073d831f7d714bc"
+    },
+    {
+      "source": "collected current metadata or exact source excerpt",
+      "archive": "identity.json",
+      "bytes": 387,
+      "sha256": "7e1a74e6172dfb97f7b9724ff3988db7339754dedfc574fd1c36363e44886b67"
+    },
+    {
+      "source": "collected current metadata or exact source excerpt",
+      "archive": "source-assertions.json",
+      "bytes": 1854,
+      "sha256": "8926bb659ac285c8c20ed632e817bc75cbbf891a3f3ca34f14ddcce115e31f66"
+    },
+    {
+      "source": "collected current metadata or exact source excerpt",
+      "archive": "SUMMARY.json",
+      "bytes": 12700,
+      "sha256": "3f5669c320c0fdcd9a2e1a1cc319020b6389c33a126b29d0ecab4d2532c78658"
+    }
+  ]
+}

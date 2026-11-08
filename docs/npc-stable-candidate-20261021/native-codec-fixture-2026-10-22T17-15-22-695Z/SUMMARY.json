@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-22T17:27:27.154Z",
+  "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+  "scope": "two integration fixtures only; native codec platform adaptation, not a production timeout or renderer-crash root-cause claim",
+  "changedFiles": [
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "sha256": "41d95a231d652a43c92dde7257330738aac8a5d0bbea04261e8bfdc9bb3f602b"
+    },
+    {
+      "file": "web/scripts/smoke-start-game-data-integrity.js",
+      "sha256": "20a68ab59fd133d694613ff9be41c6803d62760baf63f25f6c8d0d5febcf815f"
+    }
+  ],
+  "nativeAPIs": [
+    "Blob",
+    "Response",
+    "CompressionStream",
+    "DecompressionStream"
+  ],
+  "sharedHeadlessChanged": false,
+  "productionRuntimeChanged": false,
+  "originalAssertionsRemoved": false,
+  "timeLimitsChanged": false,
+  "proof": {
+    "source": "platform-probe.json",
+    "baseline": "SaveCompression.supported=false; 30054-byte JSON returned unchanged",
+    "native": "203-byte real gzip Blob, 1f8b, native Response bytes, exact production decompression"
+  },
+  "initialValidation": {
+    "report": "two-integration-report.json",
+    "summary": {
+      "selected": 2,
+      "pass": 0,
+      "fail": 2,
+      "waived": 0,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "classification": "new verification await was incorrectly inserted before original synchronous doActualStart; both codec checks passed but boot yielded into P.keju error; preserved as fixture implementation failure"
+  },
+  "correction": "verification moved after existing first delay(160)/delay(120); original loadGame-to-doActualStart sequence restored",
+  "correctedValidation": {
+    "report": "safe-yield-two-integration-report.json",
+    "run": "safe-yield-run-final.json",
+    "summary": {
+      "selected": 2,
+      "pass": 1,
+      "fail": 1,
+      "waived": 0,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "results": [
+      {
+        "name": "smoke-full-turn-flow.js",
+        "pass": true,
+        "exit": 0,
+        "ms": 109999,
+        "timedOut": false,
+        "actualCodecProofLines": [
+          "[native-save-codec] PASS gzip Blob and exact production roundtrip"
+        ]
+      },
+      {
+        "name": "smoke-start-game-data-integrity.js",
+        "pass": false,
+        "exit": -1,
+        "ms": 120290,
+        "timedOut": true,
+        "actualCodecProofLines": [
+          "[native-save-codec] PASS gzip Blob and exact production roundtrip",
+          "[native-save-codec] PASS gzip Blob and exact production roundtrip"
+        ]
+      }
+    ],
+    "sourceUnchanged": true
+  },
+  "storageBoundary": "IndexedDB remains the existing deliberate unavailable stub; production TM_SaveDB retains raw JSON for localStorage fallback. This adaptation does not claim real IDB persistence.",
+  "priorEvidenceUntouched": {
+    "final56": "final-gates/2026-10-22T16-48-54-117Z-ad379252-a0c9-473d-a003-bdda4a7bdae1/final-gates.json",
+    "sha256": "e913c2a43d22d641476307a0719e21ecdc955412e8bd5351a75dacd87f680ed3",
+    "classification": "54 PASS / 2 TIMEOUT; not replaced by these isolated checks"
+  },
+  "next": "startup timeout remains unresolved; no third validation or browser/full suite run performed"
+}

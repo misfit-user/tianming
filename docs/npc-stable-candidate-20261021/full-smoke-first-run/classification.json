@@ -1,0 +1,72 @@
+{
+  "runId": "ceba4470-7170-4912-b8bf-f14eefdae4a2",
+  "summary": {
+    "selected": 1181,
+    "pass": 1172,
+    "fail": 7,
+    "waived": 2,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "scope": "Diagnostic run; runtime changed during execution and official Electron overlapped. This is not the frozen final candidate gate.",
+  "failures": [
+    {
+      "name": "smoke-division-reassign.js",
+      "classification": "environment-generated-data-missing",
+      "evidence": "ENOENT for ignored official bundled JSON before domain assertions",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 208
+    },
+    {
+      "name": "smoke-full-turn-flow.js",
+      "classification": "timeout-unresolved",
+      "evidence": "Outer 120s limit; no captured output. Resource contention is possible but not established as sole cause.",
+      "exit": -1,
+      "timedOut": true,
+      "ms": 120542
+    },
+    {
+      "name": "smoke-map-route-days.js",
+      "classification": "environment-generated-data-missing",
+      "evidence": "ENOENT for ignored official bundled JSON before route assertions",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 232
+    },
+    {
+      "name": "smoke-perf-save-preparation.js",
+      "classification": "timeout-unresolved",
+      "evidence": "Four official scenario cases / 12 checks passed; final failure/rollback case exhausted existing 290s total budget, leaving expected 13th check unexecuted.",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 290640
+    },
+    {
+      "name": "smoke-production-dependencies.js",
+      "classification": "timeout-unresolved",
+      "evidence": "Read-only npm ls --omit=dev --all --json subprocess exceeded existing 30s limit. No dependency installation was attempted.",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 30460
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "classification": "timeout-unresolved",
+      "evidence": "Outer 120s limit after ten logged case passes; incomplete suite, not a passing result.",
+      "exit": -1,
+      "timedOut": true,
+      "ms": 120468
+    },
+    {
+      "name": "smoke-startup-phase-observability.js",
+      "classification": "current-change-generated-product-stale",
+      "evidence": "startup manifest omits new _npcPlanningActualOutcome and _npcPlanningSummarizeDirection provider names",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 719
+    }
+  ],
+  "remediation": "Generated official data and startup manifest are repaired using existing generators after this run; a separate full run is required. Original failures remain preserved."
+}

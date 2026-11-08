@@ -1,0 +1,192 @@
+[full-turn-flow] PASS
+{
+  "turn": 2,
+  "busy": false,
+  "endTurnBusy": false,
+  "chars": 217,
+  "factions": 22,
+  "memorials": 16,
+  "approvedMemorials": 1,
+  "letters": 5,
+  "qijuHistory": 25,
+  "shijiHistory": 1,
+  "lastShijiTurn": 1,
+  "courtMeter": {
+    "thisTurnCount": 1,
+    "missedStreak": 0,
+    "diligentStreak": 0,
+    "lastCourtTurn": 2,
+    "byTurn": {
+      "1": 1,
+      "2": 1
+    }
+  },
+  "courtRecords": [
+    {
+      "turn": 1,
+      "targetTurn": 1,
+      "phase": "in-turn",
+      "topic": "早朝·辽饷与边备"
+    },
+    {
+      "turn": 1,
+      "targetTurn": 2,
+      "phase": "post-turn",
+      "topic": "朔朝·次月边饷部署"
+    }
+  ],
+  "pendingShiji": {
+    "aiReady": false,
+    "courtDone": true,
+    "hasPayload": false
+  },
+  "pipeline": [
+    {
+      "step": "prep",
+      "ok": true,
+      "ms": 1998,
+      "error": ""
+    },
+    {
+      "step": "plan-prefetch",
+      "ok": true,
+      "ms": 0,
+      "error": ""
+    },
+    {
+      "step": "ai",
+      "ok": true,
+      "ms": 4,
+      "error": ""
+    },
+    {
+      "step": "post-ai-edict",
+      "ok": true,
+      "ms": 1447,
+      "error": ""
+    },
+    {
+      "step": "systems",
+      "ok": true,
+      "ms": 17742,
+      "error": ""
+    },
+    {
+      "step": "render-and-finalize",
+      "ok": true,
+      "ms": 1592,
+      "error": ""
+    },
+    {
+      "step": "prepare-commit-barrier",
+      "ok": true,
+      "ms": 0,
+      "error": ""
+    }
+  ],
+  "aiCalls": [
+    {
+      "turn": 1,
+      "edictCategories": [
+        "political",
+        "military",
+        "diplomatic",
+        "economic",
+        "other"
+      ],
+      "xingluLength": 31,
+      "memorials": 4,
+      "currentCourtDecisions": 1,
+      "currentCourtRecords": 1,
+      "nextCourtRecords": 1
+    }
+  ],
+  "turnResults": [
+    {
+      "idx": 0,
+      "len": 51454,
+      "head": "<div class=\"sjc-frame\"><nav class=\"sjc-spine\" role=\"tablist\"><button type=\"button\" role=\"tab\" aria-selected=\"true\" aria-"
+    }
+  ],
+  "playerActionSummary": {
+    "turn": 1,
+    "minister": "袁崇焕",
+    "memorials": 1,
+    "letters": 2,
+    "courtRecords": 1
+  },
+  "postTurnCourtSummary": {
+    "turn": 1,
+    "targetTurn": 2,
+    "courtRecords": 2
+  },
+  "loadingTail": [
+    {
+      "turn": 2,
+      "msg": "检查历史事件",
+      "pct": 93.4
+    },
+    {
+      "turn": 2,
+      "msg": "检查职位与寿数",
+      "pct": 93.7
+    },
+    {
+      "turn": 2,
+      "msg": "处理监听队列",
+      "pct": 94
+    },
+    {
+      "turn": 2,
+      "msg": "清理回合缓存",
+      "pct": 94.3
+    },
+    {
+      "turn": 2,
+      "msg": "回合阶段 6/7 · 生成史记弹窗",
+      "pct": 78
+    },
+    {
+      "turn": 2,
+      "msg": "hide",
+      "pct": 0
+    },
+    {
+      "turn": 2,
+      "msg": "回合阶段 7/7 · prepare-commit-barrier",
+      "pct": 90
+    },
+    {
+      "turn": 2,
+      "msg": "hide",
+      "pct": 0
+    }
+  ],
+  "toasts": [
+    "第1回合",
+    "❌ 存档数据库初始化失败：stub·no-idb",
+    "诏令需细化：征何税（商/盐/茶/市舶）？",
+    "鸿雁：1 封新来函已抵达",
+    "回合已完整保存；附加快照或存档后处理发生错误，详情见控制台。请勿为此重新推演本回合。"
+  ],
+  "errors": [
+    "播放背景音乐失败: ReferenceError: Audio is not defined",
+    "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+    "[SaveDB] 初始化失败: Error: stub·no-idb",
+    "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+    "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+    "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+  ],
+  "warns": [
+    "  Error: [perf] authority.tick 超阈值: 563.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+    "[endTurn systems] slow stage: 系统结算总耗时 17727ms ",
+    "[cc3·agenda] AI 返回不可用·走 fallback",
+    "[AutoSave] 端回合 snapshot 耗 16568ms·考虑 A-2",
+    "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb",
+    "[TM.Features] [object Object]",
+    "[TM.Features] [object Object]",
+    "[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb"
+  ],
+  "writeTurnData": 0,
+  "autoSave": 0
+}

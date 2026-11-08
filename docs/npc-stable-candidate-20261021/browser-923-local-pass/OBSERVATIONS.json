@@ -1,0 +1,28 @@
+{
+  "recordedAt": "2026-10-23T05:40:25.998Z",
+  "codeHead": "9232aa314d9db1b6fd346e3b241f4afcf1676ec4",
+  "runId": "67c9b63c-d08f-4183-b3aa-5e97109fc8de",
+  "scope": "Read-only observations from the completed local formal run; sampled maxima are not continuous peak measurements.",
+  "elapsedMs": 1204076,
+  "rendererHeap": {
+    "maxSampledUsedBytes": 3372812355,
+    "last": {
+      "limit": 4294705152,
+      "used": 1630844582,
+      "total": 1801904774
+    },
+    "samples": 399
+  },
+  "rendererProcess": {
+    "maxSampledPrivateKiB": 5679180,
+    "samples": 231
+  },
+  "autosave": {
+    "path": "E:\\tianming-npc-candidate-temp\\tm-bridge-series-x4l7Cq\\production\\saves\\__autosave__.json",
+    "bytes": 183387794,
+    "lastWriteTime": "2026-10-23T05:36:50.432Z",
+    "meaning": "Actual final disk autosave size, not increment or growth from zero. No initial byte-size sample was recorded."
+  },
+  "financialCoverage": "The accepted economic assertion checks exactly-once real province settlement and changed source fields. GM.guoku.money in timeline is a legacy projection; this run does not establish its restore conservation or diagnose a treasury defect.",
+  "screenshotCoverage": "04-completed-return.png shows the main map. Previous DOM assertions passed, but a visible final results card still needs stronger proof after background settlement."
+}

@@ -1,0 +1,91 @@
+PASS real turn Promise stays pending after turn advancement and commit until final work settles
+PASS global save producer waits through prompt, background jobs and UI refresh and requires true
+PASS fulfilled save without strict true is rejected: false
+PASS fulfilled save without strict true is rejected: undefined
+PASS fulfilled save without strict true is rejected: [object Object]
+PASS turn fulfillment cannot certify no-commit
+PASS turn fulfillment cannot certify false-commit
+PASS turn fulfillment cannot certify rollback
+PASS turn fulfillment cannot certify unconfirmed
+PASS a nominal true commit with a foreign canonical receipt still fails
+PASS rejected and synchronously throwing producers preserve failure and original behavior
+PASS save completion rejects cross-world mutation: GM
+PASS save completion rejects cross-world mutation: P
+PASS save completion rejects cross-world mutation: generation
+PASS save completion rejects cross-world mutation: timeline
+PASS duplicate and wrong-slot calls fail while every original invocation still executes exactly once
+PASS a duplicate call after settlement cannot reuse the previous passing ticket
+PASS load requires its real true receipt and an idle replacement world with an advancing generation
+PASS one suite deadline covers all producers, including unstarted UI calls, and never resets
+PASS finished, failed and timed-out observers release world references and expose only primitive receipts
+PASS economy reconciles every genuine turn across load generations and fractional day boundaries
+PASS economy rejects both observations omit the same turn
+PASS economy rejects both observations duplicate one turn and omit another
+PASS economy rejects an extra systems call
+PASS economy rejects an extra economy call
+PASS economy rejects systems throws even if its caller later commits
+PASS economy rejects economy throws even if its caller later commits
+PASS economy rejects unsettled systems work
+PASS economy rejects entry belongs to another load
+PASS economy rejects entry belongs to another campaign
+PASS economy rejects entry belongs to another timeline
+PASS economy rejects settlement finishes after a load
+PASS economy rejects settlement finishes in another campaign
+PASS economy rejects days were configured instead of the actual fractional interval
+PASS economy rejects zero days
+PASS economy rejects non-finite days
+PASS economy rejects wrong start day
+PASS economy rejects wrong end day
+PASS economy rejects economy ran before time commit
+PASS economy rejects a nonpositive completed interval
+PASS economy rejects a failed top-level turn
+PASS economy rejects a missing genuine commit
+PASS economy rejects commit belongs to another load
+PASS economy rejects duplicate completed turn identity
+PASS economy rejects missing source sample
+PASS settlement entry is visible while pending and original Promise, receiver and arguments are preserved
+PASS settlement throws and rejections remain original and leave failed observations, including falsy errors
+PASS settlement observations retain only primitive identity and numeric province samples across world replacement
+PASS final background waits for review, canonical save and actual desktop acknowledgement, then two equal reads
+PASS final background cannot pass with native write still pending after outer flags clear
+PASS final background cannot pass with unwritten canonical revision
+PASS final background cannot pass with unwritten current turn
+PASS final background cannot pass with no acknowledged desktop write
+PASS final background cannot pass with empty canonical world
+PASS final background cannot pass with mismatched canonical session
+PASS final background cannot pass with mismatched canonical load
+PASS final background cannot pass with mismatched canonical transaction
+PASS final background cannot pass with pending canonical request
+PASS final background cannot pass with scheduled canonical timer
+PASS final background cannot pass with scheduled desktop flush
+PASS final background cannot pass with deferred desktop flush
+PASS final background cannot pass with active world transaction
+PASS final background detects a microtask rearm between two apparently idle reads
+PASS final background rejects a new canonical failure even when old saved and committed revisions match
+PASS final background rejects a fixture error that arrives after the gameplay assertions
+PASS a failed canonical producer cannot reuse an older matching saved revision
+PASS a failed desktop producer cannot reuse an older matching saved revision
+PASS a naturally scheduled canonical retry must finish before the final desktop revision is accepted
+PASS a stale canonical no-write cannot substitute for the current durable revision
+PASS a superseded pre-dispatch desktop write waits for its queued newer revision and keeps the negative receipt
+PASS a negative desktop receipt cannot be excused without valid supersession revision
+PASS a negative desktop receipt cannot be excused without valid supersession flush
+PASS a negative desktop receipt cannot be excused without valid supersession code
+PASS a negative desktop receipt cannot be excused without valid supersession world
+PASS a negative desktop receipt cannot be excused without valid supersession identity
+PASS a real foreign-success acknowledgement cannot be labelled pre-dispatch supersession
+PASS an uncorrelatable full transport ring cannot justify superseding a negative desktop receipt
+PASS identical millisecond entries in a full ring cannot hide an acknowledgement before rejection
+PASS the real successful stale desktop shape still requires the newer revision to be durably saved
+PASS final background rejects cross-world change of _tmLoadGen
+PASS final background rejects cross-world change of _tmAutoSaveSessionToken
+PASS final background rejects cross-world change of turn
+PASS final background rejects cross-world change of _campaignId
+PASS final background rejects cross-world change of _timelineId
+PASS missing modules and undefined observation fields fail closed instead of looking idle
+PASS required jobs settle naturally; failed receipts and other background work remain explicit without retries
+PASS an unresolved existing producer remains bounded by the original deadline and cannot revive the observer later
+PASS old failure history and a pending persisted review are reported without claiming all reviews approved
+PASS background evidence reconstructs exactly without exceeding the actual renderer log line cap
+PASS the actual Electron suite, outer process and CI limits retain 1800 seconds, 1830 seconds and 45 minutes
+{"pass":90,"fail":0,"total":90}

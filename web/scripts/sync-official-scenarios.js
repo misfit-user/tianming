@@ -2,9 +2,8 @@
 // 官方剧本唯一生成入口。
 //
 // 数据真源只有仓根 scenarios/*（官方）.json；本脚本只从真源向下生成：
-//   - web/scenarios/*.js                         网页/安卓内置注册脚本
-//   - web/tm-official-scenario-bundle.js         Electron seeder bundle
-//   - web/preview/official-scenarios-bundle.js   剧本编辑器 fallback bundle
+//   - web/scenarios/*.js                         网页/安卓/桌面内置注册脚本（也是桌面 seeder 与剧本工坊预览的数据来源）
+//   - web/preview/official-scenarios-bundle.js   剧本编辑器适配器（读三个内建脚本的注册表，按 id 换 key）
 //   - web/preview/scenario-editor-reset-data.js  剧本编辑器 reset 基线
 //   - web/bundled-scenarios/*.json + manifest.json（Pages/热更按需加载素材）
 //
@@ -67,6 +66,10 @@ function readSources() {
   });
 }
 
+// 内建脚本有两种落点：
+//   - 游戏页（有 P）：像从前一样注册进 P.scenarios，不另留引用，loader 复位时才能把整份数据放掉；
+//   - 没有 P 的独立页面（剧本工坊预览、node 测试）：只登进 TMOfficialScenarioBuiltins 注册表，不轮询。
+// 桌面 seeder 走 loader 装载后从 P.scenarios 取数据，所以不再需要第二份 seeder 主包。
 function serializeBuiltin(entry) {
   return [
     '/* GENERATED FILE. Source: ' + entry.sourceRel + '. Run `node web/scripts/sync-official-scenarios.js`. */',
@@ -74,7 +77,8 @@ function serializeBuiltin(entry) {
     '  "use strict";',
     '  var scenario = ' + serializeScenarioExpression(entry.data) + ';',
     '  function register() {',
-    '    if (!global.P || !Array.isArray(global.P.scenarios)) { setTimeout(register, 200); return; }',
+    '    if (!global.P) { global.TMOfficialScenarioBuiltins = global.TMOfficialScenarioBuiltins || {}; global.TMOfficialScenarioBuiltins[scenario.id] = scenario; return; }',
+    '    if (!Array.isArray(global.P.scenarios)) { setTimeout(register, 200); return; }',
     '    var i = global.P.scenarios.findIndex(function(s) { return s && s.id === scenario.id; });',
     '    if (i >= 0) global.P.scenarios.splice(i, 1);',
     '    global.P.scenarios.push(scenario);',
@@ -86,21 +90,20 @@ function serializeBuiltin(entry) {
   ].join('\n');
 }
 
-function serializeSeeder(entries) {
-  const bundle = '[' + entries.map((entry) => '{"filename":' + JSON.stringify(entry.filename.replace(/\.json$/, ''))
-    + ',"source":' + JSON.stringify('../' + entry.sourceRel)
-    + ',"data":' + serializeScenarioExpression(entry.data) + '}').join(',') + ']';
-  return '// GENERATED FILE. Source: ../scenarios/*（官方）.json. Run `node web/scripts/sync-official-scenarios.js`.\n'
-    + '(function(global){\n'
-    + '  global.TMOfficialScenarioBundle = ' + bundle + ';\n'
-    + '})(typeof window !== "undefined" ? window : globalThis);\n';
-}
-
 function serializePreview(entries) {
-  const bundle = '{' + entries.map((entry) => JSON.stringify(entry.key) + ':' + serializeScenarioExpression(entry.data)).join(',') + '}';
-  return '/* GENERATED FILE. Source: ../../scenarios/*（官方）.json. Run `node web/scripts/sync-official-scenarios.js`. */\n'
+  // 预览页不自带数据副本：先装 ../scenarios/*.js 三个内建（页面没有 P，它们只进注册表），这里按 id 换成编辑器用的 key。
+  const keyById = {};
+  entries.forEach((entry) => { keyById[entry.id] = entry.key; });
+  return '/* GENERATED FILE. Source: ../scenarios/*.js（须先装载）. Run `node web/scripts/sync-official-scenarios.js`. */\n'
     + '(function(global){\n'
-    + '  global.TM_OFFICIAL_SCENARIOS = ' + bundle + ';\n'
+    + '  var KEY_BY_ID = ' + JSON.stringify(keyById) + ';\n'
+    + '  var registry = global.TMOfficialScenarioBuiltins;\n'
+    + '  var out = {};\n'
+    + '  Object.keys(KEY_BY_ID).forEach(function(id){\n'
+    + '    if (!registry || !registry[id]) throw new Error("official-scenarios-bundle.js: 须先装载 ../scenarios/*.js（缺 " + id + "）");\n'
+    + '    out[KEY_BY_ID[id]] = registry[id];\n'
+    + '  });\n'
+    + '  global.TM_OFFICIAL_SCENARIOS = out;\n'
     + '})(typeof window !== "undefined" ? window : globalThis);\n';
 }
 
@@ -128,7 +131,6 @@ function buildArtifacts() {
     files.set(path.join(WEB_ROOT, entry.builtin), entry.builtinContent);
     files.set(path.join(WEB_ROOT, 'bundled-scenarios', entry.filename), entry.raw);
   });
-  files.set(path.join(WEB_ROOT, 'tm-official-scenario-bundle.js'), serializeSeeder(entries));
   files.set(path.join(WEB_ROOT, 'preview', 'official-scenarios-bundle.js'), serializePreview(entries));
   files.set(path.join(WEB_ROOT, 'preview', 'scenario-editor-reset-data.js'), serializeEditorResetData(tianqi.hash));
 

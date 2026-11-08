@@ -1,0 +1,156 @@
+2026-10-22T13:26:08.133Z 1 天命游戏脚本开始加载...
+2026-10-22T13:26:08.249Z 1 [TM.platform] TM.platform[electron] caps={"ipc":true,"fs":true,"nativeHttp":true,"hotUpdate":true,"online":true,"installerUpdate":true,"filePicker":true}
+2026-10-22T13:26:08.265Z 1 [debug-logger] 已启用·桌面落盘模式
+2026-10-22T13:26:08.808Z 1 [SaveDB] IndexedDB就绪 (v6)
+2026-10-22T13:26:08.812Z 1 [SaveDB] 存储: 0.01 MB / 7420.31 MB (0.0%)
+2026-10-22T13:26:08.813Z 1 [SaveDB] 持久化存储未获批·仍可正常使用(best-effort 模式)
+2026-10-22T13:26:09.078Z 1 [三系统联动] 事件总线钩子已连接
+2026-10-22T13:26:09.471Z 1 [corruption-p2] 已加载：25 条案件库 + lumpSum API + 风闻四类 + 新官标记
+2026-10-22T13:26:09.477Z 1 [corruption-p4] 已加载：模式调节 / 轮换副作用 / 卖官 / AI增强 / 地图热力 / 编辑器面板
+2026-10-22T13:26:09.493Z 1 [guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设
+2026-10-22T13:26:09.505Z 1 [neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链
+2026-10-22T13:26:09.506Z 1 [neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向
+2026-10-22T13:26:09.514Z 1 [charEcon] 引擎已加载：6 资源 + 14×14 收支 + 8 阶层 + 家族共财 + 抄家 + 字系统
+2026-10-22T13:26:09.517Z 1 [historical] 加载 27 条历史人物档案
+2026-10-22T13:26:09.522Z 1 [historical-wave-01] 加载 60 条
+2026-10-22T13:26:09.528Z 1 [historical-wave-02] 加载 46 条
+2026-10-22T13:26:09.535Z 1 [historical-wave-03] 加载 44 条
+2026-10-22T13:26:09.540Z 1 [historical-wave-04] 加载 40 条
+2026-10-22T13:26:09.546Z 1 [historical-wave-05] 加载 37 条
+2026-10-22T13:26:09.552Z 1 [historical-wave-06] 加载 36 条
+2026-10-22T13:26:09.557Z 1 [historical-wave-07] 加载 29 条
+2026-10-22T13:26:09.562Z 1 [historical-wave-08] 加载 38 条
+2026-10-22T13:26:09.568Z 1 [historical-wave-09] 加载 30 条
+2026-10-22T13:26:09.573Z 1 [historical-wave-10] 加载 36 条
+2026-10-22T13:26:09.578Z 1 [historical-wave-11] 加载 36 条
+2026-10-22T13:26:09.585Z 1 [historical-wave-12] 加载 49 条
+2026-10-22T13:26:09.594Z 1 [charEcon-ui] 角色资源 UI 已加载：6 资源展示 + 抄家 + 派员
+2026-10-22T13:26:09.615Z 1 [econLinkage] 已加载：层层剥夺+区域财政树+下拨生命周期+俸禄流+贪腐流+抄家触发+事件总线
+2026-10-22T13:26:10.157Z 1 [TMZhi] formal 人物图志 入口已接管
+2026-10-22T13:26:20.713Z 1 [scenario] 绍宋·建炎元年八月——亳州明道宫，九龙井醒 已注册 (id=sc-jianyan1-1127-shaosong)
+2026-10-22T13:26:20.719Z 2 [startGame] scenario validation warnings: 玩家角色"赵构(穿越者赵玖)"不在角色列表中，将自动创建,军队"熙河·秦凤诸军"统帅"（诸路帅臣）"不在角色列表中,军队"江淮水军"统帅"（行在水军统制）"不在角色列表中,军队"两浙·福建路屯驻"统帅"（诸州兵马）"不在角色列表中,军队"荆湖·川峡屯驻"统帅"（诸路兵马）"不在角色列表中,军队"建康水军·别部"统帅"（行在水军）"不在角色列表中,军队"福建路屯驻"统帅"（路分都监）"不在角色列表中,军队"广南屯驻·摧锋军"统帅"（广东帅司）"不在角色列表中,军队"金·韩常燕京戍兵"统帅"（韩常，未列传）"不在角色列表中,军队"高丽·二军六卫"统帅"（二军上将军·拓俊京流配后未详）"不在角色列表中
+2026-10-22T13:26:28.499Z 2 [StartRuntimePrime] [object Object]
+2026-10-22T13:26:29.946Z 1 [三系统扩展] 完成·势力+ 39 ·党派+ 8 ·军队+ 103 ·角色+ 513
+2026-10-22T13:26:30.205Z 2 [StartRuntimePrime] [object Object]
+2026-10-22T13:26:30.348Z 1 [enterGame] economyBase 初始化 670 个 division
+2026-10-22T13:26:30.351Z 1 [enterGame] 官职公库初始化完成
+2026-10-22T13:26:30.365Z 1 [enterGame] 角色私产初始化完成
+2026-10-22T13:26:30.399Z 1 [enterGame] 角色公库镜像刷新完成
+2026-10-22T13:26:30.400Z 1 [enterGame] FixedExpense.preview 完成(只算不扣)·本回合支出: 银 248 万 · 粮 46 万石 · 布 1 万匹
+2026-10-22T13:26:30.401Z 1   俸禄: 银 0 万 · 米 0 万石
+2026-10-22T13:26:30.403Z 1   宗禄: 银 2 万 · 米 3 万石
+2026-10-22T13:26:30.404Z 1   军饷: 银 244 万 · 粮 42 万石
+2026-10-22T13:26:30.406Z 1   宫廷: 银 2 万
+2026-10-22T13:26:30.413Z 1 [CharFullSchema] 初始化 513 位角色完整字段
+2026-10-22T13:26:30.415Z 1 [CurrencyEngine] 初始化 朝代=宋
+2026-10-22T13:26:30.416Z 1 [CentralLocalEngine] 初始化 预设=song_zhuanyun
+2026-10-22T13:26:30.418Z 1 [EconomyGapFill] 补完模块就绪（12 项）
+2026-10-22T13:26:30.419Z 1 [HujiEngine] sc.populationConfig: 存在 initial.nationalMouths=50000000
+2026-10-22T13:26:30.420Z 1 [HujiEngine] 初始化后 GM.population.national: [object Object]
+2026-10-22T13:26:30.422Z 1 [EnvCapacityEngine] 初始化 技术朝代=明
+2026-10-22T13:26:30.451Z 1 [HujiDeepFill] 深化模块就绪（阶层+封建+F30）
+2026-10-22T13:26:30.452Z 1 [EdictComplete] 诏令补完就绪（P1+11 反向触发）
+2026-10-22T13:26:30.454Z 1 [AuthorityEngines] 皇威/皇权/民心 + 联动矩阵就绪
+2026-10-22T13:26:30.519Z 1 [AuthorityComplete] 补完就绪（16 项 P0+P1+P2）
+2026-10-22T13:26:30.526Z 1 [HistoricalPresets] 历史数据库就绪
+2026-10-22T13:26:30.537Z 1 [enterGame-T1] GM.adminHierarchy 结构: 键=player,fac_jin,fac_hebei_yijun,fac_xixia,fac_dali,fac_tubo,fac_guge,fac_kham,fac_karakhan_east,fac_karakhan_west,fac_qocho,fac_caoyuan,fac_kereit,fac_merkit,fac_mongol,fac_tatar,fac_qongirat,fac_ongud,fac_goryeo,fac_daiviet,fac_pagan,fac_xinan_tribes,fac_jianchang,fac_nw_yunnan,fac_wumeng,fac_jinchi,fac_japan,fac_nanhai,fac_liuqiu,fac_mai,fac_visayas,fac_butuan,fac_beihai,fac_luodian,fac_ziqi·player.divisions 长度=28
+2026-10-22T13:26:30.660Z 1 [enterGame-T1] 聚合后 GM.population.national: [object Object]
+2026-10-22T13:26:30.662Z 1 [enterGame-兜底] 剧本 populationConfig.initial: [object Object]
+2026-10-22T13:26:30.663Z 1 [enterGame-兜底] 当前 GM.population.national: [object Object]
+2026-10-22T13:26:30.665Z 1 [enterGame-兜底] 户口正常·无需兜底 (当前 65458000 >= 剧本 25000000)
+2026-10-22T13:26:30.828Z 1 [startGame] _facIndex 构建完成·势力数=39 · source=enterGame
+2026-10-22T13:26:33.556Z 1 [三系统扩展] 完成·势力+ 39 ·党派+ 8 ·军队+ 103 ·角色+ 513
+2026-10-22T13:28:56.073Z 1 COMPOSITE_STAGE {"phase":"rollback-capture","event":"start","turn":1,"day":0,"load":0,"at":1792675736073}
+2026-10-22T13:29:01.730Z 1 COMPOSITE_STAGE {"phase":"rollback-capture","event":"end","turn":1,"day":0,"load":0,"at":1792675741730}
+2026-10-22T13:29:01.731Z 1 COMPOSITE_STAGE {"phase":"pre-save-capture","event":"start","turn":1,"day":0,"load":0,"at":1792675741730}
+2026-10-22T13:29:08.280Z 1 COMPOSITE_STAGE {"phase":"pre-save-capture","event":"end","turn":1,"day":0,"load":0,"at":1792675748280}
+2026-10-22T13:29:08.309Z 1 COMPOSITE_STAGE {"phase":"pre-save-commit","event":"start","turn":1,"day":0,"load":0,"at":1792675748309}
+2026-10-22T13:29:20.252Z 1 [SaveDB] 存档压缩: 151232.6KB -> gzip Blob
+2026-10-22T13:29:20.364Z 1 COMPOSITE_STAGE {"phase":"calibration","event":"start","turn":1,"day":0,"load":0,"at":1792675760364}
+2026-10-22T13:29:21.972Z 1 COMPOSITE_STAGE {"phase":"calibration","event":"end","turn":1,"day":0,"load":0,"at":1792675761971}
+2026-10-22T13:29:21.972Z 1 COMPOSITE_STAGE {"phase":"pre-save-commit","event":"end","turn":1,"day":0,"load":0,"at":1792675761972}
+2026-10-22T13:29:21.973Z 1 COMPOSITE_STAGE {"phase":"response-recovery","event":"start","turn":1,"day":0,"load":0,"at":1792675761972}
+2026-10-22T13:29:22.783Z 1 COMPOSITE_STAGE {"phase":"response-recovery","event":"end","turn":1,"day":0,"load":0,"at":1792675762783}
+2026-10-22T13:29:23.979Z 1 [pipeline] step 1/7 prep ok 982ms
+2026-10-22T13:29:23.996Z 1 [pipeline] step 2/7 plan-prefetch ok 1ms
+2026-10-22T13:29:24.337Z 1 [情节弧] 已更新 0/12 位 NPC @ T1
+2026-10-22T13:29:24.340Z 2 [map-render-skip] shell=false stage=false visible=true
+2026-10-22T13:29:28.069Z 2 [SC1.tokenBudget] 捕获: [SC1] prompt warn·estimated 178029 tokens·budget 196608 (256K context)
+2026-10-22T13:29:28.071Z 2   Error: [SC1] prompt warn·estimated 178029 tokens·budget 196608 (256K context)
+      at file:///C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011/web/tm-endturn-ai.js?v=20260928-release1353:3446:80
+      at checkPromptTokenBudget (file:///C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011/web/tm-ai-infra.js?v=20260930-context-detection:503:11)
+2026-10-22T13:29:28.071Z 2 [TokenBudget] warn estimated=178029 budget=196608 contextK=256
+2026-10-22T13:29:28.269Z 2 [TokenBudget] warn estimated=182401 budget=196608 contextK=256
+2026-10-22T13:29:28.309Z 1 [ai-validator][subcall1] 通过（15 已知字段，1 条目）
+2026-10-22T13:29:28.589Z 1 [ai-validator][subcall1b] 通过（4 已知字段，0 条目）
+2026-10-22T13:29:28.903Z 1 [ai-validator][subcall1c] 通过（9 已知字段，0 条目）
+2026-10-22T13:30:12.443Z 1 [TurnReview] investigating calls=1 tokens=14320 limit=unlimited sources=0/12 核查检验器与回合遗漏（与后续推演并行）
+2026-10-22T13:30:12.486Z 1 [TurnReview] prepared calls=1 tokens=14320 limit=unlimited sources=12/12 复核方案已形成，等待后续推演结束后核对并落账
+2026-10-22T13:30:15.095Z 2 [TokenBudget] warn estimated=180752 budget=196608 contextK=256
+2026-10-22T13:30:24.388Z 2 [TurnReview] pending; main turn continues: 主回合先提交，复核在后台继续
+2026-10-22T13:30:24.405Z 1 [pipeline] step 3/7 ai ok 60394ms
+2026-10-22T13:30:24.423Z 1 [pipeline] step 4/7 post-ai-edict ok 1ms
+2026-10-22T13:30:33.268Z 2 [endTurn systems] slow stage: 系统结算总耗时 8829ms 
+2026-10-22T13:30:33.277Z 1 [pipeline] step 5/7 systems ok 8840ms
+2026-10-22T13:30:40.981Z 2 [robustParseJSON] 所有修复层级失败，使用纯文本回退
+2026-10-22T13:31:05.191Z 1 [pipeline] step 6/7 render-and-finalize ok 31901ms
+2026-10-22T13:31:05.192Z 1 [pipeline] step 7/7 prepare-commit-barrier ok 0ms
+2026-10-22T13:31:05.193Z 1 [EndturnTiming] total=1.70m status=done [object Object]
+2026-10-22T13:31:05.193Z 1 [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+2026-10-22T13:31:05.763Z 1 COMPOSITE_STAGE {"phase":"finalize","event":"start","turn":2,"day":30,"load":0,"at":1792675865763}
+2026-10-22T13:31:36.227Z 2 [EndturnAI] call failed: sc_memwrite NPC记忆回写 读取期间存档已改变，旧请求结果已丢弃 
+2026-10-22T13:31:36.357Z 2 [AutoSave] 端回合 snapshot 耗 30517ms·考虑 A-2
+2026-10-22T13:31:43.002Z 2 [robustParseJSON] 主 JSON 已可解·丢弃尾随可解析片段（疑似截断后多嘴）
+2026-10-22T13:31:43.004Z 2 [robustParseJSON] 主 JSON 已可解·丢弃尾随可解析片段（疑似截断后多嘴）
+2026-10-22T13:31:53.832Z 1 COMPOSITE_COMMIT_RELEASE {"turn":2,"day":30,"at":1792675913832,"committed":true,"committedCaptureReleased":true,"captureSessionReleased":true}
+2026-10-22T13:31:53.834Z 1 COMPOSITE_STAGE {"phase":"finalize","event":"end","turn":2,"day":30,"load":0,"at":1792675913832}
+2026-10-22T13:32:02.509Z 1 [TurnReview] investigating calls=2 tokens=32122 limit=unlimited sources=12/27 核查检验器与回合遗漏（与后续推演并行）
+2026-10-22T13:32:57.179Z 1 [TurnReview] prepared calls=2 tokens=32122 limit=unlimited sources=27/27 复核方案已形成，等待后续推演结束后核对并落账
+2026-10-22T13:32:57.180Z 1 [TurnReview] verified calls=2 tokens=32122 limit=unlimited sources=27/27 完整原文、实际修改和修改后的正确性均已核验
+2026-10-22T13:35:12.753Z 1 [saveToSlot] 保存到: slot_1 IDB available: true
+2026-10-22T13:35:36.311Z 1 [SaveDB] 存档压缩: 164187.8KB -> gzip Blob
+2026-10-22T13:35:49.384Z 1 [saveToSlot] 保存结果: true
+2026-10-22T13:35:49.986Z 1 [loadFromSlot] 尝试加载: slot_1 IDB available: true
+2026-10-22T13:35:54.528Z 1 [loadFromSlot] 加载结果: 有数据, keys:id,type,name,timestamp,turn,scenarioName,eraName,date,dynastyPhase,snapshotId,commitState,campaignId,timelineId,gameState
+2026-10-22T13:35:56.376Z 2 [findScenarioById] scenarioById 不是 Map，重建索引
+2026-10-22T13:36:01.190Z 1 [三系统扩展] 完成·势力+ 39 ·党派+ 35 ·军队+ 103 ·角色+ 513
+2026-10-22T13:36:29.460Z 1 COMPOSITE_STAGE {"phase":"rollback-capture","event":"start","turn":2,"day":30,"load":1,"at":1792676189459}
+2026-10-22T13:36:42.069Z 1 COMPOSITE_STAGE {"phase":"rollback-capture","event":"end","turn":2,"day":30,"load":1,"at":1792676202069}
+2026-10-22T13:36:42.071Z 1 COMPOSITE_STAGE {"phase":"pre-save-capture","event":"start","turn":2,"day":30,"load":1,"at":1792676202069}
+2026-10-22T13:36:53.471Z 1 COMPOSITE_STAGE {"phase":"pre-save-capture","event":"end","turn":2,"day":30,"load":1,"at":1792676213471}
+2026-10-22T13:36:53.478Z 1 COMPOSITE_STAGE {"phase":"pre-save-commit","event":"start","turn":2,"day":30,"load":1,"at":1792676213477}
+2026-10-22T13:37:37.484Z 1 [SaveDB] 存档压缩: 164834.0KB -> gzip Blob
+2026-10-22T13:37:40.191Z 1 COMPOSITE_STAGE {"phase":"calibration","event":"start","turn":2,"day":30,"load":1,"at":1792676260189}
+2026-10-22T13:37:43.082Z 1 COMPOSITE_STAGE {"phase":"calibration","event":"end","turn":2,"day":30,"load":1,"at":1792676263079}
+2026-10-22T13:37:43.083Z 1 COMPOSITE_STAGE {"phase":"pre-save-commit","event":"end","turn":2,"day":30,"load":1,"at":1792676263080}
+2026-10-22T13:37:43.084Z 1 COMPOSITE_STAGE {"phase":"response-recovery","event":"start","turn":2,"day":30,"load":1,"at":1792676263080}
+2026-10-22T13:37:44.832Z 1 COMPOSITE_STAGE {"phase":"response-recovery","event":"end","turn":2,"day":30,"load":1,"at":1792676264830}
+2026-10-22T13:37:46.932Z 1 [pipeline] step 1/7 prep ok 1999ms
+2026-10-22T13:37:46.948Z 1 [pipeline] step 2/7 plan-prefetch ok 2ms
+2026-10-22T13:37:50.620Z 2 [SC1.tokenBudget] 捕获: [SC1] prompt warn·estimated 182229 tokens·budget 196608 (256K context)
+2026-10-22T13:37:50.622Z 2   Error: [SC1] prompt warn·estimated 182229 tokens·budget 196608 (256K context)
+      at file:///C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011/web/tm-endturn-ai.js?v=20260928-release1353:3446:80
+      at checkPromptTokenBudget (file:///C:/Users/37814/.codex/worktrees/npc-composite-r123-20261011/web/tm-ai-infra.js?v=20260930-context-detection:503:11)
+2026-10-22T13:37:50.623Z 2 [TokenBudget] warn estimated=182229 budget=196608 contextK=256
+2026-10-22T13:37:50.753Z 2 [TokenBudget] warn estimated=186603 budget=196608 contextK=256
+2026-10-22T13:37:51.198Z 1 [ai-validator][subcall1] 通过（15 已知字段，1 条目）
+2026-10-22T13:37:51.333Z 1 [ai-validator][subcall1b] 通过（4 已知字段，0 条目）
+2026-10-22T13:37:52.243Z 1 [ai-validator][subcall1c] 通过（9 已知字段，0 条目）
+2026-10-22T13:38:41.881Z 1 [TurnReview] investigating calls=1 tokens=15121 limit=unlimited sources=0/12 核查检验器与回合遗漏（与后续推演并行）
+2026-10-22T13:38:42.004Z 1 [TurnReview] prepared calls=1 tokens=15121 limit=unlimited sources=12/12 复核方案已形成，等待后续推演结束后核对并落账
+2026-10-22T13:38:51.852Z 2 [TokenBudget] warn estimated=183963 budget=196608 contextK=256
+2026-10-22T13:39:03.992Z 2 [TurnReview] pending; main turn continues: 主回合先提交，复核在后台继续
+2026-10-22T13:39:04.006Z 1 [pipeline] step 3/7 ai ok 77043ms
+2026-10-22T13:39:04.038Z 1 [pipeline] step 4/7 post-ai-edict ok 2ms
+2026-10-22T13:39:16.464Z 2 [endTurn systems] slow stage: 系统结算总耗时 12400ms 
+2026-10-22T13:39:16.475Z 1 [pipeline] step 5/7 systems ok 12410ms
+2026-10-22T13:39:27.388Z 2 [robustParseJSON] 所有修复层级失败，使用纯文本回退
+2026-10-22T13:40:33.085Z 1 [pipeline] step 6/7 render-and-finalize ok 76579ms
+2026-10-22T13:40:33.086Z 1 [pipeline] step 7/7 prepare-commit-barrier ok 0ms
+2026-10-22T13:40:33.088Z 1 [EndturnTiming] total=2.80m status=done [object Object]
+2026-10-22T13:40:33.090Z 1 [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]
+2026-10-22T13:40:33.857Z 1 COMPOSITE_STAGE {"phase":"finalize","event":"start","turn":3,"day":31.7,"load":1,"at":1792676433856}
+2026-10-22T13:41:30.827Z 2 [AutoSave] 端回合 snapshot 耗 56823ms·考虑 A-2
+2026-10-22T13:41:40.815Z 1 COMPOSITE_COMMIT_RELEASE {"turn":3,"day":31.7,"at":1792676500815,"committed":true,"committedCaptureReleased":true,"captureSessionReleased":true}
+2026-10-22T13:41:40.817Z 1 COMPOSITE_STAGE {"phase":"finalize","event":"end","turn":3,"day":31.7,"load":1,"at":1792676500815}
+2026-10-22T13:41:48.296Z 1 [TurnReview] investigating calls=2 tokens=32802 limit=unlimited sources=12/25 核查检验器与回合遗漏（与后续推演并行）

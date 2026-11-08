@@ -2012,22 +2012,6 @@
     return actions.filter(function(a){ return CANONICAL_ACTION_TYPES.indexOf(a.type) >= 0; });
   }
 
-  function _bucketActions(actions) {
-    var buckets = {};
-    _arr(actions).forEach(function(a) {
-      if (!a || !a.type) return;
-      if (!buckets[a.type]) buckets[a.type] = [];
-      buckets[a.type].push(a);
-    });
-    return buckets;
-  }
-
-  function _trimLedger(fac) {
-    if (fac && Array.isArray(fac._npcLlmActionLedger) && fac._npcLlmActionLedger.length > 80) {
-      fac._npcLlmActionLedger = fac._npcLlmActionLedger.slice(-80);
-    }
-  }
-
   function _pushFacTrajectory(fac, key, rec) {
     if (!fac || !key || !rec) return;
     if (!Array.isArray(fac[key])) fac[key] = [];
@@ -2061,50 +2045,6 @@
       }
     });
     return changed;
-  }
-
-  function _applyMilitaryOrder(fac, action, turn) {
-    var p = action.payload || {};
-    var armyName = p.army || p.armyName || p.name || p.unitName || p.unit || '';
-    var commander = p.commander || p.commanderName || p.general || p.leader || p.newCommander || p.newGeneral || '';
-    var reason = p.reason || p.rationale || '';
-    var army = _findArmy(armyName);
-    if (!army) return { ok: false, reason: 'army not found', army: armyName };
-    var oldCommander = _armyCommander(army);
-    if (army.commandChain && army.commandChain.mode === 'receipt' && !(global.TM && TM.CommandAuthority)) return {ok:false,reason:'军令交接尚待核验'};
-    var commandResult = global.TM && TM.CommandAuthority && TM.CommandAuthority.applyNpcOrder(army,fac,p,'faction-npc-llm-action');
-    if (commandResult && !commandResult.ok) return commandResult;
-    var usedGlobal = !!commandResult;
-    if (!usedGlobal && typeof global.applyAIArmyChange === 'function') {
-      try {
-        var res = global.applyAIArmyChange({name:armyName,commander:commander || undefined,destination:p.destination,location:p.location,garrison:p.garrison,reason:p.reason || p.rationale || ''},{source:'faction-npc-llm-action'});
-        usedGlobal = !!(res && res.ok);
-      } catch(_){}
-    }
-    if (!usedGlobal && commander) _syncArmyCommanderAliases(army, commander);
-    if (!usedGlobal) {
-      if (p.destination) army.destination = p.destination;
-      if (p.location || p.garrison) {
-        army.location = p.location || p.garrison;
-        army.garrison = p.garrison || p.location;
-        if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', undefined, army.location);
-      }
-    }
-    var rec = {
-      id: action.actionId,
-      turn: turn,
-      action: p.order || p.kind || 'military_order',
-      army: army.name || armyName,
-      commanderFrom: oldCommander,
-      commanderTo: commander || _armyCommander(army),
-      reason: reason,
-      _generatedByLlm: true,
-      _decisionId: action.decisionId,
-      _actionId: action.actionId,
-      _actionType: action.type
-    };
-    _pushFacTrajectory(fac, 'npcMilitaryActions', rec);
-    return { ok: true, detail: { army: rec.army, commanderFrom: oldCommander, commanderTo: rec.commanderTo } };
   }
 
   function _findRelationRecord(from, to) {
@@ -2160,89 +2100,6 @@
     };
     _pushFacTrajectory(fac, 'npcDiplomacyActions', rec);
     return { ok: true, detail: { from: from, to: to, relationFrom: oldValue, relationTo: nextValue } };
-  }
-
-  function _applyProvincePolicy(fac, action, turn) {
-    var p = action.payload || {};
-    var province = p.province || p.region || p.division || p.name || '';
-    var owner = p.ownerFaction || p.newOwner || p.targetFaction || p.faction || p.toFaction || '';
-    var reason = p.reason || p.rationale || '';
-    if (!province || !owner) return { ok: false, reason: 'missing province/owner', province: province };
-    var G = global.GM || {};
-    var oldOwner = (G._provinceToFaction && G._provinceToFaction[province])
-      || (G.provinceStats && G.provinceStats[province] && G.provinceStats[province].owner)
-      || '';
-    var changed = false;
-    if (global.TM && global.TM.FactionMembership && typeof global.TM.FactionMembership.assignProvince === 'function') {
-      try { changed = global.TM.FactionMembership.assignProvince(province, owner, { reason: reason || '势力精细推演', silent: true }); } catch(_){}
-    }
-    if (!changed) {
-      if (!G._provinceToFaction) G._provinceToFaction = {};
-      G._provinceToFaction[province] = owner;
-      if (!G.provinceStats) G.provinceStats = {};
-      if (!G.provinceStats[province]) G.provinceStats[province] = {};
-      G.provinceStats[province].owner = owner;
-      if (Array.isArray(G.facs)) {
-        G.facs.forEach(function(f) {
-          if (!f || !f.name) return;
-          if (Array.isArray(f.territories)) f.territories = f.territories.filter(function(x){ return x !== province; });
-          if (Array.isArray(f.provinceIds)) f.provinceIds = f.provinceIds.filter(function(x){ return x !== province; });
-          if (f.name === owner) {
-            if (!Array.isArray(f.territories)) f.territories = [];
-            if (!Array.isArray(f.provinceIds)) f.provinceIds = [];
-            if (f.territories.indexOf(province) < 0) f.territories.push(province);
-            if (f.provinceIds.indexOf(province) < 0) f.provinceIds.push(province);
-          }
-        });
-      }
-      changed = oldOwner !== owner;
-    }
-    var rec = {
-      id: action.actionId,
-      turn: turn,
-      province: province,
-      policy: p.policy || 'transfer_owner',
-      ownerFrom: oldOwner,
-      ownerTo: owner,
-      reason: reason,
-      changed: changed,
-      _generatedByLlm: true,
-      _decisionId: action.decisionId,
-      _actionId: action.actionId,
-      _actionType: action.type
-    };
-    _pushFacTrajectory(fac, 'npcProvincePolicies', rec);
-    return { ok: true, detail: { province: province, ownerFrom: oldOwner, ownerTo: owner } };
-  }
-
-  function _applyFiscalPolicy(fac, action, turn) {
-    var p = action.payload || {};
-    var resource = String(p.resource || p.kind || 'money').trim();
-    if (['money','grain','cloth'].indexOf(resource) < 0) resource = 'money';
-    var delta = p.treasuryDelta != null ? _safeNum(p.treasuryDelta)
-      : p.delta != null ? _safeNum(p.delta)
-      : p.amount != null ? _safeNum(p.amount)
-      : 0;
-    if (!delta || !fac || !fac.treasury || typeof fac.treasury !== 'object') {
-      return { ok: false, reason: 'missing treasury/delta' };
-    }
-    var before = _safeNum(fac.treasury[resource]);
-    fac.treasury[resource] = Math.max(0, before + delta);
-    var rec = {
-      id: action.actionId,
-      turn: turn,
-      resource: resource,
-      delta: delta,
-      from: before,
-      to: fac.treasury[resource],
-      reason: p.reason || p.rationale || '',
-      _generatedByLlm: true,
-      _decisionId: action.decisionId,
-      _actionId: action.actionId,
-      _actionType: action.type
-    };
-    _pushFacTrajectory(fac, 'npcFiscalActions', rec);
-    return { ok: true, detail: { resource: resource, from: before, to: fac.treasury[resource], delta: delta } };
   }
 
   // ──────────────────────────────────────────────────────────

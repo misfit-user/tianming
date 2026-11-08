@@ -1,0 +1,21 @@
+
+BRIDGE_CASE_START {"name":"locked-electron-runtime","at":"2026-10-23T08:08:32.031Z"}
+BRIDGE_CASE_PASS {"name":"locked-electron-runtime","elapsedMs":10}
+BRIDGE_CASE_START {"name":"production-webpreferences","at":"2026-10-23T08:08:32.041Z"}
+BRIDGE_CASE_PASS {"name":"production-webpreferences","elapsedMs":0}
+BRIDGE_CASE_START {"name":"real-bridge-and-ipc","at":"2026-10-23T08:08:32.042Z"}
+BRIDGE_CASE_PASS {"name":"real-bridge-and-ipc","elapsedMs":35}
+BRIDGE_CASE_START {"name":"production-test-exports-boundary","at":"2026-10-23T08:08:32.077Z"}
+BRIDGE_CASE_PASS {"name":"production-test-exports-boundary","elapsedMs":1}
+BRIDGE_CASE_START {"name":"official Shaosong population, current player, map and real formal entry are preserved","at":"2026-10-23T08:09:25.298Z"}
+BRIDGE_CASE_PASS {"name":"official Shaosong population, current player, map and real formal entry are preserved","elapsedMs":6018}
+BRIDGE_CASE_START {"name":"formal assistance creates the source, NPC independently receives and responds","at":"2026-10-23T08:10:29.057Z"}
+BRIDGE_CASE_PASS {"name":"formal assistance creates the source, NPC independently receives and responds","elapsedMs":36360}
+BRIDGE_CASE_START {"name":"formal departure has a real route, and the travel save actually loads a new world","at":"2026-10-23T08:19:16.657Z"}
+BRIDGE_CASE_PASS {"name":"formal departure has a real route, and the travel save actually loads a new world","elapsedMs":72022}
+BRIDGE_CASE_START {"name":"onsite player question uses a current UI ticket and awaits an independent answer","at":"2026-10-23T08:26:36.549Z"}
+BRIDGE_CASE_PASS {"name":"onsite player question uses a current UI ticket and awaits an independent answer","elapsedMs":230008}
+BRIDGE_CASE_START {"name":"NPC answers the real question, both return, and the official population continues through 30 days","at":"2026-10-23T08:35:29.588Z"}
+BRIDGE_CASE_PASS {"name":"NPC answers the real question, both return, and the official population continues through 30 days","elapsedMs":100836}
+BRIDGE_EXIT_REQUESTED {"mode":"npc-composite","at":"2026-10-23T08:37:10.470Z","code":0}
+BRIDGE_NODE_EXIT {"mode":"npc-composite","at":"2026-10-23T08:37:10.483Z","code":0}

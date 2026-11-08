@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-22T17:38:58.192Z",
+  "scope": "startup fixture only; close each owned VM timer scope after all case assertions or on failure",
+  "source": "web/scripts/smoke-start-game-data-integrity.js",
+  "sha256": "313fb24cf7709ce1bf11692ae847a49b4ff54691ffbb6667dbe9c7edd2c7e676",
+  "priorBehavior": "existing loadGame already cleared timeouts/intervals before next VM, but not host RAF/immediate and not late recreation after disposal; no claim that all12 worlds were wholly uncleaned",
+  "unit": {
+    "current": {
+      "pass": 6,
+      "fail": 0,
+      "exit": 0,
+      "stdout": "current.stdout.log",
+      "stderr": "current.stderr.log"
+    },
+    "legacy": {
+      "pass": 2,
+      "fail": 2,
+      "total": 4,
+      "exit": 1,
+      "stdout": "legacy.stdout.log",
+      "stderr": "legacy.stderr.log",
+      "source": "1524724 original timer block only"
+    }
+  },
+  "startup": {
+    "runId": "b5ffb892-c95f-4805-90f2-640ec4d2edff",
+    "head": "1524724fc45ccd1e04ae61717db9f789f267ca9b",
+    "exit": 1,
+    "ms": 120319,
+    "timedOut": true,
+    "report": "startup-report.json",
+    "originalLog": "startup.log",
+    "sourceUnchanged": true,
+    "completedCaseScopes": 11,
+    "disposedTotals": {
+      "timeouts": 127,
+      "intervals": 56,
+      "immediates": 0,
+      "frames": 4
+    },
+    "caseObservations": [
+      {
+        "case": "stale-map-choice-is-ignored",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 5,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 0
+        }
+      },
+      {
+        "case": "fresh-ai-geography-choice-is-honored",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 5,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 0
+        }
+      },
+      {
+        "case": "runFastStartGateCase",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 26,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 1
+        }
+      },
+      {
+        "case": "runStartRequestRaceCase",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 11,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 0
+        }
+      },
+      {
+        "case": "runLazyLoadFailureUnlockCase",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 26,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 1
+        }
+      },
+      {
+        "case": "runStrictHistoryFastPathCase",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 26,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 1
+        }
+      },
+      {
+        "case": "runMemorialCandidateOrderingCase",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 6,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 0
+        }
+      },
+      {
+        "case": "runMemorialInteractionGuardCase",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 5,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 0
+        }
+      },
+      {
+        "case": "runScenarioSourceIsolationCase",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 7,
+          "intervals": 6,
+          "immediates": 0,
+          "frames": 1
+        }
+      },
+      {
+        "case": "runBackgroundPrewarmCase",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 5,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 0
+        }
+      },
+      {
+        "case": "runDeepReadImmutableConfigCase",
+        "assertionsCompleted": true,
+        "remaining": {
+          "timeouts": 5,
+          "intervals": 5,
+          "immediates": 0,
+          "frames": 0
+        }
+      }
+    ],
+    "remaining": "twelfth deepread-stale-call case did not complete before original120000ms process deadline"
+  },
+  "boundaries": [
+    "all original world data and case assertions retained",
+    "same-case timers execute normally; only post-case cleanup closes owned handles",
+    "late old callback cannot create a new owned timer/frame after disposal",
+    "other VM unaffected",
+    "host RAF retains original16ms and no timestamp semantics",
+    "shared headless/full-turn/runtime/GC/time limits unchanged",
+    "no rerun after this timeout"
+  ]
+}

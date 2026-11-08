@@ -1,6 +1,6 @@
 // smoke-scenario-no-bleed.js
 // 验证「载入绍宋却混入天启人物/地图/军队/官制」的串台漏洞已修。
-// 用真 official-scenarios-bundle 的绍宋(真缺 government/military/map/mapData/mapRuntimeContract)+天启数据,
+// 用真官方剧本内建数据的绍宋(真缺 government/military/map/mapData/mapRuntimeContract)+天启数据,
 // 模拟「上一局玩天启→P 残留天启的这些字段→本局开绍宋」,对照「无修(复现漏洞)」vs「有修(本次补丁)」。
 // 应用逻辑严格照 tm-patches.js doActualStart 的真实片段(if(sc.X) P.X=...; 官制 government 覆盖; 地图绑定; GM.armies 派生)。
 'use strict';
@@ -9,12 +9,10 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) { pass++; console.log('  ✓ ' + m); } else { fail++; console.log('  ✗ ' + m); } }
 const clone = (x) => JSON.parse(JSON.stringify(x));
 
-// 载入真 bundle
-const src = fs.readFileSync(path.join(__dirname, '..', 'web', 'preview', 'official-scenarios-bundle.js'), 'utf8');
-const ctx = { console }; ctx.global = ctx; ctx.window = ctx;
-vm.runInNewContext(src, ctx, { filename: 'bundle.js' });
-const S = ctx.TM_OFFICIAL_SCENARIOS;
-const TQ = S.tianqi7, SS = S.shaosong;
+// 载入真内建（web/scenarios/*.js·上下文没有 P 时只进注册表）·只装天启+绍宋两个
+const { loadBuiltins } = require(path.join(__dirname, '..', 'web', 'scripts', 'lib-official-builtins.js'));
+const builtins = loadBuiltins({ ids: ['sc-tianqi7-1627', 'sc-jianyan1-1127-shaosong'] }).TMOfficialScenarioBuiltins;
+const TQ = builtins['sc-tianqi7-1627'], SS = builtins['sc-jianyan1-1127-shaosong'];
 const SID = SS.id; // 绍宋 sid
 
 // 严格复刻 doActualStart 应用片段(只取与本漏洞相关的字段),applyFix 控制是否带本次补丁

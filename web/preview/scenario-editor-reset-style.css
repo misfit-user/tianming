@@ -12109,125 +12109,12 @@
     }
 
     /* ════════════════════════════════════════════════════════════════
-       重设 slice 4 · AI 中心化：BYOK 国师从右下浮层 → 案侧常驻面板
-       把 editor-authoring-agent 的浮层(#tm-aa-panel)钉成右侧常驻列并御案重皮。
-       每条用 body.je-guoshi-docked 前缀 → 特异性(1,1,x) 压过 agent 注入的裸 #id(1,0,0)，
-       故不必改共享的 editor-authoring-agent-ui.js（不动旧编辑器）。仅桌面宽生效。
+       国师停靠（重设 slice 4 起·2026-10-15 国师重做后只剩宿主这一侧）
+       面板的样子全归面板自己（editor-authoring-agent-ui-icons.js 注入）。这里只管：
+       停靠时只显示开着的面板、正文让出右栏、顶栏图标收紧、实时守护横幅的底子。
+       原先往面板里塞的按钮、折叠块、⌘K 模态、@ 与斜杠下拉的样式随那层控件一起退役。
        ════════════════════════════════════════════════════════════════ */
-    /* 国师「测试连接」小按钮（一键自检中转 API 连通·随处生效不限宽） */
-    .je-aa-test {
-      margin-left: auto; margin-right: 8px;
-      padding: 3px 10px; cursor: pointer;
-      font-family: var(--je-font-kai); font-size: 11px;
-      color: var(--ok);
-      background: var(--surface);
-      border: 1px solid var(--bd2);
-      border-radius: var(--je-radius);
-    }
-    .je-aa-test:hover { background: rgba(126, 184, 167, .22); }
-    .je-aa-test:disabled { opacity: .5; cursor: default; }
-    .je-aa-test[hidden] { display: none; }   /* 维度3 · 撤销按钮默认隐藏（防 author display 盖掉 [hidden]） */
-    /* 刀F · 国师快捷操作条（玩家一键常用任务）+ 停止按钮 */
-    .je-aa-quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
-    .je-aa-quick button {
-      padding: 4px 10px; cursor: pointer;
-      font-size: 11px;
-      color: var(--ac); background: var(--surface);
-      border: 1px solid var(--bd2); border-radius: var(--je-radius);
-    }
-    .je-aa-quick button:hover { background: var(--sunken); border-color: var(--ac); }
-    .je-aa-stop {
-      margin-left: 6px; padding: 8px 14px; cursor: pointer;
-      font-size: 13px; color: #ffe1ac;
-      background: linear-gradient(180deg, rgba(192, 64, 48, .92), rgba(139, 46, 37, .92));
-      border: none; border-radius: var(--je-radius);
-    }
-    .je-aa-stop:hover { filter: brightness(1.1); }
-    .je-aa-stop[hidden] { display: none; }
-    /* 维度4 · 示例引导 chips + dock 内 API 设置（折叠） */
-    .je-aa-examples { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin: 6px 0 0; font-size: 11px; color: var(--tx3); }
-    .je-aa-examples > span { color: var(--tx3); }
-    .je-aa-examples button {
-      padding: 3px 8px; cursor: pointer; font-size: 11px;
-      color: var(--tx2); background: rgba(255, 255, 255, .04);
-      border: 1px dashed rgba(184, 154, 83, .40); border-radius: var(--je-radius);
-    }
-    .je-aa-examples button:hover { border-style: solid; color: var(--ac); }
-    .je-aa-apicfg { margin: 0 0 8px; border: 1px solid var(--bd2); border-radius: var(--je-radius-lg); background: var(--sunken); overflow: hidden; }
-    .je-aa-apicfg > summary { cursor: pointer; padding: 6px 10px; font-size: 12px; color: var(--ac); list-style: none; }
-    .je-aa-apicfg > summary::-webkit-details-marker { display: none; }
-    .je-aa-apicfg label { display: flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 11px; color: var(--tx3); }
-    .je-aa-apicfg input { flex: 1; min-width: 0; padding: 4px 6px; font-size: 11px; background: var(--sunken); border: 1px solid var(--bd2); border-radius: var(--je-radius); color: var(--tx); }
-    .je-aa-apicfg .je-api-save { margin: 2px 10px 10px; padding: 5px 12px; cursor: pointer; font-size: 12px; color: #0b1512; background: var(--ok); border: none; border-radius: var(--je-radius); }
-    .je-aa-conv textarea { display: block; width: calc(100% - 20px); margin: 4px 10px; box-sizing: border-box; min-height: 76px; resize: vertical; padding: 6px; font-size: 11px; line-height: 1.5; background: var(--sunken); border: 1px solid var(--bd2); border-radius: var(--je-radius); color: var(--tx); }
-    .je-aa-conv .je-conv-hint { padding: 0 10px 4px; font-size: 11px; color: var(--tx3); line-height: 1.5; }
-    /* 方向G · 检查点列表 */
-    .je-aa-ckpt .je-ckpt-add { margin: 4px 10px; padding: 4px 10px; cursor: pointer; font-size: 11px; color: var(--ac); background: var(--surface); border: 1px solid var(--bd2); border-radius: var(--je-radius); }
-    .je-aa-ckpt .je-ckpt-list { padding: 0 6px 6px; max-height: 150px; overflow-y: auto; }
-    .je-aa-ckpt .je-ckpt-row { display: flex; align-items: center; gap: 6px; padding: 3px 6px; font-size: 11px; color: var(--tx2); border-bottom: 1px solid var(--bd); }
-    .je-aa-ckpt .je-ckpt-row .lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .je-aa-ckpt .je-ckpt-row .tm { color: var(--tx3); font-size: 11px; }
-    .je-aa-ckpt .je-ckpt-row button { padding: 1px 7px; cursor: pointer; font-size: 11px; color: var(--tx); background: var(--surface); border: 1px solid var(--bd2); border-radius: var(--je-radius); }
-    .je-aa-ckpt .je-ckpt-empty { padding: 4px 12px 8px; font-size: 11px; color: var(--tx3); }
-    /* 方向M · 运行历史 */
-    .je-aa-hist .je-hist-search { display: block; width: calc(100% - 20px); margin: 4px 10px; box-sizing: border-box; padding: 4px 6px; font-size: 11px; background: var(--sunken); border: 1px solid var(--bd2); border-radius: var(--je-radius); color: var(--tx); }
-    .je-aa-hist .je-hist-list { padding: 0 6px 6px; max-height: 200px; overflow-y: auto; }
-    .je-aa-hist .je-hist-row { padding: 4px 6px; font-size: 11px; color: var(--tx2); border-bottom: 1px solid var(--bd); line-height: 1.5; }
-    .je-aa-hist .je-hist-row .hd { display: flex; gap: 6px; align-items: baseline; }
-    .je-aa-hist .je-hist-row .kind { color: var(--ac); }
-    .je-aa-hist .je-hist-row .tm { color: var(--tx3); font-size: 11px; margin-left: auto; }
-    .je-aa-hist .je-hist-row .req { color: var(--tx); }
-    .je-aa-hist .je-hist-row .sm { color: var(--tx3); font-size: 11px; }
-    .je-aa-hist .je-hist-row .ap { color: var(--ok); font-size: 11px; }
-    .je-aa-hist .je-hist-empty { padding: 4px 12px 8px; font-size: 11px; color: var(--tx3); }
-    .je-aa-hist .je-hist-clear { margin: 2px 10px 8px; padding: 3px 10px; cursor: pointer; font-size: 11px; color: var(--tx3); background: transparent; border: 1px solid var(--bd2); border-radius: var(--je-radius); }
-    .je-aa-hist .je-hist-changelog { margin: 2px 4px 8px 10px; padding: 3px 10px; cursor: pointer; font-size: 11px; color: var(--ac); background: var(--surface); border: 1px solid var(--bd2); border-radius: var(--je-radius); }
-    /* 方向U · 导入/转换弹窗 */
-    .je-import-back { position: fixed; inset: 0; z-index: 88; background: rgba(8, 7, 5, .55); display: flex; align-items: center; justify-content: center; padding: 16px; }
-    .je-import-back[hidden] { display: none; }
-    .je-import { width: 580px; max-width: calc(100vw - 32px); background: linear-gradient(180deg, rgba(28, 22, 16, .99), rgba(12, 10, 8, .99)); border: 1px solid rgba(184, 154, 83, .45); border-radius: var(--je-radius-lg); box-shadow: 0 20px 50px rgba(0, 0, 0, .6); padding: 14px; }
-    .je-import h4 { margin: 0 0 4px; font-family: var(--je-font-kai); font-size: 14px; color: var(--gold-bright); }
-    .je-import .je-import-hint { font-size: 11px; color: var(--paper-dim); margin-bottom: 8px; line-height: 1.5; }
-    .je-import textarea { width: 100%; box-sizing: border-box; min-height: 200px; resize: vertical; padding: 8px; font-family: inherit; font-size: 12px; line-height: 1.6; background: rgba(8, 7, 5, .62); border: 1px solid rgba(184, 154, 83, .28); border-radius: var(--je-radius); color: var(--paper-strong); }
-    .je-import .je-import-act { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
-    .je-import button { cursor: pointer; font-family: var(--je-font-kai); font-size: 12px; border-radius: var(--je-radius); padding: 5px 14px; }
-    .je-import .je-import-go { color: #0b1512; background: linear-gradient(180deg, rgba(126, 184, 167, .92), rgba(90, 143, 127, .92)); border: none; }
-    .je-import .je-import-cancel { color: var(--paper-dim); background: rgba(184, 154, 83, .08); border: 1px solid rgba(184, 154, 83, .2); }
-    .je-bundle .je-bundle-export { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
-    .je-bundle .je-bundle-fac { flex: 1; min-width: 0; padding: 5px 6px; font-size: 12px; background: rgba(8, 7, 5, .62); border: 1px solid rgba(184, 154, 83, .28); border-radius: var(--je-radius); color: var(--paper-strong); }
-    .je-bundle .je-bundle-do-export, .je-bundle .je-bundle-download { padding: 5px 10px; cursor: pointer; font-size: 11px; font-family: var(--je-font-kai); color: var(--gold-bright); background: rgba(184, 154, 83, .12); border: 1px solid rgba(184, 154, 83, .28); border-radius: var(--je-radius); white-space: nowrap; }
-    .je-bundle .je-bundle-text { min-height: 150px; }
-    .je-batch .je-batch-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-    .je-batch .je-batch-coll { flex: 1; min-width: 0; padding: 5px 6px; font-size: 12px; background: rgba(8, 7, 5, .62); border: 1px solid rgba(184, 154, 83, .28); border-radius: var(--je-radius); color: var(--paper-strong); }
-    .je-batch .je-batch-n { width: 64px; padding: 5px 6px; font-size: 12px; background: rgba(8, 7, 5, .62); border: 1px solid rgba(184, 154, 83, .28); border-radius: var(--je-radius); color: var(--paper-strong); }
-    .je-batch .je-batch-note { width: 100%; box-sizing: border-box; padding: 5px 6px; font-size: 12px; background: rgba(8, 7, 5, .62); border: 1px solid rgba(184, 154, 83, .28); border-radius: var(--je-radius); color: var(--paper-strong); }
-    /* 方向V · 命令面板 ⌘K */
-    .je-cmdk-back { position: fixed; inset: 0; z-index: 90; background: rgba(8, 7, 5, .55); display: flex; align-items: flex-start; justify-content: center; padding-top: 12vh; }
-    .je-cmdk-back[hidden] { display: none; }
-    .je-cmdk { width: 520px; max-width: calc(100vw - 32px); background: linear-gradient(180deg, rgba(28, 22, 16, .99), rgba(12, 10, 8, .99)); border: 1px solid rgba(184, 154, 83, .45); border-radius: var(--je-radius-lg); box-shadow: 0 20px 50px rgba(0, 0, 0, .6); overflow: hidden; }
-    .je-cmdk input { width: 100%; box-sizing: border-box; padding: 12px 14px; font-family: var(--je-font-kai); font-size: 14px; color: var(--paper-strong); background: transparent; border: none; border-bottom: 1px solid rgba(184, 154, 83, .3); outline: none; }
-    .je-cmdk .je-cmdk-list { max-height: 50vh; overflow-y: auto; padding: 4px; }
-    .je-cmdk .je-cmdk-item { display: flex; align-items: baseline; gap: 8px; padding: 7px 10px; font-size: 13px; color: var(--paper); border-radius: var(--je-radius); cursor: pointer; }
-    .je-cmdk .je-cmdk-item.active, .je-cmdk .je-cmdk-item:hover { background: rgba(184, 154, 83, .18); color: var(--gold-bright); }
-    .je-cmdk .je-cmdk-item .lbl { flex: 1; }
-    .je-cmdk .je-cmdk-item .hint { font-size: 11px; color: var(--paper-dim); }
-    .je-cmdk .je-cmdk-empty { padding: 14px; font-size: 12px; color: var(--paper-dim); text-align: center; }
-    /* UI 优化 · 学 Claude Code / Codex 桌面端质感（锁布局·纯质感：细滚动条 / 聚焦环 / 平滑过渡 / 数字等宽 / 微分隔） */
-    #tm-aa-panel, .je-cmdk, .je-import { font-variant-numeric: tabular-nums; }
-    .je-cmdk-list::-webkit-scrollbar, .je-import textarea::-webkit-scrollbar { width: 8px; height: 8px; }
-    .je-cmdk-list::-webkit-scrollbar-thumb, .je-import textarea::-webkit-scrollbar-thumb { background: rgba(184, 154, 83, .3); border-radius: 4px; }
-    .je-cmdk-list::-webkit-scrollbar-thumb:hover { background: rgba(184, 154, 83, .5); }
-    .je-cmdk-list::-webkit-scrollbar-track, .je-import textarea::-webkit-scrollbar-track { background: transparent; }   /* 面板滚动条/聚焦环交面板原生主题 */
-    .je-import textarea:focus, .je-cmdk input:focus { outline: none; border-color: rgba(184, 154, 83, .6); box-shadow: 0 0 0 2px rgba(184, 154, 83, .16); }
-    body.je-guoshi-docked .je-aa-test, body.je-guoshi-docked #tm-aa-apply, body.je-guoshi-docked #tm-aa-discard, body.je-guoshi-docked #tm-aa-go, .je-cmdk-item, .je-aa-quick button { transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .08s ease; }
-    body.je-guoshi-docked #tm-aa-go:not(:disabled):active, body.je-guoshi-docked .je-aa-test:not(:disabled):active { transform: translateY(1px); }
-    body.je-guoshi-docked #tm-aa-actions { border-top: 1px solid var(--bd); padding-top: 8px; margin-top: 2px; }
-    body.je-guoshi-docked .tm-aa-sec { letter-spacing: .03em; }
-    /* 2026-07-02 · 与共创面板＋菜单/停止钮重复的旧注入件永久收纳（测试连接为独有能力保留）。
-       je-aa-apicfg 旧 API 抽屉亦退役——API 连接/模型选择已移至 composer 模型徽弹层（检测真实模型清单·同写 tm_api）。 */
-    .je-aa-review, .je-aa-orch, .je-aa-preflight, .je-aa-qa, .je-aa-explain, .je-aa-undo, .je-aa-stop, .je-aa-apicfg { display: none !important; }
-    .je-aa-planmode:not(.je-aa-fewshot) { display: none !important; }   /* 计划模式已升级为面板「权限模式·问策」·少样例开关保留 */
-    /* 方向T · 一致性守护实时横幅 */
+    /* 方向T · 一致性守护实时横幅（配色在文末玄墨层） */
     .je-guard-toast {
       position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 70; max-width: 560px; width: max-content;
       padding: 8px 12px; font-size: 12px; line-height: 1.5; color: #2a0d0a;
@@ -12242,88 +12129,18 @@
     .je-guard-toast .gt-act { display: flex; gap: 6px; align-items: center; }
     .je-guard-toast button { cursor: pointer; font-family: var(--je-font-kai); font-size: 11px; border-radius: var(--je-radius); border: 1px solid rgba(120, 40, 30, .4); background: rgba(255, 245, 240, .85); color: #2a0d0a; padding: 2px 8px; }
     .je-guard-toast .gt-x { background: none; border: none; font-size: 16px; line-height: 1; color: #2a0d0a; padding: 0 2px; }
-    .je-aa-guard-toggle { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 12px; color: var(--tx3); cursor: pointer; }
-    /* 方向R · 模板/宏 */
-    .je-aa-macro .je-macro-save { display: flex; gap: 4px; padding: 4px 10px; }
-    .je-aa-macro .je-macro-name { flex: 1; min-width: 0; padding: 4px 6px; font-size: 11px; background: var(--sunken); border: 1px solid var(--bd2); border-radius: var(--je-radius); color: var(--tx); }
-    .je-aa-macro .je-macro-add { padding: 4px 8px; cursor: pointer; font-size: 11px; color: var(--ac); background: var(--surface); border: 1px solid var(--bd2); border-radius: var(--je-radius); white-space: nowrap; }
-    .je-aa-macro .je-macro-list { padding: 0 6px 6px; max-height: 160px; overflow-y: auto; }
-    .je-aa-macro .je-macro-row { display: flex; align-items: center; gap: 6px; padding: 3px 6px; font-size: 11px; border-bottom: 1px solid var(--bd); }
-    .je-aa-macro .je-macro-row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: var(--tx); }
-    .je-aa-macro .je-macro-row .nm:hover { color: var(--ac); }
-    .je-aa-macro .je-macro-row .del { cursor: pointer; color: var(--tx3); background: none; border: none; font-size: 13px; line-height: 1; padding: 0 3px; }
-    .je-aa-macro .je-macro-empty { padding: 4px 12px 8px; font-size: 11px; color: var(--tx3); }
-    /* 方向F · 权限/自主度 */
-    .je-aa-perm select { flex: 1; min-width: 0; padding: 3px 6px; font-size: 11px; background: var(--sunken); border: 1px solid var(--bd2); border-radius: var(--je-radius); color: var(--tx); }
-    .je-aa-perm .je-perm-danger { padding: 4px 10px; }
-    .je-aa-perm .je-perm-scope-hd { padding: 2px 10px; font-size: 11px; color: var(--tx3); }
-    .je-aa-perm .je-perm-scope { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 2px 10px 8px; }
-    .je-aa-perm .je-perm-coll { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--tx2); }
-    /* 维度 · @提实体自动补全下拉（打 @ 弹出剧本里的人物/势力） */
-    .je-aa-mention {
-      position: fixed; z-index: 60; max-height: 190px; overflow-y: auto; min-width: 160px;
-      background: linear-gradient(180deg, rgba(28, 22, 16, .99), rgba(10, 9, 7, .99));
-      border: 1px solid var(--bd2); border-radius: var(--je-radius);
-      box-shadow: 0 10px 26px rgba(0, 0, 0, .55);
-    }
-    .je-aa-mention[hidden] { display: none; }
-    .je-aa-mention button {
-      display: block; width: 100%; text-align: left; padding: 5px 10px; cursor: pointer;
-      font-size: 12px; color: var(--tx2);
-      background: transparent; border: none; border-bottom: 1px solid var(--bd);
-    }
-    .je-aa-mention button:hover,
-    .je-aa-mention button.je-m-active { background: rgba(184, 154, 83, .26); color: var(--gold-bright); }
-    .je-aa-mention .je-m-kind { color: var(--paper-dim); font-size: 11px; margin-left: 8px; }
-    /* 计划模式开关 */
-    .je-aa-planmode { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 12px; color: var(--tx3); cursor: pointer; }
-    .je-aa-planmode input { cursor: pointer; }
-    /* 跑前估 token */
-    .je-aa-esttok { margin: 0 0 6px; padding: 3px 8px; font-size: 11px; line-height: 1.5; color: var(--tx3); border-left: 2px solid var(--ac); background: transparent; border-radius: 0 var(--je-radius) var(--je-radius) 0; }
-    /* （旧「＋ 模式」菜单 CSS 已随注入件退役·2026-07-03） */
-    /* ===== 对话优先版式：默认把所有设置类 chrome 收进「⚙ 设置」抽屉，foreground 对话区，输入框沉底 ===== */
-    body.je-guoshi-docked:not(.je-guoshi-settings-open) #tm-aa-panel .je-aa-apicfg,
-    body.je-guoshi-docked:not(.je-guoshi-settings-open) #tm-aa-panel .je-aa-quick,
-    body.je-guoshi-docked:not(.je-guoshi-settings-open) #tm-aa-panel .je-aa-examples,
-    body.je-guoshi-docked:not(.je-guoshi-settings-open) #tm-aa-panel .je-aa-planmode,
-    body.je-guoshi-docked:not(.je-guoshi-settings-open) #tm-aa-panel .je-aa-guard-toggle,
-    body.je-guoshi-docked:not(.je-guoshi-settings-open) #tm-aa-panel .je-aa-esttok,
-    body.je-guoshi-docked:not(.je-guoshi-settings-open) #tm-aa-hd button:not(#tm-aa-x):not(#tm-aa-fs):not(#tm-aa-settings):not(#tm-aa-newchat):not(#tm-aa-theme):not(#tm-aa-rail-tg) { display: none !important; }   /* 御案收纳保留·但共创面板原生五钮(新对话/明暗/侧栏)不再误藏 */
-    #tm-aa-settings { background: none; border: none; color: var(--paper-dim); font-size: 13px; cursor: pointer; line-height: 1; padding: 0 3px; }
-    #tm-aa-settings:hover { color: var(--paper-strong); }
-    body.je-guoshi-settings-open #tm-aa-settings { color: var(--gold-bright); }
     @media (min-width: 1101px) {
-      /* 2026-07-02 御案重皮退役视觉层：共创面板已自带 Claude 桌面端级主题(变量驱动)——
-         此处只保留功能胶水(常驻坞/宽度/设置抽屉/⌘K)·旧的逐元素重涂(金钮/紫泡/暗盒/楷体req)全部移除·
-         版式(composer 沉底/欢迎居中)由面板原生规则接管。 */
-      /* 国师停靠后顶栏变窄 → 13 个图标钮收紧到 33px、间距 4px，尽量单行不换行不重叠 */
+      /* 国师停靠后顶栏变窄 → 图标钮收紧到 33px、间距 4px，尽量单行不换行不重叠 */
       body.je-guoshi-docked .top-actions { gap: 4px; }
       body.je-guoshi-docked .top-actions .icon-btn { width: 33px; height: 33px; }
     }
     @media (min-width: 1101px) {
-      body.je-guoshi-docked .reset-shell { padding-right: calc(var(--tm-aa-dock-w, 420px) + 14px); }   /* UI·AI · 国师调宽时槽宽随动（回退值与面板 width 回退 420 对齐·差 80px 会让内容钻到面板底下） */
+      body.je-guoshi-docked .reset-shell { padding-right: calc(var(--tm-aa-dock-w, 420px) + 14px); }   /* 国师调宽时正文让位随动（回退值与面板宽度回退 420 一致） */
       body.je-guoshi-docked #tm-aa-fab { display: none; }
       body.je-guoshi-docked #tm-aa-panel {
         display: none !important;
-        position: fixed; top: 14px; right: 12px; bottom: 14px;
-        width: var(--tm-aa-dock-w, 420px); max-width: 60vw; max-height: none; height: auto;   /* UI·AI · 可调宽（默认加宽到 420 容纳新版式） */
-        flex-direction: column;
-        border-color: rgba(184, 154, 83, .40);   /* 御案金框保留·底色/文色交面板原生主题 */
-        box-shadow: -18px 0 44px rgba(0, 0, 0, .42);
-        overflow: hidden;
-        animation: none;   /* 常驻坞不重播开场动画 */
       }
       body.je-guoshi-docked #tm-aa-panel.open { display: flex !important; }
-      /* 治执行时大片死黑空白：极淡居中印记，让空白读作"留白"而非黑洞（在内容之下·不挡操作） */
-      body.je-guoshi-docked #tm-aa-panel::after {
-        content: "國\00A0師"; position: absolute; left: 0; right: 0; top: 54%;
-        transform: translateY(-50%); text-align: center; letter-spacing: .14em;
-        font-family: var(--je-font-kai); font-size: 58px; line-height: 1; font-weight: 700;
-        color: rgba(184, 154, 83, .04); pointer-events: none; z-index: 0;
-      }
-      body.je-guoshi-docked #tm-aa-body { position: relative; z-index: 1; }
-      body.je-guoshi-docked #tm-aa-hd { flex-wrap: wrap; gap: 4px 5px; }   /* 御案注入钮多时换行不挤爆·配色交面板原生主题 */
-      body.je-guoshi-docked #tm-aa-hd .je-aa-test { margin: 0; padding: 2px 7px; font-size: 11px; }   /* UI优化：去掉 margin-left:auto + 紧凑 */
 
     /* ===== L1 · 左列「卷册目录」精修 — 对齐右侧国师质感（纯视觉·不改信息架构·2026-06-04） =====
        目标：模块名是清晰焦点，完成度/AI 等副信息退后；选中＝正在批阅的这一卷。

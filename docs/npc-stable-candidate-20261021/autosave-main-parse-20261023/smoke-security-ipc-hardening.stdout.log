@@ -1,0 +1,87 @@
+— 轨1·纯函数复刻断言 —
+  ok· A1· turnSeg("../../etc/passwd") 非规范整数 → throw
+  ok· A2· turnSeg("..") → throw（空段不退化成 saveDir 本身）
+  ok· A3a· turnSeg(整数) 输出纯数字段
+  ok· A3b· turn="../../x" → 段仍含于 saveDir（或已 throw）
+  ok· A3b· turn=".." → 段仍含于 saveDir（或已 throw）
+  ok· A3b· turn="5" → 段仍含于 saveDir（或已 throw）
+  ok· A3b· turn=-3 → 段仍含于 saveDir（或已 throw）
+  ok· A3b· turn="3.5" → 段仍含于 saveDir（或已 throw）
+  ok· A3b· turn="7abc" → 段仍含于 saveDir（或已 throw）
+  ok· A3b· turn="0x1F" → 段仍含于 saveDir（或已 throw）
+  ok· A3b· turn=999999 → 段仍含于 saveDir（或已 throw）
+  ok· A6· turnSeg(-3) 拒绝（不再别名到回合3）
+  ok· A7· turnSeg("3.5") 拒绝（不再别名到回合35）
+  ok· A7b· 前导零拒绝（规范表示唯一）
+  ok· A7c· 指数表示拒绝
+  ok· A5a· IEEE754：t++ 在 1e21 处自增停滞 → 当前 for(t=from;t<=to;t++) 对 ≥2^53 不终止（死循环）
+  ok· A5b· 1e21 通过 Number.isFinite 门 → 当前守卫【不】拦 → 印证 A5 死循环 DoS 存在
+  ok· A5c· 建议加固的 Number.isSafeInteger 门可拦 1e21（终止死循环）
+  ok· A4· 超出最大回合范围的 toTurn=1e9 → 直接拒绝
+  ok· A4a· 合法最大范围仍将迭代封顶 20001
+  ok· A5d· 加固：fromTurn=toTurn=1e21 → 0 迭代（safe-integer 门拦下·不死循环）
+  ok· A6b· 负回合直接拒绝，不钳位到另一个请求
+  ok· A3c· 浮点回合直接拒绝，不 floor 成另一个请求
+  ok· A4b· 加固：toTurn<fromTurn → 0 迭代（倒序空返回）
+  ok· A5e· 超过业务回合上限的安全整数也直接拒绝
+  ok· A8a· sanitize("..")="_" → path.join 保持在 turn-data 内
+  ok· A8b· 加固：sanitize("..")→"_"·含于 turn-data（穿越被中和）
+  ok· A9· sanitize(".")="_" → 不再塌回 saveBase 本身
+  ok· A8c· 加固 sanitize 不误伤含点的正常名（仅整体纯点段被替）
+  ok· B1· 大写 hash 经 toLowerCase 后接受并匹配（大小写不敏感）
+  ok· B2· 前后空白 → 正则 ^…$ 拒绝（fail-closed）
+  ok· B3· 空 hash → 拒绝（=本次修的核心：无 hash 拒装）
+  ok· B4a· 尾换行 → JS $（无 m）不匹配 → 拒绝（防换行走私）
+  ok· B4b· 63 位 → 长度不足 → 拒绝
+  ok· B4c· 65 位 → 超长 → 拒绝
+  ok· B4d· 含非 hex 字符(g) → 拒绝
+  ok· B5· 格式合法但与实际 sha256 不符 → 拒绝
+  ok· B6· 格式合法且与本地算出的 sha256 一致 → 接受
+
+— 轨2·main-impl.js 源码在位守卫 —
+  ok· src· turnSeg 强制唯一的 0..1e7 安全整数表示
+  ok· src· read-turns-summary 复用严格 turnSeg，并保留 safe-integer/跨度门
+  ok· src· 工坊安装仍强制 /^[0-9a-f]{64}$/ hash 格式门（修B 未回退）
+  ok· src· 工坊安装仍比对 expectedHash 与本地 fileInfo.sha256（修B 未回退）
+  ok· src· 工坊 ZIP 在创建输出目录前预检总量/压缩比/重复路径，并在流式解压时复验 zip-slip
+  ok· src· 生产热更新 ZIP 同样先预检再有界流式解压，且不再调用 adm-zip
+  ok· src· validateWorkshopPack 仍走 BLOCKED+ALLOWED 双白名单（hash 只保完整性·安全靠此层）
+  ok· src· downloadRemoteFile 三条 return 均本地算 sha256（非取服务器头 → fileInfo.sha256 可信）
+  ok· src· sha256 从不取自 resp.headers（防服务器自报哈希绕过完整性校验）
+  ok· src· 远程地址强制 HTTPS（localhost 例外）→ MITM 无法改 catalog 里的 hash
+  ok· src· main/preload 只加载安装包内固定实现，沙箱桥不使用相对 require
+  ok· src· 内容 OTA 排除主进程代码并强制 Ed25519 发布者认证
+  ok· src· renderer 沙箱、导航、重定向与新窗口均有边界
+  ok· src· 所有 IPC 通过统一包装器校验可信顶层 senderFrame
+  ok· src· 权限请求默认拒绝且生产 TLS 证书绕过已移除
+  ok· src· Windows 构建缺签名即失败并要求更新签名复验
+
+— 轨3·建议加固点（WARN·见报告 Diff）—
+  ok(已加固)· read-turns-summary 增设 跨度封顶 + safe-integer 门（Diff 1）——防 A4 巨跨度冻结 & A5 ≥2^53 死循环
+  ok(已加固)· sanitize 中和 "."/".." 纯点段（Diff 2）——防 A8 saveName=".." 上跳一级越界（读/写 turn-data 全部受益）
+
+— 手动/集成验证清单（真仓·跑起 Electron 后在渲染进程 devtools console 造 payload）—
+  前置：window.electronAPI / ipcRenderer 暴露的 invoke（按项目 preload 命名·下用占位 invoke()）。
+
+  [修A·read-turns-summary]
+   1. 先正常玩几回合造出 turn-data/<存档>/1,2,3/context.json。
+   2. invoke("read-turns-summary",{saveName:"<存档>",fromTurn:1,toTurn:3}) → 期望 turns 3 条。
+   3. 穿越：fromTurn:"../../../../etc",toTurn:"x" → 期望 {turns:[]}（严格整数门拒绝·不抛不读）。
+   4. DoS-跨度：fromTurn:0,toTurn:1e9 → 秒回 {turns:[]}；0..1e7 最多扫描 20001 回合。
+   5. 死循环输入：fromTurn:1e21,toTurn:1e21 → 即回 {turns:[]}。
+   6. saveName 穿越：saveName:"..",fromTurn:1,toTurn:1 → 观察是否读到 turn-data 上级(USER_DATA)；
+        写侧同验：invoke("write-turn-data",{saveName:"..",turn:1,data:{context:{x:1}}}) 后到磁盘看
+        %APPDATA%/<app>/ 下不得冒出 1/context.json；新写入应落在带 hash 的 canonical 对局目录。
+
+  [修B·workshop-install-from-url]（需一个能 HTTPS 下载的 .tm-pack 及其真实 sha256）
+   7. 正常：invoke("workshop-install-from-url",{packageUrl:"https://.../x.tm-pack",sha256:"<真hash>"}) → success。
+   8. 缺 hash：去掉 sha256 字段 → 期望 {success:false,error:"…缺少 sha256…拒绝安装"}（修B 核心）。
+   9. 错 hash：sha256 改 1 位 → 期望 {success:false,error:"…sha256 不一致"}（本地重算兜底）。
+  10. 大写/空白：sha256 全大写 → 仍 success；首尾加空格 → 期望拒绝（fail-closed·非崩溃）。
+  11. 恶意内容(hash 对)：打一个 hash 正确但含 evil.js/evil.exe 的包 → 期望解压后 validateWorkshopPack
+        以「禁止/未允许文件类型」拒绝（证明 hash 只保完整性·内容安全靠扩展名白名单层）。
+  12. zip-slip：构造条目名含 ../ 的包 → extractZipToTemp 抛「压缩包包含越界路径」。
+
+  详见 web/scripts/README-security-ipc.md（完整边角矩阵）。
+
+PASS · pass=54

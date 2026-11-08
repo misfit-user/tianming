@@ -1,0 +1,100 @@
+{
+  "runId": "cb9c1636-1455-40cc-b899-a36672a730fb",
+  "repo": "C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011",
+  "head": "60d9c8f1e9a634eb0919562d1fa34d0c8f049e6f",
+  "status": "?? docs/npc-stable-candidate-20261021/",
+  "platform": "win32",
+  "node": "v24.14.0",
+  "baseline": false,
+  "complete": true,
+  "results": [
+    {
+      "mode": "npc-composite",
+      "ok": false,
+      "startedAt": "2026-10-22T14:58:53.891Z",
+      "elapsedMs": 1524663,
+      "exitCode": 1,
+      "signal": null,
+      "detail": {
+        "complete": true,
+        "ok": false,
+        "mode": "npc-composite",
+        "baseline": false,
+        "versions": {
+          "node": "20.18.3",
+          "acorn": "8.14.0",
+          "ada": "2.9.2",
+          "ares": "1.34.4",
+          "base64": "0.5.2",
+          "brotli": "1.0.9",
+          "cjs_module_lexer": "1.4.1",
+          "cldr": "44.1",
+          "icu": "74.2",
+          "llhttp": "8.1.2",
+          "modules": "130",
+          "napi": "9",
+          "nghttp2": "1.61.0",
+          "openssl": "0.0.0",
+          "simdutf": "5.6.4",
+          "tz": "2024a",
+          "undici": "6.21.1",
+          "unicode": "15.1",
+          "uv": "1.46.0",
+          "uvwasi": "0.0.21",
+          "v8": "13.0.245.25-electron.0",
+          "zlib": "1.3.0.1-motley",
+          "electron": "33.4.11",
+          "chrome": "130.0.6723.191"
+        },
+        "results": [
+          {
+            "name": "locked-electron-runtime",
+            "status": "PASS"
+          },
+          {
+            "name": "production-webpreferences",
+            "status": "PASS"
+          },
+          {
+            "name": "observed-turn-data-protocol",
+            "value": 2,
+            "status": "PASS",
+            "required": 2
+          },
+          {
+            "name": "real-bridge-and-ipc",
+            "status": "PASS"
+          },
+          {
+            "name": "production-test-exports-boundary",
+            "status": "PASS"
+          },
+          {
+            "name": "official Shaosong population, current player, map and real formal entry are preserved",
+            "status": "PASS"
+          },
+          {
+            "name": "formal assistance creates the source, NPC independently receives and responds",
+            "status": "PASS"
+          },
+          {
+            "name": "formal departure has a real route, and the travel save actually loads a new world",
+            "status": "PASS"
+          }
+        ],
+        "failures": [
+          "Error: Error: actual saved slot did not appear (official save is about 164 MB before compression)\n    at poll (<anonymous>:1:278)\n    at js (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:12:697)\n    at async saveAndReload (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:82:5)\n    at async C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:187:44\n    at async check (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\bridge-main.cjs:83:183)\n    at async module.exports (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\npc-composite-cases.cjs:184:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\.codex\\worktrees\\npc-composite-r123-20261011\\scripts\\electron\\bridge-main.cjs:130:42)"
+        ],
+        "timing": {
+          "startedAt": "2026-10-22T14:58:54.431Z",
+          "assertionsFinishedAt": "2026-10-22T15:24:17.594Z",
+          "elapsedMs": 1523163,
+          "nodeUptimeSeconds": 1523.4717874
+        },
+        "securityScope": "real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data",
+        "temporaryUserData": "E:\\tianming-npc-candidate-temp\\tm-bridge-series-5hwhCL\\production"
+      }
+    }
+  ],
+  "ok": false
+}

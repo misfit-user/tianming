@@ -1,0 +1,16 @@
+[ci-smokes] run=ac51973d-3f57-4d21-bd9c-60ff213b36cd HEAD=91f76d2495f005d46597050d1a7c9180cbca7aab report=C:\Users\37814\.codex\worktrees\npc-composite-r123-20261011\web\dev-tools\arch-guard\ci-w9qtg3\smoke-report.json
+[run-smokes] 共 1181 个 smoke · 选中 1181 · 跳过 0 · 并发 2 · 超时 120s
+  [25/1181] PASS    smoke-agent-mode-s12.js (0.2s)
+  [50/1181] PASS    smoke-ai-institution-lifecycle-actions.js (0.3s)
+  [75/1181] PASS    smoke-army-pressure.js (0.2s)
+  [100/1181] PASS    smoke-authoring-completion-recovery.js (0.7s)
+  [125/1181] PASS    smoke-battle-deterministic.js (0.2s)
+  [150/1181] PASS    smoke-border-risk.js (0.2s)
+  [175/1181] PASS    smoke-changchao-line-salvage.js (0.2s)
+  [200/1181] PASS    smoke-circuit-governor-effects-tianqi.js (31.9s)
+  [225/1181] PASS    smoke-class-roving-coalesce.js (0.2s)
+  [250/1181] PASS    smoke-corruption-pardon-and-restore.js (0.2s)
+  [275/1181] PASS    smoke-dedup-keys-pruning.js (0.2s)
+  [300/1181] PASS    smoke-disaster-taxbase.js (0.2s)
+  [325/1181] PASS    smoke-edict-office-tree-writeback.js (0.7s)
+  [350/1181] PASS    smoke-endturn-callai.js (0.2s)

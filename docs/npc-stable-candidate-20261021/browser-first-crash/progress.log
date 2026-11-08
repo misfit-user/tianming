@@ -1,0 +1,275 @@
+2026-10-22T11:58:10.848Z (async()=>{await new Promise(r=>setTimeout(r,650));const b=document.querySelector('#tm-changelog-ov .tm-cl-close');if(b)b.click();await TMOfficialScenarioLoader
+2026-10-22T11:58:15.618Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.getElementById('tm-op-enter'));if(result)return resolve(true);if
+2026-10-22T11:58:15.902Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-op-enter");if(!e)return false;e
+2026-10-22T11:58:15.908Z (async()=>{const e=document.querySelector("#tm-op-enter");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>se
+2026-10-22T11:58:15.956Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:58:48.159Z new Promise((resolve,reject)=>{const end=Date.now()+35000;(function poll(){let result=(GM.running&&GM.sid==='sc-jianyan1-1127-shaosong');if(result)return resolv
+2026-10-22T11:58:48.198Z _tmAwaitLoadBarrier()
+2026-10-22T11:58:48.201Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:58:48.286Z !!document.querySelector('#tm-firstturn-guide button')
+2026-10-22T11:58:48.289Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-firstturn-guide button:last-chi
+2026-10-22T11:58:48.293Z (async()=>{const e=document.querySelector("#tm-firstturn-guide button:last-child");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'}
+2026-10-22T11:58:48.346Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:58:48.443Z !!document.querySelector('#tm-nokey-banner button')
+2026-10-22T11:58:48.445Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-nokey-banner button:last-child"
+2026-10-22T11:58:48.449Z (async()=>{const e=document.querySelector("#tm-nokey-banner button:last-child");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});a
+2026-10-22T11:58:49.233Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:58:49.333Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-22T11:58:49.335Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-22T11:58:49.338Z ({body:document.body.className,turn:document.querySelector('#endturn .et-big')?.outerHTML,save:document.querySelector('#save-btn')?.outerHTML,buttons:Array.from
+2026-10-22T11:58:53.991Z (()=>{window.__compositeResponseFor=(function responseFor(kind, prompt) {
+  kind = String(kind || ''); prompt = String(prompt || '');
+  var summary = '确定性测试响应未增
+2026-10-22T11:58:53.997Z (()=>{
+    const venue=GM.mapData.regions.find(r=>r.id==='ssr-0007');venue.public=true;
+    P.time.daysPerTurn=30;if(GM.time)GM.time.daysPerTurn=30;
+    window.
+2026-10-22T11:58:54.000Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return false;e.
+2026-10-22T11:58:54.004Z (async()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>set
+2026-10-22T11:58:54.051Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:58:54.852Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel
+2026-10-22T11:58:54.856Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details").open
+2026-10-22T11:58:54.859Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-22T11:58:54.898Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details > summary");if(!e)return{missing:true};e.scroll
+2026-10-22T11:58:54.948Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:58:55.209Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] #daily-target");if(!e)throw Error('missing select');e.value="c
+2026-10-22T11:58:55.214Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:58:55.300Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-22T11:58:55.303Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-compose] details > summary");if(!e)return{mis
+2026-10-22T11:58:55.358Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:58:55.484Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-22T11:58:55.490Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] input[data-daily-material=\"new\"][value=\"0\"]");if(!e)r
+2026-10-22T11:58:55.537Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:58:55.638Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-22T11:58:55.648Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-new=\"assistance\"]");if(!e)return{missing:tr
+2026-10-22T11:58:55.703Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:59:40.935Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-22T11:59:40.939Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-22T11:59:40.942Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"]").textContent
+2026-10-22T11:59:40.944Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-22T11:59:40.947Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-22T11:59:40.958Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-22T11:59:40.963Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-answer=\"satisfied\"]");if(!e)return{missing:
+2026-10-22T11:59:41.032Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:59:57.849Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-22T11:59:57.856Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-22T11:59:57.863Z !!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')
+2026-10-22T11:59:57.866Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay button[da
+2026-10-22T11:59:57.868Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay button[data-close-bridge]");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-22T11:59:57.919Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:59:58.043Z ({turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T11:59:58.067Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#endturn .et-big");if(!e)return fal
+2026-10-22T11:59:58.073Z (async()=>{const e=document.querySelector("#endturn .et-big");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r
+2026-10-22T11:59:58.122Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:59:58.300Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.querySelector('#cet-ok'));if(result)return resolve(true);if(Date
+2026-10-22T11:59:58.316Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#cet-ok");if(!e)return false;e.scro
+2026-10-22T11:59:58.321Z (async()=>{const e=document.querySelector("#cet-ok");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>setTime
+2026-10-22T11:59:58.378Z new Promise(r=>setTimeout(r,80))
+2026-10-22T11:59:58.539Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T11:59:58.546Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#post-turn-court-prompt button[oncl
+2026-10-22T11:59:58.549Z (async()=>{const e=document.querySelector("#post-turn-court-prompt button[onclick=\"_postTurnCourtChoose(false)\"]");if(!e)return{missing:true};e.scrollIntoView
+2026-10-22T11:59:58.606Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:00:26.159Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:00:26.307Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:00:27.027Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:00:34.660Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:00:35.124Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:00:38.020Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:00:38.232Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:00:38.437Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:00:38.446Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:00:38.653Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:00:38.656Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:00:38.771Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:00:38.776Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:00:38.885Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:10.729Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:10.994Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:17.701Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:17.823Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:17.825Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:17.933Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:17.937Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:18.042Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:20.218Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:26.980Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:26.994Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:27.103Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:27.105Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:27.210Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:27.213Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:27.318Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:27.321Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:27.426Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:27.428Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:27.537Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:27.539Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:27.643Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:27.645Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:27.750Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:27.753Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:27.859Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:27.861Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:27.968Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:27.982Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:01:28.092Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:01:28.095Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:20.712Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:38.804Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:38.985Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:38.988Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:39.095Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:39.098Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:39.219Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:46.114Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:46.230Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:54.096Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:54.218Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:54.265Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:54.390Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:54.399Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:54.514Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:54.517Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:54.624Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:54.627Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:54.738Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:54.740Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:54.852Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:54.855Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:02:54.963Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:02:56.024Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:03:57.135Z Array.from(document.querySelectorAll('button')).filter(b=>/关闭|继续|返回|收起/.test(b.textContent)&&b.getBoundingClientRect().width).map(b=>({text:b.textContent,html:b
+2026-10-22T12:04:42.008Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:04:48.764Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > aside:nth-of-type(2) > butto
+2026-10-22T12:04:48.873Z (async()=>{const e=document.querySelector("body > aside:nth-of-type(2) > button:nth-of-type(1)");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-22T12:04:48.928Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:04:49.024Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:04:49.028Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(28) > div:nt
+2026-10-22T12:04:49.034Z (async()=>{const e=document.querySelector("body > div:nth-of-type(28) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-22T12:05:07.451Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:18.154Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:05:23.592Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(27) > div:nt
+2026-10-22T12:05:23.606Z (async()=>{const e=document.querySelector("body > div:nth-of-type(27) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-22T12:05:23.659Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:23.745Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:05:23.752Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(26) > div:nt
+2026-10-22T12:05:23.756Z (async()=>{const e=document.querySelector("body > div:nth-of-type(26) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-22T12:05:38.178Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:38.268Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:05:38.273Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(25) > div:nt
+2026-10-22T12:05:38.277Z (async()=>{const e=document.querySelector("body > div:nth-of-type(25) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-22T12:05:38.322Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:38.581Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:05:38.676Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(24) > div:nt
+2026-10-22T12:05:38.738Z (async()=>{const e=document.querySelector("body > div:nth-of-type(24) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-22T12:05:38.782Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:38.869Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:05:38.877Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(23) > div:nt
+2026-10-22T12:05:38.884Z (async()=>{const e=document.querySelector("body > div:nth-of-type(23) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-22T12:05:38.932Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:39.019Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:05:39.122Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(22) > div:nt
+2026-10-22T12:05:39.126Z (async()=>{const e=document.querySelector("body > div:nth-of-type(22) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-22T12:05:39.172Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:46.143Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:05:46.149Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(21) > div:nt
+2026-10-22T12:05:46.153Z (async()=>{const e=document.querySelector("body > div:nth-of-type(21) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-22T12:05:46.200Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:46.287Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:05:46.291Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:nth-of-type(20) > div:nt
+2026-10-22T12:05:46.295Z (async()=>{const e=document.querySelector("body > div:nth-of-type(20) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1)");i
+2026-10-22T12:05:46.341Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:46.425Z (()=>{const b=Array.from(document.querySelectorAll('button')).find(b=>{const label=b.textContent.trim(),host=b.closest('.generic-modal-overlay');if(label!=='关闭提
+2026-10-22T12:05:46.429Z (()=>{const b=document.querySelector('#turn-modal button[onclick*="closeTurnResult"]');if(!b)return false;const r=b.getBoundingClientRect(),hit=document.element
+2026-10-22T12:05:46.433Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#turn-modal button[onclick*=\"close
+2026-10-22T12:05:46.435Z (async()=>{const e=document.querySelector("#turn-modal button[onclick*=\"closeTurnResult\"]");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline
+2026-10-22T12:05:46.479Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:46.581Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-22T12:05:46.585Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-22T12:05:46.590Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return false;e.
+2026-10-22T12:05:46.592Z (async()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>set
+2026-10-22T12:05:46.645Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:47.230Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel
+2026-10-22T12:05:47.234Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details").open
+2026-10-22T12:05:47.236Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] #daily-target");if(!e)throw Error('missing select');e.value="c
+2026-10-22T12:05:47.241Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:47.330Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] #daily-consultation-topic");if(!e)throw Error('missing select'
+2026-10-22T12:05:47.335Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:47.418Z (()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] #daily-meeting-location");if(!e)throw Error('missing select');
+2026-10-22T12:05:47.423Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:05:47.505Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-22T12:05:47.536Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-new=\"meeting\"]");if(!e)return{missing:true}
+2026-10-22T12:05:47.581Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:06:05.537Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-22T12:06:16.734Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-22T12:06:17.553Z (()=>{const p=GM._npcPlans.filter(p=>p.localActivity?.kind==='meeting').slice(-1)[0];return p&&{id:p.id,status:p.status};})()
+2026-10-22T12:06:17.557Z !!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792670747598:4\"] [data-daily-answer=\"d
+2026-10-22T12:06:17.560Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc
+2026-10-22T12:06:17.565Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792670747598:4\"] [data
+2026-10-22T12:06:17.613Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:06:27.018Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-22T12:06:27.023Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-22T12:06:27.032Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-22T12:06:27.037Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-22T12:06:27.057Z void(window.__compositeOldButton=document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-cancel]"))
+2026-10-22T12:06:27.060Z !!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')
+2026-10-22T12:06:27.062Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay button[da
+2026-10-22T12:06:27.065Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay button[data-close-bridge]");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-22T12:06:27.110Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:06:27.204Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-pause-fab");if(!e)return false;
+2026-10-22T12:06:27.208Z (async()=>{const e=document.querySelector("#tm-pause-fab");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>s
+2026-10-22T12:06:27.253Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:06:27.359Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#pause-bg button[onclick=\"closePau
+2026-10-22T12:06:27.362Z (async()=>{const e=document.querySelector("#pause-bg button[onclick=\"closePause();openSaveManager()\"]");if(!e)return{missing:true};e.scrollIntoView({block:'ce
+2026-10-22T12:06:27.406Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:06:27.510Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector('#save-manager-overlay button[onclick="saveToSlo
+2026-10-22T12:06:27.513Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#save-manager-overlay button[onclic
+2026-10-22T12:06:27.633Z (async()=>{const e=document.querySelector("#save-manager-overlay button[onclick=\"saveToSlot(1)\"]");if(!e)return{missing:true};e.scrollIntoView({block:'center'
+2026-10-22T12:06:27.676Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:06:27.785Z (()=>{const e=document.querySelector('body > div:last-child input');if(!e)throw Error('save naming prompt missing');e.value="赴约途中";e.dispatchEvent(new Event('in
+2026-10-22T12:06:27.791Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("body > div:last-child button.bt.bp"
+2026-10-22T12:06:27.800Z (async()=>{const e=document.querySelector("body > div:last-child button.bt.bp");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});a
+2026-10-22T12:06:27.848Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:06:27.939Z new Promise((resolve,reject)=>{const end=Date.now()+90000;(function poll(){let result=(!!document.querySelector('#save-manager-overlay button[onclick="loadSaveS
+2026-10-22T12:07:01.396Z (()=>{window.__compositeOldWorld=GM;return{load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:GM.playerCharacterId,plans:JSON.stringify((GM._npcPlans||[]).
+2026-10-22T12:07:01.401Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#save-manager-overlay button[onclic
+2026-10-22T12:07:01.404Z (async()=>{const e=document.querySelector("#save-manager-overlay button[onclick=\"loadSaveSlot(1)\"]");if(!e)return{missing:true};e.scrollIntoView({block:'cente
+2026-10-22T12:07:01.448Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:07:01.565Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector(".rice-paper-confirm #_rpc_ok");if(!
+2026-10-22T12:07:01.567Z (async()=>{const e=document.querySelector(".rice-paper-confirm #_rpc_ok");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await n
+2026-10-22T12:07:01.609Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:07:01.702Z new Promise((resolve,reject)=>{const end=Date.now()+45000;(function poll(){let result=(GM!==window.__compositeOldWorld&&GM.running&&!document.querySelector('#sa
+2026-10-22T12:07:23.111Z _tmAwaitLoadBarrier()
+2026-10-22T12:07:23.453Z ({load:window._tmLoadGen||0,day:TM.SimTime.now(GM),player:GM.playerCharacterId,plans:JSON.stringify((GM._npcPlans||[]).filter(p=>p.localActivity&&p.localActivit
+2026-10-22T12:07:24.264Z P.ai.url==='https://composite-fixture.invalid/v1'&&P.ai.key==='composite-fixture'
+2026-10-22T12:07:24.271Z !!window.__compositeOldButton
+2026-10-22T12:07:24.272Z window.__compositeOldButton.click()
+2026-10-22T12:07:24.290Z JSON.stringify((GM._npcPlans||[]).filter(p=>p.localActivity&&p.localActivity.kind==='meeting'))
+2026-10-22T12:07:24.292Z (()=>{delete window.__compositeOldWorld;delete window.__compositeOldButton;return true;})()
+2026-10-22T12:07:24.294Z (()=>({day:TM.SimTime.now(GM),turn:GM.turn,player:GM.playerCharacterId,load:window._tmLoadGen,people:GM.chars.length,plans:(GM._npcPlans||[]).filter(p=>p.localA
+2026-10-22T12:07:24.327Z (()=>{if(!window.__compositeCalls)return null;return Object.assign({},__compositeCalls,{planningStats:GM._npcActionState&&GM._npcActionState.planning?{logicalRe
+2026-10-22T12:07:24.333Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return false;e.
+2026-10-22T12:07:24.335Z (async()=>{const e=document.querySelector("#zhao-btn-3");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>set
+2026-10-22T12:07:24.379Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:07:24.525Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(!!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel
+2026-10-22T12:07:24.529Z document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] > details").open
+2026-10-22T12:07:24.532Z !!document.querySelector("#tm-action-letter-overlay [data-npc-daily-panel=\"formal\"] [data-daily-plan=\"plan:daily-ui:1792670747598:4\"] [data-daily-exchange=\
+2026-10-22T12:07:24.535Z !!document.querySelector('#tm-action-letter-overlay button[data-close-bridge]')
+2026-10-22T12:07:24.538Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#tm-action-letter-overlay button[da
+2026-10-22T12:07:24.541Z (async()=>{const e=document.querySelector("#tm-action-letter-overlay button[data-close-bridge]");if(!e)return{missing:true};e.scrollIntoView({block:'center',inl
+2026-10-22T12:07:24.586Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:07:24.698Z ({turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:07:24.701Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#endturn .et-big");if(!e)return fal
+2026-10-22T12:07:24.704Z (async()=>{const e=document.querySelector("#endturn .et-big");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r
+2026-10-22T12:07:24.748Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:07:24.862Z new Promise((resolve,reject)=>{const end=Date.now()+15000;(function poll(){let result=(document.querySelector('#cet-ok'));if(result)return resolve(true);if(Date
+2026-10-22T12:07:24.864Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#cet-ok");if(!e)return false;e.scro
+2026-10-22T12:07:24.867Z (async()=>{const e=document.querySelector("#cet-ok");if(!e)return{missing:true};e.scrollIntoView({block:'center',inline:'nearest'});await new Promise(r=>setTime
+2026-10-22T12:07:24.910Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:07:25.022Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:07:25.023Z new Promise((resolve,reject)=>{const end=Date.now()+10000;(function poll(){let result=((()=>{const e=document.querySelector("#post-turn-court-prompt button[oncl
+2026-10-22T12:07:25.025Z (async()=>{const e=document.querySelector("#post-turn-court-prompt button[onclick=\"_postTurnCourtChoose(false)\"]");if(!e)return{missing:true};e.scrollIntoView
+2026-10-22T12:07:25.068Z new Promise(r=>setTimeout(r,80))
+2026-10-22T12:07:55.063Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})
+2026-10-22T12:07:58.156Z !!document.querySelector('#post-turn-court-prompt button[onclick="_postTurnCourtChoose(false)"]')
+2026-10-22T12:07:58.764Z ({busy:GM.busy||GM._endTurnBusy,turn:GM.turn,day:TM.SimTime.now(GM)})

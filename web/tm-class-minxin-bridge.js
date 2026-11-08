@@ -445,18 +445,6 @@
     return Object.keys(byKey).map(function(k) { return byKey[k]; });
   }
 
-  function matchLeaf(leaf, region) {
-    var wanted = normalizeName(region);
-    if (!wanted || !leaf) return false;
-    var names = [
-      leaf.name, leaf.id, leaf.regionId, leaf.mapRegionId, leaf.officialName,
-      leaf.title, leaf.parentDivisionId
-    ].map(normalizeName).filter(Boolean);
-    return names.some(function(n) {
-      return n === wanted || n.indexOf(wanted) >= 0 || wanted.indexOf(n) >= 0;
-    });
-  }
-
   function pressureDelta(payload, cls) {
     var satDelta = Number(payload && (payload.satisfactionDelta != null ? payload.satisfactionDelta : payload.satisfaction_delta));
     if (!isFinite(satDelta)) satDelta = 0;

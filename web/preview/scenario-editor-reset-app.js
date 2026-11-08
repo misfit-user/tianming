@@ -22786,6 +22786,7 @@
     modulePrimaryView: modulePrimaryView,
     healthCheck: healthCheck,
     revealModule: revealModule,
+    fieldLabel: specialistFieldLabel,   // 国师改动折子用：字段键 → 中文名
     starterTemplates: SCENARIO_STARTER_TEMPLATES,
     officialScenarios: OFFICIAL_SCENARIOS,
     buildStarterScenario: buildStarterScenario,

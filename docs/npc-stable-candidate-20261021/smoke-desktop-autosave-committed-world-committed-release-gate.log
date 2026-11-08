@@ -1,0 +1,36 @@
+  PASS - 桌面存档生命周期安装关闭前 flush 回调
+  PASS - 统一世界事务判定函数可用
+  PASS - 已提交快照排除带 gmRef 环的运行时任务队列
+  PASS - 生产 prepare 顺序先提交点击时 pre_endturn、后执行校准
+  PASS - 过回合事务中 timer 只 deferred、不写盘
+  PASS - 真实回合事务回滚恢复半结算前 GM/P
+  PASS - 回滚后 deferred 自动档写入一次
+  PASS - 桌面自动档等于过回合前已提交世界
+  PASS - 回滚纵深保护重新提升恢复世界而非校准世界
+  PASS - canonical commit 后自动档推进到新回合
+  PASS - 已提交快照不引用调用方随后修改的对象
+  PASS - hydration/rollback/time-travel 活跃时均不写盘
+  PASS - hydration/rollback/time-travel 活跃时均不写盘
+  PASS - hydration/rollback/time-travel 活跃时均不写盘
+  PASS - 连续 timer 不会写入三个不同结算阶段
+  PASS - 连续 deferred 最终只补写同一已提交快照一次
+  PASS - IPC 在途锁阻止重叠自动档
+  PASS - 新会话不会复用旧战役已提交快照
+  PASS - 新世界稳定边界能够建立自己的 committed snapshot
+  PASS - 新世界只写入本战役已提交快照
+  PASS - 摘要与月度纪事保存请求合并为一个 canonical 双槽事务
+  PASS - 双槽共享同一 canonical payload 且保存后台完成后的最新状态
+  PASS - 后台 canonical 提交后推进 committed snapshot
+  PASS - 切档后的旧后台结果不会写入新世界
+  PASS - 后台保存失败只做有限重试并最终原子成功
+  PASS - 后台保存拒绝与 lease 不一致的回合身份
+  PASS - 关闭握手会等待桌面自动档 IPC 而非仅等待 canonical 双槽
+  PASS - 桌面镜像在途时新摘要仍进入独立 canonical 保存队列
+  PASS - 首次镜像完成后关闭握手继续等待新 canonical 对应的第二个桌面镜像
+  PASS - 立即退出握手会实际 drain 后台保存而非只提示
+  PASS - 关闭握手把最新后台摘要同步到桌面恢复镜像
+  PASS - 关闭握手成功后 canonical 与桌面镜像都不存在待保存或在途任务
+  PASS - 世界事务活跃时关闭握手明确拒绝退出
+  PASS - 后台摘要和月度纪事都请求正式串行保存队列
+  PASS - 月度纪事关闭时在任何 AI 调用前退出
+[smoke-desktop-autosave-committed-world] pass=35

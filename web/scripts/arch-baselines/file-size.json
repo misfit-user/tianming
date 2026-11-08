@@ -9,6 +9,7 @@
     "tm-endturn-ai.js": 4934,
     "tm-endturn-prompt.js": 4200,
     "tm-endturn-followup.js": 3741,
-    "tm-player-core.js": 3437
+    "tm-player-core.js": 3437,
+    "tm-fiscal-engine.js": 3007
   }
 }

@@ -20,6 +20,7 @@ const PRODUCT = '天命新界面Demo';
 const STAGE = path.join(OUT, 'stage');
 const DIST = path.join(OUT, 'dist');
 const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+const builtOn = `${new Date().getMonth() + 1} 月 ${new Date().getDate()} 日`;
 const log = (t) => console.log(`[demo ${new Date().toTimeString().slice(0, 8)}] ${t}`);
 const must = (cond, msg) => { if (!cond) throw new Error(msg); };
 
@@ -121,7 +122,7 @@ const README = `天命 · 新界面 Demo
 
 须知：
 - 只有 Windows 桌面版，手机和网页都还不行。
-- 游戏内容停在十月，正式版之后修的问题这里可能还在，请只看界面。
+- 游戏内容是 ${builtOn}的开发版，比正式版新：正式版的一些问题这里已经修了，也可能有新问题，遇到请截图反馈。
 - 过回合要 AI 推演，须在「典章」里填自己的地址、密钥和模型。不填也能看界面，只是过不了回合。
 - 剧本工坊、创意工坊、地图编辑器不在此版。
 - 存档和设置与正式版分开，互不影响。立绘比正式版小一半。

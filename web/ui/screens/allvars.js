@@ -8,10 +8,17 @@ export function openAllVars({ game }) {
   const { scenario, runtime } = game.select.allVariables();
   const body = h('div.av-body');
   const search = h('input.av-search', { type: 'search', placeholder: '检变量名', oninput: () => render(search.value.trim()) });
-  // 纯数（可带单位）按记数设置写（默认汉字），其余照原样
-  const fmt = (v) => { const m = /^(-?\d+(?:\.\d+)?)(\D{0,3})$/.exec(String(v)); return m ? num(Number(m[1])) + m[2] : v; };
+  // 读数按记数设置写（默认汉字）：负数前加「−」（同人物页）；零点几照原样写，免得四舍五入成「零」；算不出的写「无考」；不是数的照原样
+  const reading = (r) => {
+    const s = String(r.value);
+    const n = typeof r.value === 'number' ? r.value : /^-?\d+(?:\.\d+)?$/.test(s) ? Number(s) : null;
+    if (n === null) return s + r.unit;
+    if (!Number.isFinite(n)) return '无考';
+    const a = Math.abs(n);
+    return (n < 0 ? '−' : '') + (a > 0 && a < 1 ? String(Number(a.toFixed(3))) : num(a)) + r.unit;
+  };
   const group = (title, rows) => rows.length ? h('section.av-group', h('h4', title, h('small', `${num(rows.length)}项`)),
-    h('div.av-grid', rows.map((r) => h('div.av-card', h('b', r.label), h('span', fmt(r.value)), r.desc ? h('small', r.desc) : null)))) : null;
+    h('div.av-grid', rows.map((r) => h('div.av-card', h('b', r.label), h('span', reading(r)), r.desc ? h('small', r.desc) : null)))) : null;
   function render(q) {
     const hit = (r) => !q || r.label.includes(q) || r.key.includes(q);
     const a = scenario.filter(hit), b = runtime.filter(hit);

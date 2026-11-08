@@ -580,29 +580,38 @@ export function characters({ limit = 0 } = {}) {
   return limit ? list.slice(0, limit) : list;
 }
 
-// 全部变量：剧本编辑器定义的（P.variables，取运行时值）与运行时另起的（GM.vars）。与老面板 _renderAllVarsBody 同取法
-function plainValue(v) {
-  if (v == null) return '—';
-  if (typeof v === 'object') {
-    const unit = v.unit ? String(v.unit) : '';
-    if (v.value !== undefined) return plainValue(v.value) + unit;
-    if (v.current !== undefined) return plainValue(v.current) + unit;
-    if (v.amount !== undefined) return plainValue(v.amount) + unit;
-    if (v.name) return String(v.name);
-    try { return JSON.stringify(v); } catch (_e) { return '—'; }
-  }
-  return String(v);
+// 全部变量：剧本所定（剧本 variables 里定义的，取本局运行时值）与推演所生（GM.vars 里剧本没定的）。与老面板 _renderAllVarsBody 同取法，另有三处：
+// · 顶栏已列的七项不重出，连内核视同的别名「国库」「腐败」（tm-edict-effects.js CORE）。剧本里这七项写的是开局设定，
+//   开局后真数在国库、户口诸账，GM.vars 那份不跟着走：绍宋这里一直是一百万贯，顶栏已是四百万贯
+// · 剧本库照开局 _tmStartLoadVars 按 sid 筛；数组与编辑器 {base, other} 两种存法都认（旧档读进来可能是后者）
+// · 数与单位分开给，由界面按记数设置写数；单位是英文字母的（作者写的 index 之类）对玩家没有意思，不给
+const TOPBAR_VARS = new Set(['帑廪', '国库', '内帑', '户口', '吏治', '腐败', '民心', '皇权', '皇威']);
+function varRows(vs) {
+  if (Array.isArray(vs)) return vs;
+  return vs && typeof vs === 'object' ? [].concat(Array.isArray(vs.base) ? vs.base : [], Array.isArray(vs.other) ? vs.other : []) : [];
+}
+function varReading(v) {
+  if (v == null) return { value: '—', unit: '' };
+  if (typeof v !== 'object') return { value: v, unit: '' };
+  const inner = v.value !== undefined ? v.value : v.current !== undefined ? v.current : v.amount;
+  if (inner === undefined) return { value: v.name ? String(v.name) : '—', unit: '' };
+  const r = varReading(inner);
+  const unit = v.unit == null || /^[\sA-Za-z_]*$/.test(String(v.unit)) ? '' : String(v.unit);
+  return { value: r.value, unit: r.unit || unit };
 }
 export function allVariables() {
-  const defs = (w.P && Array.isArray(w.P.variables)) ? w.P.variables : [];
-  const live = G().vars || {};
+  const g = G();
+  const live = g.vars || {};
+  const defs = varRows(w.P && w.P.variables).filter((v) => v && typeof v === 'object' && v.name && (!v.sid || v.sid === g.sid));
   const descOf = (v) => (v && (v.description || v.desc || v.note || v.summary)) || '';
-  const scenario = defs.map((v) => ({
-    key: v.name || '', label: v.displayName || v.label || v.name || '未命名', desc: descOf(v),
-    value: plainValue(live[v.name] !== undefined ? live[v.name] : v.value !== undefined ? v.value : v.initial)
+  const shown = (name) => !TOPBAR_VARS.has(name);
+  const scenario = defs.filter((v) => shown(v.name)).map((v) => ({
+    key: v.name, label: v.displayName || v.label || v.name, desc: descOf(v),
+    ...varReading(live[v.name] !== undefined ? live[v.name] : { value: v.value !== undefined ? v.value : v.initial, unit: v.unit })
   }));
   const known = new Set(defs.map((v) => v.name));
-  const runtime = Object.keys(live).filter((k) => !known.has(k)).map((k) => ({ key: k, label: (live[k] && live[k].displayName) || k, desc: descOf(live[k]), value: plainValue(live[k]) }));
+  const runtime = Object.keys(live).filter((k) => !known.has(k) && shown(k))
+    .map((k) => ({ key: k, label: (live[k] && live[k].displayName) || k, desc: descOf(live[k]), ...varReading(live[k]) }));
   return { scenario, runtime };
 }
 

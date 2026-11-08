@@ -3196,8 +3196,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "a73ad09250678ea75ec2ef03a786c7e550ca958d7fe11bf68db109d70579d6de",
-      "size": 388202
+      "sha256": "2926a8bbe6a00ad663c2506218b2fdaa4d67877632598628ceaf56c6f206a3bd",
+      "size": 387869
     },
     {
       "path": "icon.png",
@@ -3691,13 +3691,13 @@
     },
     {
       "path": "modules/ai-change-applier/reconcile.js",
-      "sha256": "2037526237a2f3a194e33e8592add44a6dc39d176f2b7980788078baf6b1b3c6",
-      "size": 109572
+      "sha256": "d6a07da339a8be41ff1f00875cbecd6fe41afc723a83cd95661d190b26940164",
+      "size": 109219
     },
     {
       "path": "modules/ai-change-applier/validators.js",
-      "sha256": "710f38581186a16d6f612611dc340ec9763f244fc7af859452cfd27ca72aefe9",
-      "size": 128485
+      "sha256": "1bdf04c08dca03ecb50fea0f8b37da2ceac625895a2cbe434e5b4c8c4bc3ea34",
+      "size": 128333
     },
     {
       "path": "package.json",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "63ec47703ae7b81edd60bff3cee0e1ddb6066a08d06c9eafa74a4d1e0afb0bbb",
-      "size": 391149
+      "sha256": "8f790c4132e23876a830eb395f19b080c350ab73168c90c6c236af7c8a9d85dd",
+      "size": 391708
     },
     {
       "path": "styles.css",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "94b7a08a44aa9caa7d95c964ba607738f875a525c8e70b775c1dcaed84f7fd0f",
+      "sha256": "7143ab84b3b1e89926f09645e0be12e302e1bf37428f69fd44bc1fd1b9ac6ba2",
       "size": 141013
     },
     {

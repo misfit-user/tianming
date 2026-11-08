@@ -5073,7 +5073,6 @@
       if (G._fiscalValidatorLog.length > 20) G._fiscalValidatorLog = G._fiscalValidatorLog.slice(-20);
       G._turnReport.push({ type: "fiscal_validation", warnings, samples: mentioned.slice(0, 5), turn: G.turn || 0 });
       console.warn("[FiscalValidator] 叙事金额与 fiscal_adjustments 不符:", warnings);
-      if (aiOutput._deferNarrativeRepairs === true) return;
       warnings.forEach(function(w) {
         if (w.shortfall <= 0) return;
         if (!G.guoku) G.guoku = {};
@@ -6740,12 +6739,12 @@
     function _collectNarrativeReviews(G, baseline, opts) {
       var reviews = [];
       _AI_VALIDATOR_LOG_KEYS.filter(function(key) {
-        return opts && opts._deferNarrativeRepairs === true || _isNarrativeEventScan(key);
+        return _isNarrativeEventScan(key);
       }).forEach(function(key) {
         var known = baseline[key] instanceof Set ? baseline[key] : /* @__PURE__ */ new Set();
         (Array.isArray(G && G[key]) ? G[key] : []).forEach(function(row) {
           if (!row || known.has(row) || Number(row.turn || 0) !== Number(G.turn || 0)) return;
-          var fields = opts && opts._deferNarrativeRepairs === true ? ["warnings", "missing", "skipped", "errors"] : ["warnings"];
+          var fields = ["warnings"];
           fields.forEach(function(field) {
             (Array.isArray(row[field]) ? row[field] : row[field] ? [row[field]] : []).forEach(function(detail) {
               reviews.push({ validator: key, kind: "narrative-warning", field, detail, samples: row.samples });
@@ -6757,7 +6756,6 @@
     }
     function _collectValidatorFailures(G, baseline, opts) {
       var failures = [];
-      if (opts && opts._deferNarrativeRepairs === true) return failures;
       _AI_VALIDATOR_LOG_KEYS.forEach(function(key) {
         var known = baseline[key] instanceof Set ? baseline[key] : /* @__PURE__ */ new Set();
         var rows = Array.isArray(G && G[key]) ? G[key].filter(function(row) {
@@ -6791,7 +6789,7 @@
         var message = String(error && (error.message || error) || "validator exception");
         if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(error, "applier] " + name + " validator:");
         else console.warn("[applier] " + name + " validator:", error);
-        if (error.fiscalPosting !== true && (_isNarrativeEventScan(name) || aiOutput && aiOutput._deferNarrativeRepairs === true)) {
+        if (error.fiscalPosting !== true && _isNarrativeEventScan(name)) {
           if (!Array.isArray(applied.reviewRequired)) applied.reviewRequired = [];
           applied.reviewRequired.push({ validator: name, kind: "validator-exception", detail: { message } });
         } else if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {

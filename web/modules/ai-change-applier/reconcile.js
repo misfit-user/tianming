@@ -1558,18 +1558,17 @@ export function createReconcile(deps) {
   function _isNarrativeEventScan(key) {return /^_?(war|revolt|disaster|diplomacy|keju|party|edictEffect|courtCeremony|construction|omen|marriageBirth|conspiracy|currency|religion)(ValidatorLog)?$/.test(key);}
   function _collectNarrativeReviews(G, baseline, opts) {
     var reviews=[];
-    _AI_VALIDATOR_LOG_KEYS.filter(function(key){return opts && opts._deferNarrativeRepairs===true || _isNarrativeEventScan(key);}).forEach(function(key){
+    _AI_VALIDATOR_LOG_KEYS.filter(function(key){return _isNarrativeEventScan(key);}).forEach(function(key){
       var known=baseline[key] instanceof Set?baseline[key]:new Set();
       (Array.isArray(G&&G[key])?G[key]:[]).forEach(function(row){
         if(!row||known.has(row)||Number(row.turn||0)!==Number(G.turn||0))return;
-        var fields=opts && opts._deferNarrativeRepairs===true?['warnings','missing','skipped','errors']:['warnings'];
+        var fields=['warnings'];
         fields.forEach(function(field){(Array.isArray(row[field])?row[field]:row[field]?[row[field]]:[]).forEach(function(detail){reviews.push({validator:key,kind:'narrative-warning',field:field,detail:detail,samples:row.samples});});});
       });
     });return reviews;
   }
   function _collectValidatorFailures(G, baseline, opts) {
     var failures = [];
-    if(opts && opts._deferNarrativeRepairs===true)return failures; // Observations are adjudicated by the mandatory Agent; real failed writes remain in applied.failed.
     _AI_VALIDATOR_LOG_KEYS.forEach(function(key) {
       var known = baseline[key] instanceof Set ? baseline[key] : new Set();
       var rows = Array.isArray(G && G[key]) ? G[key].filter(function(row) { return !known.has(row); }) : [];
@@ -1606,7 +1605,7 @@ export function createReconcile(deps) {
       var message = String(error && (error.message || error) || 'validator exception');
       if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(error, 'applier] ' + name + ' validator:');
       else console.warn('[applier] ' + name + ' validator:', error);
-      if(error.fiscalPosting!==true&&(_isNarrativeEventScan(name)||aiOutput && aiOutput._deferNarrativeRepairs===true)) {
+      if(error.fiscalPosting!==true&&_isNarrativeEventScan(name)) {
         if(!Array.isArray(applied.reviewRequired))applied.reviewRequired=[];
         applied.reviewRequired.push({validator:name,kind:'validator-exception',detail:{message:message}});
       } else if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {

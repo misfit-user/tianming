@@ -1615,9 +1615,6 @@ export function createValidators(deps) {
     G._turnReport.push({ type: 'fiscal_validation', warnings: warnings, samples: mentioned.slice(0, 5), turn: G.turn || 0 });
     console.warn('[FiscalValidator] 叙事金额与 fiscal_adjustments 不符:', warnings);
 
-    // The fixed Agent verifies source accounts and actual receipts before any compensation.
-    if (aiOutput._deferNarrativeRepairs === true) return;
-
     // 自动补录·分 income/expense 两边·按 kind 真正补录
     warnings.forEach(function(w){
       if (w.shortfall <= 0) return;

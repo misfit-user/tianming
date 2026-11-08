@@ -280,4 +280,29 @@ const ashAgain = ongoingOf(capGM).filter(r => r.region === 'Ash County').length;
 assert(ashAgain === 0, 'a suppressed revolt must not rise again inside its cooldown just because the chain list is full: ' + ashAgain);
 assert(ongoingOf(capGM).filter(r => r.region === 'Bell County').length === 1, 'the ongoing revolt in Bell County stays single');
 
+// 地名落成州名：阶层候选的地方是区划编号时，链和民变都记州名，事件里不露编号；
+// 旧档里同一处、同一阶层已有一股（挂在旧链号下、地方记的是编号），过继过来，不另起一股。
+const placeIdGM = {
+  turn: 30,
+  minxin: { trueIndex: 50, perceivedIndex: 50, byRegion: {}, byClass: {}, sources: {},
+    revolts: [{ id: 'revolt-old', region: 'river', className: 'Weavers', level: 3, scale: 30000, status: 'ongoing', turn: 20, sourceChainId: 'mxchain-mxuc-20-weavers-river' }],
+    uprisingCandidates: [
+      { id: 'mxuc-30-farmers-mountain', turn: 30, region: 'mountain', className: 'Farmers', level: 3, momentum: 80 },
+      { id: 'mxuc-30-weavers-river', turn: 30, region: 'river', className: 'Weavers', level: 3, momentum: 80 }
+    ] },
+  adminHierarchy: { player: { divisions: [
+    { id: 'mountain', name: 'Mountain County', minxin: 50, population: 100 },
+    { id: 'river', name: 'River County', minxin: 50, population: 100 }
+  ] } }
+};
+ML.advanceUprisingChain(placeIdGM, { turn: 30 });
+const farmerChain = placeIdGM.minxin.uprisingChain.find(c => c.className === 'Farmers');
+assert(farmerChain && farmerChain.region === 'Mountain County', 'a candidate placed by division id should chain under the county name: ' + (farmerChain && farmerChain.region));
+const placeIdRevolts = ongoingOf(placeIdGM);
+assert(placeIdRevolts.some(r => r.region === 'Mountain County' && r.className === 'Farmers') && !placeIdRevolts.some(r => r.region === 'mountain'),
+  'the new revolt should carry the county name, not the id: ' + JSON.stringify(placeIdRevolts.map(r => r.region)));
+const weavers = placeIdRevolts.filter(r => r.className === 'Weavers');
+assert(weavers.length === 1 && weavers[0].id === 'revolt-old' && weavers[0].region === 'River County',
+  'an old revolt of the same class and place is adopted and renamed, not doubled: ' + JSON.stringify(weavers.map(r => r.id + '@' + r.region)));
+
 console.log('[smoke-minxin-ledger-six-stage] PASS unified minxin six-stage implementation');

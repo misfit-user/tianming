@@ -761,15 +761,46 @@
     });
   }
 
-  function syncRevoltFromChain(root, chain) {
+  // 地名落成州名：阶层候选的地方有时是区划编号（压力记录里带的是编号，如 div_pref_ming_11_10 即洮州卫），
+  // 旧写法照抄编号当地名，事件里直接露出「div_pref_ming_11_10 升级为 改朝」。只认叶级、同名同号；认不出的原样留着。
+  function placeNamer(root) {
+    var names = {};
+    getLeafDivisions(root).forEach(function(div) {
+      var name = regionNameOf(div);
+      if (!name) return;
+      [div.id, div.name, div.regionId, div.mapRegionId].forEach(function(v) {
+        var k = explicitKey(v);
+        if (k && !names[k]) names[k] = name;
+      });
+    });
+    return function(ref) {
+      var k = explicitKey(ref);
+      return (k && names[k]) || String(ref == null ? '' : ref).trim();
+    };
+  }
+
+  function classOf(x) {
+    return normalizeName((x && (x.className || x.classKey)) || 'common');
+  }
+
+  function syncRevoltFromChain(root, chain, placeOf) {
     var mx = ensureMinxin(root);
     if (!chain || chain.level < 3) return null;
     // 民变须有地方：阶层不满没指明地方的候选只留作酝酿的链，不生民变。旧写法把地方记成 unknown——
     // 地图上找不到、账本认不出就按全国扣「民变不宁」，候选又按回合号每回合另立新链，天启四回合攒了十三股。
     // 真要起事由各州民心链去起，那些都有地方。
     if (!String(chain.region || '').trim()) return null;
-    var existing = mx.revolts.filter(function(r) { return r && r.sourceChainId === chain.id && r.status === 'ongoing'; })[0];
-    if (existing) return existing;
+    placeOf = placeOf || function(ref) { return String(ref == null ? '' : ref).trim(); };
+    // 同一地方、同一阶层只认一股进行中的民变：先按链号认，认不着再按「地方 + 阶层」认。
+    // 旧档里同一处的民变可能挂在旧链号下（候选编号带回合号的旧写法），地方也可能记的是区划编号；
+    // 认着了就过继到本链名下、地名改成州名，不另起一股。
+    var place = placeOf(chain.region), cls = classOf(chain);
+    var existing = mx.revolts.filter(function(r) { return r && r.sourceChainId === chain.id && r.status === 'ongoing'; })[0]
+      || mx.revolts.filter(function(r) { return r && r.status === 'ongoing' && placeOf(r.region) === place && classOf(r) === cls; })[0];
+    if (existing) {
+      if (existing.sourceChainId !== chain.id) { existing.sourceChainId = chain.id; existing.region = chain.region; }
+      return existing;
+    }
     var _t = Number(root.turn) || 0;
     // 复燃冷却：同链上一场民变结束后 12 回合内不自动补位——旧行为=镇压次回合原地复活成永动民变(2026-07-04 审查定罪)
     if (chain._lastSpawnTurn != null && (_t - chain._lastSpawnTurn) < CHAIN_RESPAWN_COOLDOWN) return null;
@@ -798,17 +829,19 @@
     var mx = ensureMinxin(root);
     if (!Array.isArray(mx.uprisingChain)) mx.uprisingChain = [];
     var _candTurn = Number(options.turn) || 0;
+    var placeOf = placeNamer(root);
     toArray(mx.uprisingCandidates).forEach(function(c) {
       if (!c) return;
       // 候选只在生出的当回合和下一回合推链（阶层桥与账本收口先后不定）。旧写法留着的八十条候选回回都推，
       // 链永不消退，民变剿了冷却过后又原地复起。
       var _ct = Number(c.turn);
       if (isFinite(_ct) && _ct < _candTurn - 1) return;
+      var place = c.region ? placeOf(c.region) : '';
       upsertChain(mx, {
         // 同一阶层同一地方只认一条链。候选编号带回合号（阶层桥每回合拿最近的压力记录重出候选），
         // 旧写法拿它当链号，每回合另立新链、各生一股民变：天启第四回合陕西十五州一口气多出十五股，照此每回合还要再多。
-        id: chainId(c.region, c.className || c.classKey),
-        region: c.region || '',
+        id: chainId(place, c.className || c.classKey),
+        region: place,
         className: c.className || '',
         classKey: c.classKey || '',
         momentum: c.momentum || 25,
@@ -847,7 +880,7 @@
       return chain.momentum > 0;
     });
     // 先让够级的链起事、再封顶，刚起事的链也算「已生过民变」，不会在起事前被挤掉。
-    mx.uprisingChain.forEach(function(chain) { syncRevoltFromChain(root, chain); });
+    mx.uprisingChain.forEach(function(chain) { syncRevoltFromChain(root, chain, placeOf); });
     mx.uprisingChain = trimChains(mx, _nowTurn);
     root._minxinLedgerUprising = { turn: Number(options.turn != null ? options.turn : root.turn) || 0, chains: mx.uprisingChain.length, revolts: toArray(mx.revolts).filter(function(r) { return r && r.status === 'ongoing'; }).length };
     return clone(root._minxinLedgerUprising);

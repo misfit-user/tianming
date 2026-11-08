@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // 断处续 smoke：中转把 JSON 回答掐断（不论报什么结束原因）时，接着写、拼成完整 JSON；拼不出就交还原来的路。
+// 写坏了的（括号对不上、引号没转义）不是被掐，不接；游戏原有的截断判断也不再把没转义的引号当成截断（11-08 真跑查出）。
 // 设计稿 docs/llm-duanchu-xu-20261108.md（11-08 同志定：所有 JSON 子调用、默认开、最多接 3 次）。
 'use strict';
 const fs = require('fs');
@@ -39,6 +40,12 @@ ok(!C.isCut('好的，以下是结果'), '纯文字不接');
 ok(!C.isCut(''), '空回答不接（没有可接的半截）');
 ok(!C.isCut('{"a":"}"}'), '字符串里的括号不算');
 ok(C.isCut('{"a":"x\\"}'), '转义的引号不算收尾');
+ok(C.isCut('{"a":1,"b":tr') && C.isCut('{"a":1.') && C.isCut('{"a":-'), '断在 true、数字半中间也认');
+ok(C.isCut('{"a":"x\\') && C.isCut('{"a":"\\u4e'), '断在转义符半中间也认');
+// 写坏了的不是被掐：接着写拼不出能解析的 JSON（11-08 auto-1108-1921 两次误接，各白发了一两次整份提示）
+ok(!C.isCut('{"anomaly":{"detected":false,"moves":[[]}}'), '括号对不上（统筹思考写成 "moves":[[]}}）：不接');
+ok(!C.isCut('{"tableEdit":"<!-- /INSERT -->"</tableEdit>","economic_advice":"赤字"}'), '引号没转义、已收尾（主推演写成 …-->"</tableEdit>"）：不接');
+ok(!C.isCut('{"a":"x","b":"他说"好'), '已写的部分有没转义的引号：没收尾也不接（拼出来也解析不了）');
 
 // ── 拼 ──
 const s1 = C.stitch('{"a":"甲乙', '丙丁","b":2}');
@@ -65,6 +72,10 @@ const s7 = C.stitch('```json\n{"a":"x', 'y"}\n```');
 ok(C.isCut(s7.text) === false, '续写末尾的代码块标记不碍事');
 const s8 = C.stitch('{"a":[1,2,', '"坏"}]}');
 ok(s8.broken, '拼不出结构对的：标记拼坏');
+const s9 = C.stitch('{"a":1,"b":{"c":2', '"]}}');
+ok(s9.broken, '不是键的续写不退进对象（11-08 实遇「"]}}」被当成新键收成 "]}}":null）');
+const s10 = C.stitch('{"turn_summary":"x","e":[1', '{"turn_summary":"y","e":[[1}]}');
+ok(s10.broken && s10.how !== 'restart', '从头重写的那份自己写坏了：不用它');
 
 // 一份真实大小的 JSON 从中间切开、原样续写，拼出来要和原文一字不差
 const big = { turn_summary: '新帝即位，清算权阉', events: [], char_updates: [], party_changes: [] };
@@ -160,10 +171,36 @@ ok(b2.model === 'm' && b2.max_tokens === 16000 && b2.temperature === 0.7, '模�
   const d4 = reply('{"a":"甲乙', 'length');
   ok(await C.continueIfCut(body, d4, '{"a":"甲乙', { id: 'sc1', url: 'U' }) === '{"a":"甲乙' && d4.choices[0].message.content === '{"a":"甲乙' && d4.choices[0].finish_reason === 'length', '接不成：原 data 不动，交还原来的拒收、救援');
 
+  // 写坏的不接：原样交原来的修复与重试，一次也不去要「接着写」
+  const sent2 = [];
+  ctx._aiFetchWithRetry = async (url, b, signal, o) => { sent2.push(o.id); return reply('}'); };
+  for (const bad of ['{"anomaly":{"detected":false,"moves":[[]}}', '{"tableEdit":"<!-- /INSERT -->"</tableEdit>","economic_advice":"赤字"}']) {
+    const d = reply(bad);
+    ok(await C.continueIfCut(body, d, bad, { id: 'sc0', url: 'U' }) === bad && d.choices[0].message.content === bad, '写坏的原样交还：' + bad.slice(0, 20));
+  }
+  ok(sent2.length === 0, '写坏的一次也没去要接着写');
+
+  // 加载提示：接完还给原来那句（拼不成时游戏整次重来，别让「正在接着写」一直挂着）；别的调用改过提示就不动
+  const el = { textContent: '统筹思考' };
+  ctx.document = { getElementById: (id) => (id === 'loading-sub' ? el : null) };
+  ctx.showLoading = (msg) => { el.textContent = msg; };
+  ctx._aiFetchWithRetry = async () => { throw new Error('HTTP 502'); };
+  await C.continueIfCut(body, reply('{"a":"甲乙', 'length'), '{"a":"甲乙', { id: 'sc0', label: '统筹思考', url: 'U' });
+  ok(el.textContent === '统筹思考', '接不成：加载提示还给原来那句');
+  ctx._aiFetchWithRetry = async () => { el.textContent = '文事·势力·并行推演'; return reply('丙丁"}'); };
+  await C.continueIfCut(body, reply('{"a":"甲乙', 'length'), '{"a":"甲乙', { id: 'sc0', label: '统筹思考', url: 'U' });
+  ok(el.textContent === '文事·势力·并行推演', '接的时候别的调用改了提示：不动');
+
   const ai = fs.readFileSync(path.join(WEB, 'tm-endturn-ai.js'), 'utf8');
   const iHook = ai.indexOf('raw = await TM.AIContinuation.continueIfCut(body, data, raw');
   ok(iHook > ai.indexOf('async function _callEndturnAI(') && iHook > ai.indexOf('raw = data.choices[0].message.content') && iHook < ai.indexOf('var _RAW_CAP'), '_callEndturnAI 在拿到正文后、超大响应封顶之前接（封顶管拼好的全文）');
   ok(/c1 = await TM\.AIContinuation\.continueIfCut\(_sc1Body, data1, c1/.test(ai), '主推演流式那条路也接');
+  // 游戏原有的截断判断 _looksJsonUnclosed：没转义的引号不再当成截断（11-08 主推演因此会被直接拒收、中止回合，连重试都不走）
+  const fnAt = ai.indexOf('function _looksJsonUnclosed(text) {');
+  const looks = new Function(ai.slice(fnAt, ai.indexOf('\n    }', fnAt) + 6) + '\nreturn _looksJsonUnclosed;')();
+  ok(!looks('{"tableEdit":"<!-- /INSERT -->"</tableEdit>","economic_advice":"赤字"}'), '截断判断：引号没转义、已收尾的不算截断（交修复与重试）');
+  ok(looks('{"a":"阻止东林') && looks('{"a":1,"b"') && looks('{"a":"x","b":"他说"好'), '截断判断：真被掐的照旧算截断');
+  ok(!looks('{"a":"x\\"y","b":2}') && !looks('{"a":1}'), '截断判断：转义的引号、完整的照旧不算');
   const patches = fs.readFileSync(path.join(WEB, 'tm-patches.js'), 'utf8').replace(/\\'/g, "'");
   ok(/_togglePConf\('aiContinueOnCut',this\.checked\)/.test(patches), '设置面板有断处续开关');
   const html = fs.readFileSync(path.join(WEB, 'index.html'), 'utf8');

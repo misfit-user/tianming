@@ -111,7 +111,8 @@
         var c = text[i];
         if (esc) { esc = false; continue; }
         if (c === "\\") { esc = true; continue; }
-        if (c === '"') { inStr = !inStr; continue; }
+        // 字符串收尾的引号后面（跳过空白）只会是 , : } ] 或到头；别的字跟着的是没转义的引号，不算收尾（11-08 主推演写成 …-->"</tableEdit>"，旧判法当成截断直接拒收、中止回合）
+        if (c === '"') { if (!inStr || /^\s*(?:[,:}\]]|$)/.test(text.slice(i + 1, i + 41))) inStr = !inStr; continue; }
         if (inStr) continue;
         if (c === open) depth++;
         else if (c === close) depth--;

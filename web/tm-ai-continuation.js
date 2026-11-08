@@ -5,6 +5,7 @@
 //   · 同一次调用最多接 3 次，拼不出完整 JSON 就照旧走拒收、救援、中止。
 // 判「被掐」只看回答本身：JSON 开了头没收尾，不论中转报的结束原因
 // （11-08 新中转把掐断报成 stop：主推演 18241 token，JSON 停在「阻止东林」半句）。
+// 已写的部分写坏了（括号对不上、引号没转义）不算被掐：接着写拼不出能解析的 JSON，交原来的修复与重试。
 // 本模块只做文本与请求体，不写 GM/P；真正发请求由调用方传入的 fetch 做。
 (function(root) {
   'use strict';
@@ -27,25 +28,35 @@
     return stripLeadFence(text).replace(/\r?\n?```\s*$/, '');
   }
 
-  // 从第一个 { 或 [ 起扫一遍：栈（每层记着当前这个元素从哪里起：括号之后或最近一个逗号之后）、是否在字符串里、收尾的位置
+  // 字符串收尾的引号后面（跳过空白）只会是 , : } ] 或到头；别的字跟着的，是模型没转义的引号，仍在字符串里
+  function quoteEnds(t, i) {
+    var j = i + 1;
+    while (j < t.length && (t[j] === ' ' || t[j] === '\n' || t[j] === '\r' || t[j] === '\t')) j++;
+    return j >= t.length || ',:}]'.indexOf(t[j]) >= 0;
+  }
+
+  // 从第一个 { 或 [ 起扫一遍：栈（每层记着当前这个元素从哪里起：括号之后或最近一个逗号之后）、是否在字符串里、收尾的位置。
+  // 写坏了的另记两种（11-08 auto-1108-1921 真遇，都不是被掐）：
+  //   bad：括号对不上（统筹思考写成 "moves":[[]}}）；
+  //   loose：字符串里有没转义的引号（主推演写成 …-->"</tableEdit>"）。
   function scan(text) {
     var t = String(text || '');
     var start = -1;
     for (var s = 0; s < t.length; s++) { var c0 = t[s]; if (c0 === '{' || c0 === '[') { start = s; break; } if (!/\s/.test(c0)) break; }
-    var res = { start: start, stack: [], open: [], inStr: false, closedAt: -1 };
+    var res = { start: start, stack: [], open: [], inStr: false, esc: false, closedAt: -1, bad: false, loose: false };
     if (start < 0) return res;
-    var esc = false;
     for (var i = start; i < t.length; i++) {
       var c = t[i];
       if (res.inStr) {
-        if (esc) { esc = false; continue; }
-        if (c === '\\') { esc = true; continue; }
-        if (c === '"') res.inStr = false;
+        if (res.esc) { res.esc = false; continue; }
+        if (c === '\\') { res.esc = true; continue; }
+        if (c === '"') { if (quoteEnds(t, i)) res.inStr = false; else res.loose = true; }
         continue;
       }
       if (c === '"') { res.inStr = true; continue; }
       if (c === '{' || c === '[') { res.stack.push(c); res.open.push({ ch: c, elemStart: i + 1 }); }
       else if (c === '}' || c === ']') {
+        if (res.stack[res.stack.length - 1] !== (c === '}' ? '{' : '[')) { res.bad = true; break; }
         res.stack.pop(); res.open.pop();
         if (!res.stack.length) { res.closedAt = i; break; }
       } else if (c === ',' && res.open.length) res.open[res.open.length - 1].elemStart = i + 1;
@@ -53,28 +64,36 @@
     return res;
   }
 
-  // 回答是 JSON（去掉代码块标记后以 { 或 [ 开头）却没收尾
+  // 被掐：回答是 JSON（去掉代码块标记后以 { 或 [ 开头）、没收尾，而且已写的部分没写坏（补上括号就能解析）。
+  // 写坏了的（括号对不上、引号没转义）接着写也拼不出能解析的 JSON，不接，交原来的修复与重试。
   function isCut(text) {
     var t = stripLeadFence(text);
     var s = scan(t);
-    return s.start >= 0 && s.closedAt < 0;
+    return s.start >= 0 && s.closedAt < 0 && !s.bad && !s.loose && closable(t);
   }
 
   function parses(text) {
     try { JSON.parse(stripFences(text).trim()); return true; } catch (_) { return false; }
   }
 
-  // 半截能不能「补上括号」就解析：用来在几种拼法里挑结构没坏的那种（不拿补出来的结果当答案）。
-  // 断处可能在值里、键里、冒号后、逗号后，几种收法都试一下，有一种能解析就算结构没坏。
+  // 半截能不能「补上括号」就解析：用来判断已写的部分没写坏、在几种拼法里挑结构没坏的那种（不拿补出来的结果当答案）。
+  // 断处可能在值里、键里、冒号后、逗号后、转义符或 true/数字的半中间，几种收法都试一下，有一种能解析就算结构没坏。
   function closable(text) {
     var t = stripLeadFence(text);
     var s = scan(t);
-    if (s.start < 0) return false;
+    if (s.start < 0 || s.bad || s.loose) return false;
     if (s.closedAt >= 0) { try { JSON.parse(t.slice(s.start, s.closedAt + 1)); return true; } catch (_) { return false; } }
     var closers = '';
     for (var i = s.stack.length - 1; i >= 0; i--) closers += s.stack[i] === '{' ? '}' : ']';
     var base = t.replace(/\s+$/, '');
-    var tries = s.inStr ? [base + '"', base + '":null'] : [base.replace(/,$/, ''), base + 'null', base + ':null'];
+    var tries;
+    if (s.inStr) {
+      var b = s.esc ? base.slice(0, -1) : base.replace(/\\u[0-9a-fA-F]{0,3}$/, '');
+      tries = [base + '"', base + '":null', b + '"', b + '":null'];
+    } else {
+      tries = [base.replace(/,$/, ''), base + 'null', base + ':null',
+        base.replace(/[A-Za-z]+$/, '') + 'null', base.replace(/[-+.eE]+$/, ''), base.replace(/[-+.eE]+$/, '') + 'null'];
+    }
     for (var j = 0; j < tries.length; j++) {
       try { JSON.parse(tries[j] + closers); return true; } catch (_) {}
     }
@@ -110,7 +129,7 @@
     if (pt.charAt(0) === '{' && cs.start >= 0) {
       var firstKey = function(x) { var m = String(x).match(/^\s*\{\s*"([^"]{1,60})"/); return m ? m[1] : ''; };
       var ck = firstKey(stripLeadFence(c));
-      if (ck && firstKey(pt) === ck) return { text: pt, how: 'restart', overlap: 0 };
+      if (ck && firstKey(pt) === ck && closable(pt)) return { text: pt, how: 'restart', overlap: 0 };
     }
     // ② 去重叠：续写开头原样重复了半截末尾 4～400 字
     var k = Math.min(OVERLAP_MAX, c.length, p.length), overlap = 0;
@@ -120,17 +139,15 @@
     // ③ 退回：断在一个元素的半中间、续写把这个元素从头重写了——退到被重写的那个元素开头再接。
     //    续写以「"键":」开头，重写的是对象里的一项：退到最里层未收尾的对象里当前这一项的开头；
     //    以 { [ 或值开头，重写的是数组里的一个元素：退到最里层未收尾的数组里当前这个元素的开头。
-    if (cs.start >= 0 && cs.closedAt < 0) {
+    //    只认这一种对应：不是键的续写退进对象，会被当成一个新键（11-08 实遇「"]}}」被收成 "]}}":null）。
+    if (cs.start >= 0 && cs.closedAt < 0 && !cs.bad && !cs.loose) {
       var src = stripLeadFence(c);
-      var isKey = /^"(?:[^"\\]|\\.)*"\s*:/.test(pt);
-      var order = isKey ? ['{', '['] : ['[', '{'];
-      for (var oi = 0; oi < order.length; oi++) {
-        for (var li = cs.open.length - 1; li >= 0; li--) {
-          if (cs.open[li].ch !== order[oi]) continue;
-          var back = src.slice(0, cs.open[li].elemStart).replace(/\s+$/, '') + '\n' + pt;
-          if (closable(back)) return { text: back, how: 'backoff', overlap: 0 };
-          break;
-        }
+      var want = /^"(?:[^"\\]|\\.)*"\s*:/.test(pt) ? '{' : '[';
+      for (var li = cs.open.length - 1; li >= 0; li--) {
+        if (cs.open[li].ch !== want) continue;
+        var back = src.slice(0, cs.open[li].elemStart).replace(/\s+$/, '') + '\n' + pt;
+        if (closable(back)) return { text: back, how: 'backoff', overlap: 0 };
+        break;
       }
     }
     return { text: joined, how: overlap ? 'overlap' : 'direct', overlap: overlap, broken: true };
@@ -192,15 +209,20 @@
     var name = o.label || o.id || '回答';
     try { var cat = TM.CallRetryPolicy && TM.CallRetryPolicy.catalog ? TM.CallRetryPolicy.catalog() : []; for (var ci = 0; ci < cat.length; ci++) if (cat[ci].id === o.id) name = cat[ci].label; } catch (_) {}
     var P = root.P;
+    // 加载提示：接着写时换成「正在从断处接着写」，接完（成没成都一样）还给原来那句——
+    // 拼不成时游戏会整次重来，别让这句一直挂着（11-08 实遇挂了 4 分多钟）；别的调用改过提示就不动
+    var subEl = null, prevMsg = '', lastMsg = '';
+    try { subEl = root.document && root.document.getElementById ? root.document.getElementById('loading-sub') : null; prevMsg = subEl ? String(subEl.textContent || '') : ''; } catch (_) {}
     var cont = await run({
       body: body, raw: raw, id: o.id || '', label: name, deadlineAt: o.deadlineAt,
-      onLink: function(n) { if (typeof root.showLoading === 'function') root.showLoading(name + '被中转截断，正在从断处接着写（第' + n + '次）'); },
+      onLink: function(n) { lastMsg = name + '被中转截断，正在从断处接着写（第' + n + '次）'; if (typeof root.showLoading === 'function') root.showLoading(lastMsg); },
       fetch: async function(contBody, n) {
         var contData = await root._aiFetchWithRetry(o.url, contBody, o.signal || null, { apiKey: o.key || (P && P.ai && P.ai.key), tier: o.tier || 'primary', priority: o.priority || 'normal', timeoutMs: o.timeoutMs, maxRetries: 1, id: (o.id || 'endturn') + ':cont' + n });
         if (contData && contData.usage && root.TokenUsageTracker) root.TokenUsageTracker.record(contData.usage, (o.id || 'endturn') + ':cont');
         return contData;
       }
     });
+    try { if (lastMsg && prevMsg && subEl && String(subEl.textContent || '') === lastMsg && typeof root.showLoading === 'function') root.showLoading(prevMsg); } catch (_) {}
     if (typeof root.recordAIDiagnostic === 'function') root.recordAIDiagnostic('continuation', { id: o.id || '', label: name, ok: cont.ok, links: cont.links, raw_len: String(raw).length, len: cont.text.length, err: cont.err || '' });
     if (!cont.ok) return raw;
     data.choices[0].message.content = cont.text;

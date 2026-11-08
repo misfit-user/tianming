@@ -786,6 +786,17 @@ openSettings=function(){
             '</div>' +
           '</label>';
         })() +
+        // 2026-11-08·断处续开关(docs/llm-duanchu-xu-20261108.md·默认开)
+        (function(){
+          var _contOn = !(typeof P !== 'undefined' && P && P.conf && P.conf.aiContinueOnCut === false);
+          return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
+            '<input type="checkbox" id="s-ai-continue-on-cut" ' + (_contOn ? 'checked ' : '') + 'onchange="_togglePConf(\'aiContinueOnCut\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">回答被截断时从断处接着写（默认启用）</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">有的中转写到几分钟就把回答掐断，结构化结果只剩半截·过回合会因此中止。开启时把半截交回去请 AI 从断处接着写·拼成完整结果再用·同一次最多接 3 次。每接一次要把整份提示再发一遍（支持缓存的接口花得不多）。关闭则被截断的回答照旧按失败处理。</div>' +
+            '</div>' +
+          '</label>';
+        })() +
         (function(){
           var _wtAgOn = !(P.conf && P.conf.wentianAgentMode === false);
           return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +

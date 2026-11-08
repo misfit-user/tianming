@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "6799bcd85313e6dd8b7915cc1bc3e106e65289565496aaf4446d359576e1ae4f",
-      "size": 78194
+      "sha256": "e158658beea64e88fc465d16385d47adc2f1a7f01d4e2c3b4a9cd882d56f51b4",
+      "size": 78388
     },
     {
       "path": "INDEX.md",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "02a46122e5dab820a2c457dd4cdb22fb34eca37e34e795ef677f6293e395610b",
-      "size": 394035
+      "sha256": "6e0dbb3c36cbb53d23d00cca102708ac0f1c8fc9ac26d2da2ae9c20b01cc2dae",
+      "size": 394590
     },
     {
       "path": "styles.css",
@@ -4448,6 +4448,11 @@
       "path": "tm-ai-change-pathutils.js",
       "sha256": "89a60e594ccd7bcb4e298923c5faaad5cadfbef09fa9c381667315b092f282d5",
       "size": 40450
+    },
+    {
+      "path": "tm-ai-continuation.js",
+      "sha256": "d92716886334b08862add14fd43c0c17b36301f4e0e311d55f0bed4abdba178b",
+      "size": 12081
     },
     {
       "path": "tm-ai-infra-json.js",
@@ -5096,8 +5101,8 @@
     },
     {
       "path": "tm-endturn-ai.js",
-      "sha256": "437a5b5e84f5c6faf9c75a366f02b4f95e7643fa85110630c571369fed59a579",
-      "size": 409855
+      "sha256": "b86ff4340ff099a2fdd42fc149ba6de72a22e76f83d4e2799fb828ff9fd01043",
+      "size": 410725
     },
     {
       "path": "tm-endturn-apply-stages.js",
@@ -6321,8 +6326,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "84a4e86e45ca4520dbcd4931a772b9c4e60ddea08c6e8a1f7d54fe9858e8ed62",
-      "size": 188687
+      "sha256": "9a91f09ac903f348c4661a1e89573fd4bd29d7e74d48628bc185ff099f81be99",
+      "size": 189949
     },
     {
       "path": "tm-pause-fab.js",
@@ -6606,8 +6611,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "e482781582447c1cb130bf5b1aa7beffe62105a9492d19de4fd952c57c956b1e",
-      "size": 140298
+      "sha256": "25278b222f6b78d4d176e8cadce1587bc5410ad9d852f1d7d2b1cd05ffc5e679",
+      "size": 140610
     },
     {
       "path": "tm-start-selector.js",

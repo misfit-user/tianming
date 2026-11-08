@@ -460,6 +460,8 @@
           }
         } catch(_dStatsE) {}
         if (data && data.choices && data.choices[0] && data.choices[0].message) raw = data.choices[0].message.content || '';
+        // 2026-11-08·断处续（tm-ai-continuation.js·docs/llm-duanchu-xu-20261108.md）：JSON 回答没收尾就接着写，拼全了才就地写回 data，拼不出照旧往下走
+        if (!opts._noContinuation && raw && global.TM && TM.AIContinuation) raw = await TM.AIContinuation.continueIfCut(body, data, raw, { id: opts.id, label: label, url: callUrl, key: key, tier: opts.tier, priority: opts.priority, timeoutMs: opts.timeoutMs, signal: opts.signal, deadlineAt: opts.retryBudget && opts.retryBudget.deadlineAt });
         // 2026-06-07·超大响应源头封顶(防御纵深·配合 robustParseJSON 护栏)。
         // 第三方中转/模型复读可吐回数 MB~数十 MB 的垃圾响应;回合「深度推演」阶段众多子调用拿它去解析/入账,
         // 内存峰值叠加可把 Electron 渲染进程撑爆 → 深推时突然黑屏、必须重启。合法子调用 ≤8000 tokens(数十 KB)。
@@ -3722,6 +3724,7 @@
             data1.choices[0].finish_reason=_sc1AttemptOptions._normalRecoveryTicket.streamComplete?'stop':'length';
             TM.RecoveryAdapters.markResponse(data1,_sc1AttemptOptions);
           }
+          if (global.TM && TM.AIContinuation) c1 = await TM.AIContinuation.continueIfCut(_sc1Body, data1, c1, { id: 'sc1', url: url, key: P.ai.key, tier: 'primary', priority: 'critical', timeoutMs: _sc1PolicyForStream.timeoutMs, signal: ctx.signal || (ctx.meta && ctx.meta.signal) || null }); // 断处续：流式那条路同一规矩
           // 流式模式无 usage·不记 token
         } catch(_se) {
           var _streamCompatibility = [400,422].indexOf(Number(_se && _se.status)) >= 0 && /stream|response_format|json_schema/i.test(String(_se && _se.message || ''));

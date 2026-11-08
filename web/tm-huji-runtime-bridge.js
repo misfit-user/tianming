@@ -710,9 +710,12 @@
     var byRegion = Object.keys(aggregate.byRegion || {}).map(function(id) {
       var row = aggregate.byRegion[id] || {};
       var demand = round((row.ding || 0) * annualDays);
-      var localPenalty = row.minxin ? clamp(row.minxin / 100, 0.35, 1.05) : 0.75;
-      var fulfilled = round(demand * executionRate * localPenalty);
       var commuted = round(demand * commutationRate);
+      // 折银那部分已拿银子了结，算兑现；实役那部分按本州役法执行率（民心硬联动按本州民心、隐户、负担算的
+      // corveeDetail.executionEfficiency），没算过才用全国执行率。旧写法是全部役日 × 全国执行率 × 民心/100：
+      // 民心算了两遍、折银的也当没兑现，天启缺口比 0.85，民心 90 的州也算出七成没兑现（11-08）。
+      var eff = Number(row.corveeDetail && row.corveeDetail.executionEfficiency);
+      var fulfilled = round(commuted + (demand - commuted) * clamp(eff > 0 ? eff : executionRate, 0, 1));
       return {
         id: id,
         name: row.name || id,
@@ -919,6 +922,13 @@
     return effect;
   }
 
+  // 过回合开头「交推演前」那两遍（source 以 pre-submit 起头）只预算不落账，每月该落的是回合数加一之后那遍
+  // （endturn-huji-runtime-bridge）。两遍按回合数去重，可新局头一回合前一遍记在 T、后一遍记在 T+1，
+  // 士气、民心都扣了两次（11-08 天启实测：徭役那笔头一回合两笔）。
+  function isPreSubmitPass(options) {
+    return /^pre-submit/.test(String(options && options.source || ''));
+  }
+
   function applyMilitaryHardEffect(root, servicePool, options) {
     root.military = root.military && typeof root.military === 'object' ? root.military : {};
     servicePool = servicePool || {};
@@ -933,7 +943,7 @@
     root.military.recruitmentShortfall = shortfall;
     var penalty = shortfall > 0 ? Math.max(1, Math.ceil(ratio * 8)) : 0;
     var turn = Number(options && options.turn) || Number(root.turn) || 0;
-    if (penalty && root.military._hujiHardMoraleTurn !== turn && Array.isArray(root.armies)) {
+    if (penalty && !isPreSubmitPass(options) && root.military._hujiHardMoraleTurn !== turn && Array.isArray(root.armies)) {
       root.armies.forEach(function(army) {
         if (!army || typeof army !== 'object') return;
         if (typeof army.morale === 'number') army.morale = clamp(army.morale - penalty, 0, 100);
@@ -973,15 +983,23 @@
     return effect;
   }
 
+  // 役负常例：人均每年 8 个役日（一丁约一月），超过才算重。
+  var CORVEE_BURDEN_NORM = 8;
+
+  // 扣到役负超过常例的州：按「超出几日 × 口数」排，取前八，按编号精确认州（11-08）。
+  // 旧写法取「有缺口的前八个」——缺口处处都有，取到的就是列表最前的八个（天启全落在北直隶八府），
+  // 且按名字模糊认州，编号「…_1」会连「…_12」一起扣。
   function corveeTargetRegions(ledger) {
-    return toArray(ledger && ledger.byRegion).filter(function(row) {
-      return row && row.gapDays > 0;
-    }).slice(0, 8).map(function(row) {
-      return {
-        region: row.id || row.name,
-        weight: Math.max(1, Number(row.gapDays) || 1),
-        deltaTrue: null
-      };
+    return toArray(ledger && ledger.byRegion).map(function(row) {
+      var burden = Number(row && row.burden) || 0;
+      var mouths = burden > 0 ? (Number(row.demandDays) || 0) / burden : 0;
+      return { row: row, weight: Math.max(0, burden - CORVEE_BURDEN_NORM) * mouths };
+    }).filter(function(x) {
+      return x.weight > 0 && (x.row.id || x.row.name);
+    }).sort(function(a, b) {
+      return b.weight - a.weight;
+    }).slice(0, 8).map(function(x) {
+      return { region: x.row.id || x.row.name, weight: x.weight, deltaTrue: null, exact: true };
     });
   }
 
@@ -993,14 +1011,17 @@
     var gap = Math.max(0, Number(summary.gapDays) || 0);
     var gapRatio = clamp(gap / demand, 0, 1);
     var burden = Number(summary.burden) || 0;
-    var burdenPressure = clamp((burden - 8) / 16, 0, 1);
-    var minxinDelta = -round2(clamp(gapRatio * 5 + burdenPressure * 3, 0, 8));
+    var burdenPressure = clamp((burden - CORVEE_BURDEN_NORM) / 16, 0, 1);
+    // 只按役负扣（11-08）：缺口是民心的影子（民心低→役法执行差→缺口大），不是民心下降的原因。旧写法按缺口比
+    // 每回合扣到 5 分，天启缺口比 0.85，每回合 −4，累计到这一源的封顶 −20 才停。官方三部年役 20 日、人均役负 5~6 日，
+    // 不扣；诏令加役或剧本给重役，人均超过 8 日才扣。缺口照记，只拿去议政（徭役壅滞）和右栏显示。
+    var minxinDelta = -round2(clamp(burdenPressure * 3, 0, 3));
     // A2b 激活·役负满意度去重：已种子地域之役负→农户满意度归 Renli(过 gateSatisfaction)·此处按未种子丁占比缩减·避双扣农户
     var _rlShare = (function(){ var rl = (typeof TM !== 'undefined' && TM && TM.Renli) ? TM.Renli : null; return (rl && rl.seededDingShare) ? rl.seededDingShare() : 0; })();
     if (_rlShare > 0) minxinDelta = round2(minxinDelta * (1 - _rlShare));
     var turn = Number(options && options.turn) || Number(root.turn) || 0;
     var applied = false;
-    if (minxinDelta < 0 && root.corvee._hujiHardMinxinTurn !== turn) {
+    if (minxinDelta < 0 && !isPreSubmitPass(options) && root.corvee._hujiHardMinxinTurn !== turn) {
       if (TM.MinxinLedger && typeof TM.MinxinLedger.recordAndApply === 'function') {
         try {
           TM.MinxinLedger.recordAndApply(root, {
@@ -1013,9 +1034,9 @@
               { name: '匠役', weight: 0.3 }
             ],
             deltaTrue: minxinDelta,
-            intensity: clamp(gapRatio + burdenPressure, 0, 1),
+            intensity: burdenPressure,
             confidence: 0.84,
-            reason: 'corvee demand gap and burden lower local minxin'
+            reason: 'corvee burden above the customary days lowers local minxin'
           }, { turn: turn, source: 'huji-hard-effects-corvee' });
           applied = true;
         } catch (_) {}
@@ -1029,8 +1050,8 @@
       recordHardSignal(root, {
         kind: 'corvee-gap-burden',
         tags: ['corvee', 'minxin', 'hukou'],
-        intensity: clamp(gapRatio + burdenPressure, 0, 1),
-        reason: 'corvee demand gap and burden lowered minxin',
+        intensity: burdenPressure,
+        reason: 'corvee burden above the customary days lowered minxin',
         affectedClasses: [
           { name: '农户', deltaSatisfaction: minxinDelta * 0.6, deltaPressure: Math.abs(minxinDelta) * 0.4, reason: 'corvee burden' },
           { name: '匠役', deltaSatisfaction: minxinDelta * 0.4, deltaPressure: Math.abs(minxinDelta) * 0.3, reason: 'labor mobilization' }

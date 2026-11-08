@@ -197,4 +197,58 @@ assert(/HujiRuntimeBridge\.enforceAfterFiscalTick/.test(src('tm-endturn-systems.
 assert(/hujiHardEffects/.test((src('phase8-formal-rightrail.js') + src('phase8-formal-rightrail-social.js'))), 'right rail should expose hard-effect diagnostics');
 assert(/hujiHardEffects/.test(src('tm-topbar-vars.js')), 'topbar should expose hard-effect diagnostics');
 
+// ── 11-08 徭役：缺口不扣民心、扣到役负最重的州（精确认州）、结算前那遍不落账、折银算兑现 ──
+function corveeRoot(minxin) {
+  return {
+    sid: 'smoke-corvee-1108', turn: 5,
+    guoku: { balance: 100000, money: 100000, monthlyIncome: 10000, turnIncome: 10000 },
+    fiscal: {}, hukou: {}, military: {}, corvee: {},
+    minxin: { trueIndex: minxin, perceivedIndex: minxin, byRegion: {}, byClass: {}, sources: {} },
+    armies: [{ id: 'g1', name: 'Guard', soldiers: 1000, morale: 70, supply: 60 }],
+    adminHierarchy: { player: { divisions: [
+      { id: 'east_1', name: 'East One', minxin: minxin, minxinLocal: minxin, populationDetail: { mouths: 1000, ding: 300 } },
+      { id: 'east_12', name: 'East Twelve', minxin: minxin, minxinLocal: minxin, populationDetail: { mouths: 1000, ding: 300 } },
+      { id: 'west', name: 'West', minxin: minxin, minxinLocal: minxin, populationDetail: { mouths: 2000, ding: 600 } }
+    ] } }
+  };
+}
+const leafMx = (root) => Object.fromEntries(root.adminHierarchy.player.divisions.map(d => [d.id, d.minxin]));
+
+// ① 民心低、缺口大、役负不重：不扣（旧写法按缺口比 0.85 每回合扣 −4.25）
+const lowRoot = corveeRoot(30);
+const lowEff = Bridge.applyHardEffects(lowRoot, { hukou: {}, military: {}, corvee: { summary: { totalDemandDays: 1000, gapDays: 850, burden: 5.2 }, byRegion: [] } }, { turn: 5, source: 'smoke-corvee-low' });
+assert(lowEff.corvee.minxinDelta === 0, 'a corvee gap alone must not cost minxin (gap ratio 0.85, burden 5.2 under the 8-day custom): ' + lowEff.corvee.minxinDelta);
+assert(Object.values(leafMx(lowRoot)).every(v => v === 30), 'no prefecture minxin should move when only the gap is large: ' + JSON.stringify(leafMx(lowRoot)));
+
+// ② 役负重：扣到役负超过常例的州，按「超出日数 × 口数」分；east_12 役负不重，编号里含 east_1 也不该挨扣
+const heavyLedger = { summary: { totalDemandDays: 52000, gapDays: 0, burden: 16 }, byRegion: [
+  { id: 'east_1', name: 'East One', demandDays: 20000, gapDays: 0, burden: 20 },
+  { id: 'east_12', name: 'East Twelve', demandDays: 6000, gapDays: 0, burden: 6 },
+  { id: 'west', name: 'West', demandDays: 24000, gapDays: 0, burden: 12 }
+] };
+const heavyRoot = corveeRoot(50);
+const heavyEff = Bridge.applyHardEffects(heavyRoot, { hukou: {}, military: {}, corvee: heavyLedger }, { turn: 5, source: 'smoke-corvee-heavy' });
+const hm = leafMx(heavyRoot);
+assert(heavyEff.corvee.minxinDelta === -1.5, 'burden 16 against the 8-day custom should cost 1.5: ' + heavyEff.corvee.minxinDelta);
+assert(hm.east_12 === 50, 'east_12 bears no excess corvee and must not be hit because its id contains east_1: ' + JSON.stringify(hm));
+assert(Math.abs((50 - hm.east_1) - 0.9) < 0.02 && Math.abs((50 - hm.west) - 0.6) < 0.02, 'shares should follow excess days x mouths (12x1000 : 4x2000): ' + JSON.stringify(hm));
+
+// ③ 结算前那一遍（pre-submit）只预算不落账：民心、士气都不动；回合数加一后那遍才落，且只落一次
+const preRoot = corveeRoot(50);
+const preArgs = () => ({ hukou: {}, military: { requestedRecruits: 1000, availableRecruits: 100 }, corvee: heavyLedger });
+const preEff = Bridge.applyHardEffects(preRoot, preArgs(), { turn: 5, source: 'pre-submit-huji-runtime-bridge' });
+assert(preEff.corvee.minxinDelta < 0 && preEff.corvee.appliedToMinxin === false, 'the pre-submit pass should compute but not apply corvee minxin: ' + JSON.stringify(preEff.corvee));
+assert(Object.values(leafMx(preRoot)).every(v => v === 50), 'the pre-submit pass must not move prefecture minxin: ' + JSON.stringify(leafMx(preRoot)));
+assert(preRoot.armies[0].morale === 70, 'the pre-submit pass must not cut army morale: ' + preRoot.armies[0].morale);
+const postEff = Bridge.applyHardEffects(preRoot, preArgs(), { turn: 6, source: 'endturn-huji-runtime-bridge' });
+assert(postEff.corvee.appliedToMinxin === true && leafMx(preRoot).east_1 < 50, 'the settlement pass after the turn advance should apply corvee minxin');
+assert(preRoot.armies[0].morale === 62, 'the settlement pass should cut morale once by the shortfall penalty (8): ' + preRoot.armies[0].morale);
+
+// ④ 折银的役日算兑现，实役按本州役法执行率：执行率 0.8、折银 0.12 → 兑现约 82.4%（旧写法按全国执行率 × 民心/100，缺口七成）
+sandbox.GM.adminHierarchy.player.divisions.forEach(d => { d.corveeDetail = { executionEfficiency: 0.8 }; });
+Bridge.maintain(sandbox.GM, { scenario, turn: 97, source: 'smoke-corvee-commute', applyHardEffects: false });
+const cs = sandbox.GM.corvee.ledger.summary;
+const fr = cs.fulfilledDays / cs.totalDemandDays;
+assert(Math.abs(fr - (0.12 + 0.88 * 0.8)) < 0.01, 'commuted days count as fulfilled and labour days follow the prefecture corvee efficiency: ' + fr.toFixed(3));
+
 console.log('[smoke-huji-hard-effects] PASS huji hard effects');

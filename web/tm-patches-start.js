@@ -228,6 +228,9 @@ function _tmStartLoadVars(sid, sc) {
 // 但民心官方账 GM.minxin 由玩家势力叶子区划 minxinLocal 自底向上聚合、从不读 variables → 作者设定被静默丢弃。
 // 把显式 pin 落到玩家势力叶子（minxin/minxinLocal），进游戏聚合（aggregateRegionsToVariables）自然得出作者值；无此变量 = 行为不变。
 // 仅新开局生效（GM.turn>1 跳过·防读档后覆盖回合内已漂移的叶子民心）。
+// 作者逐州给了民心的，按比例缩放到全国（人口加权）正好是 pin，各州高下照留；州上没值的直接落 pin（同志 11-08 定）。
+// 旧写法把每州都抹成 pin：官方绍宋作者按路分了高下（北方战区 41~47、南方 58），开局全成 35，正卡在酝酿民变的门槛上。
+// 不用平移：平移会把秦凤、环庆、鄜延几州压到 24 以下开局就民变，建炎元年八月陕西五路尚未乱；按比例缩放后最低 26。
 function _tmStartPinMinxinFromVars(sc) {
   try {
     if (!sc || !sc.variables) return false;
@@ -255,7 +258,24 @@ function _tmStartPinMinxinFromVars(sc) {
           if (kids.length) walk(kids); else leaves.push(n);
         });
       })(Array.isArray(fac) ? fac : (fac && fac.divisions));
-      leaves.forEach(function (d) { d.minxin = pin; d.minxinLocal = pin; });
+      // 权重与民心账本算全国时一致（population 口数 → population 数 → populationDetail 口数 → 1）
+      function weightOf(d) {
+        var p = d.population, pd = d.populationDetail || {};
+        var m = (p && typeof p === 'object') ? Number(p.mouths != null ? p.mouths : p.count) : NaN;
+        if (isFinite(m) && m > 0) return m;
+        if (isFinite(Number(p)) && Number(p) > 0) return Number(p);
+        m = Number(pd.mouths != null ? pd.mouths : pd.population);
+        return isFinite(m) && m > 0 ? m : 1;
+      }
+      function own(d) { var v = Number(d.minxin != null ? d.minxin : d.minxinLocal); return isFinite(v) ? v : null; }
+      var sum = 0, weight = 0;
+      leaves.forEach(function (d) { var v = own(d); if (v !== null) { sum += v * weightOf(d); weight += weightOf(d); } });
+      var avg = weight > 0 ? sum / weight : 0;
+      leaves.forEach(function (d) {
+        var v = own(d);
+        var next = (v !== null && avg > 0) ? Math.round(Math.max(0, Math.min(100, v * pin / avg)) * 100) / 100 : pin;
+        d.minxin = next; d.minxinLocal = next;
+      });
       return leaves.length;
     }
     var n1 = (typeof P !== 'undefined' && P && P.adminHierarchy) ? _pinLeaves(P.adminHierarchy) : 0;

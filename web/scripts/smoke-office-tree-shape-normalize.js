@@ -95,7 +95,10 @@ ctx.P = { playerInfo: { factionName: 'own' }, adminHierarchy: {
 ctx.GM = { turn: 1 };
 const r3 = _pin({ variables: { base: [], other: [{ name: '民心', initial: 35 }] } });
 assertions += 1; assert(r3 === true, 'case7 grouped variables.initial 民心应成功 pin');
-assertions += 1; assert(ctx.P.adminHierarchy.own.divisions[0].minxin === 35 && ctx.P.adminHierarchy.own.divisions[1].children[0].minxinLocal === 35, 'case7 只写玩家 own 叶子为 35');
+// 作者逐州给了民心（58、46，无人口按权重 1）：按比例缩放到平均正好 35，高下照留（同志 11-08 定；旧写法两州都抹成 35）
+const c7a = ctx.P.adminHierarchy.own.divisions[0], c7b = ctx.P.adminHierarchy.own.divisions[1].children[0];
+assertions += 1; assert(c7a.minxin === 39.04 && c7a.minxinLocal === 39.04 && c7b.minxin === 30.96 && c7b.minxinLocal === 30.96,
+  'case7 只写玩家 own 叶子，按比例缩到平均 35（58→39.04、46→30.96）·实得 ' + c7a.minxin + '/' + c7b.minxin);
 assertions += 1; assert(ctx.P.adminHierarchy.enemy.divisions[0].minxinLocal === 12 && ctx.P.adminHierarchy.enemy.divisions[0].minxin === undefined, 'case7 敌方第一键不得被误 pin');
 
 // ── case 8·多树且无玩家映射时拒绝猜第一项 ──
@@ -156,9 +159,22 @@ const officialLeaves = [];
     if (kids.length) collectOfficialLeaves(kids); else officialLeaves.push(n);
   });
 })(ctx.P.adminHierarchy.player.divisions);
-assertions += 1; assert(r5 === true && officialLeaves.length > 0
-  && officialLeaves.every(function (leaf) { return leaf.minxin === 35 && leaf.minxinLocal === 35; }),
-'case10 官方 grouped variables 应把真实 player 树叶子全部 pin 为 35');
+// 官方绍宋作者逐州给了民心（这一路 45~51）：按人口加权缩放到平均正好 35，各州高下照留（同志 11-08 定；旧写法全抹成 35）
+const originalLeaves = [];
+(function collectOriginal(nodes) {
+  (nodes || []).forEach(function (n) {
+    const kids = Array.isArray(n.children) ? n.children : Array.isArray(n.divisions) ? n.divisions : Array.isArray(n.subRegions) ? n.subRegions : [];
+    if (kids.length) collectOriginal(kids); else originalLeaves.push(n);
+  });
+})([officialShaosong.adminHierarchy.player.divisions[0]]);
+const mouthsOf = function (d) { const pd = d.populationDetail || {}; return Number(pd.mouths) > 0 ? Number(pd.mouths) : 1; };
+const origAvg = originalLeaves.reduce(function (s, d) { return s + d.minxin * mouthsOf(d); }, 0) / originalLeaves.reduce(function (s, d) { return s + mouthsOf(d); }, 0);
+const pinnedAvg = officialLeaves.reduce(function (s, d) { return s + d.minxin * mouthsOf(d); }, 0) / officialLeaves.reduce(function (s, d) { return s + mouthsOf(d); }, 0);
+assertions += 1; assert(r5 === true && officialLeaves.length === originalLeaves.length && officialLeaves.length > 1
+  && Math.abs(pinnedAvg - 35) < 0.02
+  && officialLeaves.every(function (leaf, i) { return leaf.minxin === leaf.minxinLocal && Math.abs(leaf.minxin - originalLeaves[i].minxin * 35 / origAvg) < 0.006; })
+  && new Set(officialLeaves.map(function (leaf) { return leaf.minxin; })).size > 1,
+'case10 官方绍宋 player 树叶子按比例缩到人口加权平均 35、高下照留·实得平均 ' + pinnedAvg.toFixed(3) + '，各州 ' + officialLeaves.map(function (l) { return l.minxin; }).join('/'));
 assertions += 1; assert(ctx.P.adminHierarchy.fac_jin.divisions[0].minxin === 91,
   'case10 官方多势力开局不得改写敌方树');
 

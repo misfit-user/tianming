@@ -6396,8 +6396,8 @@
     },
     {
       "path": "tm-patches-start.js",
-      "sha256": "f054fbefeaf4c82fb2affede785a51f17a29b72b39d97920a4d6b6f498d718ff",
-      "size": 131165
+      "sha256": "3da5530aaf32cba6a6317269a9c5a6ee21f0637500a9cf1d7d7f2eb2c247a8a5",
+      "size": 132740
     },
     {
       "path": "tm-patches.js",
@@ -6676,7 +6676,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "94326def1db3e121b5a9018a72406d3239f1cefe956b243031bc32a622c3adcf",
+      "sha256": "751c87afeb89d28d5a04d083e1e720e612e6a1791664b8ffd33bf20766dcf488",
       "size": 140398
     },
     {

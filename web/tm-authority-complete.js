@@ -1212,12 +1212,9 @@
     if (!mx) return;
     var adj = typeof global.AuthorityEngines !== 'undefined' ? global.AuthorityEngines.adjustMinxin : null;
     if (!adj) return;
-    // judicialFairness（冤案率）
-    var corruptOfficials = (G.chars || []).filter(function(c) {
-      return c.alive !== false && c.officialTitle && (c.integrity || 60) < 35;
-    }).length;
-    if (corruptOfficials > 5) adj('judicialFairness', -0.1 * mr * corruptOfficials / 5, '冤案多');
-    else if (corruptOfficials === 0 && (G.chars || []).filter(function(c){return c.alive!==false && c.officialTitle;}).length > 10) adj('judicialFairness', 0.05 * mr, '刑政清明');
+    // judicialFairness（冤案率）不在这里算了（11-08）：腐败引擎已按刑部腐败度每月扣「司法不公·民有冤抑」，
+    // 这里再按「操守低于 35 的官员人数」扣一次，是同一件事（官吏贪墨所以冤狱多）扣两遍——天启两处各约 −1/月、
+    // 合计约 −2/月全国扣，十个月撞满来源封顶 −20。只留腐败引擎那一处：它有反制措施和贪腐案可落手。
     // security（治安）：民变不宁只扰本省
     var activeRevolts = (mx.revolts || []).filter(function(r){return r.status === 'ongoing';});
     if (activeRevolts.length > 0) _revoltSecurityMinxin(G, activeRevolts, mr, adj);

@@ -339,4 +339,15 @@ try {
   Math.random = realRandom;
 }
 
+// 「司法公正」不再按「操守低于 35 的官员人数」另扣一遍（11-08）：腐败引擎已按刑部腐败度扣「司法不公·民有冤抑」，
+// 两处说的是同一件事（官吏贪墨所以冤狱多），天启各约 −1/月、合计约 −2/月全国扣。
+const judicialCalls = [];
+sandbox.AuthorityEngines.adjustMinxin = (source, delta, reason) => { judicialCalls.push({ source, delta, reason }); };
+sandbox.GM = { turn: 70, minxin: { trueIndex: 50, perceivedIndex: 50, byRegion: {}, byClass: {}, sources: {}, uprisingCandidates: [], revolts: [] },
+  chars: Array.from({ length: 10 }, (_, i) => ({ name: 'official' + i, alive: true, officialTitle: 'clerk', integrity: 20 })),
+  adminHierarchy: { player: { divisions: [{ id: 'mountain', name: 'Mountain County', minxin: 50, population: 100 }] } } };
+sandbox.AuthorityComplete.tickMinxinSources({ turn: 70 }, 1);
+assert(!judicialCalls.some(c => c.source === 'judicialFairness'),
+  'judicial fairness is left to the corruption engine; ten low-integrity officials must not cost minxin a second time: ' + JSON.stringify(judicialCalls.filter(c => c.source === 'judicialFairness')));
+
 console.log('[smoke-minxin-ledger-six-stage] PASS unified minxin six-stage implementation');

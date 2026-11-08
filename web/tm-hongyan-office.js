@@ -111,13 +111,16 @@ function _ltHerePlace() {
   return atCapital ? cap : here;
 }
 
-// 地图路程折信程：一公里约一里八（明清一里合五百七十六米上下），驿速里/日
-var LT_LI_PER_KM = 1.8;
-var LT_ROAD_LI_PER_DAY = { normal: 100, urgent: 300, extreme: 800 };
+// 路程折信程：一里按明里五百七十六米算。
+// 地图路程、地名经纬度表、行政层级粗估三层共用这一张速度表（里/日）：普通书信是托人捎带，按步行脚程
+// 日行五十里（唐公式令「步行日五十里」）；加急三百里；八百里加急八百里。诏令、奏疏另走官驿急递，
+// 不经这里（见 tm-endturn-prep.js、tm-memorials.js）。
+var LT_KM_PER_LI = 0.576;
+var LT_ROAD_LI_PER_DAY = { normal: 50, urgent: 300, extreme: 800 };
 // 走不通的两地（隔海、地图上不连）按直线加三成绕行
 var LT_OPEN_WATER_DETOUR = 1.3;
-// 同一地块里的两处，算一日路程
-var LT_SAME_REGION_LI = 60;
+// 同一地块里的两处，算一日路程（普通书信的一日）
+var LT_SAME_REGION_LI = 50;
 var _ltRouteCaches = new WeakMap();
 
 function _ltRouteCache(map) {
@@ -383,20 +386,19 @@ function _ltGreatCircleKm(a, b) {
 /** 两地信件传递天数：先按地图真实路程；地图上找不到的，按地名经纬度表算直线距离；再认不出，按行政层级粗估 */
 function calcLetterDays(fromLoc, toLoc, urgency) {
   if (!fromLoc || !toLoc || fromLoc === toLoc) return 1;
+  // 三层同一张速度表：同样的路程，不论哪层认出的地方，日数一样
+  var speed = LT_ROAD_LI_PER_DAY[urgency] || LT_ROAD_LI_PER_DAY.normal;
   var km = _ltRouteKm(fromLoc, toLoc);
   if (km != null) {
-    var roadLi = km > 0 ? km * LT_LI_PER_KM : LT_SAME_REGION_LI;
-    return Math.max(1, Math.ceil(roadLi / (LT_ROAD_LI_PER_DAY[urgency] || LT_ROAD_LI_PER_DAY.normal)));
+    var roadLi = km > 0 ? km / LT_KM_PER_LI : LT_SAME_REGION_LI;
+    return Math.max(1, Math.ceil(roadLi / speed));
   }
-  // 粗估的里数本就是猜的，这张速度表和它配套，只在这里用；真实路程用上面的驿速
-  var liPerDay = { normal: 50, urgent: 300, extreme: 800 };
-  var speed = liPerDay[urgency] || 50;
-  // 两地都认得：直线距离乘 1.3 算驿路绕行，按明里（约 0.576 公里）折里数
+  // 两地都认得：直线距离乘 1.3 算驿路绕行，按明里折里数
   var a = _ltPlaceCoord(fromLoc), b = _ltPlaceCoord(toLoc);
   if (a && b) {
-    var km = _ltGreatCircleKm(a, b) * 1.3;
-    if (km < 30) return 1; // 同城或近郊
-    return Math.max(1, Math.ceil(km / 0.576 / speed));
+    var lineKm = _ltGreatCircleKm(a, b) * 1.3;
+    if (lineKm < 30) return 1; // 同城或近郊
+    return Math.max(1, Math.ceil(lineKm / LT_KM_PER_LI / speed));
   }
   // 认不出：旧法估距离（里）——基于行政区划层级推断
   var li = 1000; // 默认中等距离

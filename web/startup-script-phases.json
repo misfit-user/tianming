@@ -3546,7 +3546,7 @@
         "LETTER_CIPHERS",
         "LETTER_TOKENS",
         "LETTER_TYPES",
-        "LT_LI_PER_KM",
+        "LT_KM_PER_LI",
         "LT_NOT_A_PLACE",
         "LT_OPEN_WATER_DETOUR",
         "LT_ROAD_LI_PER_DAY",

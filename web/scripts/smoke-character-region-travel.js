@@ -155,9 +155,10 @@ y = who('袁崇焕');
 sandbox._tmMoveCharToward(y, '东南', '');
 assert(y._travelTo === '东南', '目的地是粗区也上路');
 assert(y._travelRemainingDays === sandbox.calcLetterDays('蓟州·三屯营', '应天府', 'normal'), '路程算到要落脚的那一块');
-tick(10);
-tick(10);
-assert(y.location === '开封府', '朝粗区里最近的一块走');
+// 不按速度写死第几日到哪（普通日行 11-09 起是五十里）：一旬一旬地走，到站前看他路过了哪几块
+const passed = [];
+for (let i = 0; i < 12 && y._travelTo && y._travelRemainingDays > 10; i++) { tick(10); passed.push(y.location); }
+assert(passed.includes('开封府') && !passed.includes('广州府'), '朝粗区里最近的一块走：路过开封府，不往广州去（' + passed.join('→') + '）');
 y._travelRemainingDays = 1;
 tick(10);
 assert(y.location === '应天府' && y.regionId === 'r-nj', '到了落到最小地块，不留粗区');

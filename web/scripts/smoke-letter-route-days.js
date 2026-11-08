@@ -3,7 +3,7 @@
 // 病根：calcLetterDays 只有同处、同省、其余三档，修好京城后天启 176 个收信人 175 个都是二十日。
 // 修法：地名落到地图地块，沿邻接走出公里数，折成里再除驿速；走不通的按直线加绕行；
 // 地图缺或地名对不上的，先按地名经纬度表算直线距离（main 0284028f 那层），表里也没有的才退回老的粗估；
-// 全程出错不外抛，不拖垮写信和过回合。
+// 三层共用一张速度表（普通书信日行五十里）；全程出错不外抛，不拖垮写信和过回合。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -81,7 +81,7 @@ assert(near(km('顺天府', '保定府'), edge), '相邻两地就是一段的路
 const road = greatCircle(PLACES.bj, PLACES.bd) + greatCircle(PLACES.bd, PLACES.kf) + greatCircle(PLACES.kf, PLACES.nj);
 assert(near(km('顺天府', '应天府'), road), '隔着几块就一段段加起来');
 assert(km('顺天府', '应天府') > greatCircle(PLACES.bj, PLACES.nj), '路程比直线长');
-assert(days('顺天府', '保定府') === Math.ceil(edge * 1.8 / 100), '公里折里除驿速');
+assert(days('顺天府', '保定府') === Math.ceil(edge / 0.576 / 50), '公里按明里 0.576 公里折里，除普通书信日行五十里');
 assert(days('顺天府', '广州府') > days('顺天府', '应天府') && days('顺天府', '应天府') > days('顺天府', '保定府'), '越远越久');
 assert(days('顺天府', '广州府') > days('顺天府', '广州府', 'urgent') && days('顺天府', '广州府', 'urgent') > days('顺天府', '广州府', 'extreme'), '加急快于驿递，八百里又快于加急');
 assert(days('顺天府', '广州府', '瞎写') === days('顺天府', '广州府', 'normal'), '不认识的缓急按驿递');
@@ -140,6 +140,17 @@ sandbox.GM = { _capital: '北京', mapData: { get regions() { throw new Error('�
 let threw = false;
 try { assert(days('甲', '乙') === 20, '坏地图也照旧给日数'); } catch (_) { threw = true; }
 assert(!threw, '坏地图不外抛，不拖垮写信和过回合');
+
+console.log('五之二、三层共用一张速度表（同志 11-09 定：普通书信统一日行五十里）');
+sandbox.GM = ming();
+const speedTable = sandbox.LT_ROAD_LI_PER_DAY;
+assert(speedTable.normal === 50 && speedTable.urgent === 300 && speedTable.extreme === 800, '普通五十里、加急三百里、八百里加急八百里');
+const normalBefore = speedTable.normal;
+speedTable.normal = 100;
+const viaMap = days('顺天府', '保定府'), viaGazetteer = days('顺天府', '漠北汗帐'), viaRough = days('顺天府', '某部汗帐');
+speedTable.normal = normalBefore;
+assert(viaMap === Math.ceil(edge / 0.576 / 100) && viaGazetteer === gazDays('顺天府', '漠北汗帐', 100) && viaRough === 10,
+  '地图、地名表、粗估三层读的是同一张表：表一改，三层一起变');
 
 console.log('六、没写地名契约的地图（晚唐这样）');
 const tangMap = () => ({

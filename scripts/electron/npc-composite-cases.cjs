@@ -145,7 +145,6 @@ module.exports = async function ({ win, root, check, results, deadlineAt }) {
     const venue=GM.mapData.regions.find(r=>r.id==='ssr-0007');venue.public=true;
     P.time.daysPerTurn=30;if(GM.time)GM.time.daysPerTurn=30;
     window.__compositeCalls={transport:[],fixtureErrors:[],provinceEconomy:[],systems:[],reviewCancels:[]};
-    const realReviewCancel=TM.RecoveryReview.cancel;TM.RecoveryReview.cancel=function(id){__compositeCalls.reviewCancels.push({id:typeof id==='string'?id:'context',day:TM.SimTime.now(GM)});return realReviewCancel.apply(this,arguments);};
     P.ai={key:'composite-fixture',url:'https://composite-fixture.invalid/v1',model:'fixture'};
     localStorage.setItem('tm_api',JSON.stringify(P.ai)); // Declared fake machine configuration in this disposable profile.
     const original=TM.Endturn.AI.subcalls.setupInfra;

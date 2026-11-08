@@ -284,11 +284,6 @@
             if (typeof GM !== 'undefined') {
               GM._turnTyrantActivities = input.tyrantActivities || [];
             }
-            if (TM.RecoveryEdict) {
-              var recoveryReceipts = await TM.RecoveryEdict.flush({signal:ctx.signal||ctx.meta&&ctx.meta.signal});
-              ctx.input.emergencyReceipts = recoveryReceipts;
-              if (typeof _recordEdictRecoveryResults === 'function') _recordEdictRecoveryResults(recoveryReceipts);
-            }
             ctx.input._completedPrepPhases.push('0-1');
           } catch(e) {
             try { console.warn('[pipeline.prep] 0-1 init+collect failed', e); } catch(_){}
@@ -396,8 +391,6 @@
             ctx.meta.aiModeContract = _agentContract;
             if (!_agentContract.ok) throw new _mc.ModeExecutionError('agent', 'agent-result-invalid', _agentContract.problems.join('；'), _agentContract);
           }
-          if (TM.RecoveryReview) _agentResult = TM.RecoveryReview.reviewAgentResult(ctx,_agentResult);
-          else ctx.meta.emergencyReview={status:'pending',nonBlocking:true,reason:'复核模块尚未加载'};
           if (TM.MemoryModeBridge) TM.MemoryModeBridge.archive(typeof GM !== "undefined" ? GM : ctx.GM, _agentResult, ctx);
           ctx.results.aiResult = _agentResult;
           ctx.input._aiInferRan = true;

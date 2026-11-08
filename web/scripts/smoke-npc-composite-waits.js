@@ -201,7 +201,7 @@ function backgroundFixture() {
   const clock = { now: () => now, setTimeout: (fn, ms) => { const id = ++serial; timers.set(id, { fn, at: now + ms }); return id; }, clearTimeout: id => timers.delete(id) };
   const root = { GM: { turn: 5, day: 60, running: true, _campaignId: 'campaign', _timelineId: 'timeline', _backgroundSaveFailures: [],
       shijiHistory: [{ turn: 4, agentReview: { status: 'verified', verified: true, calls: 2 } }] }, P: {}, _tmLoadGen: 2, _tmAutoSaveSessionToken: 'session',
-    TM: { SimTime: { now: g => g.day }, RecoveryReview: { status: () => root.review } }, review: [], transactionActive: false,
+    TM: { SimTime: { now: g => g.day } }, transactionActive: false,
     isWorldTransactionActive: () => root.transactionActive, __compositeCalls: { fixtureErrors: [] }, console: { info: line => logs.push(line) },
     _backgroundSavePending: null, _backgroundSaveInFlight: null, _backgroundSaveTimer: null, _autoSaveInFlight: false, _autoSaveInFlightPromise: null,
     _autoSaveFlushTimer: null, _autoSaveDeferred: false, _autoSaveNativePending: null, _autoSaveTransportEvents: [], _autoSaveCommittedRevision: 9, _autoSaveLastSavedRevision: 9,
@@ -210,7 +210,6 @@ function backgroundFixture() {
     requestAnimationFrame: fn => { const id = ++serial; frames.set(id, fn); return id; }, cancelAnimationFrame: id => frames.delete(id) };
   for (const key of ['requestBackgroundAutosave', '_tmDrainBackgroundAutosaves', '_tmAwaitBackgroundAutosaves', '_tmRunDesktopAutoSaveTick',
     '_awaitPostTurnJobsForSave', '_tmGetDesktopAutoSaveSessionToken']) root[key] = () => { forbidden.push(key); throw Error('observer invoked ' + key); };
-  root.TM.RecoveryReview.cancel = root.requestBackgroundAutosave;
   // The actual standalone function is injected into Electron through this same serialization.
   const observe = vm.runInNewContext('(' + waitForCompositeBackground.toString() + ')');
   function start(deadline = 2000) { return observe(root, deadline, 500, clock); }
@@ -218,13 +217,12 @@ function backgroundFixture() {
   function advance(ms) { now += ms; for (const [id, task] of [...timers]) if (task.at <= now) { timers.delete(id); task.fn(); } }
   return { root, start, frame, advance, timers, frames, logs, forbidden };
 }
-test('final background waits for review, canonical save and actual desktop acknowledgement, then two equal reads', async () => {
+test('final background waits for canonical save and actual desktop acknowledgement, then two equal reads', async () => {
   const f = backgroundFixture(), canonical = deferred(), desktop = deferred();
-  f.root.review = [{ id: 'review-final', phase: 'investigating', calls: 2 }];
   f.root._backgroundSaveInFlight = canonical.promise;
   const waiting = f.start(); let finished = false; waiting.then(() => { finished = true; });
   await f.frame(); assert.equal(finished, false); assert.equal(f.root._backgroundSaveInFlight, canonical.promise);
-  f.root.review = []; f.root._backgroundSaveInFlight = null; f.root._autoSaveCommittedRevision++;
+  f.root._backgroundSaveInFlight = null; f.root._autoSaveCommittedRevision++;
   f.root._autoSaveInFlight = true; f.root._autoSaveInFlightPromise = desktop.promise; f.root._autoSaveNativePending = { timedOut: false };
   canonical.resolve({ ok: true }); await f.frame(); assert.equal(finished, false);
   f.root._autoSaveInFlight = false; f.root._autoSaveInFlightPromise = null; f.root._autoSaveNativePending = null;
@@ -378,7 +376,7 @@ test('missing modules and undefined observation fields fail closed instead of lo
     for (const missing of [true, false]) { const f = backgroundFixture(); if (missing) delete f.root[key]; else f.root[key] = undefined;
       await assert.rejects(f.start(), /missing observation field/); }
   }
-  const f = backgroundFixture(); delete f.root.TM.RecoveryReview; await assert.rejects(f.start(), /observation modules unavailable/);
+  const f = backgroundFixture(); delete f.root.isWorldTransactionActive; await assert.rejects(f.start(), /observation modules unavailable/);
 });
 test('required jobs settle naturally; failed receipts and other background work remain explicit without retries', async () => {
   const f = backgroundFixture(), pending = deferred();

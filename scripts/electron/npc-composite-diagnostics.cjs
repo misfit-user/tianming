@@ -82,7 +82,7 @@ function installCompositeAllocationStages(root) {
       at: Date.now(), turn: Number(g.turn), day: root.TM.SimTime.now(g), load: Number(root._tmLoadGen || 0),
       heap: memory ? { limit: memory.jsHeapSizeLimit, used: memory.usedJSHeapSize, total: memory.totalJSHeapSize } : null,
       canonicalRevision: Number(root._autoSaveCommittedRevision), desktopInFlight: !!root._autoSaveInFlight,
-      backgroundInFlight: !!root._backgroundSaveInFlight, reviewCount: root.TM.RecoveryReview.status().length }));
+      backgroundInFlight: !!root._backgroundSaveInFlight }));
   }
   function observe(owner, key, label) {
     const real = owner && owner[key]; if (typeof real !== 'function') throw Error('allocation boundary missing: ' + label);

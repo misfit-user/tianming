@@ -1117,7 +1117,7 @@ function _restoreSavedFields(options) {
 var PREF_CONF_KEYS = [
   'verbosity', 'aiCallDepth',
   'maxOutputTokens', 'turnTokenBudget', 'modelTier', 'contextSizeK',
-  'aiCallRetryOverrides', 'aiSecondaryRetryCount', 'emergencyRecovery',
+  'aiCallRetryOverrides', 'aiSecondaryRetryCount',
   'memoryAnchorKeep', 'memoryArchiveKeep', 'characterArcKeep',
   'playerDecisionKeep', 'chronicleKeep', 'convKeep',
   'shiluMin', 'shiluMax', 'szjMin', 'szjMax', 'hourenMin', 'hourenMax',

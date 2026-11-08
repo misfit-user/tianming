@@ -2148,10 +2148,10 @@ function _tmRehydrateCallPreferences() {
     if (!text) return;
     var lite = JSON.parse(text), conf = lite && lite.conf;
     if (!conf || typeof conf !== 'object' || Array.isArray(conf)) return;
-    ['aiCallRetryOverrides', 'emergencyRecovery'].forEach(function(key) {
+    ['aiCallRetryOverrides'].forEach(function(key) {
       if (!Object.prototype.hasOwnProperty.call(conf, key) || !conf[key] || typeof conf[key] !== 'object' || Array.isArray(conf[key])) return;
       if (!P.conf) P.conf = {}; // arch-ok: project-restoration owner reapplies the latest explicit device call preferences.
-      P.conf[key] = conf[key]; // arch-ok: only the two named call-preference maps, never game state or other project settings.
+      P.conf[key] = conf[key]; // arch-ok: only the named call-preference map, never game state or other project settings.
     });
     var secondaryRetries = conf.aiSecondaryRetryCount;
     if (Object.prototype.hasOwnProperty.call(conf, 'aiSecondaryRetryCount') && Number.isInteger(secondaryRetries) && secondaryRetries >= 0 && secondaryRetries <= 20) {

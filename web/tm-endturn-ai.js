@@ -4831,11 +4831,6 @@
       // 并行等待 SC1b + SC1c + SC1d 完成（互不争用写入字段）
       try { await Promise.all([_sc1bP, _sc1cP]); } catch(_sc1bcErr) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_sc1bcErr, 'sc1b+1c+1d parallel') : console.warn('[sc1b+1c+1d parallel]', _sc1bcErr); }
 
-      if ((!p1 || !_hasSc1StructuredResult(p1)) && global.TM && TM.RecoveryRuntime) {
-        var emergencySC1 = await TM.RecoveryRuntime.finalSC1({raw:c1,data:data1,body:_sc1Body,deadlineAt:ctx.meta.sc1RecoveryDeadline,validate:_hasSc1StructuredResult,signal:ctx.signal||ctx.meta&&ctx.meta.signal});
-        if (emergencySC1.ok) {p1=emergencySC1.value.parsed;c1=emergencySC1.value.raw;ctx.meta.emergencyReceipt=emergencySC1.receipt;GM._turnAiResults.subcall1=p1;GM._turnAiResults.subcall1_raw=c1;} // arch-ok: existing SC1 response owner publishes verified data, not world effects.
-        else if (emergencySC1.error && /^(AI_ABORTED|AI_STALE_WORLD|AI_REQUEST_DEADLINE|RECOVERY_DECLINED)$/.test(emergencySC1.error.code)) throw emergencySC1.error;
-      }
       // 主推演没有完整结构时，不以其他子调用片段伪造完整回合。
       if (!p1 || !_hasSc1StructuredResult(p1)) { var incomplete = new Error('主推演未形成完整结构化结果；保留响应并中止本回合'); incomplete.code = 'sc1-result-unavailable'; throw incomplete; }
        if (TM.EdictOutcomes) {

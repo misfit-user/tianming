@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "f05951d9f0bb76d511a45a5bc25a021dc4983980452ee224da17fbe9a34086f5",
-      "size": 79740
+      "sha256": "1139f6fbc1510115e9131fe92c588c2170b43d2702a1766ef36dca1f256c0b5d",
+      "size": 79368
     },
     {
       "path": "INDEX.md",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "00862d03ffd92c75cd84480c905bddfae19adccd16444d545701b3e08515f050",
-      "size": 395149
+      "sha256": "63ec47703ae7b81edd60bff3cee0e1ddb6066a08d06c9eafa74a4d1e0afb0bbb",
+      "size": 391149
     },
     {
       "path": "styles.css",
@@ -4493,6 +4493,11 @@
       "path": "tm-ai-planning.js",
       "sha256": "ed389c938e963de87b75f1c0b7ced2d3d9d1188807aea56e0bf3ab5a22e6b187",
       "size": 127178
+    },
+    {
+      "path": "tm-ai-reply-retry.js",
+      "sha256": "d6d8d77e9ca36235f83de63925621819ecc0d98f5254e67cfcfd97d312a617b9",
+      "size": 17957
     },
     {
       "path": "tm-ai-request-options.js",
@@ -4626,8 +4631,8 @@
     },
     {
       "path": "tm-call-budget-settings.js",
-      "sha256": "7fce0836cc9fedcd34fcc77d539744af2c12a3f218e72d00c20a47e3b98f0ea3",
-      "size": 8778
+      "sha256": "2f60fb7b70ea87a7768d22b426c72d481c2fb18dd3abf5701b090281ece0d9a0",
+      "size": 8617
     },
     {
       "path": "tm-call-retry-policy.js",
@@ -5020,41 +5025,6 @@
       "size": 40765
     },
     {
-      "path": "tm-emergency-recovery-adapters.js",
-      "sha256": "2ddf8c97c4995702cfad4c3ac5258259d6ba26ac42a5a7d30fe73f709b96902e",
-      "size": 18387
-    },
-    {
-      "path": "tm-emergency-recovery-core.js",
-      "sha256": "9234fd326c5f52a92079b3d5cbccf258fcc4b8814967cf6f8496014ba232d607",
-      "size": 12079
-    },
-    {
-      "path": "tm-emergency-recovery-edict.js",
-      "sha256": "ef3efa5750d683dad0f561366b9a01134f23ca5f505a34205e90853629a4b376",
-      "size": 9440
-    },
-    {
-      "path": "tm-emergency-recovery-review.js",
-      "sha256": "83c998c9565d481fd7e9fd8822ff417fcf8c47f0c983c6ff3e1ca9012de5259f",
-      "size": 51449
-    },
-    {
-      "path": "tm-emergency-recovery-runtime.js",
-      "sha256": "90c3b878631e580b5a58964199728592ab49db74e48018e1fcc065c722baf307",
-      "size": 8288
-    },
-    {
-      "path": "tm-emergency-recovery-settings.js",
-      "sha256": "3dc68e49ef2ffdce086dc697fdcda17f7a63ac415408404b75cc79ac31ac5cb6",
-      "size": 8652
-    },
-    {
-      "path": "tm-emergency-recovery-tools.js",
-      "sha256": "ccef8d341aa78d480f8d23ead0a54e1c4bcb4bdce6912c264df8812c4c4e5ff8",
-      "size": 10171
-    },
-    {
       "path": "tm-endturn-agent-depth-tools.js",
       "sha256": "58de70cd1815684344944a152e2168e7046c30d6f160462dddef16318c80535d",
       "size": 76379
@@ -5091,8 +5061,8 @@
     },
     {
       "path": "tm-endturn-ai-infer.js",
-      "sha256": "0203a15d6efa1778815116ba5816223d59605260f6c1acfd893b616a7b85d8ca",
-      "size": 18232
+      "sha256": "90b8f2dc9bf93164e7051248da74c09cea58a00fb3788b577c25e8db3d45cb7a",
+      "size": 17651
     },
     {
       "path": "tm-endturn-ai-sc1-budget.js",
@@ -5101,13 +5071,13 @@
     },
     {
       "path": "tm-endturn-ai.js",
-      "sha256": "b288d3e9198aa4fb03feacb9179b1322ccaac718d12761329d8ed60850a4d9ff",
-      "size": 411036
+      "sha256": "62b767e42c03be961b58fabe71136a2a5ed25d0d6967c3df482a102baa2fb835",
+      "size": 410279
     },
     {
       "path": "tm-endturn-apply-stages.js",
-      "sha256": "53960461918732ccd72fbef0b70ed14a3859e7d71ce489d95f108d828553102e",
-      "size": 99878
+      "sha256": "de0c134052d660237cc56f1e857b51a48feddec5142f0750350d52121001856c",
+      "size": 97064
     },
     {
       "path": "tm-endturn-apply.js",
@@ -5116,13 +5086,13 @@
     },
     {
       "path": "tm-endturn-core.js",
-      "sha256": "1500dba1c171d02a3e18b4edf08a799812a809b630505357d2e6a7dd8e5cd2f6",
-      "size": 112588
+      "sha256": "d1296e5c645f83f9f36c0a49fafcf8468eec2684de169eb6ee5f08e4e9acb4e0",
+      "size": 111959
     },
     {
       "path": "tm-endturn-edict.js",
-      "sha256": "a079ac5056d5f2d396c378459bbf68e3c9de5d55abb212971cfd0d4f05387f34",
-      "size": 112341
+      "sha256": "5c4a9e94f8382ebf61863c760db10e80f448728b5e86e5d6289bf6aac00fc97e",
+      "size": 111435
     },
     {
       "path": "tm-endturn-followup-helpers.js",
@@ -5156,8 +5126,8 @@
     },
     {
       "path": "tm-endturn-pipeline-steps.js",
-      "sha256": "a55b8952c7cb15c969768bb698aade54eb94e024f1b405c934e7fc9224867f88",
-      "size": 60273
+      "sha256": "27218db2b5bd5b32d2fecc687035eef35ef00c0e7898fba0541bc938b2bcaaae",
+      "size": 59716
     },
     {
       "path": "tm-endturn-pipeline-types.js",
@@ -5241,8 +5211,8 @@
     },
     {
       "path": "tm-endturn-validity.js",
-      "sha256": "3dfdd51cdb6e9dfaa793ece10cd58def94ea0d68165fb309bcea04f36c0fe8f7",
-      "size": 12123
+      "sha256": "3586f76a537cd64d5757b415c2c9dc7cc68a67eaff1e0231c7739d7bdd6dc153",
+      "size": 11859
     },
     {
       "path": "tm-engine-constants.js",
@@ -6326,8 +6296,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "9a91f09ac903f348c4661a1e89573fd4bd29d7e74d48628bc185ff099f81be99",
-      "size": 189949
+      "sha256": "0aac480807a1817a36427960b2be41c2d1043064a73cf4fde0ce0819247a08c1",
+      "size": 189724
     },
     {
       "path": "tm-pause-fab.js",
@@ -6506,8 +6476,8 @@
     },
     {
       "path": "tm-save-lifecycle.js",
-      "sha256": "cec842aa6149cd89a4d3e263a98bb17687b22c1cb03633f8aa1cd5b9ed093d58",
-      "size": 157564
+      "sha256": "f5ab2fd0245e1e7efba1cf72461bc6b30f75d47fc7c8b46c70a32e68fdf2ae74",
+      "size": 157543
     },
     {
       "path": "tm-save-manager.js",
@@ -6611,8 +6581,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "868ff67a346b11392609aa2791e4b997ff360935555086899ada4c7fa9355629",
-      "size": 142162
+      "sha256": "94b7a08a44aa9caa7d95c964ba607738f875a525c8e70b775c1dcaed84f7fd0f",
+      "size": 141013
     },
     {
       "path": "tm-start-selector.js",
@@ -6766,8 +6736,8 @@
     },
     {
       "path": "tm-utils.js",
-      "sha256": "27976e6c828e32bc9a5d90863dc3cc2acc3bfdf36f0656ff9c35896092f6f558",
-      "size": 118965
+      "sha256": "b11ec6be8377ca3c90034443e9e5d8a7735664917816438f090b7cdd88f5b2de",
+      "size": 118939
     },
     {
       "path": "tm-var-drawers.js",

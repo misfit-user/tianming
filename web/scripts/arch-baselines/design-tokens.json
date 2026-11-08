@@ -220,10 +220,6 @@
       "colors": 20,
       "fontSizes": 7
     },
-    "tm-emergency-recovery-settings.js": {
-      "colors": 7,
-      "fontSizes": 0
-    },
     "tm-endturn-core.js": {
       "colors": 2,
       "fontSizes": 5

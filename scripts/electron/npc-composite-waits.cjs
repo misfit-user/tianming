@@ -197,13 +197,13 @@ function reconcileCompositeEconomy(tickets, calls) {
   });
   return { turns: turns.length, systems: calls.systems.length, provinceEconomy: calls.provinceEconomy.length, intervals };
 }
-// Observe the final review/save tail without starting, retrying or cancelling work.
+// Observe the final save tail without starting, retrying or cancelling work.
 async function waitForCompositeBackground(root, deadlineAt, observedSince, clock) {
   clock = clock || { now: () => Date.now(), setTimeout: (fn, ms) => root.setTimeout(fn, ms), clearTimeout: id => root.clearTimeout(id) };
   function demand(value, message) { if (!value) throw Error('composite final background: ' + message); }
   demand(Number.isFinite(deadlineAt) && Number.isFinite(observedSince), 'shared deadline and final turn start are required');
   demand(clock.now() < deadlineAt, 'suite deadline exceeded');
-  demand(root.TM && root.TM.RecoveryReview && typeof root.TM.RecoveryReview.status === 'function'
+  demand(root.TM
     && typeof root.isWorldTransactionActive === 'function' && typeof root.requestAnimationFrame === 'function'
     && typeof root.cancelAnimationFrame === 'function', 'observation modules unavailable');
   const fields = ['_backgroundSavePending', '_backgroundSaveInFlight', '_backgroundSaveTimer', '_autoSaveInFlight', '_autoSaveInFlightPromise',
@@ -215,7 +215,6 @@ async function waitForCompositeBackground(root, deadlineAt, observedSince, clock
   function read() {
     const g = root.GM, identity = root._lastCommittedSnapshotIdentity;
     demand(g && root.P && typeof root._autoSaveInFlight === 'boolean' && typeof root._autoSaveDeferred === 'boolean', 'world or save flags unavailable');
-    const review = root.TM.RecoveryReview.status(); demand(Array.isArray(review), 'review status unavailable');
     const jobs = [].concat(g._postTurnJobs && g._postTurnJobs.pending || [], g._postTurnDetachedJobs || []).map(job => ({
       id: String(job.id || ''), status: String(job.status || ''), attempts: Number(job.attempts || 0),
       turn: Number(job.lease && job.lease.turn || job.sourceTurn || 0), load: Number(job.lease && job.lease.loadGen || 0),
@@ -232,7 +231,7 @@ async function waitForCompositeBackground(root, deadlineAt, observedSince, clock
     return {
       world: { turn: Number(g.turn), day: Number(root.TM.SimTime.now(g)), load: Number(root._tmLoadGen), campaignId: String(g._campaignId || ''),
         timelineId: String(g._timelineId || ''), sessionToken: String(root._tmAutoSaveSessionToken || ''), running: g.running === true },
-      transactionActive: root.isWorldTransactionActive(), review: review.map(row => ({ id: String(row.id), phase: String(row.phase), calls: Number(row.calls || 0) })),
+      transactionActive: root.isWorldTransactionActive(),
       background: { pending: !!root._backgroundSavePending, inFlight: !!root._backgroundSaveInFlight, timer: root._backgroundSaveTimer !== null },
       desktop: { inFlight: root._autoSaveInFlight, promise: !!root._autoSaveInFlightPromise, timer: root._autoSaveFlushTimer !== null,
         deferred: root._autoSaveDeferred, nativePending: root._autoSaveNativePending !== null,
@@ -248,7 +247,7 @@ async function waitForCompositeBackground(root, deadlineAt, observedSince, clock
   }
   function ready(s) {
     const w = s.world, c = s.canonical, i = c.identity;
-    return w.running && !s.transactionActive && !s.review.length && !Object.values(s.background).some(Boolean)
+    return w.running && !s.transactionActive && !Object.values(s.background).some(Boolean)
       && !Object.values(s.desktop).some(Boolean) && s.requiredJobs.every(job => job.settled)
       && c.present && Number.isInteger(c.revision) && c.revision > 0 && c.turn === w.turn && c.transactionId
       && i && i.campaignId === w.campaignId && i.timelineId === w.timelineId && i.sessionToken === w.sessionToken

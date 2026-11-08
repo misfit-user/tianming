@@ -150,19 +150,14 @@ function assertCaptureReleased(f){
   assert.equal(f.txn.captureSession.released,true);assert.equal(f.ctx.meta.canonicalWorldPayload,null);
   assert.equal(f.ctx.meta.acceptReconciledCommit,null);assert.equal(f.ctx.meta.committedCaptureReleased,true);
 }
-test('confirmed finalizer retires large captures while a background review can still read its exact results',async()=>{
-  const f=capturedFinalizerFixture();let reviews=0;
-  f.c.TM.RecoveryReview={afterCommit:ctx=>{
-    reviews++;assert.equal(ctx,f.ctx);assert.equal(ctx.meta.transaction,f.txn);assert.equal(f.txn.committed,true);
-    assert.equal(ctx.input.edicts[0].id,'kept-input');assert.equal(ctx.results.sc1.summary,'kept-result');assert.equal(ctx.record.zhengwen,'kept-record');
-    assertCaptureReleased(f);
-  }};
-  assert.equal(await f.finish(),true);assert.equal(reviews,1);assertCaptureReleased(f);
+test('confirmed finalizer retires large captures after the turn commits',async()=>{
+  const f=capturedFinalizerFixture();
+  assert.equal(await f.finish(),true);assertCaptureReleased(f);
   assert.equal(f.adopted.GM.turn,5);assert.equal(f.disk.get('autosave').GM.turn,5);
   assert.equal(f.txn.gmRef,f.c.GM);assert.equal(f.txn.pRef,f.c.P);assert.equal(f.txn.canonicalSaveReceipt.state,'committed');
   const writes=f.events.filter(x=>x==='commit').length;
   await assert.rejects(f.finish(),/回合提交时世界身份已变化/);
-  assert.equal(f.events.filter(x=>x==='commit').length,writes);assert.equal(reviews,1);
+  assert.equal(f.events.filter(x=>x==='commit').length,writes);
 });
 test('captures remain live until a committed sidecar publication actually finishes',async()=>{
   const f=capturedFinalizerFixture();let publish;

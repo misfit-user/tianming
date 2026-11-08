@@ -77,7 +77,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
         suggestions: []       // R209a?added per Codex addendum
       },
       signal: externalCtx && (externalCtx.signal || externalCtx.meta && externalCtx.meta.signal),
-      meta: { errors: [], warnings: [], timing: {}, retries: {}, requireMainWriteback:true, requireTurnReview:true, transaction: externalCtx && externalCtx.meta && externalCtx.meta.transaction }
+      meta: { errors: [], warnings: [], timing: {}, retries: {}, requireMainWriteback:true, transaction: externalCtx && externalCtx.meta && externalCtx.meta.transaction }
     };
     await TM.Endturn.AI.prompt.build(ctx);
     // re-bind locals·§2-§5 仍以原 var name 引用 (最小 diff)
@@ -142,10 +142,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
           if (TM.EdictOutcomes) TM.EdictOutcomes.receive(GM,ctx.results.sc1||{edict_feedback:[]},ctx.input.edicts||{},GM.turn,partialEdictEffects);
           var mainCompletion=TM.Endturn.Validity;
           if(!mainCompletion||!mainCompletion.recoverMain(ctx,writeError,'主推演变更待补正'))throw writeError;
-          if(TM.RecoveryReview)TM.RecoveryReview.prepareFailedOutput(ctx,writeError);
         }
-        // Start from the complete main writeback, before independent follow-up inference.
-        if (TM.RecoveryReview) TM.RecoveryReview.launchRoutine(ctx);
         if (TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
         p1 = ctx.results.sc1 || p1;
         p2 = ctx.results.sc2 || p2;
@@ -166,8 +163,6 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
       // P7-zeta bridge: section 5 follow-up moved to tm-endturn-followup.js.
       if (TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
       await TM.Endturn.AI.followup.run(ctx);
-      // Review continues after the canonical turn commit; it never gates a successful inference.
-      if (TM.RecoveryReview) TM.RecoveryReview.handoff(ctx);
       if (ctx.followup && ctx.followup.startBackground) ctx.followup.startBackground();
       if (TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
       p1 = ctx.results.sc1 || p1;
@@ -186,7 +181,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
     }
     catch(err){
       var completion=TM.Endturn&&TM.Endturn.Validity;
-      if(!completion||!completion.recoverMain(ctx,err,'ai-followup-or-writeback')){if(TM.RecoveryReview)TM.RecoveryReview.cancel(ctx);throw err;}
+      if(!completion||!completion.recoverMain(ctx,err,'ai-followup-or-writeback'))throw err;
       p1=ctx.results.sc1||p1;shizhengji=ctx.record.shizhengji;zhengwen=ctx.record.zhengwen;
       playerStatus=typeof ctx.record.playerStatus==='string'?ctx.record.playerStatus:'';
       playerInner=typeof ctx.record.playerInner==='string'?ctx.record.playerInner:'';
@@ -196,7 +191,6 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
       szjSummary=typeof ctx.record.szjSummary==='string'?ctx.record.szjSummary:'';
       personnelChanges=Array.isArray(ctx.record.personnelChanges)?ctx.record.personnelChanges:[];
       hourenXishuo=typeof ctx.record.hourenXishuo==='string'?ctx.record.hourenXishuo:'';
-      if(TM.RecoveryReview){TM.RecoveryReview.launchRoutine(ctx);TM.RecoveryReview.handoff(ctx);}
     }
   }else{
     Object.keys(GM.vars).forEach(function(n){GM.vars[n].value=clamp(GM.vars[n].value+Math.floor(random()*7)-3,GM.vars[n].min,GM.vars[n].max);});

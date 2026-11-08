@@ -7,14 +7,14 @@ function fixture(){
  GM:{turn:4,shijiHistory:[],_campaignId:'a',_timelineId:'b'},P:{ai:{key:'fixture'},conf:{}},TM:{},_tmLoadGen:0};
  c.window=c;c.globalThis=c;vm.createContext(c);
  for(const file of ['tm-endturn-validity.js','tm-endturn-pipeline-executor.js'])vm.runInContext(fs.readFileSync(path.join(ROOT,file),'utf8'),c,{filename:file});
- const ctx={input:{edicts:{text:'诏令全文'},_aiInferRan:true},results:{sc1:{shizhengji:story},aiResult:{shizhengji:story,zhengwen:''}},record:{shizhengji:story},meta:{turn:4,requireTurnReview:true,requireMainWriteback:true,mainWriteback:{ok:false}},deferredSteps:[]};
+ const ctx={input:{edicts:{text:'诏令全文'},_aiInferRan:true},results:{sc1:{shizhengji:story},aiResult:{shizhengji:story,zhengwen:''}},record:{shizhengji:story},meta:{turn:4,requireMainWriteback:true,mainWriteback:{ok:false}},deferredSteps:[]};
  return {c,ctx,V:c.TM.Endturn.Validity};
 }
 let checks=0;function check(value,label){assert.ok(value,label);checks++;}
 (async()=>{
  {
   const {c,ctx,V}=fixture();c.GM._turnAiResults={_applyFailures:[{reason:'invalid optional reference'}]};
-  check(V.validateBeforeCommit(ctx).ok,'real main text survives missing review, missing supplementary prose and failed optional changes');
+  check(V.validateBeforeCommit(ctx).ok,'real main text survives missing supplementary prose and failed optional changes');
   check(V.validateBeforeCommit(ctx).warnings.length>=3,'uncompleted work remains visible');
   for(const output of [null,{}, {_g2Fallback:true,shizhengji:story},{_emergencyFallback:true,shizhengji:story}]){ctx.results.sc1=output;check(!V.mainResult(ctx),'no fabricated/partial main result');}
   ctx.results.sc1={shizhengji:''};ctx.results.aiResult.shizhengji='';ctx.record.shizhengji='';check(!V.validateBeforeCommit(ctx).ok,'no real main generation still refuses an empty turn');
@@ -65,7 +65,6 @@ let checks=0;function check(value,label){assert.ok(value,label);checks++;}
   const {c,ctx,V}=fixture();ctx.results.aiResult={shizhengji:story};ctx.record={};const e=Object.assign(Error('optional writeback failed'),{mainWriteback:true});
   check(V.recoverMain(ctx,e,'writeback'),'completed main can be recovered after auxiliary writeback error');
   check(ctx.record.shizhengji===story&&ctx.record.zhengwen===story,'fallback uses actual generated words');
-  check(ctx.meta.deferredMainOutput===ctx.results.sc1,'unapplied structured data remains available for repair');
  }
  console.log('[smoke-endturn-nonblocking-completion] PASS '+checks+' assertions');
 })().catch(error=>{console.error(error);process.exitCode=1;});

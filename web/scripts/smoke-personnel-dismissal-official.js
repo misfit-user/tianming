@@ -15,7 +15,7 @@ let count=0;function ok(value,message){assert(value,message);count++;}
  const input=c._endTurn_collectInput();ok(input.edicts.decree===text,'actual collector supplies the full decree');
  const pc={name:'崔呈秀',former:'兵部尚书·总督京营戎政',change:'革职抄家·拘押候勘',reason:'奉玩家诏令查办',edictId:'dismiss-official'};
  const p1={turn_summary:'崔呈秀革职抄家，拘押候勘。',shizhengji:'【人事】有司奉旨将崔呈秀革职抄家，拘押候勘。',shilu_text:'革崔呈秀职，拘押候勘。',personnel_changes:[pc],edict_feedback:[{edictId:'dismiss-official',status:'completed',assignee:'有司',feedback:'崔呈秀已革职，拘押候勘。',effectRefs:['personnel_changes[0]']}]};
- const ctx={input,prompt:{sc:c.__source},results:{sc1:p1},record:{},apply:{},meta:{warnings:[],requireMainWriteback:true,requireTurnReview:false}};
+ const ctx={input,prompt:{sc:c.__source},results:{sc1:p1},record:{},apply:{},meta:{warnings:[],requireMainWriteback:true}};
  await c.TM.Endturn.AI.apply.writeBack(ctx);
  function check(label){const who=c.GM.chars.find(x=>x.id===ch.id);ok(!who.officialTitle&&!who.title&&!who.position,label+' character has no old office');ok(who._imprisoned===true,label+' custody applies');const seats=[];c._offWalkOfficeTree(c.GM.officeTree,n=>{for(const p of n.positions||[])seats.push(p);});ok(!seats.some(p=>p.holderId===ch.id||p.holder==='崔呈秀'||(p.actualHolders||[]).some(h=>h.characterId===ch.id||h.name==='崔呈秀')),label+' no seat retains the dismissed person');ok(!c._offFormatCharTitles(who),label+' portrait title source is empty');}
  check('after writeback');c._offSyncHoldersFromChars({force:true,importSeats:true});check('after tree refresh');

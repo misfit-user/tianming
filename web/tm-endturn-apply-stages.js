@@ -48,18 +48,6 @@
     } catch (e) { try { console.warn('[落地核对] surface failed', e); } catch (_) {} }
   }
 
-  // 逐条落账后交给每回合复核的材料：没落地的条目不算「主写回失败」——已落地的条目不能整批重放，
-  // 改作待复核事项交给复核者，由它据证据用 apply_changes 补落改正后的条目。
-  function _reviewMaterial(applyRes) {
-    var failed = applyRes && applyRes.applied && Array.isArray(applyRes.applied.failed) ? applyRes.applied.failed : [];
-    if (!failed.length) return applyRes;
-    var applied = Object.assign({}, applyRes.applied, { failed: [] });
-    applied.reviewRequired = (Array.isArray(applyRes.applied.reviewRequired) ? applyRes.applied.reviewRequired : []).concat(failed.map(function (f) {
-      return { kind: 'unlanded-writeback', detail: f };
-    }));
-    return Object.assign({}, applyRes, { applied: applied });
-  }
-
   // _unappliedChanges 的单一写主；其他模块运行时动态调用本入口，避免各自闯入内部子树。
   ns.recordUnappliedChange = function(entry, source) {
     _surfaceUnappliedChanges({ applied:{ failed:[entry || { reason:'unknown writeback failure' }] } }, source || 'endturn-writeback');
@@ -349,16 +337,6 @@
       current = repair.output;
       validation = global.validateAIWriteBackBatch(current, { source:'endturn-writeback-repair-' + attempts });
     }
-    if (!validation.ok && attempts >= normalLimit && global.TM && TM.RecoveryAdapters) {
-      assertCurrent();
-      var permissions = _buildWritebackRepairAllowlist(validation.failures);
-      var recovered = await TM.RecoveryAdapters.identity({id:opts.id||'sc1',batch:current,validation:validation,normalExhausted:true,normalAttempts:attempts+1,
-        error:{code:'ai-writeback-preflight-failed'},tier:global.P&&P.ai&&P.ai.secondary&&P.ai.secondary.key?'secondary':'primary',signal:opts.signal,guard:assertCurrent,deadlineAt:opts.deadlineAt,
-        repair:function(plan){return _applyTargetedWritebackRepairs(current,plan,permissions);},
-        validate:function(candidate){return global.validateAIWriteBackBatch(candidate,{source:'emergency-preflight'});}});
-      if(recovered.error && /^(AI_ABORTED|AI_STALE_WORLD|AI_REQUEST_DEADLINE|RECOVERY_DECLINED)$/.test(recovered.error.code))throw recovered.error;
-      assertCurrent();if (recovered.ok) { current=recovered.value; validation=global.validateAIWriteBackBatch(current,{source:'emergency-final-preflight'}); }
-    }
     // 逐条落账：修不好的坏条目单条剔掉（记账），其余照常进入写回；只有整批形状坏了才算预检失败。
     if (!validation.ok && opts.perItem === true) {
       var pruned = global.validateAIWriteBackBatch(current, { source:'endturn-writeback-prune', prune:true }).pruned;
@@ -483,7 +461,6 @@ inst._imprisonedTurn = GM.turn||0;
             var _mainWritebackBatch1 = {
               _strictValidation: true,
               _commitMode: 'per-item',
-              _deferNarrativeRepairs: !!(ctx.meta && ctx.meta.requireTurnReview),
               narrative: p1.shizhengji || '',
               changes: Array.isArray(p1.changes) ? p1.changes : [],
               appointments: Array.isArray(p1.appointments) ? p1.appointments : [],
@@ -527,10 +504,6 @@ inst._imprisonedTurn = GM.turn||0;
               _applyRes1.applied.failed = _strictPreflight.dropped.concat(Array.isArray(_applyRes1.applied.failed) ? _applyRes1.applied.failed : []);
               if (_applyRes1.ok === true) _applyRes1.partial = true;
             }
-            if (_applyRes1 && !_applyRes1.ok && ctx.meta && ctx.meta.requireTurnReview && TM.RecoveryReview) {
-              TM.RecoveryReview.prepareRepair(_applyRes1,_mainWritebackBatch1,p1,ctx);
-              ctx.meta.deferredMainOutput=p1;
-            }
             if (_deathNorm1.failed && _deathNorm1.failed.length) {
               _applyRes1.applied = _applyRes1.applied || {};
               _applyRes1.applied.failed = Array.isArray(_applyRes1.applied.failed) ? _applyRes1.applied.failed : [];
@@ -552,12 +525,6 @@ inst._imprisonedTurn = GM.turn||0;
                failedWriteback.code = 'ai-writeback-atomic-failed'; failedWriteback.mainWriteback = true;
                failedWriteback.writebackFailures = _failed1.slice(); throw failedWriteback;
             }
-          }
-          if (_applyRes1 && _applyRes1.ok && ctx.meta && ctx.meta.requireTurnReview) {
-            try {
-              if (global.TM && TM.RecoveryReview) TM.RecoveryReview.prepare(_reviewMaterial(_applyRes1),p1,ctx);
-              else ctx.meta.emergencyReview={status:'pending',nonBlocking:true,reason:'复核模块尚未加载'};
-            } catch(reviewError) {ctx.meta.emergencyReview={status:'pending',nonBlocking:true,reason:String(reviewError.message||reviewError)};console.warn('[TurnReview] 复核准备延后，主推演继续:',reviewError.message);}
           }
         } catch(_applyErr) {
           (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_applyErr, 'endturn] applyAITurnChanges:') : console.warn('[endturn] applyAITurnChanges:', _applyErr);

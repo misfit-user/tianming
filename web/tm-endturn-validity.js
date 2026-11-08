@@ -98,7 +98,6 @@
     var main=ns.mainResult(ctx),out=ns.preserveNarrative(ctx);
     ctx.record=ctx.record||{};ctx.record.shizhengji=main.narrative;
     if(_isFailureText(ctx.record.zhengwen))ctx.record.zhengwen=_isFailureText(out.zhengwen)?main.narrative:out.zhengwen;
-    if(error&&error.mainWriteback)ctx.meta.deferredMainOutput=main.sc1;
     ns.defer(ctx,label||'辅助推演',error);return true;
   };
   // A failed world-data writer may exit before record assembly. Its generated
@@ -164,7 +163,6 @@
     var errors = Array.isArray(meta.errors) ? meta.errors : [];
     if ((Array.isArray(appFailures) && appFailures.length) || errors.some(function(e) { return e && e.id === 'sc1_apply'; }) || meta.mainWriteback && meta.mainWriteback.ok !== true) warnings.push('部分主推演变更尚未落账，已保留待补正');
     if (meta.requireMainWriteback && !(meta.mainWriteback && meta.mainWriteback.ok === true)) warnings.push('主写回回执不完整，待补正');
-    if (meta.requireTurnReview && !(meta.emergencyReview && meta.emergencyReview.verified === true)) warnings.push('Agent 复核仍有待处理事项，不影响已完成的主推演提交');
     if (sc1 && (sc1._emergencyFallback || sc1._g2Fallback)) reasons.push('主推演仅有应急或片段合成结果，不是完整推演');
 
     if (!hasSc1) reasons.push('SC1 结构化数据为空');

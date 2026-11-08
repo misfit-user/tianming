@@ -77,7 +77,7 @@ function stageFixture() {
   const root = { GM: { turn: 3, day: 17 }, P: { secret: 'must-not-appear' }, _tmLoadGen: 2, _autoSaveCommittedRevision: 6,
     _autoSaveInFlight: false, _backgroundSaveInFlight: null, console: { info: text => logs.push(text) },
     performance: { memory: { jsHeapSizeLimit: 42, usedJSHeapSize: 21, totalJSHeapSize: 28 } },
-    TM: { SimTime: { now: g => g.day }, RecoveryReview: { status: () => [{ id: 'review' }] } }, TM_SaveDB: {} };
+    TM: { SimTime: { now: g => g.day } }, TM_SaveDB: {} };
   root._tmCommitBackgroundWorld = function(...args) { calls.push({ name: 'background', receiver: this, args }); return pending.promise; };
   root._buildSaveState = function(...args) { calls.push({ name: 'build', receiver: this, args }); return args[0]; };
   root.TM_SaveDB.createCanonicalPayload = function(...args) { calls.push({ name: 'payload', receiver: this, args }); return pending.promise; };

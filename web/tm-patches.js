@@ -1580,7 +1580,6 @@ function sSaveAll(){
   P.conf.qijuLookback=parseInt(_$("s-qlb")?_$("s-qlb").value:"5");P.conf.shijiLookback=parseInt(_$("s-slb")?_$("s-slb").value:"5");P.conf.summaryRule=_$("s-sumrule")?_$("s-sumrule").value:"";P.conf.autoSaveTurns=parseInt(_$("s-as-turns")?_$("s-as-turns").value:"5")||5;
   if (window.TM && TM.CallBudgetSettings) { var callRetryDraft = TM.CallBudgetSettings.readConfig(); if (callRetryDraft) P.conf.aiCallRetryOverrides = callRetryDraft; } // arch-ok: existing settings-save owner commits a fully validated draft.
   if (window.TM && TM.CallBudgetSettings) { var secondaryRetryDraft = TM.CallBudgetSettings.readSecondaryRetries(); if (secondaryRetryDraft != null) P.conf.aiSecondaryRetryCount = secondaryRetryDraft; } // arch-ok: existing settings-save owner commits the validated secondary request retry preference.
-  if (window.TM && TM.RecoverySettings) { var recoveryDraft=TM.RecoverySettings.read(); if(recoveryDraft) P.conf.emergencyRecovery=recoveryDraft; } // arch-ok: settings owner commits only the fully validated emergency draft.
   // AI 记忆容量设置
   P.conf.memoryAnchorKeep=parseInt(_$("s-mem-anchor")?_$("s-mem-anchor").value:"40")||40;
   P.conf.memoryArchiveKeep=parseInt(_$("s-mem-archive")?_$("s-mem-archive").value:"20")||20;

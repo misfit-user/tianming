@@ -484,7 +484,6 @@ function _tmMaybeStageTurnResult(html, idx) {
 function _tmCommitEndTurnTransaction(txn) {
   if (!_tmEndTurnTransactionCurrent(txn)) return false;
   txn.committed = true;
-  if (window.TM && TM.RecoveryEdict) TM.RecoveryEdict.discard(GM);
   if (txn.captureSession) txn.captureSession.committed = true;
   GM._endTurnCommitPending = false; // arch-ok end-turn transaction owns its commit barrier
   var pendingResult = GM._pendingCommittedTurnResult;
@@ -680,7 +679,6 @@ function _tmRollbackEndTurnTransaction(txn, reason) {
       }
     }
     txn.rolledBack = true;
-    if (window.TM && TM.RecoveryEdict) TM.RecoveryEdict.discard(txn.gmRef);
     if (txn.captureSession) txn.captureSession.rolledBack = true;
     if (typeof window !== 'undefined') window._tmLoadGen = (window._tmLoadGen || 0) + 1;
     GM.busy = false; // arch-ok end-turn transaction owns rollback cleanup
@@ -717,7 +715,6 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
     var historyRow=GM.shijiHistory&&GM.shijiHistory[ctx.meta.turnPresentation.shijiIndex],inferMeta=ctx.meta.aiInferMeta||{};
     if(historyRow){
       historyRow.deferredIssues=(ctx.meta.deferredIssues||[]).concat(inferMeta.deferredIssues||[]); // arch-ok: commit owner persists actionable failures alongside the actual generated turn.
-      if(inferMeta.deferredMainOutput)historyRow.pendingAIChanges=inferMeta.deferredMainOutput; // arch-ok: preserve uncommitted generated changes for later repair, never claim they executed.
     }
     // presentation 已取得原始 AI/玩家活动引用；现在清临时上下文，最终存档不携带易膨胀字段。
     delete GM._turnContext;
@@ -796,8 +793,6 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
     try { if (typeof toast === 'function') toast('回合已完整保存；附加快照或存档后处理发生错误，详情见控制台。请勿为此重新推演本回合。'); } catch (_) {}
   }
   if (reliability) reliability.finish(ctx.meta.reliabilityScope, ctx.results && ctx.results.renderError ? "committed_display_pending" : "committed");
-  try { if (globalThis.TM && TM.RecoveryReview) TM.RecoveryReview.afterCommit(ctx); }
-  catch(reviewError) { console.warn('[TurnReview] 后台复核未启动，已提交回合不受影响:',reviewError.message); }
   return true;
 }
 
@@ -828,7 +823,6 @@ async function _endTurnCore(options){
     if (TM.NPC.DailyUI) TM.NPC.DailyUI.render();
     return;
   }
-  if (globalThis.TM && TM.RecoveryReview) TM.RecoveryReview.pauseForNextTurn();
   if (_reliability) { _turnScope = _reliability.begin(); _reliability.assertReady(P); _reliability.mark(_turnScope, "prepare"); }
   _turnTxn = _tmCaptureEndTurnTransaction();
   // 必须在后朝标记、busy/commit barrier 及校准写入之前冻结点击时世界。

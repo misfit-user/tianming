@@ -6,7 +6,7 @@ async function verifyGenericPriority(assert) {
   let fetches = 0;
   try {
     // Real helpers, option policies, recovery wrappers and queue; only HTTP is synthetic.
-    ['tm-call-retry-policy.js', 'tm-endturn-response-recovery.js', 'tm-emergency-recovery-adapters.js']
+    ['tm-call-retry-policy.js', 'tm-endturn-response-recovery.js', 'tm-ai-reply-retry.js']
       .forEach(file => load(fixture.c, file));
     fixture.c._buildAIUrl = () => 'https://fixture.invalid/v1/chat/completions';
     fixture.c.fetch = async () => {

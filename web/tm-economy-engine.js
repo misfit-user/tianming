@@ -440,8 +440,9 @@
   // 第一次标定时定下规则（reg.carryingCalibration）：有州给了上限 → 取各州之和，个别没给的州按它第一次有人时的人口、
   //   负荷 0.8 立一个固定上限；州都没给、省给了 → 用省的；都没给、但省上有本引擎自己的耕地面积等实数
   //   （剧本 initialCarrying 或测试直接给的）→ 照旧按算式算绝对数（explicit-model）。
-  // 除 explicit-model 外，算式连同疤痕、技术只作相对增减：上限 × 现在耕地/水/柴薪/卫生四项最小值 ÷ 标定时最小值。
-  // 住房是人口的 1.1 倍，只作展示、不进上限（进了负荷就永远不低于 0.91）。
+  // 除 explicit-model 外，算式连同疤痕、技术只作相对增减：上限 × 现在耕地/水/柴薪/卫生四项最小值 ÷ 标定时最小值；住房只作展示、不进上限（进了负荷永不低于 0.91）。
+  // 省另给了负荷（carryingCapacity.currentLoad）就照它开局（同志 11-08 定）：头一次标定把上限折成「开局人口 ÷ 该负荷」（authoredScale）。
+  //   天启各州上限是按人口 ÷0.71 配的，省却另给了负荷（陕西 1.32、河南 1.05、山西 0.98，小冰期旱荒在里头，余省 0.85）；绍宋、晚唐两者相同。
   var ENV_UNCALIBRATED_START_LOAD = 0.8;
 
   function _envLeafCalibratedCap(node) {
@@ -519,6 +520,8 @@
     if (calib.rule !== 'explicit-model') {
       if (!(Number(calib.modelBase) > 0)) calib.modelBase = Math.min(model.farmland, model.water, model.fuel, model.sanitation);
       var cap = _envCalibratedCap(scope, calib);
+      if (calib.authoredScale == null) { var aLoad = Number(((scope.owner || {}).carryingCapacity || {}).currentLoad); calib.authoredScale = aLoad > 0 && scope.mouths > 0 && cap > 1 ? scope.mouths / cap / aLoad : 1; }
+      cap *= calib.authoredScale;
       calib.cap = Math.round(cap);
       scale = cap / calib.modelBase;
     }
@@ -596,12 +599,15 @@
       reg.ecoScars.waterTableDrop = Math.min(1, (reg.ecoScars.waterTableDrop || 0) + 0.0002 * overloadMult * mr);
       // 河道淤积
       reg.ecoScars.riverSilting = Math.min(1, (reg.ecoScars.riverSilting || 0) + 0.0002 * mr);
-      // 地力衰退（按技术）
-      var fertDecay = _envFiniteNumber(_getTechEraMult('fertilizer', E.techEra, 'fertilityDecay'), 0.03);
-      reg.ecoScars.soilFertilityLoss = Math.min(1, (reg.ecoScars.soilFertilityLoss || 0) + fertDecay / 12 * mr);
+      // 地力（同志 11-08 定）：过载才按技术衰退，负荷不到九成按一半的速度慢慢恢复、回到原有地力为止，其间不动。
+      // 旧写法不论负荷每年无条件降 2~3%：耕地成卡口，地力损伤到 0.5 闹饥荒，绍宋约 20 年、天启 25 年、晚唐 17 年后各处都闹。
       var currentFertility = _envFiniteNumber(reg.soilFertility, 0.85);
-      var fertilityFloor = currentFertility >= 0.3 ? 0.3 : 0;
-      reg.soilFertility = Math.max(fertilityFloor, currentFertility - fertDecay / 12 * mr);
+      if (reg._soilFertilityBase == null) reg._soilFertilityBase = Math.min(1, currentFertility + (reg.ecoScars.soilFertilityLoss || 0)); // 旧档：现地力 + 已损 ≈ 原有
+      var fertStep = _envFiniteNumber(_getTechEraMult('fertilizer', E.techEra, 'fertilityDecay'), 0.03) / 12 * mr;
+      fertStep = load > 1.0 ? -fertStep : (load < 0.9 ? fertStep / 2 : 0);
+      reg.ecoScars.soilFertilityLoss = Math.max(0, Math.min(1, (reg.ecoScars.soilFertilityLoss || 0) - fertStep));
+      reg.soilFertility = fertStep < 0 ? Math.max(currentFertility >= 0.3 ? 0.3 : 0, currentFertility + fertStep)
+        : Math.min(Math.max(reg._soilFertilityBase, currentFertility), currentFertility + fertStep);
       // 盐碱化（灌溉过度）
       reg.ecoScars.salinization = Math.min(1, (reg.ecoScars.salinization || 0) + 0.0001 * overloadMult * mr);
       // 沙漠化（干旱+过伐）

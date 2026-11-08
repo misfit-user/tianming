@@ -138,7 +138,8 @@ ctx.window = ctx;
 ctx.global = ctx;
 ctx.globalThis = ctx;
 
-function runOverloadTierCase(load) {
+function runOverloadTierCase(load, soil) {
+  soil = soil || {};
   const mouths = Math.round(load * 100000);
   const leaf = makeLeaf('tier-county', '分级县', mouths);
   const calls = [];
@@ -202,7 +203,7 @@ function runOverloadTierCase(load) {
               soilErosion: 0,
               waterTableDrop: 0,
               riverSilting: 0,
-              soilFertilityLoss: 0,
+              soilFertilityLoss: soil.loss != null ? soil.loss : 0,
               salinization: 0,
               desertification: 0,
               biodiversityLoss: 0,
@@ -214,7 +215,7 @@ function runOverloadTierCase(load) {
             aquiferLevel: 1,
             riverFlow: 1,
             arableArea: 100000,
-            soilFertility: 1,
+            soilFertility: soil.fertility != null ? soil.fertility : 1,
             techLevel: {}
           }
         }
@@ -253,14 +254,17 @@ function runOverloadTierCase(load) {
     targets: minxinSignals.map(signal => (signal.raw.targetRegions || []).map(row => row.region).join(',')).join('|'),
     national: calls.filter(call => call.key === 'minxin' && call.delta < 0)
       .reduce((sum, call) => sum + call.delta, 0),
-    finalized: minxinFinalized
+    finalized: minxinFinalized,
+    fertility: tierCtx.GM.environment.byRegion['tier-province'].soilFertility,
+    fertilityLoss: tierCtx.GM.environment.byRegion['tier-province'].ecoScars.soilFertilityLoss
   };
 }
 
 // 省环境对象照官方剧本开局的样子：整合桥按剧本建，只有 carrying/ecoScars/currentLoad/arableLand/waterCapacity/carryingRegime，
 // 没有本引擎自己的耕地面积等实数；承载上限在各州 carryingCapacity.historicalCap 上。
 // 旧写法拿写死的常数当上限，四百万口的省被算成只养得活七十五万，负荷五倍多、按全国扣民心。
-function runCalibratedProvinceCase() {
+// provinceLoad：剧本给省的负荷（carryingCapacity.currentLoad）。给了就照它开局（同志 11-08 定）；不给则上限是各州之和。
+function runCalibratedProvinceCase(provinceLoad) {
   const capped = makeLeaf('cal-capped', '有上限州', 3000000);
   capped.carryingCapacity = { arable: 4000000, water: 4000000, climate: 1, historicalCap: 4000000, currentLoad: 0.75, carryingRegime: 'strained' };
   const uncapped = makeLeaf('cal-uncapped', '无上限州', 1000000);
@@ -285,7 +289,8 @@ function runCalibratedProvinceCase() {
           factionId: 'player-faction',
           divisions: [{
             id: 'cal-province', name: '标定路', children: [capped, uncapped],
-            carryingCapacity: { arable: 4000000, water: 4000000, climate: 1, historicalCap: 4000000, currentLoad: 0.75, carryingRegime: 'strained' }
+            carryingCapacity: Object.assign({ arable: 4000000, water: 4000000, climate: 1, historicalCap: 4000000, carryingRegime: 'strained' },
+              provinceLoad != null ? { currentLoad: provinceLoad } : {})
           }]
         }
       },
@@ -335,10 +340,13 @@ function runCalibratedProvinceCase() {
     'a province without the engine own farmland figures must calibrate on the scenario caps, not on fixed constants');
   assert(region.carryingCalibration.anchors['cal-uncapped'] === anchoredCap,
     'a leaf without a scenario cap should be anchored once at its population as roughly fed (load 0.8)');
-  assert(Math.abs(region.carryingMax - (4000000 + anchoredCap)) < 1e-6,
-    'province carrying should equal the sum of its leaf caps on the first calibration');
-  assert(Math.abs(region.currentLoad - 4000000 / (4000000 + anchoredCap)) < 1e-9 && region.currentLoad < 1,
-    'a province the scenario calls strained must not be computed as several times overloaded');
+  const expectedCap = provinceLoad != null ? 4000000 / provinceLoad : 4000000 + anchoredCap;
+  assert(Math.abs(region.carryingMax - expectedCap) < 1e-6,
+    provinceLoad != null
+      ? 'a province the scenario gives its own load should open exactly at that load (cap = opening people / load): ' + region.carryingMax
+      : 'province carrying should equal the sum of its leaf caps on the first calibration: ' + region.carryingMax);
+  assert(Math.abs(region.currentLoad - (provinceLoad != null ? provinceLoad : 4000000 / expectedCap)) < 1e-9 && region.currentLoad < 1,
+    'a province the scenario calls strained must not be computed as several times overloaded: ' + region.currentLoad);
   assert(region.overloadYears === 0, 'overload years should be a real number on a scenario-built province object');
   assert(signals.length === 0, 'a province under its calibrated cap should not touch minxin');
   assert(capped.populationDetail.mouths === 3000000 && uncapped.populationDetail.mouths === 1000000,
@@ -575,7 +583,24 @@ assert([lightOverload, mediumOverload, severeOverload].every(row => row.national
   'overload minxin must never be deducted nationally through the legacy _adjAuthority path');
 assert(lightOverload.unrest < mediumOverload.unrest && mediumOverload.unrest < severeOverload.unrest,
   'overload social penalties should increase monotonically across all three tiers');
-runCalibratedProvinceCase();
+// 地力（同志 11-08 定）：过载才衰退，负荷不到九成慢慢恢复到原有地力，其间不动。汉代按技术每年衰退 0.04、每月 1/12。
+// 旧写法不论负荷每年无条件降，几十年后各地都闹饥荒危机。
+const monthDecay = 0.04 / 12;
+const calmSoil = runOverloadTierCase(0.70);
+assert(calmSoil.fertility === 1 && calmSoil.fertilityLoss === 0,
+  'soil should not decline when the province is not overloaded: ' + calmSoil.fertility + ' / ' + calmSoil.fertilityLoss);
+const nearSoil = runOverloadTierCase(0.95, { fertility: 0.9, loss: 0.1 });
+assert(nearSoil.fertility === 0.9 && nearSoil.fertilityLoss === 0.1,
+  'between 0.9 and 1.0 load the soil should hold still: ' + nearSoil.fertility + ' / ' + nearSoil.fertilityLoss);
+assert(Math.abs(mediumOverload.fertility - (1 - monthDecay)) < 1e-9 && Math.abs(mediumOverload.fertilityLoss - monthDecay) < 1e-9,
+  'an overloaded province should lose one month of era fertility decay: ' + mediumOverload.fertility + ' / ' + mediumOverload.fertilityLoss);
+const restSoil = runOverloadTierCase(0.50, { fertility: 0.8, loss: 0.2 });
+assert(Math.abs(restSoil.fertility - (0.8 + monthDecay / 2)) < 1e-9 && Math.abs(restSoil.fertilityLoss - (0.2 - monthDecay / 2)) < 1e-9,
+  'a lightly loaded province should recover at half the decay rate: ' + restSoil.fertility + ' / ' + restSoil.fertilityLoss);
+const fullSoil = runOverloadTierCase(0.50, { fertility: 1, loss: 0 });
+assert(fullSoil.fertility === 1 && fullSoil.fertilityLoss === 0, 'recovery should stop at the original fertility, never above it');
+runCalibratedProvinceCase(0.75);   // 剧本给了省负荷：照它开局（天启陕西 1.32 那类）
+runCalibratedProvinceCase(null);   // 剧本没给：上限是各州之和
 runScenarioShapedPolicyCase();
 runTechEraCase();
 runZeroResourceCase();

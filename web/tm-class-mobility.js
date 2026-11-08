@@ -555,17 +555,20 @@
     var rebels = (G.rovingRebels || []).filter(function (r) { return r && !r.disbanded && (Number(r.strength) || 0) > 0; });
     rebels.forEach(function (r) {
       var sev = clamp((Number(r.strength) || 0) / PLUNDER_STRENGTH_SCALE, 0.1, 1);
+      var plundered = [];
       (r.regions || []).slice(0, PLUNDER_MAX_REGIONS).forEach(function (rn) {
         var div = findDiv(rn);
         if (div && RS && typeof RS.add === 'function') {
-          try { RS.add(div, { kind: 'disaster', name: '流寇劫掠', econPct: -PLUNDER_ECON * sev, minxinPerTurn: -1.5 * sev, durationTurns: 2, desc: '流寇过境·焚掠乡里', source: 'roving' }, G); } catch (_) {}
+          try { RS.add(div, { kind: 'disaster', name: '流寇劫掠', econPct: -PLUNDER_ECON * sev, minxinPerTurn: -1.5 * sev, durationTurns: 2, desc: '流寇过境·焚掠乡里', source: 'roving' }, G); plundered.push(div.name || rn); } catch (_) {}
         }
       });
       if (taoohu) {
         var swell = Math.min(Math.round((Number(r.strength) || 0) * PLUNDER_TAOOHU_RATE * mr), PLUNDER_TAOOHU_CAP);
         if (swell > 0) taoohu.mouths = (Number(taoohu.mouths) || 0) + swell; // 恶性循环·有界封顶
       }
-      if (global.addEB && sev >= 0.3 && (r.regions || []).length) global.addEB('民变', (r.name || '流寇') + '劫掠' + (r.regions[0] || '') + '等地，焚庐舍、掠丁壮');
+      // 只报真劫掠到的州。流寇的地方取自阶层数据的地域，天启里是「北方燕齐」「江南苏松」这类泛称，对不上任何州时
+      // 上面一处也没挂上；旧写法照样每回合报「劫掠北方燕齐等地，焚庐舍」，地方上什么都没发生，是假事件。
+      if (global.addEB && sev >= 0.3 && plundered.length) global.addEB('民变', (r.name || '流寇') + '劫掠' + plundered[0] + (plundered.length > 1 ? '等地' : '') + '，焚庐舍、掠丁壮');
     });
     // ② 民变据府扰攘（轻于流寇·按级别）
     var revolts = (G.minxin && Array.isArray(G.minxin.revolts)) ? G.minxin.revolts.filter(function (rv) { return rv && rv.status === 'ongoing' && rv.region; }) : [];

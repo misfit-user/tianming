@@ -71,6 +71,23 @@ addCalls = [];
 F3._tickRovingPlunder({ turn: 5 }, 1);
 ok(addCalls.length === 0 && global.GM.population.byLegalStatus.taoohu.mouths === 0, '7·无流寇无民变→no-op(零行为)');
 
+// ── T9 地名对不上任何州：一处没挂上就不报劫掠；只报真劫掠到的州 ──
+//   （天启流寇的地方是阶层数据里的「北方燕齐」这类泛称，旧写法照样每回合报「劫掠北方燕齐等地」，地方上什么都没发生）
+var ebTexts = [];
+global.addEB = function (cat, text) { ebTexts.push(String(text || '')); };
+var realFind = global.TM.AIChange.PathUtils.findDivisionByNameFuzzy;
+global.TM.AIChange.PathUtils.findDivisionByNameFuzzy = function (G, name) { return name === '西安府' ? { id: name, name: name, statusEffects: [] } : null; };
+global.GM = freshGM({ rebels: [{ id: 'r6', strength: 100000, regions: ['北方燕齐', '江南苏松'], disbanded: false }] });
+addCalls = [];
+F3._tickRovingPlunder({ turn: 5 }, 1);
+ok(addCalls.length === 0 && !ebTexts.some(function (t) { return /劫掠/.test(t); }), '9·地名对不上任何州→不挂境况也不报劫掠·实得 ' + JSON.stringify(ebTexts));
+global.GM = freshGM({ rebels: [{ id: 'r7', strength: 100000, regions: ['北方燕齐', '西安府'], disbanded: false }] });
+addCalls = []; ebTexts = [];
+F3._tickRovingPlunder({ turn: 5 }, 1);
+ok(addCalls.length === 1 && ebTexts.length === 1 && /劫掠西安府，/.test(ebTexts[0]), '9·只报真劫掠到的州·实得 ' + JSON.stringify(ebTexts));
+global.TM.AIChange.PathUtils.findDivisionByNameFuzzy = realFind;
+global.addEB = function () {};
+
 // ── T8 装配契约 ──
 var fs = require('fs'), path = require('path');
 var src = fs.readFileSync(path.join(__dirname, '..', 'tm-class-mobility.js'), 'utf8');

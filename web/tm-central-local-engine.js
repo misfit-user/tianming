@@ -949,6 +949,7 @@
     getComplianceReport: getComplianceReport,
     getAIContext: getAIContext,
     isDirectlyGoverned: isDirectlyGoverned,
+    regionLabel: _regionLabel,  // 区划编号 → 名字（环境承载力写人物记忆时也借用）
     ALLOCATION_PRESETS: ALLOCATION_PRESETS,
     REFORM_PRESETS: REFORM_PRESETS,
     EXPENDITURE_EFFECTS: EXPENDITURE_EFFECTS,

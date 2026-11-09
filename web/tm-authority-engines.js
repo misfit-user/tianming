@@ -1535,6 +1535,9 @@
   //  AI 上下文
   // ═══════════════════════════════════════════════════════════════════
 
+  // 这段只进人物记忆（getMemoryContext 的「角色所知天下大势」），写朝中能知道的（2026-11-09）：
+  //   民心写呈报上来的数（perceivedIndex，腐败越重报得越好），不写真值，也不点破是虚报；
+  //   皇威不写天子那份被谀辞抬高的感知（原来写「感知 X — 可能被扭曲」，是旁白，不是人物知道的事）。
   function getAuthorityAIContext() {
     var G = global.GM;
     if (!G) return '';
@@ -1543,9 +1546,6 @@
     if (hw && typeof hw === 'object') {
       var phase = HUANGWEI_PHASE[hw.phase] || HUANGWEI_PHASE.normal;
       lines.push('【皇威】' + Math.round(hw.index) + ' (' + phase.name + ')' + (hw.tyrantSyndrome && hw.tyrantSyndrome.active ? ' · 暴君激活' : '') + (hw.lostAuthorityCrisis && hw.lostAuthorityCrisis.active ? ' · 失威危机' : ''));
-      if (hw.perceivedIndex && Math.abs(hw.perceivedIndex - hw.index) > 5) {
-        lines.push('（感知 ' + Math.round(hw.perceivedIndex) + ' — 可能被扭曲）');
-      }
     }
     if (hq && typeof hq === 'object') {
       var hqPhase = HUANGQUAN_PHASE[hq.phase] || HUANGQUAN_PHASE.moderate;
@@ -1553,7 +1553,9 @@
     }
     if (mx && typeof mx === 'object') {
       var mxPhase = MINXIN_PHASE[mx.phase] || MINXIN_PHASE.peaceful;
-      lines.push('【民心】真实 ' + Math.round(mx.trueIndex) + ' (' + mxPhase.name + ')' + (mx.perceivedIndex && Math.abs(mx.perceivedIndex - mx.trueIndex) > 5 ? ' 感知 ' + Math.round(mx.perceivedIndex) + '（虚报）' : ''));
+      var mxSeen = (typeof mx.perceivedIndex === 'number' && mx.perceivedIndex > 0) ? mx.perceivedIndex : mx.trueIndex;
+      var mxSeenPhase = MINXIN_PHASE[_getMinxinPhase(mxSeen)] || mxPhase;
+      lines.push('【民心】' + Math.round(mxSeen) + ' (' + mxSeenPhase.name + ')');
       if (mx.prophecy && mx.prophecy.intensity > 0.3) lines.push('谶纬流传 · 强度 ' + (mx.prophecy.intensity*100).toFixed(0) + '%');
       if (mx.revolts && mx.revolts.filter(function(r){return r.status==='ongoing';}).length > 0) {
         var ongoing = mx.revolts.filter(function(r){return r.status==='ongoing';});

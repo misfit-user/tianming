@@ -838,11 +838,17 @@ var NpcMemorySystem = {
       var top = sorted.slice(0, 4);
       var memIdx = 0;
       var circled = ['①','②','③','④','⑤','⑥','⑦','⑧'];
+      // 开局前的事回合数记成 0 或负数（天启真档魏忠贤有「T-1800」，0 回合的原来还会写成当前回合），写「开局前」；
+      // 类型写中文，general 和认不出的英文代号不写（原来每条都带「类型:general」，2026-11-09）
+      var typeCn = { political: '政事', dialogue: '对谈', career: '仕途', commitment: '承诺', trauma: '创伤', scandal: '丑闻',
+        social_formation: '结社', scheme: '谋划', military: '军务', family: '家事' };
       parts.push('铭记：' + top.map(function(m) {
         var label = circled[memIdx++] || (memIdx + '.');
         var mType = m.type || 'general';
         var imp = Math.round(m.importance) || 5;
-        return label + 'T' + (m.turn || GM.turn) + ' 类型:' + mType + ' ' + m.event + (m.who ? '(' + m.who + ')' : '') + '(' + (m.emotion || '平') + ',重' + imp + ')';
+        var when = typeof m.turn === 'number' ? (m.turn > 0 ? 'T' + m.turn : '开局前') : '';
+        var typeName = typeCn[mType] || (/[\u4e00-\u9fff]/.test(mType) ? mType : '');
+        return label + when + (typeName ? '〔' + typeName + '〕' : (when ? ' ' : '')) + m.event + (m.who ? '(' + m.who + ')' : '') + '(' + (m.emotion || '平') + ',重' + imp + ')';
       }).join(' '));
     }
 

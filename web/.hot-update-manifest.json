@@ -4566,8 +4566,8 @@
     },
     {
       "path": "tm-authority-engines.js",
-      "sha256": "0307ae75c0ab69ebf8909a8c44a0be0f9c80807032814d2fdad86d249b907ee7",
-      "size": 104967
+      "sha256": "bd90fe5c379427f21642ffe85f6117dbde62d6aa8ab0b82e1f6ba29427776752",
+      "size": 105234
     },
     {
       "path": "tm-authority-ui.js",
@@ -4656,8 +4656,8 @@
     },
     {
       "path": "tm-central-local-engine.js",
-      "sha256": "ee4696316f78803f036a2c9d689c16b37882f611ef273089ea95ecd89ec5b0fd",
-      "size": 49809
+      "sha256": "2a9c4af189d735ebb0fe827bb39bc36a0492c4a2cc47e4c08594809e961fb9f5",
+      "size": 49916
     },
     {
       "path": "tm-change-queue.js",
@@ -4961,13 +4961,13 @@
     },
     {
       "path": "tm-economy-engine-currency.js",
-      "sha256": "a527c4bcadd1780db4dbab64666a8a272c814a6e2d4c2b978302234867263388",
-      "size": 67207
+      "sha256": "81167b3e357e9474cf0620400f73511d1f9e52015037747c897e41e5880c5128",
+      "size": 68587
     },
     {
       "path": "tm-economy-engine.js",
-      "sha256": "71343a2862d0cbb69d85930a9cce3b2b28abc615ca50911665f0b99e9d7d16ab",
-      "size": 159688
+      "sha256": "38619179d9810dd5bae710e39de03a61ea06e23accc331f89915cd76d98f7af5",
+      "size": 160239
     },
     {
       "path": "tm-economy.js",
@@ -5516,8 +5516,8 @@
     },
     {
       "path": "tm-huji-engine.js",
-      "sha256": "d481a4f62796adf6598014f70f4126a29eec3ace537782ea61419670d68a7810",
-      "size": 157717
+      "sha256": "ba90c07d9e2c0e3de6c92cd105b8228584524e710b50bde3a32cc3deb30c8fd2",
+      "size": 157998
     },
     {
       "path": "tm-huji-governance-loop.js",
@@ -5861,8 +5861,8 @@
     },
     {
       "path": "tm-mechanics-memory.js",
-      "sha256": "8c00f5084e368b2bc548d5753d1e412dc45b010b687f75cd3129ca12acaa00f8",
-      "size": 84237
+      "sha256": "1f86da4733bd21e288d645f6e67621782f01bb7ac2b22b9656cb92a5d84c54eb",
+      "size": 84958
     },
     {
       "path": "tm-mechanics-world.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "7d273d70f789261a70f7660a0f7d7bc1295150a8722ecfdcf3da2923f4d09680",
+      "sha256": "c4dfa3533991ca842071a3b5383aa16a8611f57fe8e5d0d080cec8ce7ea1520e",
       "size": 141013
     },
     {

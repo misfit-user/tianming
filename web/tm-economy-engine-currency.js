@@ -946,6 +946,18 @@
     return 'var(--celadon-400)';
   }
 
+  // 这段只进人物记忆（getMemoryContext 的「角色所知天下大势」）：本位制、海外银流、纸币状态的英文代号写成中文，
+  // 认不出的英文代号不写（2026-11-09；原来天启真档写「本位制：silver_copper_paper」「海外银流：restrictive」）。
+  var STANDARD_CN = { silver_copper_paper: '白银、铜钱、纸钞并行', copper_paper: '铜钱、纸钞并行', copper: '铜钱', silver: '白银' };
+  var TRADE_MODE_CN = { liberal: '开海通商', controlled: '有限通商', restrictive: '限制通商', banned: '海禁', tribute: '朝贡贸易' };
+  var PAPER_STATE_CN = { proposal: '拟议', trial: '试行', issue: '初发', active: '通行', circulate: '流通', overissue: '滥发',
+    depreciate: '贬值', collapse: '崩坏', private: '民间私票', abolish: '已废' };
+  function _cnLabel(map, code) {
+    if (code == null || code === '') return '';
+    if (map && Object.prototype.hasOwnProperty.call(map, code)) return map[code];
+    return /[\u4e00-\u9fff]/.test(String(code)) ? String(code) : '';
+  }
+
   function getAIContext() {
     var C = global.GM && global.GM.currency;
     if (!C) return '';
@@ -953,7 +965,9 @@
     lines.push('【货币·市场】');
     var unitName = global.CurrencyUnit && typeof global.CurrencyUnit.unitOf === 'function'
       ? global.CurrencyUnit.unitOf('money') : '';
-    lines.push('本位制：' + C.currentStandard + '；朝代：' + C.dynasty + (unitName ? '；计价单位：' + unitName : ''));
+    var stdName = _cnLabel(STANDARD_CN, C.currentStandard), dyName = _cnLabel(null, C.dynasty);
+    var head = [stdName ? '本位制：' + stdName : '', dyName ? '朝代：' + dyName : '', unitName ? '计价单位：' + unitName : ''].filter(Boolean).join('；');
+    if (head) lines.push(head);
     if (C.market) {
       lines.push('粮价 ' + Math.round(C.market.grainPrice) + ' 文/石；通胀 ' + ((C.market.inflation||0)*100).toFixed(1) + '%；年景因子 ' + (C.market.yearFortune||1).toFixed(2));
       if (C.market.moneySupplyRatio) lines.push('货币/经济活动比：' + C.market.moneySupplyRatio.toFixed(2) + (C.market.moneySupplyRatio < 0.7 ? '（钱荒）' : C.market.moneySupplyRatio > 1.5 ? '（钱贱）' : ''));
@@ -974,13 +988,15 @@
     var actives = (C.paper.issuances || []).filter(function(p) { return p.state !== 'abolish'; });
     if (actives.length > 0) {
       var paperLines = actives.slice(0, 3).map(function(p) {
-        return p.name + '（' + p.state + '，准备金 ' + (p.reserveRatio*100).toFixed(0) + '%，信用 ' + Math.round(p.creditLevel) + '）';
+        var st = _cnLabel(PAPER_STATE_CN, p.state);
+        return p.name + '（' + (st ? st + '，' : '') + '准备金 ' + (p.reserveRatio*100).toFixed(0) + '%，信用 ' + Math.round(p.creditLevel) + '）';
       });
       lines.push('纸币：' + paperLines.join('；'));
     }
     // 海外银
     if (C.foreignFlow && C.foreignFlow.enabled) {
-      lines.push('海外银流：' + (C.foreignFlow.tradeMode || '') + '，累计净流 ' + _fmtNum(C.foreignFlow.cumulativeNet) + ' 两');
+      var tradeName = _cnLabel(TRADE_MODE_CN, C.foreignFlow.tradeMode);
+      lines.push('海外银流：' + (tradeName ? tradeName + '，' : '') + '累计净流 ' + _fmtNum(C.foreignFlow.cumulativeNet) + ' 两');
     }
     return lines.join('\n');
   }

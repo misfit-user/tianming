@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // 人物统一底子（人2）smoke：各机制扮演人物时读同一份「他是谁」（tm-person.js）。
 //   · 人格核合成规矩：特质并 traitIds 与 traits（英文代号不进提示词）、口吻合一、立场与所求去重、名单一行。
-//   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前、奏疏的提示词
+//   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前、奏疏、书信回信的提示词
 //     与改造前逐字相同（金标准哈希）；开着时各场合的人物段含同一份人格核（一字不差）。
 // 金标准由改造前的文件在同一夹具上算出：TM_PERSON_SMOKE_GOLDEN_DIR=<放改造前文件的目录> node 本文件 → 打印哈希后退出。
-//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）；奏疏取 c563c01b（第四片之前）。
+//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）；奏疏取 c563c01b（第四片之前）；书信取 ca9ccef3（第五片之前）。
 // 施工单：E:/tianming-tmp/orders/人2-各机制接人物底子-施工单.md；设计：docs/guanben-roleplay-20260930/tuiyan.md 7.2 节。
 'use strict';
 const fs = require('fs');
@@ -166,6 +166,25 @@ async function memPrompt(c) {
   return c.__mem[0] || '';
 }
 
+// 书信（人2 第五片）：人物给天子回信，单人执笔（tm-hongyan-office.js _generateLetterReply）
+function letterSandbox() {
+  const c = sandbox();
+  vm.runInContext(read('tm-hongyan-office.js'), c, { filename: 'tm-hongyan-office.js' });
+  c.__letter = [];
+  c.callAI = (p) => { c.__letter.push(p); return Promise.resolve('臣谨复。'); };
+  c.getCharacterPersonalityBrief = (ch) => ch.name + ' 理性务实·善于结交';  // tm-npc-engine.js 里的八维短语，夹具不载
+  return c;
+}
+
+async function letterPrompt(c) {
+  c.__letter.length = 0;
+  c.GM.letters = [];
+  const letter = { to: '温体仁', from: '玩家', letterType: 'secret', content: '会推阁臣，卿意属谁？', _cipher: 'none', status: 'delivered' };
+  c._generateLetterReply(letter);
+  await Promise.resolve();
+  return c.__letter[0] || '';
+}
+
 async function courtPrompts(c) {
   const CY = c.CY, out = {};
   CY.open = true; CY._abortChaoyi = false;
@@ -211,6 +230,8 @@ async function prompts(c) {
     console.log(JSON.stringify({ yuqian: yq, lengths: yqLen }, null, 2));
     const gm = await memPrompt(memSandbox());
     console.log(JSON.stringify({ memorial: sha(gm), length: gm.length }, null, 2));
+    const gl = await letterPrompt(letterSandbox());
+    console.log(JSON.stringify({ letter: sha(gl), length: gl.length }, null, 2));
     return;
   }
 
@@ -341,7 +362,22 @@ async function prompts(c) {
   ok(mon.includes('请为其中3人生成奏疏。') && mon.includes('【奏疏体裁】') && mon.includes('心绪:温体仁记得上回会推之争'), '开着：奏疏场合规矩、记忆照旧');
   ok(!/shrewd|t-sly/.test(mon), '开着：英文代号不进奏疏提示词');
 
-  // ── 8. 接线与守卫 ──
+  // ── 8. 书信（人2 第五片）：人物给天子回信，单人执笔，读完整档 ──
+  // 由改造前（ca9ccef3）的文件在同一夹具上算出：373 字
+  const LETTER_GOLDEN = '6a9743e8f409489ba9d57fd479f2840c2f6ba4b534a5986228800a23c3b2e65b';
+  const lc = letterSandbox();
+  const loff = await letterPrompt(lc);
+  eq(sha(loff), LETTER_GOLDEN, '关着：回信提示词逐字不变');
+  ok(loff.includes('性格：温体仁 理性务实·善于结交'), '（改造前）回信的性格是八维推出来的短语，和问对、常朝各是一套');
+  lc.P.conf.personUnifiedEnabled = true;
+  const lon = await letterPrompt(lc);
+  const P6 = lc.TM.Person, wen6 = lc.GM.chars[1];
+  ok(lon.startsWith('你是温体仁，当前在远方，收到天子来书，亲笔作复。\n' + P6.brief(wen6, { occasion: 'letter', detail: 'full', topic: '会推阁臣，卿意属谁？' }).replace(/\n+$/, '')), '开着：回信读完整档（单人执笔，同问对一档），记忆按来信内容回想');
+  ok(!lon.includes('性格：') && !lon.includes('近期心绪：') && !lon.includes('政治立场：'), '开着：八维短语、另拼的记忆和立场不再出现');
+  ok(lon.includes('1. 以上面所写此人的性情、口吻与身份') && lon.includes('「会推阁臣，卿意属谁？」') && lon.includes('语气：标准臣礼'), '开着：回信的场合规矩照旧');
+  ok(lon.split(core).length === 2 && !/shrewd|t-sly/.test(lon), '开着：回信里人格核出现且只出现一次，与问对、常朝、廷议、御前一字不差；英文代号不进');
+
+  // ── 9. 接线与守卫 ──
   ok(read('tm-patches.js').includes("_togglePConf(\\'personUnifiedEnabled\\'"), '设置面板有「人物统一底子」开关');
   ok(read('tm-player-settings.js').includes('personUnifiedEnabled:'), '开关有提示语');
   console.log('[smoke-person-occasions] pass assertions=' + checks);

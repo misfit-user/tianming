@@ -291,10 +291,12 @@ async function genMemorialsAI(count){
         spouseInfo += ']';
       }
       // NPC记忆（影响奏疏态度）
+      //   只取此人自己那段（personalOnly）：记忆开头是约 500 字的「我是谁」身份块，原来截 120 字全落在身份块里，
+      //   真心绪一个字进不去，还把换行带进名单（2026-11-09 天启真档：魏忠贤「心绪:【我是魏忠贤】，号九千岁……」）。
       var memCtx = '';
       if (typeof NpcMemorySystem !== 'undefined') {
-        var _mc = NpcMemorySystem.getMemoryContext(ch.name);
-        if (_mc) memCtx = ' 心绪:' + _mc.slice(0, 120);
+        var _mc = NpcMemorySystem.getMemoryContext(ch.name, { personalOnly: true });
+        if (_mc) memCtx = ' 心绪:' + String(_mc).replace(/\s+/g, ' ').slice(0, 120);
       }
       // 位置与信息边界
       var _locInfo = '';

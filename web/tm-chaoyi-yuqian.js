@@ -391,14 +391,23 @@ async function _yq2_doAskAdvisor(name, question) {
   } else {
     prompt += '你扮演' + name + '（' + (ch.officialTitle||ch.title||'') + '，性格' + (ch.personality||'') + '，忠' + (ch.loyalty||50) + '，党:' + (ch.party||'无') + '）\n';
     // 深问补记忆（2026-07-03）：此前深问 prompt 无记忆无党——密谈本该是最见心性处
+    //   读全文，和直陈一样（2026-11-09）：原来截 500 字，记忆开头约 500 字是「我是谁」身份块，截下来几乎全是它，铭记、恩怨进不去。
     var _dqMem = '';
     try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _dqMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_dqmE) {}
-    if (_dqMem) prompt += '【此人记忆与心性】' + String(_dqMem).slice(0, 500) + '\n';
+    if (_dqMem) prompt += '【此人记忆与心性】' + _dqMem + '\n';
   }
   prompt += '之前你已陈言：' + ((CY._yq2.opinions[name]&&CY._yq2.opinions[name].line) || '尚未发言') + '\n';
   prompt += '皇帝再深问：' + question + '\n';
   prompt += '坦白度:' + candor + '，' + (candor>80?'推心置腹':candor>50?'大致坦言':'揣摩圣意') + '\n';
   prompt += '请答，可比前言更直率（密谈氛围）。' + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint() : '') + '\n返回纯文本。';
+  // ★ 平行历史时空约束，和直陈同一段（2026-11-09 补：深问原来没有，单独深谈反倒最容易照史书把在世的人说死、把后来的事说成已发生）
+  if (typeof _buildTemporalConstraint === 'function') {
+    try {
+      var _dqTopicText = (CY._yq2.topic || '') + ' ' + question + ' ' + (CY._yq2._transcript ? String(CY._yq2._transcript).slice(-400) : '');
+      var _dqMentioned = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(_dqTopicText, [name], 10) : [name];
+      prompt += _buildTemporalConstraint(ch, { mentionedNames: _dqMentioned });
+    } catch (_tcDqE) {}
+  }
   // 【降本2026-06-19·time】深问流式化——占位气泡 onChunk 渐显(对齐开场陈言 _yq2_oneAdvisorSpeak·玩家不再干等满)
   var _dqDiv = addCYBubble(name, '…', false);
   try { _yq2_setSpeaker(name); } catch(_dqSpErr) {}   // 谁深言则谁立绘

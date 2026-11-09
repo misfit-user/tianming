@@ -4696,8 +4696,8 @@
     },
     {
       "path": "tm-chaoyi-yuqian.js",
-      "sha256": "b47d7620b43a27be9b3ebc35bc1bf87224dc4ce3aae24576f9bd8a743c59ac5f",
-      "size": 51938
+      "sha256": "b508261854cc4bde98fdc10f38830507406d85b7f102d2601dbf309a0ca3a117",
+      "size": 52735
     },
     {
       "path": "tm-chaoyi.js",
@@ -5861,8 +5861,8 @@
     },
     {
       "path": "tm-mechanics-memory.js",
-      "sha256": "4d15a6dc72238402a595e17c9a0987d9ee2985158f617258ffb4bd53744aead6",
-      "size": 83883
+      "sha256": "8c00f5084e368b2bc548d5753d1e412dc45b010b687f75cd3129ca12acaa00f8",
+      "size": 84237
     },
     {
       "path": "tm-mechanics-world.js",
@@ -5876,8 +5876,8 @@
     },
     {
       "path": "tm-memorials.js",
-      "sha256": "fb775e325fed165a91c9d76fa7aa4d2fe1072f9900b0cccb345b234f32d3c438",
-      "size": 82235
+      "sha256": "ddf01ccddd6b8bed9ffc7507a05d20c9ecfd5277395a985afa7e2d0beb70c887",
+      "size": 82607
     },
     {
       "path": "tm-memory-adapter.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "bbdc1b390ce3726db1b8e27940bb2267f938f93cd3bd73e25b3fe1131e493d38",
+      "sha256": "7d273d70f789261a70f7660a0f7d7bc1295150a8722ecfdcf3da2923f4d09680",
       "size": 141013
     },
     {

@@ -4,6 +4,8 @@
 //   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前、奏疏、书信回信、NPC 自主决策的提示词
 //     与改造前逐字相同（金标准哈希）；开着时各场合的人物段含同一份人格核（一字不差）。
 //   · 认知画像（sc07 写的）：开着时人格只认人格核，画像里的自识、人格、口吻、史标不写，其余精简档、完整档读同一段；奏疏名单带知与不知。
+//   · 记忆截短（11-09，两路都改）：深问补时空约束、关着也读全文记忆；奏疏名单的「心绪」只取此人自己那段
+//     （getMemoryContext 的 personalOnly，真跑 tm-mechanics-memory.js）。
 // 金标准由改造前的文件在同一夹具上算出：TM_PERSON_SMOKE_GOLDEN_DIR=<放改造前文件的目录> node 本文件 → 打印哈希后退出。
 //   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）；奏疏取 c563c01b（第四片之前）；书信取 ca9ccef3（第五片之前）；NPC 自主取 c19a05b7（第六片之前）；带认知画像的问对、常朝取 1af53976（画像这一刀之前）。
 // 施工单：E:/tianming-tmp/orders/人2-各机制接人物底子-施工单.md；设计：docs/guanben-roleplay-20260930/tuiyan.md 7.2 节。
@@ -375,16 +377,26 @@ async function prompts(c) {
     deep: '896a4462b7db76f650ddf298aa61fa5b942a55aa7c7b0087f833b0c3f743ef61',
     leak: '68fee1d61bb10c30caae7d675a1c69c5a532c691c07d01bb0411e3aa9187ce29'
   };
+  //   深问 11-09 两路都补了时空约束（和直陈同一段），金标准比去掉末尾这段之后的
+  const TC = '\n【时空约束】';  // 夹具里 _buildTemporalConstraint 的桩
   const yc = yqSandbox();
   const yoff = await yqPrompts(yc);
-  for (const k of Object.keys(YQ_GOLDEN)) eq(sha(yoff[k]), YQ_GOLDEN[k], '关着：' + YQ_LABEL[k] + '提示词逐字不变');
+  for (const k of Object.keys(YQ_GOLDEN)) {
+    eq(sha(k === 'deep' ? yoff.deep.slice(0, -TC.length) : yoff[k]), YQ_GOLDEN[k], '关着：' + YQ_LABEL[k] + '提示词逐字不变' + (k === 'deep' ? '（末尾补的时空约束除外）' : ''));
+  }
+  ok(yoff.deep.endsWith('返回纯文本。' + TC) && yoff.speak.endsWith(TC), '关着：深问末尾补上时空约束，和直陈一样（原来只有直陈有）');
+  const ycm = yqSandbox();
+  const longMem = '【我是温体仁】' + '身'.repeat(520) + '。铭记：①会推之争';
+  ycm.NpcMemorySystem.getMemoryContext = () => longMem;
+  const yoffm = await yqPrompts(ycm);
+  ok(yoffm.deep.includes('【此人记忆与心性】' + longMem + '\n') && yoffm.speak.includes('【此人记忆与心性】' + longMem + '\n'), '关着：深问读全文记忆，和直陈一样（原来截 500 字，开头的身份块把铭记挤掉）');
   yc.P.conf.personUnifiedEnabled = true;
   const yon = await yqPrompts(yc);
   const P4 = yc.TM.Person, wen4 = yc.GM.chars[1];
   ok(yon.speak.includes('你扮演温体仁，在御前密议中直陈。\n' + P4.brief(wen4, { detail: 'brief', topic: '会推阁臣' })) && !yon.speak.includes('性格：阴柔多智') && !yon.speak.includes('【此人记忆与心性】'), '开着：御前直陈读精简档，记忆不重复写');
   ok(yon.speak.includes('你的坦白度：77.5/100') && yon.speak.includes('"inwardThought"') && !yon.speak.includes('学识：'), '开着：御前场合规矩照旧，没有学识不写空行');
   ok(yon.deep.includes('你扮演温体仁，御前密议中陛下单独深问你。\n' + P4.brief(wen4, { occasion: 'yuqian', detail: 'full', topic: '会推阁臣' })) && yon.deep.includes('【能力】') && !yon.deep.includes('【此人记忆与心性】'), '开着：御前深问读完整档（单人深谈，同问对一档），记忆不再截 500 字另拼');
-  ok(yon.deep.includes('皇帝再深问：卿以为谁可入阁') && yon.deep.includes('坦白度:77.5'), '开着：深问的场合规矩照旧');
+  ok(yon.deep.includes('皇帝再深问：卿以为谁可入阁') && yon.deep.includes('坦白度:77.5') && yon.deep.endsWith('返回纯文本。' + TC), '开着：深问的场合规矩照旧，末尾同样有时空约束');
   ok(yon.leak.includes('与会者：\n  温体仁｜' + P4.line(wen4, { noName: true, goalMax: 20 }) + '\n  钱谦益｜负才傲物\n'), '开着：泄密判定的与会者每人一行性情、特质、所求');
   ok(Object.keys(yon).every((k) => !/shrewd|t-sly/.test(yon[k])), '开着：英文代号不进御前的提示词');
   for (const k of ['speak', 'deep']) ok(yon[k].split(P4.coreText(wen4)).length === 2, '开着：' + YQ_LABEL[k] + '里人格核出现且只出现一次');
@@ -407,6 +419,10 @@ async function prompts(c) {
   ok(mon.includes('钱谦益(礼部右侍郎)') && mon.includes(' 负才傲物；口吻好引经据典 '), '开着：只有性格和 diction 的人也读同一份（口吻取 diction）');
   ok(mon.includes('请为其中3人生成奏疏。') && mon.includes('【奏疏体裁】') && mon.includes('心绪:温体仁记得上回会推之争'), '开着：奏疏场合规矩、记忆照旧');
   ok(!/shrewd|t-sly/.test(mon), '开着：英文代号不进奏疏提示词');
+  const mcm = memSandbox();
+  mcm.NpcMemorySystem.getMemoryContext = (n, o) => (o && o.personalOnly ? '' : '【我是' + n + '】，今年54岁\n出身：乌程温氏\n我在任：礼部侍郎。') + '老成持重。\n眉头紧锁。铭记：①会推之争';
+  const moffm = await memPrompt(mcm);
+  ok(moffm.includes(' 心绪:老成持重。 眉头紧锁。铭记：①会推之争') && !moffm.includes('心绪:【我是'), '关着：奏疏名单的心绪只取此人自己那段，换行压成空格（原来截 120 字全是「我是谁」身份块）');
 
   // ── 8. 书信（人2 第五片）：人物给天子回信，单人执笔，读完整档 ──
   // 由改造前（ca9ccef3）的文件在同一夹具上算出：373 字
@@ -486,7 +502,26 @@ async function prompts(c) {
   const lon10 = await letterPrompt(lc10);
   ok(lon10.includes(cog8) && !/人格：阴狡|史标：/.test(lon10), '开着：回信带同一段画像，不写画像的人格、史标');
 
-  // ── 11. 接线与守卫 ──
+  // ── 11. 记忆截短处只取此人自己那段（getMemoryContext 的 personalOnly，真跑 tm-mechanics-memory.js）──
+  const ms = { console: { log() {}, warn() {}, error() {} }, Date, Math, JSON };
+  ms.window = ms; ms.globalThis = ms;
+  vm.createContext(ms);
+  vm.runInContext(read('tm-mechanics-memory.js'), ms, { filename: 'tm-mechanics-memory.js' });
+  const SELF = '【我是温体仁】，字长卿，今年54岁\n出身：乌程温氏\n我在任：礼部侍郎';
+  ms.CharFullSchema = { toAIContext: () => SELF };
+  ms.CurrencyEngine = { getAIContext: () => '天下钱法：银钱并行' };
+  ms.GM = { turn: 5, chars: [{ name: '温体仁', alive: true, age: 54, _mood: '忧', _memory: [{ event: '会推之争', importance: 8, turn: 5, emotion: '忧' }] }] };
+  const NMS = ms.NpcMemorySystem;
+  const full11 = NMS.getMemoryContext('温体仁');
+  const own11 = NMS.getMemoryContext('温体仁', { personalOnly: true });  // 同一回合第二次取，走缓存那条路
+  ok(full11.startsWith(SELF + '。天下钱法'), '记忆全文开头是「我是谁」身份块和天下大势');
+  ok(own11.startsWith('老成持重。眉头紧锁。铭记：') && own11.includes('会推之争') && !/【我是|天下钱法/.test(own11) && full11.endsWith('。' + own11), 'personalOnly 只要此人自己那段（全文末尾就是这段）');
+  ms.TM = ms.TM || {};
+  ms.TM.PersonalMemoryRecall = { personal: () => '会推前夜与周延儒密议' };
+  const topic11 = NMS.getMemoryContext('温体仁', { personalOnly: true, topic: '会推阁臣' });
+  ok(topic11 === own11 + '。议题相关原始记忆：会推前夜与周延儒密议', 'personalOnly 也照样按议题回想');
+
+  // ── 12. 接线与守卫 ──
   ok(read('tm-patches.js').includes("_togglePConf(\\'personUnifiedEnabled\\'"), '设置面板有「人物统一底子」开关');
   ok(read('tm-player-settings.js').includes('personUnifiedEnabled:'), '开关有提示语');
   console.log('[smoke-person-occasions] pass assertions=' + checks);

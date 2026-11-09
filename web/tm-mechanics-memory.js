@@ -718,7 +718,7 @@ var NpcMemorySystem = {
     if (ch._memArchive.length > cap.archive) NpcMemorySystem._foldArchive(ch, cap);
   },
 
-  /** 获取角色的记忆摘要（供AI使用——像一个人的内心自述）6.2: 带每回合缓存 */
+  /** 获取角色的记忆摘要（供AI使用——像一个人的内心自述）6.2: 带每回合缓存。opts.topic：按议题另回想几条原始记忆。opts.personalOnly：只要此人自己那段（人生阶段、心绪、往事、铭记、恩怨……），不带开头的「我是谁」身份块与天下大势；要截短用的都该取这段——身份块约 500 字，截 120、300 字截下来全是它（2026-11-09） */
   _memCache: {}, _memCacheTurn: -1,
   getMemoryContext: function(charName, opts) {
     opts = opts || {};
@@ -778,7 +778,7 @@ var NpcMemorySystem = {
     function combine(text) {
       var topic = opts.topic || opts.query || '';
       var recalled = topic && typeof TM !== 'undefined' && TM.PersonalMemoryRecall ? TM.PersonalMemoryRecall.personal(GM,ch,topic,6) : '';
-      return [liveParts.join('。'),text,recalled ? '议题相关原始记忆：'+recalled : ''].filter(Boolean).join('。');
+      return [opts.personalOnly ? '' : liveParts.join('。'),text,recalled ? '议题相关原始记忆：'+recalled : ''].filter(Boolean).join('。');
     }
     if(this._memCache[charName] && this._personalStamps[charName]===personalStamp) return combine(this._memCache[charName]);
 

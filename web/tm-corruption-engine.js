@@ -1065,113 +1065,13 @@
   // §6.3 反噬事件
   // ═════════════════════════════════════════════════════════════
 
-  function checkBacklash(context) {
+  // 反噬不再由代码掷骰子（11-09 同志定）。原先四处随机掷：腐败集团每月 2% 「遣党羽攻讦朝中正直」扣皇权 5，
+  // 厂卫腐败过六十满三年后每月 5% 「反噬朝廷」扣皇权 8，酷吏之策满两年后每月 5% 「来俊臣之流被清算」扣皇威 8，
+  // 党争之策满三年后每月 4% 「党祸连坐数百人」扣皇权 10、民心 8、随机让清流挂冠——都找不到是谁做的，道理同祥瑞。
+  // 这些事要由名册上的真人物去做（人物自主决策那条线），做了才有后果。保留此函数名，供旧调用处与测试。
+  function checkBacklash() {
     ensureCorruptionModel();
-    var cm = GM.corruption.countermeasures;
-    if (!GM._corrBacklashCounters) GM._corrBacklashCounters = {
-      harshAccum:0, factionFeudAccum:0, secretPoliceAccum:0, purgeHistory:0
-    };
-    var counters = GM._corrBacklashCounters;
-    var mr = (context && context._monthRatio) || getMonthRatio();
-
-    // 酷吏反噬：harshPunishment 持续 > 0.5 超过 24 月 → 反弹
-    if (cm.harshPunishment > 0.5) {
-      counters.harshAccum = (counters.harshAccum || 0) + mr;
-      if (counters.harshAccum > 24 && Math.random() < 0.05 * mr) {
-        _triggerBacklash('harshOfficialBacklash',
-          '酷吏来俊臣之流被清算，朝野方知冤狱之惨',
-          function() {
-            GM.corruption.subDepts.judicial.true += 15;
-            GM.corruption.countermeasures.harshPunishment = 0;
-            _mxApply(5, '清算酷吏·冤狱得雪', 'judicialFairness');
-            if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {
-              global.AuthorityEngines.adjustHuangwei('lostVirtueRumor', -8, '清算酷吏·冤狱曝于朝野');
-            } else if (GM.huangwei) GM.huangwei.index = Math.max(0, GM.huangwei.index - 8); // 沙箱回退
-          });
-        counters.harshAccum = 0;
-      }
-    } else {
-      counters.harshAccum = Math.max(0, (counters.harshAccum || 0) - mr);
-    }
-
-    // 党争祸：factionFeud 持续 > 0.5 超过 36 月 → 党祸
-    if (cm.factionFeud > 0.5) {
-      counters.factionFeudAccum = (counters.factionFeudAccum || 0) + mr;
-      if (counters.factionFeudAccum > 36 && Math.random() < 0.04 * mr) {
-        _triggerBacklash('partyFeudDisaster',
-          '党祸连坐数百人，朝政瘫痪',
-          function() {
-            GM.corruption.countermeasures.factionFeud = 0;
-            if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangquan) {
-              global.AuthorityEngines.adjustHuangquan('factionConsuming', -10, '\u53cd\u8150\u515a\u4e89\u5931\u63a7');
-            } else if (GM.huangquan) GM.huangquan.index = Math.max(0, GM.huangquan.index - 10);
-            _mxApply(-8, '反腐沦为党争·朝局动荡');
-            // 清流大批辞官
-            if (GM.chars) {
-              var quit = 0;
-              GM.chars.forEach(function(c) {
-                if (c.integrity > 70 && Math.random() < 0.1) { c.retired = true; quit++; }
-              });
-              if (quit > 0 && typeof addEB === 'function') {
-                addEB('人事', '党祸之后，清流挂冠者 ' + quit + ' 人', { credibility: 'high' });
-              }
-            }
-          });
-        counters.factionFeudAccum = 0;
-      }
-    } else {
-      counters.factionFeudAccum = Math.max(0, (counters.factionFeudAccum || 0) - mr);
-    }
-
-    // 特务机构反噬：机构自身腐败 > 60 持续 > 36 月
-    var spInsts = (GM.corruption.supervision.institutions || []).filter(function(i) {
-      return i.name === '锦衣卫' || i.name === '东厂' || i.name === '西厂';
-    });
-    if (spInsts.length > 0) {
-      var maxSpCorr = Math.max.apply(null, spInsts.map(function(i) { return i.corruption || 0; }));
-      if (maxSpCorr > 60) {
-        counters.secretPoliceAccum = (counters.secretPoliceAccum || 0) + mr;
-        if (counters.secretPoliceAccum > 36 && Math.random() < 0.05 * mr) {
-          _triggerBacklash('eunuchSupremacy',
-            '特务坐大，反噬朝廷；今见厂卫欺君，朝野震悚',
-            function() {
-              spInsts.forEach(function(i) { i.corruption += 15; });
-              GM.corruption.subDepts.imperial.true += 10;
-              if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangquan) {
-                global.AuthorityEngines.adjustHuangquan('eunuchsRelatives', -8, '\u5382\u536b\u5750\u5927\u53cd\u566c');
-              } else if (GM.huangquan) GM.huangquan.index = Math.max(0, GM.huangquan.index - 8);
-            });
-          counters.secretPoliceAccum = 0;
-        }
-      } else {
-        counters.secretPoliceAccum = Math.max(0, (counters.secretPoliceAccum || 0) - mr);
-      }
-    }
-
-    // 腐败集团坐大反咬（月概率 0.02 × mr）
-    GM.corruption.entrenchedFactions.forEach(function(f) {
-      if (f.status === 'active' && f.strength > 80 && Math.random() < 0.02 * mr) {
-        _triggerBacklash('factionRevealed',
-          '「' + f.name + '」竟遣党羽攻讦朝中正直',
-          function() {
-            f.strength = 100;
-            if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangquan) {
-              global.AuthorityEngines.adjustHuangquan('factionConsuming', -5, '\u8150\u8d25\u96c6\u56e2\u653b\u8ba6\u671d\u653f');
-            } else if (GM.huangquan) GM.huangquan.index = Math.max(0, GM.huangquan.index - 5);
-          });
-      }
-    });
-  }
-
-  function _triggerBacklash(type, message, effectFn) {
-    if (typeof addEB === 'function') {
-      addEB('朝代', message, { credibility: 'high' });
-    }
-    if (effectFn) try { effectFn(); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'corruption] backlash error:') : console.error('[corruption] backlash error:', e); }
-    GM.corruption.history.backlash.push({
-      type: type, turn: GM.turn, message: message
-    });
-    if (GM.corruption.history.backlash.length > 200) GM.corruption.history.backlash = GM.corruption.history.backlash.slice(-200);
+    return [];
   }
 
   // ═════════════════════════════════════════════════════════════

@@ -554,6 +554,21 @@
   function _checkComplianceEvents(rid, rf, region) {
     var G = global.GM;
     var signals = rf._signals || (rf._signals = {});
+    // 非直辖之地（羁縻、土司等）征收低、自主高是常态，不报抗命、坐大、自立（见 isDirectlyGoverned）；
+    // 旧档里按旧规则记下的「自立」一并撤掉。
+    if (rf.compliance < 0.5 && !isDirectlyGoverned(rid)) {
+      if (signals.selfDeclare) _dropSelfDeclared(G, rid, signals);
+      return;
+    }
+    // 头一回看到这块地（新开局的第一回合，或旧档头一回跑到这里）时就已如此，是剧本或旧档给的底子，
+    // 不是本局新发生的事：把对应的信号记上、不报；日后回落再越线才报。
+    if (!signals.seen) {
+      signals.seen = true;
+      if (rf.compliance < 0.5) signals.defiance = true;
+      if (rf.compliance < 0.3 && rf.autonomyLevel > 0.7) signals.warlord = true;
+      if (rf.compliance < 0.1 && rf.autonomyLevel > 0.85) signals.selfDeclare = true;
+      return;
+    }
     // 抗命
     if (rf.compliance < 0.5 && !signals.defiance) {
       signals.defiance = true;
@@ -578,6 +593,15 @@
         declaredAt: G.turn || 0,
         lord: rf.governingOfficial
       });
+    }
+  }
+
+  function _dropSelfDeclared(G, rid, signals) {
+    signals.selfDeclare = false;
+    var list = G && G.fiscal && G.fiscal.feudalHoldings;
+    if (!Array.isArray(list)) return;
+    for (var i = list.length - 1; i >= 0; i--) {
+      if (list[i] && list[i].type === 'autonomous_warlord' && list[i].regionId === rid) list.splice(i, 1);
     }
   }
 
@@ -759,26 +783,46 @@
   // 区划账（G.fiscal.regions）以编号为键、不存名字，名字在 G.adminHierarchy 各势力的区划树里。
   function _regionLabel(regionId) {
     if (regionId == null || regionId === '') return '某地';
-    var G = global.GM, found = '';
-    var flat = G ? _findRegion(regionId) : null;
+    var flat = global.GM ? _findRegion(regionId) : null;
     if (flat && flat.name) return flat.name;
+    var node = _findDivisionNode(regionId);
+    return (node && node.name) || String(regionId);
+  }
+
+  // 按编号（或名字）在各势力的区划树里找区划节点。
+  function _findDivisionNode(regionId) {
+    var G = global.GM, found = null;
+    if (regionId == null || regionId === '' || !G || !G.adminHierarchy || typeof G.adminHierarchy !== 'object') return null;
     function walk(nodes) {
       if (!Array.isArray(nodes)) return;
       for (var i = 0; i < nodes.length && !found; i++) {
         var node = nodes[i];
         if (!node || typeof node !== 'object') continue;
-        if (node.id === regionId || node.name === regionId) { found = node.name || ''; return; }
+        if (node.id === regionId || node.name === regionId) { found = node; return; }
         walk(node.divisions);
         walk(node.children);
       }
     }
-    if (G && G.adminHierarchy && typeof G.adminHierarchy === 'object') {
-      Object.keys(G.adminHierarchy).forEach(function(key) {
-        var tree = G.adminHierarchy[key];
-        if (!found && tree) walk(tree.divisions);
-      });
-    }
-    return found || String(regionId);
+    Object.keys(G.adminHierarchy).forEach(function(key) {
+      var tree = G.adminHierarchy[key];
+      if (!found && tree) walk(tree.divisions);
+    });
+    return found;
+  }
+
+  // 朝廷直辖与否。羁縻、土司、藩邦（区划的 regionType），以及羁縻、朝贡、藩国、藩镇（autonomy.type，剧本或封建系统定的）
+  // 本来就不归朝廷直管，征收低、自主高是它们的常态；央地博弈里的「抗命」「坐大成藩镇」「自立」只对直辖之地才说得通。
+  // 天启开局乌思藏都指挥使司（羁縻，作者定自主 0.9、征收 0.15）第一回合就被报抗命、坐大成藩镇，
+  // 又被台账那边（tm-ledger-paper）判成「藩镇自立」，扣皇权 8、皇威 10，还安了个「某节度」（11-09 核）。
+  // 找不到区划的按直辖算（旧行为）。
+  var NON_DIRECT_REGION_TYPES = { jimi: true, tusi: true, fanbang: true };
+  var NON_DIRECT_AUTONOMY_TYPES = { jimi: true, chaogong: true, fanguo: true, fanzhen: true };
+  function isDirectlyGoverned(regionId) {
+    var node = _findDivisionNode(regionId);
+    if (!node) return true;
+    if (NON_DIRECT_REGION_TYPES[node.regionType] === true) return false;
+    if (node.autonomy && NON_DIRECT_AUTONOMY_TYPES[node.autonomy.type] === true) return false;
+    return true;
   }
 
   function _formatEventMsg(kind, d) {
@@ -898,6 +942,7 @@
     setRegionAllocation: setRegionAllocation,
     getComplianceReport: getComplianceReport,
     getAIContext: getAIContext,
+    isDirectlyGoverned: isDirectlyGoverned,
     ALLOCATION_PRESETS: ALLOCATION_PRESETS,
     REFORM_PRESETS: REFORM_PRESETS,
     EXPENDITURE_EFFECTS: EXPENDITURE_EFFECTS,

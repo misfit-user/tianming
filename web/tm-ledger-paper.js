@@ -165,36 +165,59 @@
   function _checkWarlordAutonomyRise(ctx) {
     var G = global.GM;
     if (!G.fiscal || !G.fiscal.regions) return;
+    // 只看朝廷直辖之地（CentralLocalEngine.isDirectlyGoverned）：羁縻、土司自主高、征收低是常态，不是「藩镇自立」。
+    // 天启开局乌思藏都指挥使司（羁縻）第一回合就被判自立，扣皇权 8、皇威 10，还安了个「某节度」（11-09 核）。
+    var CL = global.CentralLocalEngine;
+    var isDirect = function(rid) { return !(CL && typeof CL.isDirectlyGoverned === 'function') || CL.isDirectlyGoverned(rid); };
     Object.keys(G.fiscal.regions).forEach(function(rid) {
       var reg = G.fiscal.regions[rid];
-      if (reg.autonomyLevel > 0.85 && reg.compliance < 0.2 && !reg._elevatedToFeudal) {
-        // 升格
-        reg._elevatedToFeudal = true;
-        if (!G.feudalHoldings) G.feudalHoldings = [];
-        // 解析 region 人类可读名·优先 reg.name·否则从 adminHierarchy 找·最后 fallback rid
-        var _regName = reg.name || _findDivisionNameById(G, rid) || rid;
-        var fh = {
-          id: 'feudal_' + (G.turn||0) + '_' + rid,
-          name: _regName,
-          originalRegionId: rid,
-          type: 'warlord',
-          ruler: reg.localRulerName || '某节度',
-          loyalty: 0.3,
-          tribute: { annual: (reg.claimedRevenue || 500000) * 0.3 },
-          elevatedTurn: G.turn || 0
-        };
-        G.feudalHoldings.push(fh);
-        if (global.addEB) global.addEB('藩镇', _regName + ' 自立\uFF08\u72EC\u7ACB\u85E9\u9547\uFF09');
-        // 皇权皇威损
-        if (global._adjAuthority) {
-          global._adjAuthority('huangquan', -8, '\u85e9\u9547\u81ea\u7acb', { source:'ledger-paper-feudal' });
-          global._adjAuthority('huangwei', -10);
-        }
-        if (typeof global.EventBus !== 'undefined') {
-          global.EventBus.emit('central_local.warlord_independent', { regionId: rid, feudalId: fh.id });
-        }
+      if (reg._elevatedToFeudal && !isDirect(rid)) _dropMisjudgedWarlord(G, rid, reg);
+      // 头一回看到这块地（新开局的第一回合、旧档头一回，或本局新得的地）时就已过线的，是底子、不是本局发生的事：
+      // 记下不报；日后回落、再越线才算自立。
+      var firstLook = !reg._warlordSeen;
+      reg._warlordSeen = true;
+      if (!(reg.autonomyLevel > 0.85 && reg.compliance < 0.2)) {
+        if (reg._warlordAtStart) delete reg._warlordAtStart;
+        return;
+      }
+      if (reg._elevatedToFeudal || reg._warlordAtStart || !isDirect(rid)) return;
+      if (firstLook) { reg._warlordAtStart = true; return; }
+      // 升格
+      reg._elevatedToFeudal = true;
+      if (!G.feudalHoldings) G.feudalHoldings = [];
+      // 解析 region 人类可读名·优先 reg.name·否则从 adminHierarchy 找·最后 fallback rid
+      var _regName = reg.name || _findDivisionNameById(G, rid) || rid;
+      var fh = {
+        id: 'feudal_' + (G.turn||0) + '_' + rid,
+        name: _regName,
+        originalRegionId: rid,
+        type: 'warlord',
+        ruler: reg.localRulerName || '某节度',
+        loyalty: 0.3,
+        tribute: { annual: (reg.claimedRevenue || 500000) * 0.3 },
+        elevatedTurn: G.turn || 0
+      };
+      G.feudalHoldings.push(fh);
+      if (global.addEB) global.addEB('藩镇', _regName + ' 自立\uFF08\u72EC\u7ACB\u85E9\u9547\uFF09');
+      // 皇权皇威损
+      if (global._adjAuthority) {
+        global._adjAuthority('huangquan', -8, '\u85e9\u9547\u81ea\u7acb', { source:'ledger-paper-feudal' });
+        global._adjAuthority('huangwei', -10);
+      }
+      if (typeof global.EventBus !== 'undefined') {
+        global.EventBus.emit('central_local.warlord_independent', { regionId: rid, feudalId: fh.id });
       }
     });
+  }
+
+  // 旧档里按旧规则被判「藩镇自立」的非直辖之地（天启的乌思藏）：撤掉那条凭空来的藩镇；已扣的皇权、皇威不追回。
+  function _dropMisjudgedWarlord(G, rid, reg) {
+    delete reg._elevatedToFeudal;
+    var list = G.feudalHoldings;
+    if (!Array.isArray(list)) return;
+    for (var i = list.length - 1; i >= 0; i--) {
+      if (list[i] && list[i].type === 'warlord' && list[i].originalRegionId === rid) list.splice(i, 1);
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════

@@ -140,15 +140,16 @@ console.log('===== 回合主写回预检：perItem 时剔除而不是判整回�
 
   console.log('===== 央地事件写区划名字 =====');
   const msgs = [];
-  const game = { turn: 3, fiscal: { _centralLocalInited: true, auditSystem: { lastAuditedByRegion: {} }, regions: { div_x: { compliance: 0.2, autonomyLevel: 0.9 } } },
-    adminHierarchy: { player: { divisions: [{ id: 'div_top', name: '陕西', children: [{ id: 'div_x', name: '乌思藏都指挥使司' }] }] } } };
+  // 已过头一回（开局原样的只记不报，见 smoke-warlord-direct-rule）；用直辖的府，羁縻之地不报这些
+  const game = { turn: 3, fiscal: { _centralLocalInited: true, auditSystem: { lastAuditedByRegion: {} }, regions: { div_x: { compliance: 0.2, autonomyLevel: 0.9, _signals: { seen: true } } } },
+    adminHierarchy: { player: { divisions: [{ id: 'div_top', name: '陕西', children: [{ id: 'div_x', name: '延安府' }] }] } } };
   const cl = { GM: game, P: {}, console: { log() {}, warn() {}, error() {}, info() {} }, Math, JSON, Date, addEB: (t, m) => msgs.push(t + '：' + m) };
   cl.window = cl; cl.global = cl; cl.globalThis = cl;
   vm.createContext(cl);
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-central-local-engine.js'), 'utf8'), cl, { filename: 'tm-central-local-engine.js' });
   try { cl.CentralLocalEngine.tick({ turn: 3 }); } catch (_) {}
   const evts = msgs.filter((m) => /^央地/.test(m));
-  ok(evts.length > 0 && evts.every((m) => m.indexOf('乌思藏都指挥使司') >= 0 && m.indexOf('div_x') < 0), '抗命/藩镇事件写区划名字（' + evts.join(' / ') + '）');
+  ok(evts.length > 0 && evts.every((m) => m.indexOf('延安府') >= 0 && m.indexOf('div_x') < 0), '抗命/藩镇事件写区划名字（' + evts.join(' / ') + '）');
 
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   if (failed) process.exit(1);

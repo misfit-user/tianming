@@ -133,7 +133,7 @@ async function _yq2_startSession() {
   advisors.forEach(function(_nm) {
     var _ch = findCharByName(_nm); if (!_ch) return;
     var _de = 0;
-    var _tids = (_ch.traits||[]).concat(_ch.traitIds||[]);
+    var _tids = (_ch.traits||[]).concat(_ch.traitIds||[]);  // person-ok：坦白度按特质代号算，数值用途，不进提示词
     if (_tids.indexOf('deceitful') >= 0) _de = 30;
     if (_tids.indexOf('honest') >= 0) _de = -20;
     var _cd = Math.max(0, Math.min(100, (_ch.loyalty||50) * 0.5 + (100 - _de) * 0.3 + 20));
@@ -238,7 +238,7 @@ async function _yq2_oneAdvisorSpeak(name, roundNum) {
     candor = _cachedCand.candor; candorLevel = _cachedCand.level;
   } else {
     var deceit = 0;
-    var tids = (ch.traits||[]).concat(ch.traitIds||[]);
+    var tids = (ch.traits||[]).concat(ch.traitIds||[]);  // person-ok：坦白度按特质代号算，数值用途，不进提示词
     if (tids.indexOf('deceitful') >= 0) deceit = 30;
     if (tids.indexOf('honest') >= 0) deceit = -20;
     candor = Math.max(0, Math.min(100, (ch.loyalty||50) * 0.5 + (100 - deceit) * 0.3 + 20));
@@ -252,11 +252,20 @@ async function _yq2_oneAdvisorSpeak(name, roundNum) {
   }
 
   var prompt = '御前会议·坦言直陈（第 ' + roundNum + ' 轮）。议题：' + CY._yq2.topic + '\n';
-  prompt += '你扮演' + name + '（' + (ch.officialTitle||ch.title||'') + '）。\n';
-  prompt += '性格：' + (ch.personality||'') + '\n';
-  prompt += '忠' + (ch.loyalty||50) + ' 野' + (ch.ambition||40) + ' 学识:' + (ch.learning||'') + ' 党:' + (ch.party||'无') + '\n';
-  // 御前补注（2026-07-03·对齐常朝/廷议 prompt 成色）：势力/对陛下心迹/皇威皇权 cue/本党所谋
-  prompt += '势力：' + (ch.faction||'?') + (ch.stanceToPlayer ? ('｜对陛下：' + String(ch.stanceToPlayer).slice(0, 20)) : '') + '\n';
+  // 人2：开关开着时，「他是谁」读人物统一底子（tm-person.js 精简档：人格核、人设长文、处境一行、按议题回想的记忆、承诺、野心），
+  //   只留御前场合的学识、对陛下；关着时下面旧拼法逐字不变。皇威皇权、本党所谋、坦白度、已有对话、返回格式两路相同。
+  var _personOn = !!(typeof TM !== 'undefined' && TM.Person && TM.Person.on());
+  if (_personOn) {
+    prompt += '你扮演' + name + '，在御前密议中直陈。\n' + TM.Person.brief(ch, { occasion: 'yuqian', detail: 'brief', topic: CY._yq2.topic });
+    if (ch.learning) prompt += '学识：' + ch.learning + '\n';
+    if (ch.stanceToPlayer) prompt += '对陛下：' + String(ch.stanceToPlayer).slice(0, 20) + '\n';
+  } else {
+    prompt += '你扮演' + name + '（' + (ch.officialTitle||ch.title||'') + '）。\n';
+    prompt += '性格：' + (ch.personality||'') + '\n';
+    prompt += '忠' + (ch.loyalty||50) + ' 野' + (ch.ambition||40) + ' 学识:' + (ch.learning||'') + ' 党:' + (ch.party||'无') + '\n';
+    // 御前补注（2026-07-03·对齐常朝/廷议 prompt 成色）：势力/对陛下心迹/皇威皇权 cue/本党所谋
+    prompt += '势力：' + (ch.faction||'?') + (ch.stanceToPlayer ? ('｜对陛下：' + String(ch.stanceToPlayer).slice(0, 20)) : '') + '\n';
+  }
   if (typeof GM !== 'undefined') {
     var _yqHw = (GM.huangwei && typeof GM.huangwei.index === 'number') ? GM.huangwei.index : 50;
     var _yqHq = (GM.huangquan && typeof GM.huangquan.index === 'number') ? GM.huangquan.index : 50;
@@ -268,9 +277,12 @@ async function _yq2_oneAdvisorSpeak(name, roundNum) {
     if (_yqAg) prompt += '本党近期所谋：' + String(_yqAg).replace(/\s+/g, ' ').slice(0, 60) + '（密议中亦不忘本党利害）\n';
   }
   // ★2026-07-01 S2治「跨界面人格分裂」:改用统一 getMemoryContext(与问对/奏疏/廷议/常朝同源·含心绪/人生底色/要事/印象/伤疤)·而非 slice(-3) 浅切片·人格一致·无则回退
-  var _yqMem = '';
-  try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _yqMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_yqmE) {}
-  prompt += _yqMem ? ('【此人记忆与心性】' + _yqMem + '\n') : ('近期记忆：' + ((ch._memory||[]).slice(-3).map(function(m){return (m.event||'').slice(0,30);}).join('；')||'无') + '\n');
+  //   人2 开着时记忆已在统一底子里（同一个 getMemoryContext，另按议题回想），这里不再重复。
+  if (!_personOn) {
+    var _yqMem = '';
+    try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _yqMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_yqmE) {}
+    prompt += _yqMem ? ('【此人记忆与心性】' + _yqMem + '\n') : ('近期记忆：' + ((ch._memory||[]).slice(-3).map(function(m){return (m.event||'').slice(0,30);}).join('；')||'无') + '\n');
+  }
   prompt += '你的坦白度：' + candor + '/100（' + candorLevel + '·\u8D8A\u9AD8\u8D8A\u76F4\u8A00\u00B7\u8D8A\u4F4E\u8D8A\u8FCE\u5408\uFF09\n';
   if (CY._yq2._transcript) {
     prompt += '\n已有对话（仅供参考，你可附议/反驳/补充/转圜）：\n' + CY._yq2._transcript.slice(-1600) + '\n';
@@ -372,11 +384,17 @@ async function _yq2_doAskAdvisor(name, question) {
   if (!ch) return;
   var candor = (CY._yq2.opinions[name] && CY._yq2.opinions[name].candor) || 70;
   var prompt = '御前密议·深入问答。议题：' + CY._yq2.topic + '\n';
-  prompt += '你扮演' + name + '（' + (ch.officialTitle||ch.title||'') + '，性格' + (ch.personality||'') + '，忠' + (ch.loyalty||50) + '，党:' + (ch.party||'无') + '）\n';
-  // 深问补记忆（2026-07-03）：此前深问 prompt 无记忆无党——密谈本该是最见心性处
-  var _dqMem = '';
-  try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _dqMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_dqmE) {}
-  if (_dqMem) prompt += '【此人记忆与心性】' + String(_dqMem).slice(0, 500) + '\n';
+  // 人2：开关开着时读人物统一底子的完整档（单人深谈，和问对同一档；记忆在里面，不再截 500 字另拼）；关着时逐字不变
+  var _personOn = !!(typeof TM !== 'undefined' && TM.Person && TM.Person.on());
+  if (_personOn) {
+    prompt += '你扮演' + name + '，御前密议中陛下单独深问你。\n' + TM.Person.brief(ch, { occasion: 'yuqian', detail: 'full', topic: CY._yq2.topic });
+  } else {
+    prompt += '你扮演' + name + '（' + (ch.officialTitle||ch.title||'') + '，性格' + (ch.personality||'') + '，忠' + (ch.loyalty||50) + '，党:' + (ch.party||'无') + '）\n';
+    // 深问补记忆（2026-07-03）：此前深问 prompt 无记忆无党——密谈本该是最见心性处
+    var _dqMem = '';
+    try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _dqMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_dqmE) {}
+    if (_dqMem) prompt += '【此人记忆与心性】' + String(_dqMem).slice(0, 500) + '\n';
+  }
   prompt += '之前你已陈言：' + ((CY._yq2.opinions[name]&&CY._yq2.opinions[name].line) || '尚未发言') + '\n';
   prompt += '皇帝再深问：' + question + '\n';
   prompt += '坦白度:' + candor + '，' + (candor>80?'推心置腹':candor>50?'大致坦言':'揣摩圣意') + '\n';
@@ -586,7 +604,7 @@ async function _yq2_evaluateLeak() {
   advisors.forEach(function(nm) {
     var ch = findCharByName(nm);
     if (!ch) return;
-    var tids = (ch.traits||[]).concat(ch.traitIds||[]);
+    var tids = (ch.traits||[]).concat(ch.traitIds||[]);  // person-ok：泄密风险按特质代号算，数值用途，不进提示词
     var risk = Math.max(0, 100 - (ch.loyalty||50));
     if (tids.indexOf('deceitful') >= 0) risk += 15;
     if (tids.indexOf('gregarious') >= 0) risk += 10; // 话多
@@ -605,7 +623,16 @@ async function _yq2_evaluateLeak() {
   if (actuallyLeaks && P.ai && P.ai.key) {
     // AI 决定谁泄密、怎么泄
     var prompt = '御前密议结束。议题：' + CY._yq2.topic + '\n';
-    prompt += '与会者：' + advisors.join('、') + '\n';
+    // 人2：开关开着时与会者每人一行读统一底子（性情、特质、所求），谁会泄密要看性情；关着时逐字不变
+    var _personOn = !!(typeof TM !== 'undefined' && TM.Person && TM.Person.on());
+    if (_personOn) {
+      prompt += '与会者：\n' + advisors.map(function (nm) {
+        var c = findCharByName(nm), w = c ? TM.Person.line(c, { noName: true, goalMax: 20 }) : '';
+        return '  ' + nm + (w ? '｜' + w : '');
+      }).join('\n') + '\n';
+    } else {
+      prompt += '与会者：' + advisors.join('、') + '\n';
+    }
     prompt += '议事结论：' + (CY._yq2.decision && (CY._yq2.decision.mode||'') + (CY._yq2.decision.custom||'')) + '\n';
     prompt += '判定：此次议事已发生泄密。选一人作为泄密者（最可能的），描述泄密方式与严重程度。\n';
     prompt += '返回 JSON：{"leaker":"人名","channel":"枕边风/门生告密/酒后失言/密书外传","severity":"light轻/moderate中/severe重","knownTo":["外界得知者"],"consequence":"后续影响"}';

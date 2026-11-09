@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // 人物统一底子（人2）smoke：各机制扮演人物时读同一份「他是谁」（tm-person.js）。
 //   · 人格核合成规矩：特质并 traitIds 与 traits（英文代号不进提示词）、口吻合一、立场与所求去重、名单一行。
-//   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单的提示词
+//   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前的提示词
 //     与改造前逐字相同（金标准哈希）；开着时各场合的人物段含同一份人格核（一字不差）。
 // 金标准由改造前的文件在同一夹具上算出：TM_PERSON_SMOKE_GOLDEN_DIR=<放改造前文件的目录> node 本文件 → 打印哈希后退出。
-//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）。
+//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）。
 // 施工单：E:/tianming-tmp/orders/人2-各机制接人物底子-施工单.md；设计：docs/guanben-roleplay-20260930/tuiyan.md 7.2 节。
 'use strict';
 const fs = require('fs');
@@ -121,6 +121,33 @@ function courtSandbox() {
 const COURT_LABEL = { tinyi: '廷议发言', judge: '廷议立场迁移判定', mediate: '廷议折中', override: '逆众议后判谁反弹',
   interject: '朝议插话回应', agenda: '常朝议程（在场官员名单）' };
 
+// 御前（人2 第三片）：在廷议夹具上再载 tm-chaoyi-yuqian.js（同样单开一个，不碰前面的金标准）
+function yqSandbox() {
+  const c = courtSandbox();
+  vm.runInContext(read('tm-chaoyi-yuqian.js'), c, { filename: 'tm-chaoyi-yuqian.js' });
+  c.addCYBubble = () => mkEl('div');
+  c._yq2_offerFollowUp = () => {};
+  c._yq2_finalEnd = () => {};
+  return c;
+}
+
+const YQ_LABEL = { speak: '御前直陈', deep: '御前深问', leak: '御前泄密判定' };
+
+async function yqPrompts(c) {
+  const CY = c.CY, out = {};
+  CY.open = true; CY._abortChaoyi = false;
+  CY._yq2 = { topic: '会推阁臣', advisors: ['温体仁', '钱谦益'], opinions: {}, candorMap: {}, record: 'normal', _transcript: '',
+    decision: { mode: '准奏', custom: '' } };
+  const take = async (fn) => { c.__court.length = 0; await fn(); return c.__court[0] || ''; };
+  out.speak = await take(() => c._yq2_oneAdvisorSpeak('温体仁', 1));
+  out.deep = await take(() => c._yq2_doAskAdvisor('温体仁', '卿以为谁可入阁'));
+  // 泄密是掷骰的：这一下让它必泄，好截下判谁泄密的提示词
+  const realMath = c.Math;
+  c.Math = Object.create(realMath, { random: { value: () => 0 } });
+  try { out.leak = await take(() => c._yq2_evaluateLeak()); } finally { c.Math = realMath; }
+  return out;
+}
+
 async function courtPrompts(c) {
   const CY = c.CY, out = {};
   CY.open = true; CY._abortChaoyi = false;
@@ -160,6 +187,10 @@ async function prompts(c) {
     const court = {}, lengths = {};
     Object.keys(COURT_LABEL).forEach((k) => { court[k] = sha(gc[k]); lengths[k] = gc[k].length; });
     console.log(JSON.stringify({ court, lengths }, null, 2));
+    const gy = await yqPrompts(yqSandbox());
+    const yq = {}, yqLen = {};
+    Object.keys(YQ_LABEL).forEach((k) => { yq[k] = sha(gy[k]); yqLen[k] = gy[k].length; });
+    console.log(JSON.stringify({ yuqian: yq, lengths: yqLen }, null, 2));
     return;
   }
 
@@ -250,7 +281,29 @@ async function prompts(c) {
   ok(P3.brief(wen3, { detail: 'brief' }).includes('【本人交办与复命凭据】\n  奉旨查核会推名单（未复命）'), '精简档：有交办时照写');
   delete cc.TM.ImperialOrders;
 
-  // ── 6. 接线与守卫 ──
+  // ── 6. 御前（人2 第三片）：关着逐字不变，开着读同一份底子 ──
+  // 由改造前（fe3076dd）的文件在同一夹具上算出：直陈 282 字、深问 141、泄密判定 209
+  const YQ_GOLDEN = {
+    speak: '2f7aabb5d32521fb6a108634443ef5a256cd6c9e3edc77f810a9adf8694a08e0',
+    deep: '896a4462b7db76f650ddf298aa61fa5b942a55aa7c7b0087f833b0c3f743ef61',
+    leak: '68fee1d61bb10c30caae7d675a1c69c5a532c691c07d01bb0411e3aa9187ce29'
+  };
+  const yc = yqSandbox();
+  const yoff = await yqPrompts(yc);
+  for (const k of Object.keys(YQ_GOLDEN)) eq(sha(yoff[k]), YQ_GOLDEN[k], '关着：' + YQ_LABEL[k] + '提示词逐字不变');
+  yc.P.conf.personUnifiedEnabled = true;
+  const yon = await yqPrompts(yc);
+  const P4 = yc.TM.Person, wen4 = yc.GM.chars[1];
+  ok(yon.speak.includes('你扮演温体仁，在御前密议中直陈。\n' + P4.brief(wen4, { detail: 'brief', topic: '会推阁臣' })) && !yon.speak.includes('性格：阴柔多智') && !yon.speak.includes('【此人记忆与心性】'), '开着：御前直陈读精简档，记忆不重复写');
+  ok(yon.speak.includes('你的坦白度：77.5/100') && yon.speak.includes('"inwardThought"') && !yon.speak.includes('学识：'), '开着：御前场合规矩照旧，没有学识不写空行');
+  ok(yon.deep.includes('你扮演温体仁，御前密议中陛下单独深问你。\n' + P4.brief(wen4, { occasion: 'yuqian', detail: 'full', topic: '会推阁臣' })) && yon.deep.includes('【能力】') && !yon.deep.includes('【此人记忆与心性】'), '开着：御前深问读完整档（单人深谈，同问对一档），记忆不再截 500 字另拼');
+  ok(yon.deep.includes('皇帝再深问：卿以为谁可入阁') && yon.deep.includes('坦白度:77.5'), '开着：深问的场合规矩照旧');
+  ok(yon.leak.includes('与会者：\n  温体仁｜' + P4.line(wen4, { noName: true, goalMax: 20 }) + '\n  钱谦益｜负才傲物\n'), '开着：泄密判定的与会者每人一行性情、特质、所求');
+  ok(Object.keys(yon).every((k) => !/shrewd|t-sly/.test(yon[k])), '开着：英文代号不进御前的提示词');
+  for (const k of ['speak', 'deep']) ok(yon[k].split(P4.coreText(wen4)).length === 2, '开着：' + YQ_LABEL[k] + '里人格核出现且只出现一次');
+  ok([yon.speak, yon.deep].every((s) => s.includes(core)), '开着：御前直陈、深问读到的人格核与问对、常朝、廷议一字不差');
+
+  // ── 7. 接线与守卫 ──
   ok(read('tm-patches.js').includes("_togglePConf(\\'personUnifiedEnabled\\'"), '设置面板有「人物统一底子」开关');
   ok(read('tm-player-settings.js').includes('personUnifiedEnabled:'), '开关有提示语');
   console.log('[smoke-person-occasions] pass assertions=' + checks);

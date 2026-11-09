@@ -323,6 +323,7 @@ function _togglePConf(confKey, on) {
   }
   var labels = {
     mattersLedgerEnabled: { on: '已启用事的容器·过回合时只读整理案单，不改世界', off: '已关闭事的容器' },
+    personUnifiedEnabled: { on: '已启用人物统一底子·各场合扮演人物读同一份性情与口吻', off: '已关闭人物统一底子·各场合照旧' },
     recallGateEnabled: { on: '已启用召回节流·常规回合跳过 SC_RECALL 节省 API', off: '已关闭召回节流·每回合都全跑 5 源召回' },
     consolidationEnabled: { on: '已启用后台记忆固化', off: '已关闭后台记忆固化·sc_consolidate 不再调用' },
     memorySynthesisEnabled: { on: '已启用后台记忆固化/综合', off: '已关闭后台记忆固化·记忆连贯性减低' },

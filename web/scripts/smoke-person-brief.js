@@ -91,13 +91,13 @@ eq(c.TM.Person.core(wen).speech, '言辞委婉、步步设防', '说话优先 sp
 eq(c.TM.Person.core(qian).speech, '好引经据典', '没有 speechStyle 用 diction');
 eq(c.TM.Person.core(qian).traits, '负才傲物', '人格核的特质同片段');
 
-// ── 3. 精简档、完整档 ──
+// ── 3. 精简档、完整档（人2 按施工单重定：都以统一人格核开头；人2 各场合的断言在 smoke-person-occasions.js）──
 const short = c.TM.Person.brief(wen, { detail: 'brief' });
-ok(short.startsWith('温体仁(礼部侍郎)，年54：特质狡诈、野心勃勃，立场中立，心中所求入阁拜相'), '精简档一行身份与人格核');
-ok(short.includes('【个人语言风格】言辞委婉') && !short.includes('【要求】') && !short.includes('JSON'), '精简档带说话风格，不带问对规矩');
-ok(short.length < 600, '精简档够短');
+ok(short.startsWith('【人物】温体仁（礼部侍郎），年54，当前压力70（濒临崩溃）\n【性情】特质：狡诈、野心勃勃\n'), '精简档以人格核开头');
+ok(short.includes('【口吻】言辞委婉') && short.includes('【记忆】') && !short.includes('【要求】') && !short.includes('JSON'), '精简档带口吻与记忆，不带问对规矩');
+ok(short.length < 900, '精简档够短');
 const full = c.TM.Person.brief(wen, {});
-ok(full.includes('【记忆】') && full.includes('【身份】') && full.includes('【认知】') && !full.includes('【要求】'), '完整档有人物各块，不带场合规矩');
+ok(full.startsWith(c.TM.Person.coreText(wen)) && full.includes('【记忆】') && full.includes('【处境】') && full.includes('【认知】') && !full.includes('【要求】'), '完整档有人物各块，不带场合规矩');
 eq(c.TM.Person.brief(wen, { occasion: 'wendui' }), c._wdBuildPrompt(wen, '温体仁'), '问对场合的完整档就是问对提示词');
 
 // ── 4. 问对经 TM.Person 拼装后逐字不变：金标准取自改造前的 _wdBuildPrompt（同一夹具、同一替身） ──

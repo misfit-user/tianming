@@ -872,31 +872,39 @@ async function _cc3_aiGenReact(name, item, role, onChunk) {
   const stanceLabels = { support:'支持', oppose:'反对', mediate:'折中', neutral:'中立' };
 
   let p = '你扮演 ' + name + '。\n';
-  p += '── 你的档案 ──\n';
-  p += '官职：' + officialTitle + '\n';
-  p += '势力：' + (gmCh && gmCh.faction || ch.faction || '中立') + '·党派：' + (gmCh && gmCh.party || ch.party || '中立') + '\n';
-  if (personality) p += '性格：' + personality + '\n';
-  if (traits)      p += '特质：' + traits + '\n';
-  const stats = [];
-  if (loyalty   != null) stats.push('忠诚 ' + loyalty);
-  if (integrity != null) stats.push('清廉 ' + integrity);
-  if (ambition  != null) stats.push('野心 ' + ambition);
-  if (stats.length) p += '能力：' + stats.join(' · ') + '\n';
-  if (family)        p += '家世：' + (typeof family === 'string' ? family : '世家') + '\n';
-  if (stance2Player) p += '对陛下：' + stance2Player + '\n';
-  if (relationLine)  p += relationLine + '\n';
-  if (memorySnippet) p += '── 你的记忆（影响判断）──\n' + memorySnippet + '\n';
+  // 人2：开着「人物统一底子」时，档案读全游戏同一份（tm-person.js 精简档）；原来这里把 traits 原样拼进来，
+  //   剧本里的 traits 多是定义外的英文代号（ambitious·diligent……），统一底子只写认得出的特质名。关着时照旧。
+  if (typeof TM !== 'undefined' && TM.Person && TM.Person.on() && gmCh) {
+    p += TM.Person.brief(gmCh, { occasion: 'changchao', detail: 'brief', topic: item && item.title });
+    if (stance2Player) p += '对陛下：' + stance2Player + '\n';
+    if (relationLine)  p += relationLine + '\n';
+  } else {
+    p += '── 你的档案 ──\n';
+    p += '官职：' + officialTitle + '\n';
+    p += '势力：' + (gmCh && gmCh.faction || ch.faction || '中立') + '·党派：' + (gmCh && gmCh.party || ch.party || '中立') + '\n';
+    if (personality) p += '性格：' + personality + '\n';
+    if (traits)      p += '特质：' + traits + '\n';
+    const stats = [];
+    if (loyalty   != null) stats.push('忠诚 ' + loyalty);
+    if (integrity != null) stats.push('清廉 ' + integrity);
+    if (ambition  != null) stats.push('野心 ' + ambition);
+    if (stats.length) p += '能力：' + stats.join(' · ') + '\n';
+    if (family)        p += '家世：' + (typeof family === 'string' ? family : '世家') + '\n';
+    if (stance2Player) p += '对陛下：' + stance2Player + '\n';
+    if (relationLine)  p += relationLine + '\n';
+    if (memorySnippet) p += '── 你的记忆（影响判断）──\n' + memorySnippet + '\n';
 
-  // 常朝大改 Slice 1·PromptComposer 注入·跟玩家话回应路径 (L1761) 同 paradigm
-  // 让自发表态路径 (selfReact / debate / debate2 / dissent) 也吃到 aiPersonaText + recognitionState
-  // 而非只读 personality / loyalty / integrity / ambition 等表层字段
-  if (typeof TM !== 'undefined' && TM.PromptComposer && gmCh) {
-    try {
-      const _aiP = TM.PromptComposer.buildAiPersonaText(gmCh);
-      if (_aiP) p += _aiP;
-      const _rec = TM.PromptComposer.buildRecognitionState(gmCh);
-      if (_rec) p += _rec;
-    } catch (_) {}
+    // 常朝大改 Slice 1·PromptComposer 注入·跟玩家话回应路径 (L1761) 同 paradigm
+    // 让自发表态路径 (selfReact / debate / debate2 / dissent) 也吃到 aiPersonaText + recognitionState
+    // 而非只读 personality / loyalty / integrity / ambition 等表层字段
+    if (typeof TM !== 'undefined' && TM.PromptComposer && gmCh) {
+      try {
+        const _aiP = TM.PromptComposer.buildAiPersonaText(gmCh);
+        if (_aiP) p += _aiP;
+        const _rec = TM.PromptComposer.buildRecognitionState(gmCh);
+        if (_rec) p += _rec;
+      } catch (_) {}
+    }
   }
 
   // 【sc07 升级·S3 消费打通】注入 sc07 NPC 认知画像(自我画像/口吻/知与不知/对陛下态度/恩怨/所求/朝局判断/风闻未证)——

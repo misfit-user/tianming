@@ -1120,6 +1120,14 @@ openSettings=function(){
             '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">只读：每次过回合，把诏令、承诺、要务、待议、奏疏等旧账整理成一份案单，随存档保存。不改动世界、不调模型、不影响推演。供新推演施工用。</div>' +
           '</div>' +
         '</label>' +
+        // 人2（2026-11-09）：各机制扮演人物时读同一份「他是谁」（tm-person.js）；默认关
+        '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;">' +
+          '<input type="checkbox" id="s-person-unified" ' + (P.conf && P.conf.personUnifiedEnabled === true ? 'checked ' : '') + 'onchange="_togglePConf(\'personUnifiedEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">人物统一底子（默认关）</div>' +
+            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">同一个人在问对、常朝等场合由 AI 扮演时，性情、特质、口吻、立场与所求都读同一份底子，不再各写各的；场合只决定怎么说。已接：问对、常朝。</div>' +
+          '</div>' +
+        '</label>' +
       '</div>';
     })()+
 

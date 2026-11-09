@@ -1563,25 +1563,36 @@ function buildNpcPrompt(name, item, playerText, stance, intent, isMentioned) {
     }
   } catch (_) {}
 
-  let p = '你是 ' + name + '·身份「' + officialTitle + '」·派系「' + (gmCh && (gmCh.factionId || gmCh.faction) || ch.faction || '中立') + '」·品级 ' + (gmCh && gmCh.rankLevel != null ? gmCh.rankLevel : (ch.rank || '?')) + '。\n';
-  if (personality) p += '性格：' + personality + '\n';
-  const stats = [];
-  if (loyalty != null) stats.push('忠诚 ' + loyalty);
-  if (integrity != null) stats.push('清廉 ' + integrity);
-  if (ambition != null) stats.push('野心 ' + ambition);
-  if (stats.length) p += '能力数值：' + stats.join(' · ') + '\n';
-  if (family) p += '家世：' + (typeof family === 'string' ? family : '世家出身') + '\n';
-  if (stance2Player) p += '对陛下：' + stance2Player + '\n';
-  if (relationLine) p += relationLine + '\n';
-  if (memorySnippet) p += '【近期记忆】\n' + memorySnippet + '\n';
-  // v2·PromptComposer·注入 phase 6 字段·让 cc3 NPC 真用 aiPersonaText / recognitionState
-  if (typeof TM !== 'undefined' && TM.PromptComposer && gmCh) {
-    try {
-      const _aiP = TM.PromptComposer.buildAiPersonaText(gmCh);
-      if (_aiP) p += _aiP;
-      const _rec = TM.PromptComposer.buildRecognitionState(gmCh);
-      if (_rec) p += _rec;
-    } catch(_) {}
+  // 人2：开着「人物统一底子」时，他是谁读全游戏同一份（tm-person.js 精简档：人格核、人设长文、处境、记忆、承诺野心），
+  //   这里只留常朝场合的：朝班品级、对陛下。关着时照旧，提示词逐字不变。
+  const _personOn = !!(typeof TM !== 'undefined' && TM.Person && TM.Person.on() && gmCh);
+  let p;
+  if (_personOn) {
+    p = '你是 ' + name + '，今日在常朝上奏对。\n' + TM.Person.brief(gmCh, { occasion: 'changchao', detail: 'brief', topic: item && item.title });
+    p += '【朝班】品级 ' + (gmCh.rankLevel != null ? gmCh.rankLevel : (ch.rank || '?')) + '\n';
+    if (stance2Player) p += '对陛下：' + stance2Player + '\n';
+    if (relationLine) p += relationLine + '\n';
+  } else {
+    p = '你是 ' + name + '·身份「' + officialTitle + '」·派系「' + (gmCh && (gmCh.factionId || gmCh.faction) || ch.faction || '中立') + '」·品级 ' + (gmCh && gmCh.rankLevel != null ? gmCh.rankLevel : (ch.rank || '?')) + '。\n';
+    if (personality) p += '性格：' + personality + '\n';
+    const stats = [];
+    if (loyalty != null) stats.push('忠诚 ' + loyalty);
+    if (integrity != null) stats.push('清廉 ' + integrity);
+    if (ambition != null) stats.push('野心 ' + ambition);
+    if (stats.length) p += '能力数值：' + stats.join(' · ') + '\n';
+    if (family) p += '家世：' + (typeof family === 'string' ? family : '世家出身') + '\n';
+    if (stance2Player) p += '对陛下：' + stance2Player + '\n';
+    if (relationLine) p += relationLine + '\n';
+    if (memorySnippet) p += '【近期记忆】\n' + memorySnippet + '\n';
+    // v2·PromptComposer·注入 phase 6 字段·让 cc3 NPC 真用 aiPersonaText / recognitionState
+    if (typeof TM !== 'undefined' && TM.PromptComposer && gmCh) {
+      try {
+        const _aiP = TM.PromptComposer.buildAiPersonaText(gmCh);
+        if (_aiP) p += _aiP;
+        const _rec = TM.PromptComposer.buildRecognitionState(gmCh);
+        if (_rec) p += _rec;
+      } catch(_) {}
+    }
   }
   // v7.1·F4b·言官 attribution 注入·若 ch 是言官·补 mentor/cohort/strength prompt 块
   if (typeof _kjYanguanPromptHint === 'function' && gmCh) {
@@ -1641,7 +1652,7 @@ function buildNpcPrompt(name, item, playerText, stance, intent, isMentioned) {
   // 字数走 v2 朝议字数设置
   const wordHint = (typeof _aiDialogueWordHint === 'function') ? _aiDialogueWordHint('cy') : '约 50-120 字';
   p += '要求：\n';
-  p += '· 半文言·朝堂奏对体·「臣……」开头·体现你的性格（' + (personality || '一般文官') + '）\n';
+  p += _personOn ? '· 半文言·朝堂奏对体·「臣……」开头·合乎上面所写你的性情与口吻\n' : '· 半文言·朝堂奏对体·「臣……」开头·体现你的性格（' + (personality || '一般文官') + '）\n';
   p += '· 字数' + wordHint + '·一句话足矣·不超过两句\n';
   p += '· 立场鲜明·体现派系倾向与品级口吻\n';
   p += '· 紧扣陛下话的具体内容（不要空泛附和"陛下圣明"）\n';

@@ -306,9 +306,12 @@ function _wdBuildPrompt(ch, name) {
   if (ch._envoy) {
     p = _wdEnvoyPromptBody(ch, opinionVal);
   } else {
-    p = '\u4F60\u626E\u6F14' + eraCtx + '\u65F6\u671F\u7684' + ch.name + '(' + (ch.officialTitle || ch.officialPosition || ch.title || '') + ')' + ageInfo + '\u3002\n'
+    p = (TM.Person.on()
+      // 人2：开着「人物统一底子」时，人设一行换成全游戏同一份人格核（性情与特质并列、口吻合一、立场与所求去重）
+      ? '\u4F60\u626E\u6F14' + eraCtx + '\u65F6\u671F\u7684' + ch.name + '\u3002\n' + TM.Person.coreText(ch)
+      : '\u4F60\u626E\u6F14' + eraCtx + '\u65F6\u671F\u7684' + ch.name + '(' + (ch.officialTitle || ch.officialPosition || ch.title || '') + ')' + ageInfo + '\u3002\n'
     + '【人设】特质:' + traitDesc + '，立场:' + (ch.stance || '中立')
-    + (ch.personalGoal ? '，心中所求:' + ch.personalGoal.slice(0, 40) : '') + stressInfo + '\n'
+    + (ch.personalGoal ? '，心中所求:' + ch.personalGoal.slice(0, 40) : '') + stressInfo + '\n')
     + (_isPlayerConsort ? '【夫妻关系】好感:' + opinionVal + '\n' : '【态度】对君主好感:' + opinionVal + '\n')
     + arcInfo + affInfo + appearInfo + familyInfo + worksInfo + memInfo + _courtCtx + _edictCtx + _commitCtx + _ambitionCtx + _burdenCtx + _triIdInfo + '\n' + _modeDesc + _spouseCtx;
   }
@@ -334,7 +337,7 @@ function _wdBuildPrompt(ch, name) {
     p += '  \u5FE0\u81E3\u53EF\u80FD\u4E3B\u52A8\u8BF4\u201C\u965B\u4E0B\uFF0C\u81E3\u6709\u4E00\u4E8B\u4E0D\u5410\u4E0D\u5FEB\u201D\uFF1B\u4F5E\u81E3\u53EF\u80FD\u4E3B\u52A8\u732E\u5A9A\u6216\u8C17\u544A\u4ED6\u4EBA\uFF1B\n';
     p += '  \u7126\u8651\u8005\u53EF\u80FD\u5410\u9732\u5FC3\u4E8B\uFF1B\u91CE\u5FC3\u5BB6\u53EF\u80FD\u8BD5\u63A2\u7687\u5E1D\u610F\u56FE\u3002\u4F46\u4E0D\u8981\u6BCF\u6B21\u90FD\u4E3B\u52A8\uFF0C\u89C6\u60C5\u5883\u800C\u5B9A\u3002\n';
     // 文化/信仰/学识/民族背景（人格核）
-    p += F.background(ch);
+    p += F.background(ch, TM.Person.on() ? { noSpeech: true } : null);
     p += F.abilities(ch);
     p += '\u3010\u8981\u6C42\u3011\n';
     p += '\u2022 \u5B8C\u5168\u4EE5' + ch.name + '\u7684\u53E3\u543B\u5E94\u7B54\uFF0C\u8981\u6709\u4E2A\u4EBA\u60C5\u611F\u3001\u7ACB\u573A\u3001\u5C0F\u5FC3\u601D\n';

@@ -965,95 +965,23 @@
   }
 
   // ═════════════════════════════════════════════════════════════
-  // §6.2 腐败集团凝聚（entrenched factions）
-  // 触发：某部门持续 > 60 腐败超过 60 月
+  // §6.2 腐败集团（entrenched factions）
+  // 只认剧本给的与名册上真人物结成的，不再凭空生成（见 checkFactionFormation）
   // ═════════════════════════════════════════════════════════════
 
-  // 历史腐败集团模板（按部门）
-  var FACTION_TEMPLATES = {
-    fiscal:     [
-      { name:'盐商党',     historical:'清代扬州盐商' },
-      { name:'钞关党',     historical:'明代钞关利益集团' },
-      { name:'漕运党',     historical:'清代漕帮' }
-    ],
-    military:   [
-      { name:'卫所党',     historical:'明代卫所军官世袭' },
-      { name:'九边将门',   historical:'明末辽东将门' },
-      { name:'禁军将勋',   historical:'宋初禁军利益集团' }
-    ],
-    central:    [
-      { name:'阉党',       historical:'魏忠贤阉党' },
-      { name:'严党',       historical:'嘉靖严嵩党' },
-      { name:'和珅一脉',   historical:'乾隆后期和珅集团' }
-    ],
-    provincial: [
-      { name:'豪强势族',   historical:'东汉门阀豪强' },
-      { name:'督抚私党',   historical:'清末地方督抚' },
-      { name:'土司党',     historical:'西南土司盘踞' }
-    ],
-    judicial:   [
-      { name:'讼师党',     historical:'明清讼师集团' },
-      { name:'刑部奸胥',   historical:'各代刑部书吏' }
-    ],
-    imperial:   [
-      { name:'宦官集团',   historical:'明代司礼监' },
-      { name:'外戚集团',   historical:'汉代外戚' },
-      { name:'后宫干政',   historical:'武韦之祸' }
-    ]
-  };
-
+  // 腐败集团只认剧本给的（如天启的阉党）与日后名册上真人物结成的（11-10 同志定）。原先某部门腐败连高过六十满五年，
+  // 每月 15% 从一张不分朝代的名单（盐商党、严党、和珅一脉、外戚集团……）里抽一个「集团」，势力、私财随机，
+  // 背后没有一个人——晚唐也能抽出和珅一脉。道理同已删的反噬、祥瑞，这里不再生成；已有的集团照旧逐月坐大。
   function checkFactionFormation(context) {
     ensureCorruptionModel();
-    if (!GM._corrDeptLongTerm) GM._corrDeptLongTerm = {};
-    var longTerm = GM._corrDeptLongTerm;
     var mr = (context && context._monthRatio) || getMonthRatio();
-
-    ['central','provincial','military','fiscal','judicial','imperial'].forEach(function(d) {
-      var sd = GM.corruption.subDepts[d];
-      if (sd.true > 60) {
-        // counter 追踪"月数"而非回合数
-        longTerm[d] = (longTerm[d] || 0) + mr;
-      } else {
-        longTerm[d] = Math.max(0, (longTerm[d] || 0) - 2 * mr);
-      }
-
-      // 持续 60 月以上 → 概率生成集团（概率按月随 mr 缩放）
-      if (longTerm[d] >= 60) {
-        var existing = GM.corruption.entrenchedFactions.filter(function(f) { return f.dept === d; });
-        if (existing.length === 0 && Math.random() < 0.15 * mr) {
-          var templates = FACTION_TEMPLATES[d] || [];
-          if (templates.length === 0) return;
-          var t = templates[Math.floor(Math.random() * templates.length)];
-          var faction = {
-            id: 'faction_' + GM.turn + '_' + d,
-            name: t.name,
-            historical: t.historical,
-            dept: d,
-            strength: 40 + Math.floor(Math.random() * 30),
-            years: Math.floor(longTerm[d] / 12),
-            wealthHoarded: 500000 + Math.floor(Math.random() * 2000000),
-            patrons: [],
-            formedTurn: GM.turn,
-            status: 'active'
-          };
-          GM.corruption.entrenchedFactions.push(faction);
-          if (typeof addEB === 'function') {
-            addEB('朝代', '「' + faction.name + '」盘根错节，已成气候', {
-              credibility: 'high', subject: faction.id
-            });
-          }
-          longTerm[d] = 0; // 触发后重置
-        }
-      }
-    });
 
     // 集团自身腐败加剧（每月速率 → 按回合）
     GM.corruption.entrenchedFactions.forEach(function(f) {
       if (f.status !== 'active') return;
       f.strength = Math.min(100, f.strength + 0.3 * mr);
-      // 按月数换算年
-      var monthsElapsed = (GM.turn - f.formedTurn) * mr;
-      f.years = monthsElapsed / 12;
+      // 历时按本回合的月数往上加，剧本给的「已成几年」接着算（原先按 formedTurn 重算，开局第一回合就把天启阉党的五年冲成零）
+      f.years = (Number(f.years) || 0) + mr / 12;
       if (GM.corruption.subDepts[f.dept]) {
         GM.corruption.subDepts[f.dept].true = Math.min(100,
           GM.corruption.subDepts[f.dept].true + 0.05 * mr);
@@ -1178,7 +1106,6 @@
     DYNASTY_PRESETS: DYNASTY_PRESETS,
     checkFactionFormation: checkFactionFormation,
     checkBacklash: checkBacklash,
-    applyCrossLinkage: applyCrossLinkage,
-    FACTION_TEMPLATES: FACTION_TEMPLATES
+    applyCrossLinkage: applyCrossLinkage
   };
 })(typeof window !== 'undefined' ? window : this);

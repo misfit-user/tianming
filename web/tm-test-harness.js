@@ -507,9 +507,6 @@
       expect(typeof CorruptionEngine.checkFactionFormation).toBe('function');
       expect(typeof CorruptionEngine.checkBacklash).toBe('function');
     });
-    it('FACTION_TEMPLATES 存在且是对象', function(){
-      expect(typeof CorruptionEngine.FACTION_TEMPLATES).toBe('object');
-    });
   });
 
   describe('CorruptionEngine · LAYERED 覆盖链验证', function(){

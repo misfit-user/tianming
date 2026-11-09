@@ -308,8 +308,8 @@ function renderCorruptionPanel() {
               '<div class="vd-case-title">' + (fac.name || '某集团') + '</div>'+
               '<div class="vd-case-meta">'+
                 '<span>部门：' + (fac.dept || '—') + '</span>'+
-                '<span>势力：' + (fac.strength || 0) + '</span>'+
-                '<span>历时：' + (fac.years || 0) + ' 年</span>'+
+                '<span>势力：' + Math.round(fac.strength || 0) + '</span>'+
+                '<span>历时：' + Math.floor(fac.years || 0) + ' 年</span>'+
               '</div>'+
               '</div>';
     }

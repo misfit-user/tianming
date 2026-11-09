@@ -1711,17 +1711,13 @@
       html += _sec('九旧分类映射', '士农工商兵僧胥役豪流', mh);
     }
 
-    // § 异象三库按类
+    // § 异象库按类（祥瑞不再由代码掷、没有库，11-09；见 tm-authority-complete P1-13）
     var AC = (typeof global.AuthorityComplete !== 'undefined') ? global.AuthorityComplete : null;
-    if (AC && AC.HEAVEN_SIGNS && AC.AUSPICIOUS_SIGNS) {
+    if (AC && AC.HEAVEN_SIGNS) {
       var lih = '<div style="font-size:0.7rem;">';
       lih += '<div style="color:var(--vermillion-400);margin-bottom:2px;">天象库（' + AC.HEAVEN_SIGNS.length + '）：</div>';
       AC.HEAVEN_SIGNS.forEach(function(s) {
         lih += '<span style="padding:1px 5px;margin:1px;background:rgba(192,64,48,0.1);border-radius:2px;display:inline-block;">' + _esc(s.name) + '</span>';
-      });
-      lih += '<div style="color:#6aa88a;margin:4px 0 2px;">祥瑞库（' + AC.AUSPICIOUS_SIGNS.length + '）：</div>';
-      AC.AUSPICIOUS_SIGNS.forEach(function(s) {
-        lih += '<span style="padding:1px 5px;margin:1px;background:rgba(106,168,138,0.1);border-radius:2px;display:inline-block;">' + _esc(s.name) + '</span>';
       });
       var PL = (typeof global.PhaseD !== 'undefined' && global.PhaseD.PROPHECY_LIBRARY) || [];
       if (PL.length > 0) {

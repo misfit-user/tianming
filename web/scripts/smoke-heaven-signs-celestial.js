@@ -5,6 +5,8 @@
 // 还会在民心暴跌、大灾时再强出一个凶兆。
 // 改：表里只留日食、月食、彗星，扣分调小；每月出天象的机会是定值；天人感应只起谶纬（人传的），
 // 概率与原先谶纬那一半相同。实灾走环境引擎灾变表与推演报的灾（GM.activeDisasters）。
+// 祥瑞（同志 11-09 定）：是人报上来的，不再由代码按民心掷骰（原先民心过 60 就掷麒麟凤凰、全国加民心皇威，
+// 另有每月千分之五的「祥瑞现世，民心归附」）；由推演按局面与人物写。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -52,7 +54,7 @@ check(AC.HEAVEN_SIGNS.every((s) => Math.abs(s.minxinDelta) <= 2 && Math.abs(s.hw
 console.log('二、出不出天象不看民心');
 const tickable = typeof AC.tickHeavenSigns === 'function';
 check(tickable, '天象可以单跑');
-// 一回合内的掷法：第一掷定出不出凶兆，出了第二掷挑哪一样，最后一掷定祥瑞（0.999 = 不出）
+// 一回合内的掷法：第一掷定出不出天象，出了第二掷挑哪一样
 function omensAt(minxin, roll, monthRatio) {
   sandbox.GM = { turn: 7, minxin: { trueIndex: minxin }, heavenSigns: [] };
   rolls = [roll, 0.5, 0.999];
@@ -83,6 +85,23 @@ const hit = troubled(0.35);
 check(hit.signs === 0 && hit.prophecy, '掷 0.35：起一条谶纬，不出天象');
 const miss = troubled(0.45);
 check(miss.signs === 0 && !miss.prophecy, '掷 0.45：谶纬也不起（只剩原先谶纬那一半的机会）');
+
+console.log('四、祥瑞不由代码掷');
+check(AC.AUSPICIOUS_SIGNS === undefined, '没有祥瑞表');
+// 民心 100、骰子全掷 0（旧算式下凶兆、祥瑞、每月那一掷都必出）：只该出一样天象，不该有祥瑞、不该有「祥瑞」加分
+calls.minxin.length = 0;
+calls.huangwei.length = 0;
+calls.eb.length = 0;
+sandbox.GM = { turn: 11, minxin: { trueIndex: 100, revolts: [] }, heavenSigns: [] };
+rolls = [0, 0, 0, 0, 0, 0, 0, 0];
+if (tickable) AC.tickHeavenSigns({}, 12);
+const sourcesTick = typeof AC.tickMinxinSources === 'function';
+check(sourcesTick, '民心各源可以单跑');
+if (sourcesTick) AC.tickMinxinSources({ turn: 11 }, 12);
+const goodSigns = sandbox.GM.heavenSigns.filter((s) => s.type === 'good');
+const auspiciousCalls = calls.minxin.concat(calls.huangwei).filter((c) => c.src === 'auspicious');
+check(goodSigns.length === 0 && auspiciousCalls.length === 0 && !calls.eb.some((e) => e.indexOf('祥瑞') === 0),
+  '民心 100、一回合十二个月、骰子全掷 0：没有祥瑞，也没有祥瑞加分（天象 ' + sandbox.GM.heavenSigns.length + ' 样）');
 
 if (failed) {
   console.log('FAIL smoke-heaven-signs-celestial: ' + failed + ' 处失败');

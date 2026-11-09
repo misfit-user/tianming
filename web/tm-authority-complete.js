@@ -1231,11 +1231,7 @@
       adj('heavenSign', -0.2 * mr, '天象异常');
       G._recentHeavenSign = false;
     }
-    // auspicious（祥瑞）
-    if (Math.random() < 0.005 * mr) {
-      adj('auspicious', 0.3, '祥瑞现');
-      if (global.addEB) global.addEB('祥瑞', '祥瑞现世，民心归附');
-    }
+    // 祥瑞：原先每月千分之五掷一次「祥瑞现世，民心归附」，没地方、没来由，拿掉（见下 P1-13 祥瑞一节）
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -1368,30 +1364,20 @@
   // 每月出一次天象的机会：定值，等于旧算式在民心 50 时的概率
   var HEAVEN_SIGN_MONTHLY_PROB = 0.01;
 
-  var AUSPICIOUS_SIGNS = [
-    { id:'qilin',     name:'麒麟现',    type:'good', severity:'major',  minxinDelta:8,  hwDelta:5 },
-    { id:'phoenix',   name:'凤凰现',    type:'good', severity:'major',  minxinDelta:8,  hwDelta:5 },
-    { id:'sweet_dew', name:'甘露降',    type:'good', severity:'minor',  minxinDelta:3,  hwDelta:2 },
-    { id:'white_deer',name:'白鹿见',    type:'good', severity:'moderate',minxinDelta:5, hwDelta:3 },
-    { id:'twin_rice', name:'嘉禾',     type:'good', severity:'moderate',minxinDelta:5, hwDelta:3 },
-    { id:'yellow_dragon',name:'黄龙见',type:'good', severity:'major',  minxinDelta:10, hwDelta:6 }
-  ];
+  // 祥瑞不由代码掷（同志 11-09 定）：祥瑞是人报上来的——地方官、近臣献瑞，报不报、报什么看朝局与君主好恶，
+  //   不是天按民心降的。原先民心过 60 就按民心掷骰出麒麟、凤凰、黄龙，全国加民心皇威，民心越高出得越多，是玄幻因果。
+  //   现由推演按局面与人物写：地块上的「丰年祥瑞」状态（有地方、有时限）、佞臣献瑞；日后并进过回合重做的奏报流转。
 
   function _tickHeavenSigns(ctx, mr) {
-    // 天象按定值概率出，不看民心；祥瑞（官员报上来的）仍随民心
+    // 天象按定值概率出，不看民心
     var G = global.GM;
     var mx = G.minxin;
     if (!mx) return;
     var badProb = HEAVEN_SIGN_MONTHLY_PROB * mr;
-    var goodProb = Math.max(0, (mx.trueIndex - 60) / 1500) * mr;
     if (Math.random() < badProb) {
       var sign = HEAVEN_SIGNS[Math.floor(Math.random() * HEAVEN_SIGNS.length)];
       _applyHeavenSign(sign);
       G._recentHeavenSign = true;
-    }
-    if (Math.random() < goodProb) {
-      var asig = AUSPICIOUS_SIGNS[Math.floor(Math.random() * AUSPICIOUS_SIGNS.length)];
-      _applyHeavenSign(asig);
     }
   }
 
@@ -1707,7 +1693,6 @@
     REVOLT_LEVELS: REVOLT_LEVELS,
     REVOLT_LADDER_FROZEN: REVOLT_LADDER_FROZEN,   // 「同起升一级」(tm-authority-deep) 也读这一个
     HEAVEN_SIGNS: HEAVEN_SIGNS,
-    AUSPICIOUS_SIGNS: AUSPICIOUS_SIGNS,
     QUADRANT_PROTOTYPES: QUADRANT_PROTOTYPES,
     HUANGWEI_DELTAS: HUANGWEI_DELTAS,
     HUANGQUAN_DELTAS: HUANGQUAN_DELTAS,

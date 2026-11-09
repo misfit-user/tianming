@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // 人物统一底子（人2）smoke：各机制扮演人物时读同一份「他是谁」（tm-person.js）。
 //   · 人格核合成规矩：特质并 traitIds 与 traits（英文代号不进提示词）、口吻合一、立场与所求去重、名单一行。
-//   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前的提示词
+//   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前、奏疏的提示词
 //     与改造前逐字相同（金标准哈希）；开着时各场合的人物段含同一份人格核（一字不差）。
 // 金标准由改造前的文件在同一夹具上算出：TM_PERSON_SMOKE_GOLDEN_DIR=<放改造前文件的目录> node 本文件 → 打印哈希后退出。
-//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）。
+//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）；奏疏取 c563c01b（第四片之前）。
 // 施工单：E:/tianming-tmp/orders/人2-各机制接人物底子-施工单.md；设计：docs/guanben-roleplay-20260930/tuiyan.md 7.2 节。
 'use strict';
 const fs = require('fs');
@@ -148,6 +148,24 @@ async function yqPrompts(c) {
   return out;
 }
 
+// 奏疏（人2 第四片）：genMemorialsAI 一次替好几个人执笔，候选上奏人名单每人一行（tm-memorials.js）
+function memSandbox() {
+  const c = sandbox();
+  vm.runInContext(read('tm-memorials.js'), c, { filename: 'tm-memorials.js' });
+  c.__mem = [];
+  c.callAISmart = async (p) => { c.__mem.push(p); return '[]'; };
+  c.extractJSON = (raw) => { try { return JSON.parse(raw); } catch (_) { return null; } };
+  c.renderMemorials = () => {};
+  c._getCharRange = () => [300, 600];  // tm-ai-infra-model-detect.js 里的，夹具不载
+  return c;
+}
+
+async function memPrompt(c) {
+  c.__mem.length = 0;
+  await c.genMemorialsAI(3);
+  return c.__mem[0] || '';
+}
+
 async function courtPrompts(c) {
   const CY = c.CY, out = {};
   CY.open = true; CY._abortChaoyi = false;
@@ -191,6 +209,8 @@ async function prompts(c) {
     const yq = {}, yqLen = {};
     Object.keys(YQ_LABEL).forEach((k) => { yq[k] = sha(gy[k]); yqLen[k] = gy[k].length; });
     console.log(JSON.stringify({ yuqian: yq, lengths: yqLen }, null, 2));
+    const gm = await memPrompt(memSandbox());
+    console.log(JSON.stringify({ memorial: sha(gm), length: gm.length }, null, 2));
     return;
   }
 
@@ -303,7 +323,25 @@ async function prompts(c) {
   for (const k of ['speak', 'deep']) ok(yon[k].split(P4.coreText(wen4)).length === 2, '开着：' + YQ_LABEL[k] + '里人格核出现且只出现一次');
   ok([yon.speak, yon.deep].every((s) => s.includes(core)), '开着：御前直陈、深问读到的人格核与问对、常朝、廷议一字不差');
 
-  // ── 7. 接线与守卫 ──
+  // ── 7. 奏疏（人2 第四片）：一次替好几个人执笔，候选上奏人名单每人一行 ──
+  // 由改造前（c563c01b）的文件在同一夹具上算出：3956 字
+  const MEM_GOLDEN = 'e5e53ec27d85986a1b5b34339b8c504f5f44a03f17315d34a06c9ca4df5dcada';
+  const mc = memSandbox();
+  const moff = await memPrompt(mc);
+  eq(sha(moff), MEM_GOLDEN, '关着：奏疏提示词逐字不变');
+  ok(moff.includes(' 狡诈、野心勃勃 目标:入阁拜相，独揽票拟之权 ') && moff.includes(' 负才傲物 '), '（改造前）有特质的只写特质名不写性格，没有的只写性格；口吻一个字都没有');
+  mc.P.conf.personUnifiedEnabled = true;
+  const mon = await memPrompt(mc);
+  const P5 = mc.TM.Person, wen5 = mc.GM.chars[1];
+  const row5 = P5.line(wen5, { noName: true, goalMax: 25, speech: true });
+  eq(row5, '阴柔多智；特质狡诈、野心勃勃、谨守；所求入阁拜相，独揽票拟之权；口吻言辞委婉、步步设防', '名单一行带口吻的写法');
+  eq(P5.line({ name: '甲', personality: '阴狡。', personalGoal: '入阁。', speechStyle: '温文。' }, { noName: true, speech: true }), '阴狡。所求入阁。口吻温文。', '名单一行：前一段以句号收尾时不再加分号（真档里温体仁「破东林。；口吻」）');
+  ok(mon.includes('1. 温体仁(礼部侍郎) [在京] 忠55') && mon.includes(' 家:乌程温氏 ' + row5 + ' ') && !mon.includes('目标:入阁'), '开着：奏疏候选名单的特质、目标两栏换成名单一行（带口吻）');
+  ok(mon.includes('钱谦益(礼部右侍郎)') && mon.includes(' 负才傲物；口吻好引经据典 '), '开着：只有性格和 diction 的人也读同一份（口吻取 diction）');
+  ok(mon.includes('请为其中3人生成奏疏。') && mon.includes('【奏疏体裁】') && mon.includes('心绪:温体仁记得上回会推之争'), '开着：奏疏场合规矩、记忆照旧');
+  ok(!/shrewd|t-sly/.test(mon), '开着：英文代号不进奏疏提示词');
+
+  // ── 8. 接线与守卫 ──
   ok(read('tm-patches.js').includes("_togglePConf(\\'personUnifiedEnabled\\'"), '设置面板有「人物统一底子」开关');
   ok(read('tm-player-settings.js').includes('personUnifiedEnabled:'), '开关有提示语');
   console.log('[smoke-person-occasions] pass assertions=' + checks);

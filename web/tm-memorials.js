@@ -260,6 +260,9 @@ async function genMemorialsAI(count){
       var sb = Math.abs((b.loyalty || 50) - 50) + (b.ambition || 50) + (b.stress || 0) * 0.5;
       return sb - sa;
     });
+    // 人2：开关开着时，每人的「特质（或性格）、目标」两栏换成人物统一底子的名单一行（性情、特质、所求、口吻，tm-person.js）。
+    //   奏疏是一次替好几个人执笔，所以名单一行带口吻；官职、数值、党派、记忆等其余各栏两路相同。关着时逐字不变。
+    var _personOn = !!(typeof TM !== 'undefined' && TM.Person && TM.Person.on());
     candidates.slice(0, Math.min(count + 2, 8)).forEach(function(ch, idx) {
       var traits = '';
       if (ch.traitIds && ch.traitIds.length > 0 && P.traitDefinitions) {
@@ -365,7 +368,7 @@ async function genMemorialsAI(count){
         + ' 军事' + (ch.military||50)
         + ' 政' + (ch.administration||50)
         + _moreAbi + _wcStr + _statStr + _partyStr + _bgStr
-        + ' ' + traits + ' ' + goal + ' ' + arc + ' ' + aff + memCtx + _memList + '\n';
+        + ' ' + (_personOn ? TM.Person.line(ch, { noName: true, goalMax: 25, speech: true }) : traits + ' ' + goal) + ' ' + arc + ' ' + aff + memCtx + _memList + '\n';
     });
 
     // 帝王荒淫背景（影响奏疏内容——忠臣可能谏阻，佞臣可能献媚）

@@ -262,12 +262,17 @@
     });
     return out;
   }
+  // 几段并成一句用「；」隔开，前一段已以句末标点收尾时不再加（免得「破东林。；口吻」）
+  var _END_PUNCT = /[。！？；…」』）)]$/;
+  function _joinBits(bits) {
+    return bits.reduce(function (acc, b) { return acc ? acc + (_END_PUNCT.test(acc) ? '' : '；') + b : b; }, '');
+  }
   // 口吻：speechStyle 为主；diction 不同、又互不包含时接在后面（晚唐两样全同，天启 132 人里 99 人相同）
   function speechText(ch) {
     var a = _s(ch.speechStyle), b = _s(ch.diction);
     if (!a) return b;
     if (!b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0) return a;
-    return a + (/[。！？；…」』）)]$/.test(a) ? '' : '；') + b;
+    return _joinBits([a, b]);
   }
   // 人格核：他是谁。立场与所求相同只写所求（晚唐 434 人里 433 人两栏相同）。
   function coreText(ch) {
@@ -276,7 +281,7 @@
     // 性情原文里已有的字眼，特质里不再重写（魏忠贤性情有「睚眦必报」，特质 vengeful 的定义名也是它）
     var temper = _s(ch.personality), traits = traitNames(ch).filter(function (n) { return temper.indexOf(n) < 0; });
     var stance = _s(ch.stance), goal = _s(ch.personalGoal), speech = speechText(ch);
-    var temperLine = temper + (traits.length ? (temper ? '；' : '') + '特质：' + traits.join('、') : '');
+    var temperLine = _joinBits([temper, traits.length ? '特质：' + traits.join('、') : ''].filter(Boolean));
     return '【人物】' + _s(ch.name) + (title ? '（' + title + '）' : '') + (_s(ch.age) ? '，年' + _s(ch.age) : '')
       + (stress > 30 ? '，当前压力' + stress + '（' + (stress > 60 ? '濒临崩溃' : '焦虑不安') + '）' : '') + '\n'
       + (temperLine ? '【性情】' + temperLine + '\n' : '')
@@ -310,7 +315,8 @@
     }
     return out;
   }
-  // 名单一行：全知提示词里列一群人时用。opts.noName：名单自己已写了名字官职，只要冒号后面那半句
+  // 名单一行：全知提示词里列一群人时用。opts.noName：名单自己已写了名字官职，只要冒号后面那半句；
+  // opts.speech：名单里的人要由模型替他执笔（如奏疏一次写好几份），末尾再带口吻
   function line(ch, opts) {
     if (!ch) return '';
     var max = (opts && opts.goalMax) || 30;
@@ -320,8 +326,9 @@
     if (temper) bits.push(temper);
     if (traits.length) bits.push('特质' + traits.join('、'));
     if (goal) bits.push('所求' + (goal.length > max ? goal.slice(0, max) + '…' : goal));
-    if (opts && opts.noName) return bits.join('；');
-    return _s(ch.name) + (title ? '（' + title + '）' : '') + (bits.length ? '：' + bits.join('；') : '');
+    if (opts && opts.speech && speechText(ch)) bits.push('口吻' + speechText(ch));
+    if (opts && opts.noName) return _joinBits(bits);
+    return _s(ch.name) + (title ? '（' + title + '）' : '') + (bits.length ? '：' + _joinBits(bits) : '');
   }
 
   // 人格核的结构化读法。traits/speech/goal 三项是问对（人1）那版；人2 的统一读法看 temper/traitNames/speechFull/goalFull。

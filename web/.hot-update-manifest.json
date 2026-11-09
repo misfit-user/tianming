@@ -4671,8 +4671,8 @@
     },
     {
       "path": "tm-chaoyi-changchao-adapter.js",
-      "sha256": "6845eb83e090f1a0c7e4f387a80a7443a608396888a064507f38f57246677492",
-      "size": 75198
+      "sha256": "382f8f33087a702bebb37721ae79eed45a19417aac4f50be7f67991e0c845aa2",
+      "size": 75864
     },
     {
       "path": "tm-chaoyi-changchao-flows.js",
@@ -4686,8 +4686,8 @@
     },
     {
       "path": "tm-chaoyi-changchao.js",
-      "sha256": "f82576602c404b8d2d4e6426b46ac2345f91a89b38303ee3d697c951e1ebd0c9",
-      "size": 136946
+      "sha256": "0311b8a77a74f299866a8c770ccbd035233a735f32fe3a40ee2be20b35545233",
+      "size": 137891
     },
     {
       "path": "tm-chaoyi-tinyi.js",
@@ -6296,8 +6296,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "0aac480807a1817a36427960b2be41c2d1043064a73cf4fde0ce0819247a08c1",
-      "size": 189724
+      "sha256": "4a1f086f892852f7220ecf7428a2effbecc5c1a54f146013250a29d01448d082",
+      "size": 190695
     },
     {
       "path": "tm-pause-fab.js",
@@ -6311,8 +6311,8 @@
     },
     {
       "path": "tm-person.js",
-      "sha256": "d0e7c531d52b16bbf5d1eee93f92c8447601821ba24451bcfb3e4079edde4c4d",
-      "size": 16421
+      "sha256": "817dd958c667307a4951595c63e39b9454c4fe9b0df1f69f227bd79a1af840ad",
+      "size": 22440
     },
     {
       "path": "tm-personal-memory-recall.js",
@@ -6341,8 +6341,8 @@
     },
     {
       "path": "tm-player-settings.js",
-      "sha256": "a4882f765a6986eb5a8b638c2efae90bb1daa663c2256081fc3a5314b79519f5",
-      "size": 35416
+      "sha256": "a28afc53be1b4d2b07ac583b1a96b81a9c2ba49ba607c1c9b2a5bcce1f60c1c0",
+      "size": 35584
     },
     {
       "path": "tm-player-tools.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "847bb4aafd8f410d78693adff19126048147e40f592ba6cccc735a2dc62393d4",
+      "sha256": "eecfe8050e8abac04de465a1c9f8e4c43e373e3403241199caf3abe87802c34f",
       "size": 141013
     },
     {
@@ -6746,8 +6746,8 @@
     },
     {
       "path": "tm-wendui-persona-views.js",
-      "sha256": "5594dc8db33bf1007af383e457714f708bcb4694f91f08286b980716c0e8ab34",
-      "size": 64103
+      "sha256": "32ebdeae0c6561932df674484e89035423055eac5b9162cb92b5f448382e552b",
+      "size": 64449
     },
     {
       "path": "tm-wendui-prison.js",

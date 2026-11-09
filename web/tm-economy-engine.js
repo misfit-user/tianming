@@ -1482,15 +1482,15 @@
     var E = global.GM && global.GM.environment;
     if (!E) return '';
     var lines = ['【环境承载力】'];
-    lines.push('全国加载比：' + (E.nationalLoad * 100).toFixed(0) + '% · 气候：' + E.climatePhase);
-    // 严重疤痕
-    var worstScars = [];
+    var climate = { normal: '常年', little_ice_age: '偏寒', medieval_warm: '偏暖' }[E.climatePhase] || (/[\u4e00-\u9fff]/.test(String(E.climatePhase || '')) ? String(E.climatePhase) : '');  // 只进人物记忆：气候写中文，认不出的英文代号不写（2026-11-09）
+    lines.push('全国加载比：' + (E.nationalLoad * 100).toFixed(0) + '%' + (climate ? ' · 气候：' + climate : ''));
+    var worstScars = [], regionLabel = global.CentralLocalEngine && global.CentralLocalEngine.regionLabel;  // 严重疤痕写区划名（借央地的），查不到名字、只剩编号的不写
     Object.keys(E.byRegion).forEach(function(rid) {
       var reg = E.byRegion[rid];
       SCAR_TYPES.forEach(function(t) {
-        if (reg.ecoScars[t] > 0.5) {
-          worstScars.push(rid + ' ' + SCAR_LABELS[t] + ' ' + (reg.ecoScars[t]*100).toFixed(0) + '%');
-        }
+        if (!(reg.ecoScars[t] > 0.5)) return;
+        var place = regionLabel ? regionLabel(rid) : String(rid);
+        if (/[\u4e00-\u9fff]/.test(place)) worstScars.push(place + ' ' + SCAR_LABELS[t] + ' ' + (reg.ecoScars[t]*100).toFixed(0) + '%');
       });
     });
     if (worstScars.length > 0) lines.push('严重疤痕：' + worstScars.slice(0, 5).join('；'));

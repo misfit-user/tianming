@@ -211,27 +211,37 @@
       return out;
     },
     // NPC 认知画像（由 sc07 在上回合 endturn 生成·反映此人"当下知道什么、想什么"）
+    // 人2：开关开着时读 cognitionText（去掉与人格核重复的几行，见下），规矩里的栏名写中文；关着时逐字不变
     cognition: function (name) {
       var out = '';
+      if (on()) {
+        var _ct = cognitionText(name);
+        return _ct ? _ct + _COG_RULE + '▲ 如被问及「不知」里的事，如何应对按此人性情、五常、特质与忠诚、野心、清廉定：\n' + _COG_STYLES.join('') : '';
+      }
       if (typeof getNpcCognitionSnippet === 'function') {
         var _cogSnip = getNpcCognitionSnippet(name);
         if (_cogSnip) {
           out += _cogSnip;
           out += '▲ 上述认知是此人的真实信息面——不得提及 doesntKnow 中的事，也不得装作不知 knows 中的事。\n';
           out += '▲ 如被问及 doesntKnow 中事，如何处理按人物性格+五常+特质+忠志廉决定：\n';
-          out += '  · 仁义清廉+信高 → 坦诚——“臣有下情，实不知此事，请陛下恕罪”\n';
-          out += '  · 机巧·权变 → 敷衍转移——“此事容臣详查·且先议他事。”\n';
-          out += '  · 不懂装懂类 → 模糊编造——引一段经史旧文附会，意在搪塞，其实不知所以强作解人\n';
-          out += '  · 心机深沉 → 似是而非——“臣略有所闻，不敢断言，姑陈浅见。”\n';
-          out += '  · 傲慢自大 → 拒答或反问——“此等小事也来问老夫，何其可笑。”\n';
-          out += '  · 自卑惶恐 → 过度解释·结巴，反被看出破绽\n';
-          out += '  · 武人耿直 → 直说“末将不知此事”但简练不赘\n';
-          out += '  · 清高孤傲 → 既不耐烦也不掩饰，只简答为“非臣所掌，不敢妄言”\n';
+          out += _COG_STYLES.join('');
         }
       }
       return out;
     }
   };
+
+  // 被问到不知道的事怎么应对（问对、深问、回信这些单人深谈才写）
+  var _COG_STYLES = [
+    '  · 仁义清廉+信高 → 坦诚——“臣有下情，实不知此事，请陛下恕罪”\n',
+    '  · 机巧·权变 → 敷衍转移——“此事容臣详查·且先议他事。”\n',
+    '  · 不懂装懂类 → 模糊编造——引一段经史旧文附会，意在搪塞，其实不知所以强作解人\n',
+    '  · 心机深沉 → 似是而非——“臣略有所闻，不敢断言，姑陈浅见。”\n',
+    '  · 傲慢自大 → 拒答或反问——“此等小事也来问老夫，何其可笑。”\n',
+    '  · 自卑惶恐 → 过度解释·结巴，反被看出破绽\n',
+    '  · 武人耿直 → 直说“末将不知此事”但简练不赘\n',
+    '  · 清高孤傲 → 既不耐烦也不掩饰，只简答为“非臣所掌，不敢妄言”\n'
+  ];
 
   // ── 人2：人格核只有一个来源，各机制、各档一字不差（tuiyan.md 7.2；施工单 E:/tianming-tmp/orders/人2-各机制接人物底子-施工单.md）──
   // 开关 P.conf.personUnifiedEnabled，默认关：关着时各机制照旧各拼各的，提示词逐字不变；开着时都从这里取。
@@ -262,21 +272,69 @@
     });
     return out;
   }
-  // 口吻：speechStyle 为主；diction 不同、又互不包含时接在后面（晚唐两样全同，天启 132 人里 99 人相同）
+  // 几段并成一句用「；」隔开，前一段已以句末标点收尾时不再加（免得「破东林。；口吻」）
+  var _END_PUNCT = /[。！？；…」』）)]$/;
+  function _joinBits(bits) {
+    return bits.reduce(function (acc, b) { return acc ? acc + (_END_PUNCT.test(acc) ? '' : '；') + b : b; }, '');
+  }
+
+  // ── 认知画像：sc07 过回合时给要紧人物写的（GM._npcCognition），片段由 getNpcCognitionSnippet 拼 ──
+  // 开关开着时人格只认人格核（11-09 同志定）：
+  //   · 画像里的自识、人格、口吻与人格核重复，不再另写。实验跑的那一回合，22 人的画像人格没有一句照抄剧本，
+  //     有的写成了另一个人（杨所修剧本口吻「辞锋尖刻」，画像口吻「语带两可、当面恭顺」）。
+  //     剧本没写性情、口吻的，才拿画像那句补进人格核（temperOf、speechText），补进去也是各档一样。
+  //   · 史标是模型照史书写的身后评语，会把游戏时间之后的事带进来（温体仁那条是「崇祯朝首辅」），也不写。
+  //   · 画像的「所求」是眼下所图，改个名，免得和人格核的【所求】（毕生所求）相混。
+  //   · 剩下的（心念、对帝、知与不知、心境……）精简档、完整档读同一段：两档只差资料多少，不差他知道什么。
+  var _COG_DROP = /^(自识|人格|口吻|史标)：/;
+  var _COG_RULE = '▲ 上面是此人眼下真知道的：「不知」里的事不得提及，「知」里的事也不得装作不知。\n';
+  function _cog(name) {
+    try { return (typeof GM !== 'undefined' && GM && GM._npcCognition && name && GM._npcCognition[name]) || null; } catch (_) { return null; }
+  }
+  function cognitionText(name) {
+    var s = '';
+    try { s = (typeof getNpcCognitionSnippet === 'function' && getNpcCognitionSnippet(name)) || ''; } catch (_) { s = ''; }
+    var body = 0;
+    var lines = String(s).split('\n').filter(function (ln) { return !_COG_DROP.test(ln); }).map(function (ln) {
+      if (ln && ln.charAt(0) !== '【') body++;
+      return ln.indexOf('所求：') === 0 ? '眼下所图：' + ln.slice(3) : ln;
+    });
+    // 知三条、不知两条在片段里用「；」连，条目本以句号收尾时去掉多出的分号
+    return body ? lines.join('\n').replace(/([。！？])；/g, '$1') : '';
+  }
+  // 知与不知两栏（与认知画像同取知三条、不知两条）：名单里由模型替人执笔时用（奏疏）
+  function knowing(name) {
+    var c = _cog(name);
+    if (!c) return '';
+    var k = (Array.isArray(c.knows) ? c.knows : []).slice(0, 3).map(_s).filter(Boolean);
+    var d = (Array.isArray(c.doesntKnow) ? c.doesntKnow : []).slice(0, 2).map(_s).filter(Boolean);
+    return _joinBits([k.length ? '知：' + _joinBits(k) : '', d.length ? '不知：' + _joinBits(d) : ''].filter(Boolean));
+  }
+  // 性情：剧本的 personality；剧本没写，才拿认知画像那句人格补上
+  function temperOf(ch) {
+    var t = _s(ch.personality);
+    if (t) return t;
+    var c = _cog(ch.name);
+    return c ? _s(c.personalityCore) : '';
+  }
+
+  // 口吻：speechStyle 为主；diction 不同、又互不包含时接在后面（晚唐两样全同，天启 132 人里 99 人相同）。
+  //   两样都没有，才拿认知画像那句口吻补上
   function speechText(ch) {
     var a = _s(ch.speechStyle), b = _s(ch.diction);
+    if (!a && !b) { var c = _cog(ch.name); return c ? _s(c.speechThread) : ''; }
     if (!a) return b;
     if (!b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0) return a;
-    return a + (/[。！？；…」』）)]$/.test(a) ? '' : '；') + b;
+    return _joinBits([a, b]);
   }
   // 人格核：他是谁。立场与所求相同只写所求（晚唐 434 人里 433 人两栏相同）。
   function coreText(ch) {
     if (!ch) return '';
     var title = titleOf(ch), stress = Number(ch.stress) || 0;
     // 性情原文里已有的字眼，特质里不再重写（魏忠贤性情有「睚眦必报」，特质 vengeful 的定义名也是它）
-    var temper = _s(ch.personality), traits = traitNames(ch).filter(function (n) { return temper.indexOf(n) < 0; });
+    var temper = temperOf(ch), traits = traitNames(ch).filter(function (n) { return temper.indexOf(n) < 0; });
     var stance = _s(ch.stance), goal = _s(ch.personalGoal), speech = speechText(ch);
-    var temperLine = temper + (traits.length ? (temper ? '；' : '') + '特质：' + traits.join('、') : '');
+    var temperLine = _joinBits([temper, traits.length ? '特质：' + traits.join('、') : ''].filter(Boolean));
     return '【人物】' + _s(ch.name) + (title ? '（' + title + '）' : '') + (_s(ch.age) ? '，年' + _s(ch.age) : '')
       + (stress > 30 ? '，当前压力' + stress + '（' + (stress > 60 ? '濒临崩溃' : '焦虑不安') + '）' : '') + '\n'
       + (temperLine ? '【性情】' + temperLine + '\n' : '')
@@ -310,18 +368,28 @@
     }
     return out;
   }
-  // 名单一行：全知提示词里列一群人时用。opts.noName：名单自己已写了名字官职，只要冒号后面那半句
+  // 名单一行：全知提示词里列一群人时用。opts.noName：名单自己已写了名字官职，只要冒号后面那半句；
+  // opts.speech：名单里的人要由模型替他执笔（如奏疏一次写好几份），末尾再带口吻；opts.knows：再带知与不知
   function line(ch, opts) {
     if (!ch) return '';
     var max = (opts && opts.goalMax) || 30;
-    var title = titleOf(ch), temper = _s(ch.personality), goal = _s(ch.personalGoal);
+    var title = titleOf(ch), temper = temperOf(ch), goal = _s(ch.personalGoal);
     var traits = traitNames(ch).filter(function (n) { return temper.indexOf(n) < 0; });
     var bits = [];
     if (temper) bits.push(temper);
     if (traits.length) bits.push('特质' + traits.join('、'));
     if (goal) bits.push('所求' + (goal.length > max ? goal.slice(0, max) + '…' : goal));
-    if (opts && opts.noName) return bits.join('；');
-    return _s(ch.name) + (title ? '（' + title + '）' : '') + (bits.length ? '：' + bits.join('；') : '');
+    if (opts && opts.speech && speechText(ch)) bits.push('口吻' + speechText(ch));
+    if (opts && opts.knows && knowing(ch.name)) bits.push(knowing(ch.name));
+    if (opts && opts.noName) return _joinBits(bits);
+    return _s(ch.name) + (title ? '（' + title + '）' : '') + (bits.length ? '：' + _joinBits(bits) : '');
+  }
+
+  // 他是谁：人格核＋人设长文（含识别状态）。给那些处境、记忆、承诺已经按自己的结构另行列出的场合用
+  //   （如 NPC 自主决策的 JSON 上下文），免得完整档把这些再抄一遍。
+  function who(ch) {
+    if (!ch) return '';
+    return _nl(coreText(ch) + _nl(frag.personaText(ch)));
   }
 
   // 人格核的结构化读法。traits/speech/goal 三项是问对（人1）那版；人2 的统一读法看 temper/traitNames/speechFull/goalFull。
@@ -338,7 +406,7 @@
       personaText: str(ch.aiPersonaText),
       age: ch.age == null ? null : ch.age,
       stress: Number(ch.stress) || 0,
-      temper: _s(ch.personality),
+      temper: temperOf(ch),
       traitNames: traitNames(ch),
       speechFull: speechText(ch),
       goalFull: _s(ch.personalGoal)
@@ -347,8 +415,9 @@
 
   // brief(人, { occasion, topic, detail, name })
   //   detail:'full'（缺省）且 occasion:'wendui'：就是问对的完整提示词（_wdBuildPrompt）。
-  //   detail:'full' 其他场合（奏疏、书信、御前深问、NPC 自主、势力首领）：人格核 + 人设长文 + 处境 + 背景 + 记忆 + 心里有数。
-  //   detail:'brief'（常朝、廷议、御前、朝议插话，一场十几个人、每人一次调用）：人格核 + 人设长文 + 处境一行 + 记忆 + 承诺、野心。
+  //   detail:'full' 其他场合（书信、御前深问、势力首领）：人格核 + 人设长文 + 处境 + 背景 + 记忆 + 心里有数 + 认知画像与应对规矩。
+  //   detail:'brief'（常朝、廷议、御前直陈、朝议插话，一场好几个人、每人一次调用）：人格核 + 人设长文 + 处境一行 + 记忆
+  //     + 承诺、野心 + 认知画像（与完整档同一段，只少被问到不知之事怎么应对那几条）。
   //   detail:'line'：名单一行。
   //   都不含场合规矩（怎么说、对谁说、返回格式归各机制）。
   // 片段只有【标题】没有内容时不写（交办凭据的 helper 在 TM.ImperialOrders 在时总带标题，哪怕此人什么交办都没有）。
@@ -361,8 +430,9 @@
     var memOpts = opts.topic ? { topic: opts.topic } : null;
     if (opts.detail === 'line') return line(ch, opts);
     if (opts.detail === 'brief') {
+      var cog = cognitionText(name);
       return _nl(coreText(ch) + _nl(frag.personaText(ch)) + situationLine(ch)
-        + frag.memory(ch, memOpts) + _filled(frag.commitments(ch, name)) + frag.ambition(ch));
+        + frag.memory(ch, memOpts) + _filled(frag.commitments(ch, name)) + frag.ambition(ch) + (cog ? cog + _COG_RULE : ''));
     }
     if (opts.occasion === 'wendui' && typeof root._wdBuildPrompt === 'function') return root._wdBuildPrompt(ch, name);
     return _nl(coreText(ch) + _nl(frag.personaText(ch)) + situationLine(ch) + situationMore(ch) + frag.edictRoles(name)
@@ -371,5 +441,6 @@
       + _filled(frag.commitments(ch, name)) + frag.ambition(ch) + frag.burden(ch) + frag.cognition(name));
   }
 
-  TM.Person = { frag: frag, core: core, brief: brief, coreText: coreText, traitNames: traitNames, speechText: speechText, line: line, on: on };
+  TM.Person = { frag: frag, core: core, brief: brief, coreText: coreText, who: who, traitNames: traitNames, speechText: speechText, line: line, on: on,
+    cognitionText: cognitionText, knowing: knowing };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1821,8 +1821,12 @@ function _generateLetterReply(letter) {
   var typeLabel = (LETTER_TYPES[letter.letterType]||{}).label || '书信';
 
   if (typeof callAI === 'function' && P.ai && P.ai.key) {
-    var brief = (typeof getCharacterPersonalityBrief === 'function') ? getCharacterPersonalityBrief(ch) : ch.name;
-    var memCtx = (typeof NpcMemorySystem !== 'undefined') ? NpcMemorySystem.getMemoryContext(ch.name) : '';
+    // 人2：开关开着时，「他是谁」读人物统一底子的完整档（单人执笔回信，和问对同一档：人格核、人设长文、处境、背景、
+    //   按来信内容回想的记忆、心里有数），不再用八维短语拼「性格」；关着时下面旧拼法逐字不变。
+    //   情节弧、近期涉君诏令、往来背景、好感语气、回信要求这些场合规矩两路相同。
+    var _personOn = !!(typeof TM !== 'undefined' && TM.Person && TM.Person.on());
+    var brief = (!_personOn && typeof getCharacterPersonalityBrief === 'function') ? getCharacterPersonalityBrief(ch) : ch.name;
+    var memCtx = (!_personOn && typeof NpcMemorySystem !== 'undefined') ? NpcMemorySystem.getMemoryContext(ch.name) : '';
     // 对玩家好感/积怨·影响语气
     var favor = 0;
     try { if (ch._impressions && ch._impressions['玩家']) favor = ch._impressions['玩家'].favor || 0; } catch(_){}
@@ -1873,11 +1877,19 @@ function _generateLetterReply(letter) {
     } catch(_){}
 
     var cipherLabel = (LETTER_CIPHERS && LETTER_CIPHERS[letter._cipher] && LETTER_CIPHERS[letter._cipher].label) || '不加密';
-    var prompt = '你是' + ch.name + '·' + (ch.officialTitle||ch.title||'') + '·当前在' + (ch.location||'远方') + '。\n性格：' + brief;
-    if (ch.stance) prompt += '\n政治立场：' + ch.stance;
-    if (ch.party) prompt += '\n党派：' + ch.party + (ch.partyRank?'·'+ch.partyRank:'');
-    if (memCtx) prompt += '\n近期心绪：' + memCtx;
-    prompt += _hyPromptComposerAddon(ch);
+    var prompt;
+    if (_personOn) {
+      prompt = '你是' + ch.name + '，当前在' + (ch.location||'远方') + '，收到天子来书，亲笔作复。\n'
+        + TM.Person.brief(ch, { occasion: 'letter', detail: 'full', topic: String(letter.content || '').slice(0, 80) });
+      if (ch.party && ch.partyRank) prompt += '党中位次：' + ch.partyRank + '\n';
+      prompt = prompt.replace(/\n+$/, '');  // 后面几段都以换行开头
+    } else {
+      prompt = '你是' + ch.name + '·' + (ch.officialTitle||ch.title||'') + '·当前在' + (ch.location||'远方') + '。\n性格：' + brief;
+      if (ch.stance) prompt += '\n政治立场：' + ch.stance;
+      if (ch.party) prompt += '\n党派：' + ch.party + (ch.partyRank?'·'+ch.partyRank:'');
+      if (memCtx) prompt += '\n近期心绪：' + memCtx;
+      prompt += _hyPromptComposerAddon(ch);
+    }
     if (arcCtx) prompt += arcCtx;
     if (recentEdictCtx) prompt += recentEdictCtx;
     if (priorHistory) prompt += priorHistory;
@@ -1892,7 +1904,7 @@ function _generateLetterReply(letter) {
     }
     prompt += '\n\n收到来自京城天子的' + typeLabel + '('+cipherLabel+')：\n「' + letter.content + '」';
     prompt += '\n\n【回信要求】';
-    prompt += '\n1. 以该角色口吻/身份/性格·100-200 字古典中文';
+    prompt += _personOn ? '\n1. 以上面所写此人的性情、口吻与身份·100-200 字古典中文' : '\n1. 以该角色口吻/身份/性格·100-200 字古典中文';
     prompt += '\n2. 称谓恰当(臣/末将/罪臣/妾身/草民等)';
     prompt += '\n3. 必须针对来信具体内容回应·不得套话空泛';
     prompt += '\n4. 若来信问及某事·直接给答复或说明缘由';

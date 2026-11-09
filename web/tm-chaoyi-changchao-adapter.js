@@ -909,8 +909,10 @@ async function _cc3_aiGenReact(name, item, role, onChunk) {
 
   // 【sc07 升级·S3 消费打通】注入 sc07 NPC 认知画像(自我画像/口吻/知与不知/对陛下态度/恩怨/所求/朝局判断/风闻未证)——
   //   让常朝大臣发言据此立体、像本人、守信息不对称。此前朝议完全没接 sc07 认知(docstring 声称是消费方却缺口)。
+  //   人2：开着「人物统一底子」时精简档里已带认知画像（去掉与人格核重复的几行），这里不再另加。
   try {
-    if (typeof getNpcCognitionSnippet === 'function') {
+    const _cogInBrief07 = typeof TM !== 'undefined' && TM.Person && TM.Person.on() && gmCh;
+    if (typeof getNpcCognitionSnippet === 'function' && !_cogInBrief07) {
       const _cogSnip07 = getNpcCognitionSnippet(name);
       if (_cogSnip07) p += _cogSnip07;
     }

@@ -718,7 +718,7 @@ var NpcMemorySystem = {
     if (ch._memArchive.length > cap.archive) NpcMemorySystem._foldArchive(ch, cap);
   },
 
-  /** 获取角色的记忆摘要（供AI使用——像一个人的内心自述）6.2: 带每回合缓存 */
+  /** 获取角色的记忆摘要（供AI使用——像一个人的内心自述）6.2: 带每回合缓存。opts.topic：按议题另回想几条原始记忆。opts.personalOnly：只要此人自己那段（人生阶段、心绪、往事、铭记、恩怨……），不带开头的「我是谁」身份块与天下大势；要截短用的都该取这段——身份块约 500 字，截 120、300 字截下来全是它（2026-11-09） */
   _memCache: {}, _memCacheTurn: -1,
   getMemoryContext: function(charName, opts) {
     opts = opts || {};
@@ -778,7 +778,7 @@ var NpcMemorySystem = {
     function combine(text) {
       var topic = opts.topic || opts.query || '';
       var recalled = topic && typeof TM !== 'undefined' && TM.PersonalMemoryRecall ? TM.PersonalMemoryRecall.personal(GM,ch,topic,6) : '';
-      return [liveParts.join('。'),text,recalled ? '议题相关原始记忆：'+recalled : ''].filter(Boolean).join('。');
+      return [opts.personalOnly ? '' : liveParts.join('。'),text,recalled ? '议题相关原始记忆：'+recalled : ''].filter(Boolean).join('。');
     }
     if(this._memCache[charName] && this._personalStamps[charName]===personalStamp) return combine(this._memCache[charName]);
 
@@ -838,11 +838,17 @@ var NpcMemorySystem = {
       var top = sorted.slice(0, 4);
       var memIdx = 0;
       var circled = ['①','②','③','④','⑤','⑥','⑦','⑧'];
+      // 开局前的事回合数记成 0 或负数（天启真档魏忠贤有「T-1800」，0 回合的原来还会写成当前回合），写「开局前」；
+      // 类型写中文，general 和认不出的英文代号不写（原来每条都带「类型:general」，2026-11-09）
+      var typeCn = { political: '政事', dialogue: '对谈', career: '仕途', commitment: '承诺', trauma: '创伤', scandal: '丑闻',
+        social_formation: '结社', scheme: '谋划', military: '军务', family: '家事' };
       parts.push('铭记：' + top.map(function(m) {
         var label = circled[memIdx++] || (memIdx + '.');
         var mType = m.type || 'general';
         var imp = Math.round(m.importance) || 5;
-        return label + 'T' + (m.turn || GM.turn) + ' 类型:' + mType + ' ' + m.event + (m.who ? '(' + m.who + ')' : '') + '(' + (m.emotion || '平') + ',重' + imp + ')';
+        var when = typeof m.turn === 'number' ? (m.turn > 0 ? 'T' + m.turn : '开局前') : '';
+        var typeName = typeCn[mType] || (/[\u4e00-\u9fff]/.test(mType) ? mType : '');
+        return label + when + (typeName ? '〔' + typeName + '〕' : (when ? ' ' : '')) + m.event + (m.who ? '(' + m.who + ')' : '') + '(' + (m.emotion || '平') + ',重' + imp + ')';
       }).join(' '));
     }
 

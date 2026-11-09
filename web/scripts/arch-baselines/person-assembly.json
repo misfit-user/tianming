@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-07T06:29:31.857Z",
+  "generatedAt": "2026-11-09T06:36:13.619Z",
   "note": "各文件直接读人格字段的行数；只减不增。新拼人格改走 TM.Person（tm-person.js）。",
   "files": {
     "tm-prompt-composer.js": 1,
@@ -39,7 +39,7 @@
     "tm-keju-runtime.js": 4,
     "tm-keju-runtime-keyi.js": 4,
     "tm-chaoyi-tinyi.js": 3,
-    "tm-chaoyi-yuqian.js": 5,
+    "tm-chaoyi-yuqian.js": 2,
     "tm-chaoyi-changchao-adapter.js": 1,
     "tm-chaoyi-changchao.js": 2,
     "tm-tinyi-v3-persona.js": 6,

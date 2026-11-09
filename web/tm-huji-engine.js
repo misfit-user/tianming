@@ -2861,7 +2861,9 @@
     if (!P) return '';
     var lines = ['【户口】'];
     var view = getPopulationView({root:global.GM});
-    lines.push('朝代：' + P.dynasty + '；' + (view.displayBasis === 'registered' ? '在籍' : '全国') + '：户 ' + _fmt(view.households) + '，口 ' + _fmt(view.mouths) + '，丁 ' + _fmt(view.ding));
+    // 这段只进人物记忆：朝代、兵种是英文代号就不写（天启真档朝代是 default，2026-11-09）
+    var dyPart = /[\u4e00-\u9fff]/.test(String(P.dynasty || '')) ? '朝代：' + P.dynasty + '；' : '';
+    lines.push(dyPart + (view.displayBasis === 'registered' ? '在籍' : '全国') + '：户 ' + _fmt(view.households) + '，口 ' + _fmt(view.mouths) + '，丁 ' + _fmt(view.ding));
     if (view.displayBasis === 'registered') lines.push('居民估计 ' + _fmt(view.actualMouths) + '口；当前可征 ' + _fmt(view.taxableHouseholds) + '户。估计与册籍覆盖的差额不得全部认作逃隐。');
     if (P.fugitives > 10000) lines.push((view.displayBasis === 'registered' ? '逃口：' : '逃户：') + _fmt(P.fugitives));
     if (P.hiddenCount > 10000) lines.push((view.displayBasis === 'registered' ? '估隐口：' : '隐户：') + _fmt(P.hiddenCount));
@@ -2873,7 +2875,8 @@
       var milLines = [];
       Object.keys(P.military.types).forEach(function(k) {
         if (P.military.types[k].enabled && P.military.types[k].strength > 1000) {
-          milLines.push((MILITARY_TYPES[k] ? MILITARY_TYPES[k].name : k) + ' ' + _fmt(P.military.types[k].strength));
+          var milName = MILITARY_TYPES[k] ? MILITARY_TYPES[k].name : (/[\u4e00-\u9fff]/.test(k) ? k : '');
+          if (milName) milLines.push(milName + ' ' + _fmt(P.military.types[k].strength));
         }
       });
       if (milLines.length) lines.push('兵：' + milLines.join('，'));

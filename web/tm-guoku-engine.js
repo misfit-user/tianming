@@ -50,14 +50,16 @@
     return amount;
   }
 
+  // 破产链各级只认账上真发生的事（11-09 同志定，见 _bankruptcyFacts）；事件只写账上的事实，不替后果说话——
+  // 欠饷之后营伍骚不骚动归各军欠饷那条线，灾荒成不成民变归天灾、民变那条线。
   var BANKRUPTCY_STAGES = [
     { stage:1, id:'cash_warning',       name:'帑廪告急',     event:'第一阶段：帑廪告急，支出逼近库底。' },
     { stage:2, id:'salary_arrears',     name:'欠俸积压',     event:'第二阶段：百官欠俸，廉耻渐薄。' },
-    { stage:3, id:'emergency_borrowing',name:'举债续命',     event:'第三阶段：向商贾豪强举债，财政信用受损。' },
-    { stage:4, id:'tax_credit_break',   name:'加派失信',     event:'第四阶段：加派与拖欠并行，民间不信朝廷财计。' },
-    { stage:5, id:'army_pay_break',     name:'军饷断裂',     event:'第五阶段：军饷断绝，营伍骚动。' },
-    { stage:6, id:'relief_failure',     name:'赈济断裂',     event:'第六阶段：赈济不继，灾荒转为民变。' },
-    { stage:7, id:'fiscal_collapse',    name:'财政崩溃',     event:'第七阶段：财政崩溃，皇权与皇威皆被动摇。' }
+    { stage:3, id:'emergency_borrowing',name:'举债续命',     event:'第三阶段：帑廪亏空，借银度日。' },
+    { stage:4, id:'tax_credit_break',   name:'加派失信',     event:'第四阶段：加派未停，欠账仍在。' },
+    { stage:5, id:'army_pay_break',     name:'军饷断裂',     event:'第五阶段：帑廪发不足军饷，本期欠发。' },
+    { stage:6, id:'relief_failure',     name:'赈济断裂',     event:'第六阶段：灾荒未平而帑廪已空，赈济无以为继。' },
+    { stage:7, id:'fiscal_collapse',    name:'财政崩溃',     event:'第七阶段：俸饷皆欠，欠账逾一岁所入，财政崩溃。' }
   ];
 
   function _bankruptcyStageDef(stage) {
@@ -74,6 +76,8 @@
     if (!Array.isArray(b.history)) b.history = [];
     if (!b.effects) b.effects = {};
     if (!Array.isArray(b.effects.appliedStageIds)) b.effects.appliedStageIds = [];
+    // 本次危机里已报过的级（见 _announceBankruptcyFacts）。旧档正在危机里的，按已起过后果的级算作报过，免得读档后把同几级再报一遍。
+    if (!Array.isArray(b.episodeStageIds)) b.episodeStageIds = b.active ? b.effects.appliedStageIds.slice() : [];
     b.stateMachine = true;
     if (b.stage > 0) {
       var def = _bankruptcyStageDef(b.stage);
@@ -993,27 +997,40 @@
   // 破产检查
   // ═════════════════════════════════════════════════════════════
 
-  function _bankruptcyTargetStage(g, b) {
+  // 破产链各级只认账上真发生的事（11-09 同志定）。原先按「连续亏空几个月」一级级升：第三月就算「举债」、第四月就算
+  // 「加派」、第八月必到「财政崩溃」，没借一文钱、没下一道加派诏也照扣；第六个月起每月还随机掷兵变、饥民暴动。
+  // 现在每一级都要账上真有那件事（只在危机中才判，危机＝库里亏空或本期有新欠，不算「待诏给付」的开局旧欠）：
+  //   一级 帑廪告急：在危机中。
+  //   二级 欠俸积压：本期俸禄真欠发了（帑廪册「俸禄_欠」，银或粮）。
+  //   三级 举债续命：身上真有没还完的借款。
+  //   四级 加派失信：真下了加派、还在征。
+  //   五级 军饷断裂：本期军饷真欠发了（帑廪册「军饷_欠」，银或粮）。
+  //   六级 赈济断裂：有灾未赈而库里亏空。
+  //   七级 财政崩溃：俸、饷同欠，而且新欠（不计待诏旧欠）已超过一年岁入。
+  function _bankruptcyFacts(g, owed) {
     var annual = Math.max(1, safe(g.annualIncome, safe(g.monthlyIncome, 80000) * 12));
-    var deficitRatio = Math.max(0, -(g.balance || 0) / annual);
-    var delta = safe(g.lastDelta, safe(g.monthlyIncome, 0) - safe(g.monthlyExpense, 0));
-    var expensePressure = Math.max(0, (safe(g.monthlyExpense, 0) - safe(g.monthlyIncome, 0)) / Math.max(1, safe(g.monthlyIncome, annual / 12)));
-    var byRatio = deficitRatio >= 1.05 ? 6 :
-      deficitRatio >= 0.75 ? 5 :
-      deficitRatio >= 0.50 ? 4 :
-      deficitRatio >= 0.25 ? 3 :
-      deficitRatio >= 0.10 ? 2 :
-      (g.balance < 0 || delta < -annual * 0.02 || expensePressure > 0.35) ? 1 : 0;
-    var byMonths = b.consecutiveMonths >= 8 ? 7 :
-      b.consecutiveMonths >= 6 ? 6 :
-      b.consecutiveMonths >= 5 ? 5 :
-      b.consecutiveMonths >= 4 ? 4 :
-      b.consecutiveMonths >= 3 ? 3 :
-      b.consecutiveMonths >= 2 ? 2 :
-      b.consecutiveMonths >= 1 ? 1 : 0;
-    if (deficitRatio >= 1.0 && b.consecutiveMonths >= 6) byRatio = Math.max(byRatio, 7);
-    if (deficitRatio >= 1.5 && b.consecutiveMonths >= 4) byRatio = Math.max(byRatio, 7);
-    return Math.max(byRatio, byMonths);
+    var ledgers = g.ledgers || {}, em = g.emergency || {};
+    function short(tag) {
+      return ['money', 'grain'].some(function(k) {
+        var sinks = ledgers[k] && ledgers[k].sinks;
+        return !!sinks && safe(sinks[tag + '_欠'], 0) > 0;
+      });
+    }
+    var broke = (g.balance || 0) < 0 || owed > 0;
+    var unrelieved = Array.isArray(GM.activeDisasters) && GM.activeDisasters.some(function(d) { return d && !d._relieved; });
+    var f = { 1: broke };
+    f[2] = broke && short('俸禄');
+    f[3] = broke && ((Array.isArray(em.loans) && em.loans.length > 0) || !!(em.loan && em.loan.active));
+    f[4] = broke && !!(em.extraTax && em.extraTax.active);
+    f[5] = broke && short('军饷');
+    f[6] = broke && unrelieved;
+    f[7] = f[2] && f[5] && owed >= annual;
+    return f;
+  }
+
+  function _bankruptcyTargetStage(facts) {
+    for (var s = 7; s >= 1; s--) if (facts[s]) return s;
+    return 0;
   }
 
   function _pushBankruptcyHistory(b, def, direction) {
@@ -1030,13 +1047,6 @@
     if (b.history.length > 80) b.history.splice(0, b.history.length - 80);
   }
 
-  function _adjustAuthorityIndex(key, delta) {
-    if (!delta || !GM[key]) return;
-    if (typeof GM[key] === 'number') GM[key] = clamp(GM[key] + delta, 0, 100);
-    else if (typeof GM[key].index === 'number') GM[key].index = clamp(GM[key].index + delta, 0, 100);
-    else if (key === 'minxin' && typeof GM[key].trueIndex === 'number') GM[key].trueIndex = clamp(GM[key].trueIndex + delta, 0, 100);
-  }
-
   function _applyBankruptcyStageEffects(def) {
     if (!def || !GM.guoku) return;
     var b = _ensureBankruptcyState(GM.guoku);
@@ -1045,6 +1055,13 @@
     if (!Array.isArray(b.effects.ledger)) b.effects.ledger = [];
     var row = { turn: GM.turn || 0, stage: def.stage, stageId: def.id, deltas: {} };
 
+    // 各级后果只走真有的那条线，不在这里再扣一遍（11-09 同志定）：
+    // - 二级欠俸：俸禄真欠发了，记低俸腐败、在任官员离心——欠俸没有别的线管，留在这里。
+    // - 三级举债：借款的利息和副作用借时已算（takeLoanBySource）；原先这里再扣皇威 2。
+    // - 四级加派：加派的民怨和地方浮收加派时已算（Actions.extraTax）；原先这里再扣民心 4、皇威 3，没加派也扣。
+    // - 五级欠饷：军心只在各军欠饷那条线上扣（tm-military applyPayArrearsPressure）；原先这里全军再扣士气 6、补给 4、民心 3。
+    // - 六级赈济断裂：灾荒的后果归天灾那条线（未赈的灾拖得久、饥荒、流民）；原先这里给天下各区一律加民变 5、扣民心 6。
+    // - 七级财政崩溃：原先扣皇权 8、皇威 10、民心 8、外藩观感 10，各区民变加 8——都不对应世上发生的哪件事。
     if (def.stage === 1) {
       row.deltas.credit = -3;
       GM.guoku.fiscalCredit = clamp(safe(GM.guoku.fiscalCredit, 70) - 3, 0, 100);
@@ -1054,78 +1071,39 @@
         if (ch && ch.alive !== false && typeof ch.loyalty === 'number' && ch.officialTitle) ch.loyalty = clamp(ch.loyalty - 1, 0, 100);
       });
       row.deltas.lowSalaryCorruption = 6;
-    } else if (def.stage === 3) {
-      GM.guoku.debtPressure = safe(GM.guoku.debtPressure, 0) + 0.12;
-      _adjustAuthorityIndex('huangwei', -2);
-      row.deltas.debtPressure = 0.12;
-      row.deltas.huangwei = -2;
-    } else if (def.stage === 4) {
-      _adjustAuthorityIndex('minxin', -4);
-      _adjustAuthorityIndex('huangwei', -3);
-      if (!GM.guoku.extraTaxPressure) GM.guoku.extraTaxPressure = 0;
-      GM.guoku.extraTaxPressure += 0.08;
-      row.deltas.minxin = -4;
-      row.deltas.huangwei = -3;
-    } else if (def.stage === 5) {
-      if (GM.military && typeof GM.military.morale === 'number') GM.military.morale = clamp(GM.military.morale - 8, 0, 100);
-      (GM.armies || []).forEach(function(army) {
-        if (!army) return;
-        if (typeof army.morale === 'number') army.morale = clamp(army.morale - 6, 0, 100);
-        if (typeof army.supply === 'number') army.supply = clamp(army.supply - 4, 0, 100);
-      });
-      _adjustAuthorityIndex('minxin', -3);
-      row.deltas.armyMorale = -6;
-      row.deltas.minxin = -3;
-    } else if (def.stage === 6) {
-      (GM.regions || []).forEach(function(r) {
-        if (r && typeof r.unrest === 'number') r.unrest = clamp(r.unrest + 5, 0, 100);
-      });
-      _adjustAuthorityIndex('minxin', -6);
-      row.deltas.regionalUnrest = 5;
-      row.deltas.minxin = -6;
-    } else if (def.stage === 7) {
-      _adjustAuthorityIndex('huangquan', -8);
-      _adjustAuthorityIndex('huangwei', -10);
-      _adjustAuthorityIndex('minxin', -8);
-      if (GM.huangwei && GM.huangwei.subDims && GM.huangwei.subDims.foreign) {
-        GM.huangwei.subDims.foreign.value = clamp(GM.huangwei.subDims.foreign.value - 10, 0, 100);
-      }
-      (GM.regions || []).forEach(function(r) {
-        if (r && typeof r.unrest === 'number') r.unrest = clamp(r.unrest + 8, 0, 100);
-      });
-      row.deltas.huangquan = -8;
-      row.deltas.huangwei = -10;
-      row.deltas.minxin = -8;
     }
 
     b.effects.ledger.push(row);
     if (b.effects.ledger.length > 80) b.effects.ledger.splice(0, b.effects.ledger.length - 80);
   }
 
-  function _setBankruptcyStage(g, nextStage) {
+  // 本次危机里真发生、还没报过的那几级：记一笔、报一次、按级起后果（后果一局只起一次，见 appliedStageIds）。
+  // 没发生的级不报不扣——天启空转时帑廪亏空、军饷欠发，却没欠俸、没借钱、没加派，就只报一、五两级。
+  function _announceBankruptcyFacts(b, facts) {
+    if (!Array.isArray(b.episodeStageIds)) b.episodeStageIds = [];
+    for (var s = 1; s <= 7; s++) {
+      if (!facts[s]) continue;
+      var def = _bankruptcyStageDef(s);
+      if (b.episodeStageIds.indexOf(def.id) >= 0) continue;
+      b.episodeStageIds.push(def.id);
+      _pushBankruptcyHistory(b, def, 'advance');
+      _applyBankruptcyStageEffects(def);
+      if (typeof addEB === 'function') addEB('朝代', def.event, { credibility: 'high' });
+    }
+  }
+
+  // 级别照本期账上的事实定：事实好转（如本月军饷发足了）就往回落，不再只升不降。
+  function _setBankruptcyStage(g, nextStage, facts) {
     var b = _ensureBankruptcyState(g);
     nextStage = Math.max(0, Math.min(7, Math.round(nextStage || 0)));
     var oldStage = Math.max(0, Math.min(7, b.stage || 0));
-    if (nextStage > oldStage) {
-      for (var s = oldStage + 1; s <= nextStage; s++) {
-        var def = _bankruptcyStageDef(s);
-        b.stage = s;
-        b.stageId = def.id;
-        b.stageName = def.name;
-        b.active = true;
-        _pushBankruptcyHistory(b, def, 'advance');
-        _applyBankruptcyStageEffects(def);
-        if (typeof addEB === 'function') addEB('朝代', def.event, { credibility: 'high' });
-      }
-    } else if (nextStage < oldStage) {
-      var def2 = nextStage > 0 ? _bankruptcyStageDef(nextStage) : null;
-      b.stage = nextStage;
-      b.stageId = def2 ? def2.id : 'stable';
-      b.stageName = def2 ? def2.name : '财政平稳';
-      b.active = nextStage > 0;
-      _pushBankruptcyHistory(b, def2, 'recover');
-      if (!b.active && typeof addEB === 'function') addEB('朝代', '帑廪渐充，财政危机解除', { credibility: 'high' });
-    }
+    var def = nextStage > 0 ? _bankruptcyStageDef(nextStage) : null;
+    b.stage = nextStage;
+    b.stageId = def ? def.id : 'stable';
+    b.stageName = def ? def.name : '财政平稳';
+    b.active = nextStage > 0;
+    if (nextStage < oldStage) _pushBankruptcyHistory(b, def, 'recover');
+    if (facts && nextStage > 0) _announceBankruptcyFacts(b, facts);
     return b;
   }
 
@@ -1141,34 +1119,25 @@
     // 这笔欠饷的后果走军队欠饷那条线（欠饷月数、军心、兵变）。
     var led = g.ledgers && g.ledgers.money;
     var owed = led ? Math.max(0, safe(led.deficit, 0) - _manualDeficit(led)) : 0;
-    var inCrisis = (g.balance || 0) < 0 || owed > 0;
+    var facts = _bankruptcyFacts(g, owed);
 
-    if (inCrisis) {
+    if (facts[1]) {
       b.recoveryMonths = 0;
       b.consecutiveMonths = (b.consecutiveMonths || 0) + mr;
       b.severity = Math.max(b.severity || 0, Math.abs(Math.min(0, g.balance || 0)) / annual);
-      var nextStage = _bankruptcyTargetStage(g, b);
-      _setBankruptcyStage(g, nextStage);
-      if (b.consecutiveMonths > 6 && Math.random() < 0.05 * mr) triggerMutinyOrFamine();
+      _setBankruptcyStage(g, _bankruptcyTargetStage(facts), facts);
     } else {
       b.recoveryMonths = (b.recoveryMonths || 0) + mr;
       b.consecutiveMonths = Math.max(0, (b.consecutiveMonths || 0) - mr * 1.5);
       b.severity = Math.max(0, (b.severity || 0) - 0.12 * mr);
-      if ((b.stage || 0) > 0) _setBankruptcyStage(g, Math.max(0, (b.stage || 0) - Math.max(1, Math.floor(b.recoveryMonths || 1))));
-      if ((b.stage || 0) <= 0) b.active = false;
+      if ((b.stage || 0) > 0) _setBankruptcyStage(g, 0);
+      // 连着三个月不在危机里，这一场才算过去，再亏空时各级重新报；只回升一两个月不算，免得库底上下晃时反复报同几级。
+      if ((b.recoveryMonths || 0) >= 3 && b.episodeStageIds.length) {
+        b.episodeStageIds = [];
+        if (typeof addEB === 'function') addEB('朝代', '帑廪渐充，财政危机解除', { credibility: 'high' });
+      }
     }
     return b;
-  }
-
-  function triggerMutinyOrFamine() {
-    if (GM.activeWars && GM.activeWars.length > 0) {
-      if (typeof addEB === 'function') addEB('军事', '军饷断绝，兵变四起', { credibility: 'high' });
-      _mxApply(-10, '军饷断绝，兵变四起');
-    }
-    if (GM.activeDisasters && GM.activeDisasters.length > 0) {
-      if (typeof addEB === 'function') addEB('朝代', '赈济不继，饥民暴起', { credibility: 'high' });
-      _mxApply(-15, '赈济不继，饥民暴起', 'disasterRelief');
-    }
   }
 
   // ═════════════════════════════════════════════════════════════

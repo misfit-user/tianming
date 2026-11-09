@@ -529,7 +529,7 @@
   // ═══ 刀三·流寇/民变劫掠据府（给乱党牙齿·闭合刀A：逃户喂流寇→流寇劫掠→更多逃户）═══
   //   流寇/民变 此前 strength/scale 算了却无每回合危害=死数字躺列表。此处令其据府每回合：
   //   ①挂「流寇劫掠/民变扰攘」负境况(复用 RegionStatus→cascade 减税·且联动刀一灾异→减粮产·status tick 减民心)
-  //   ②驱民入既有逃户池(恶性循环·有界封顶防失控)。纯增量·朝代中立·门控(无乱党/无可解析地→no-op)。
+  //   ②驱民从编户转入逃户池(守恒·恶性循环·有界封顶防失控)。纯增量·朝代中立·门控(无乱党/无可解析地→no-op)。
   var PLUNDER_STRENGTH_SCALE = 200000; // 流寇强度达此→劫掠烈度饱和
   var PLUNDER_ECON = 0.18;             // 流寇劫掠 econPct 上限(×烈度·RegionStatus 再夹[-0.25,0.25])
   var PLUNDER_TAOOHU_RATE = 0.02;      // 劫掠驱民入逃户=强度×此(/回合)
@@ -562,9 +562,15 @@
           try { RS.add(div, { kind: 'disaster', name: '流寇劫掠', econPct: -PLUNDER_ECON * sev, minxinPerTurn: -1.5 * sev, durationTurns: 2, desc: '流寇过境·焚掠乡里', source: 'roving' }, G); plundered.push(div.name || rn); } catch (_) {}
         }
       });
-      if (taoohu) {
-        var swell = Math.min(Math.round((Number(r.strength) || 0) * PLUNDER_TAOOHU_RATE * mr), PLUNDER_TAOOHU_CAP);
-        if (swell > 0) taoohu.mouths = (Number(taoohu.mouths) || 0) + swell; // 恶性循环·有界封顶
+      // 劫掠驱民：从编户转逃户（守恒，同 tm-event-bus 低民心逃亡那一段），只在真劫掠到州时才有。
+      // 旧写法不论劫没劫到都往逃户池里加人、也不从编户扣，人凭空多出来，又被流寇凝聚收去壮大（11-09）。
+      var huangji = bls && bls.huangji;
+      if (taoohu && huangji && plundered.length) {
+        var swell = Math.min(Math.round((Number(r.strength) || 0) * PLUNDER_TAOOHU_RATE * mr), PLUNDER_TAOOHU_CAP, Math.max(0, Math.round(Number(huangji.mouths) || 0)));
+        if (swell > 0) {
+          huangji.mouths = (Number(huangji.mouths) || 0) - swell;
+          taoohu.mouths = (Number(taoohu.mouths) || 0) + swell; // 恶性循环·有界封顶
+        }
       }
       // 只报真劫掠到的州。流寇的地方取自阶层数据的地域，天启里是「北方燕齐」「江南苏松」这类泛称，对不上任何州时
       // 上面一处也没挂上；旧写法照样每回合报「劫掠北方燕齐等地，焚庐舍」，地方上什么都没发生，是假事件。

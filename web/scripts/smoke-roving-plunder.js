@@ -26,9 +26,10 @@ function freshGM(opts) {
     turn: 5,
     rovingRebels: opts.rebels || [],
     minxin: { revolts: opts.revolts || [] },
-    population: { byLegalStatus: { taoohu: { mouths: opts.taoohu || 0 } } }
+    population: { byLegalStatus: { taoohu: { mouths: opts.taoohu || 0 }, huangji: { mouths: opts.huangji != null ? opts.huangji : 1000000 } } }
   };
 }
+function legal() { var b = global.GM.population.byLegalStatus; return { tao: b.taoohu.mouths, huang: b.huangji.mouths, sum: b.taoohu.mouths + b.huangji.mouths }; }
 
 // ── T1/T2 流寇据府劫掠 + 喂逃户 ──
 global.GM = freshGM({ rebels: [{ id: 'r1', strength: 100000, regions: ['西安府', '延安府'], disbanded: false }] });
@@ -38,12 +39,18 @@ var roCalls = addCalls.filter(function (c) { return c.source === 'roving'; });
 ok(roCalls.length === 2 && roCalls.every(function (c) { return c.name === '流寇劫掠'; }), '1·流寇据2府→各挂「流寇劫掠」境况·实得 ' + roCalls.length);
 ok(Math.abs(roCalls[0].econPct - (-0.18 * 0.5)) < 1e-9, '1·econPct=-0.18×烈度0.5(强度10w/20w)=-0.09·实得 ' + roCalls[0].econPct);
 ok(global.GM.population.byLegalStatus.taoohu.mouths === 2000, '2·劫掠驱民入逃户=强度10w×0.02=2000(恶性循环)·实得 ' + global.GM.population.byLegalStatus.taoohu.mouths);
+ok(legal().huang === 998000 && legal().sum === 1000000, '2·这 2000 人从编户里出（编户 100 万 → 99.8 万，编户＋逃户不变）·实得 ' + JSON.stringify(legal()));
 
 // ── T3 驱民封顶 ──
 global.GM = freshGM({ rebels: [{ id: 'r2', strength: 5000000, regions: ['某府'], disbanded: false }] });
 addCalls = [];
 F3._tickRovingPlunder({ turn: 5 }, 1);
 ok(global.GM.population.byLegalStatus.taoohu.mouths === 20000, '3·巨寇→驱民封顶 20000(防失控)·实得 ' + global.GM.population.byLegalStatus.taoohu.mouths);
+ok(legal().sum === 1000000, '3·封顶时编户＋逃户也不变·实得 ' + JSON.stringify(legal()));
+// 编户不够时只转得出编户里有的
+global.GM = freshGM({ rebels: [{ id: 'r2b', strength: 100000, regions: ['某府'], disbanded: false }], huangji: 500 });
+F3._tickRovingPlunder({ turn: 5 }, 1);
+ok(legal().tao === 500 && legal().huang === 0, '3·编户只剩 500 → 只转 500，不凭空生人·实得 ' + JSON.stringify(legal()));
 
 // ── T4 最多劫掠府数封顶 ──
 global.GM = freshGM({ rebels: [{ id: 'r3', strength: 100000, regions: ['a', 'b', 'c', 'd', 'e', 'f'], disbanded: false }] });
@@ -81,6 +88,7 @@ global.GM = freshGM({ rebels: [{ id: 'r6', strength: 100000, regions: ['北方�
 addCalls = [];
 F3._tickRovingPlunder({ turn: 5 }, 1);
 ok(addCalls.length === 0 && !ebTexts.some(function (t) { return /劫掠/.test(t); }), '9·地名对不上任何州→不挂境况也不报劫掠·实得 ' + JSON.stringify(ebTexts));
+ok(legal().tao === 0 && legal().huang === 1000000, '9·一州没劫到→也没人被驱入逃户（旧写法照加 2000、编户不扣）·实得 ' + JSON.stringify(legal()));
 global.GM = freshGM({ rebels: [{ id: 'r7', strength: 100000, regions: ['北方燕齐', '西安府'], disbanded: false }] });
 addCalls = []; ebTexts = [];
 F3._tickRovingPlunder({ turn: 5 }, 1);

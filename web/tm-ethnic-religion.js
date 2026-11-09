@@ -120,17 +120,17 @@
   function _tickJimiHoldings(ctx, mr) {
     var G = global.GM;
     if (!G.population || !G.population.jimiHoldings) return;
+    // 贡赋一年一次、走帑廪册（11-10）：原先每逢正月直接加到 guoku.money，不记账；一回合不足一月的剧本正月里要交好几回。
+    var newYear = (typeof global.isYearBoundary === 'function') ? global.isYearBoundary(G.turn || 0) : (G.month || 1) === 1;
+    var FE = global.FiscalEngine;
     G.population.jimiHoldings.forEach(function(h) {
       // 自治度上升（若皇威弱）
       var hw = G.huangwei && G.huangwei.index || 50;
       if (hw < 40) h.autonomy = Math.min(1, (h.autonomy||0.7) + 0.005 * mr);
       else if (hw > 70) h.autonomy = Math.max(0.3, h.autonomy - 0.003 * mr);
-      // 贡献朝贡（仅低自治 + 年一次）
-      if ((G.month||1) === 1 && h.autonomy < 0.8) {
-        if (G.guoku && h.tribute && h.tribute.annual) {
-          G.guoku.money = (G.guoku.money||0) + h.tribute.annual;
-        }
-      }
+      // 贡赋（自治低于八成才贡）
+      var annual = h.tribute && Number(h.tribute.annual);
+      if (newYear && h.autonomy < 0.8 && annual > 0 && FE && typeof FE.addToGuoku === 'function') FE.addToGuoku({ money: annual }, '羁縻贡赋');
       // 忠诚度随时间波动
       h.loyalty = Math.max(0, Math.min(100, (h.loyalty||60) + (Math.random()-0.5) * mr));
     });

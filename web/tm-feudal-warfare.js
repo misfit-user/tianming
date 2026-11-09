@@ -1178,19 +1178,18 @@ function _tickFeudalHoldings(ctx, mr) {
   var _tmFeudalGlobal = typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));
   var G = _tmFeudalGlobal.GM;
   if (!G || !G.feudalHoldings) return;
+  // 年贡一年一次、走帑廪册（11-10）：原先每逢正月直接加到 guoku.money，不记账；一回合不足一月的剧本（晚唐十天一回合）正月里要交好几回。
+  var newYear = (typeof isYearBoundary === 'function') ? isYearBoundary(G.turn || 0) : (G.month || 1) === 1;
+  var FE = _tmFeudalGlobal.FiscalEngine;
   G.feudalHoldings.forEach(function(fh) {
     var rule = FEUDAL_HOLDING_TYPES[fh.type];
     if (!rule) return;
-    if ((G.month||1) === 1 && G.guoku && fh.tribute && fh.tribute.annual) {
-      G.guoku.money = (G.guoku.money || 0) + fh.tribute.annual;
-    }
+    var annual = fh.tribute && Number(fh.tribute.annual);
+    if (newYear && annual > 0 && FE && typeof FE.addToGuoku === 'function') FE.addToGuoku({ money: annual }, '藩属年贡');
     var hw = G.huangwei && G.huangwei.index || 50;
     if (hw < 30) fh.loyalty = Math.max(0, (fh.loyalty||0.5) - 0.005 * mr);
     if (hw > 70) fh.loyalty = Math.min(1, (fh.loyalty||0.5) + 0.003 * mr);
-    if (fh.loyalty < 0.15 && Math.random() < 0.02 * mr) {
-      fh.status = 'rebelling';
-      if (_tmFeudalGlobal.addEB) _tmFeudalGlobal.addEB('藩镇', fh.name + ' 叛');
-    }
+    // 原先忠诚低于 0.15 时每月 2% 随机记一次「叛」：只改一个没人读的状态、写一行字（11-10 删）。叛不叛归民变重做那条线，要有人带头。
   });
 }
 

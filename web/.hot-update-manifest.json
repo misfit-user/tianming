@@ -5236,8 +5236,8 @@
     },
     {
       "path": "tm-ethnic-religion.js",
-      "sha256": "98ad7832bf7af1823fb2e7061f076c6d6334c605c0fbee0535c9ca1c09c9c5ad",
-      "size": 36293
+      "sha256": "8cc71a69d9810f6f75d96362a5e2ca74dfc1454b6c45a1f01c6cd8ef2646bc60",
+      "size": 36630
     },
     {
       "path": "tm-event-bus.js",
@@ -5381,8 +5381,8 @@
     },
     {
       "path": "tm-feudal-warfare.js",
-      "sha256": "1cde591ed539957ddbbd7fd86c44002fd30e0f0c1bd6afacc047d717609a7ac4",
-      "size": 52337
+      "sha256": "3734354a0b1c4fbbf865603d7860ac8bd1d2a23df71263e2f3ddd9988bb493c5",
+      "size": 52728
     },
     {
       "path": "tm-feudal.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "dc6e7b19e22a6c4cde47ed7913287073b8dae7af0a54a54d235d5542a69b7e07",
+      "sha256": "f7e4e2b13e2d686e7e8cd58d3591b95c2a0c5d546bab8beaab97b540a99d142c",
       "size": 141013
     },
     {

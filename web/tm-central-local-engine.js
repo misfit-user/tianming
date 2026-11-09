@@ -554,19 +554,17 @@
   function _checkComplianceEvents(rid, rf, region) {
     var G = global.GM;
     var signals = rf._signals || (rf._signals = {});
-    // 非直辖之地（羁縻、土司等）征收低、自主高是常态，不报抗命、坐大、自立（见 isDirectlyGoverned）；
-    // 旧档里按旧规则记下的「自立」一并撤掉。
-    if (rf.compliance < 0.5 && !isDirectlyGoverned(rid)) {
-      if (signals.selfDeclare) _dropSelfDeclared(G, rid, signals);
-      return;
-    }
+    // 「自立」不再在这里判（11-09 同志定并入民变重做那条线，见 tm-ledger-paper _checkWarlordAutonomyRise）：
+    // 原先征收跌破一成就报「实质自立，脱离朝廷管辖」、记一处「示意」的封建领地，地其实还在朝廷手里。旧档里记下的一并撤掉。
+    if (signals.selfDeclare) _dropSelfDeclared(G, rid, signals);
+    // 非直辖之地（羁縻、土司等）征收低、自主高是常态，不报抗命、自专（见 isDirectlyGoverned）。
+    if (rf.compliance < 0.5 && !isDirectlyGoverned(rid)) return;
     // 头一回看到这块地（新开局的第一回合，或旧档头一回跑到这里）时就已如此，是剧本或旧档给的底子，
     // 不是本局新发生的事：把对应的信号记上、不报；日后回落再越线才报。
     if (!signals.seen) {
       signals.seen = true;
       if (rf.compliance < 0.5) signals.defiance = true;
       if (rf.compliance < 0.3 && rf.autonomyLevel > 0.7) signals.warlord = true;
-      if (rf.compliance < 0.1 && rf.autonomyLevel > 0.85) signals.selfDeclare = true;
       return;
     }
     // 抗命
@@ -575,25 +573,12 @@
       _emitEvent('region_defiance', { regionId: rid, compliance: rf.compliance });
     }
     if (rf.compliance > 0.6) signals.defiance = false;
-    // 藩镇坐大
+    // 自专日甚（只报账上的事：上解不足三成、自主过七成；原先说「坐大成藩镇」，并无藩镇）
     if (rf.compliance < 0.3 && rf.autonomyLevel > 0.7 && !signals.warlord) {
       signals.warlord = true;
-      _emitEvent('frontier_warlord', { regionId: rid, autonomyLevel: rf.autonomyLevel });
+      _emitEvent('frontier_warlord', { regionId: rid, autonomyLevel: rf.autonomyLevel, compliance: rf.compliance });
     }
     if (rf.compliance > 0.4) signals.warlord = false;
-    // 自立
-    if (rf.compliance < 0.1 && rf.autonomyLevel > 0.85 && !signals.selfDeclare) {
-      signals.selfDeclare = true;
-      _emitEvent('self_declaration', { regionId: rid });
-      // 升格为封建领地（示意）
-      G.fiscal.feudalHoldings.push({
-        id: 'feudal_' + rid + '_' + (G.turn || 0),
-        regionId: rid,
-        type: 'autonomous_warlord',
-        declaredAt: G.turn || 0,
-        lord: rf.governingOfficial
-      });
-    }
   }
 
   function _dropSelfDeclared(G, rid, signals) {
@@ -829,8 +814,7 @@
     d = d || {};
     switch (kind) {
       case 'region_defiance': return _regionLabel(d.regionId) + ' 抗命，实际上缴锐减（合规率 ' + (d.compliance*100).toFixed(0) + '%）';
-      case 'frontier_warlord': return _regionLabel(d.regionId) + ' 坐大成藩镇，中央号令难至';
-      case 'self_declaration': return _regionLabel(d.regionId) + ' 实质自立，脱离朝廷管辖';
+      case 'frontier_warlord': return _regionLabel(d.regionId) + ' 自专日甚，起运不足三成' + (typeof d.compliance === 'number' ? '（合规率 ' + (d.compliance*100).toFixed(0) + '%）' : '');
       case 'embezzlement_exposed': return _regionLabel(d.regionId) + ' 查出贪墨案 ' + ((d.findings||[]).length) + ' 件';
       case 'central_local_reform_success': return '央地改革「' + (d.name||'') + '」已成';
       case 'central_local_reform_failure': return '央地改革「' + (d.name||'') + '」受挫';

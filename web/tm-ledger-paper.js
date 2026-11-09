@@ -19,26 +19,6 @@
 (function(global) {
   'use strict';
 
-  // 辅助：按 region id 在 adminHierarchy 里查找人类可读 name
-  function _findDivisionNameById(G, rid) {
-    if (!G || !G.adminHierarchy || !rid) return null;
-    var found = null;
-    function walk(divs) {
-      for (var i = 0; i < (divs||[]).length; i++) {
-        if (found) return;
-        var d = divs[i];
-        if (d.id === rid || d.name === rid) { found = d.name || rid; return; }
-        if (d.children) walk(d.children);
-        if (d.divisions) walk(d.divisions);
-      }
-    }
-    Object.keys(G.adminHierarchy).forEach(function(fac) {
-      var node = G.adminHierarchy[fac];
-      if (node && Array.isArray(node.divisions)) walk(node.divisions);
-    });
-    return found;
-  }
-
   // ═══════════════════════════════════════════════════════════════════
   //  Ledger 税种×区域分解
   // ═══════════════════════════════════════════════════════════════════
@@ -159,58 +139,22 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  藩镇自立升格（region → feudalHolding）
+  //  藩镇自立（已撤，11-09 同志定并入民变重做那条线）
   // ═══════════════════════════════════════════════════════════════════
-
-  function _checkWarlordAutonomyRise(ctx) {
+  // 原先直辖之地自主过 0.85、征收低于 0.2 就「升格」为藩镇：安一个「某节度」为主，扣皇权 8、皇威 10，
+  // 每年正月还按征收额三成给国库「进贡」——这块地其实还在朝廷手里、照样按低征收率上缴，换主、进贡都是凭空的。
+  // 地方真脱离朝廷，要有真人物带头、真改归属，归民变重做那条线（docs/guanben-roleplay-20260930/minbian.md）。
+  // 这里只把旧档按旧规则记下的「藩镇」撤掉（已扣的皇权、皇威不追回）；征收低本身照旧在征税里少收。
+  function _checkWarlordAutonomyRise() {
     var G = global.GM;
-    if (!G.fiscal || !G.fiscal.regions) return;
-    // 只看朝廷直辖之地（CentralLocalEngine.isDirectlyGoverned）：羁縻、土司自主高、征收低是常态，不是「藩镇自立」。
-    // 天启开局乌思藏都指挥使司（羁縻）第一回合就被判自立，扣皇权 8、皇威 10，还安了个「某节度」（11-09 核）。
-    var CL = global.CentralLocalEngine;
-    var isDirect = function(rid) { return !(CL && typeof CL.isDirectlyGoverned === 'function') || CL.isDirectlyGoverned(rid); };
+    if (!G || !G.fiscal || !G.fiscal.regions) return;
     Object.keys(G.fiscal.regions).forEach(function(rid) {
       var reg = G.fiscal.regions[rid];
-      if (reg._elevatedToFeudal && !isDirect(rid)) _dropMisjudgedWarlord(G, rid, reg);
-      // 头一回看到这块地（新开局的第一回合、旧档头一回，或本局新得的地）时就已过线的，是底子、不是本局发生的事：
-      // 记下不报；日后回落、再越线才算自立。
-      var firstLook = !reg._warlordSeen;
-      reg._warlordSeen = true;
-      if (!(reg.autonomyLevel > 0.85 && reg.compliance < 0.2)) {
-        if (reg._warlordAtStart) delete reg._warlordAtStart;
-        return;
-      }
-      if (reg._elevatedToFeudal || reg._warlordAtStart || !isDirect(rid)) return;
-      if (firstLook) { reg._warlordAtStart = true; return; }
-      // 升格
-      reg._elevatedToFeudal = true;
-      if (!G.feudalHoldings) G.feudalHoldings = [];
-      // 解析 region 人类可读名·优先 reg.name·否则从 adminHierarchy 找·最后 fallback rid
-      var _regName = reg.name || _findDivisionNameById(G, rid) || rid;
-      var fh = {
-        id: 'feudal_' + (G.turn||0) + '_' + rid,
-        name: _regName,
-        originalRegionId: rid,
-        type: 'warlord',
-        ruler: reg.localRulerName || '某节度',
-        loyalty: 0.3,
-        tribute: { annual: (reg.claimedRevenue || 500000) * 0.3 },
-        elevatedTurn: G.turn || 0
-      };
-      G.feudalHoldings.push(fh);
-      if (global.addEB) global.addEB('藩镇', _regName + ' 自立\uFF08\u72EC\u7ACB\u85E9\u9547\uFF09');
-      // 皇权皇威损
-      if (global._adjAuthority) {
-        global._adjAuthority('huangquan', -8, '\u85e9\u9547\u81ea\u7acb', { source:'ledger-paper-feudal' });
-        global._adjAuthority('huangwei', -10);
-      }
-      if (typeof global.EventBus !== 'undefined') {
-        global.EventBus.emit('central_local.warlord_independent', { regionId: rid, feudalId: fh.id });
-      }
+      if (reg && reg._elevatedToFeudal) _dropMisjudgedWarlord(G, rid, reg);
     });
   }
 
-  // 旧档里按旧规则被判「藩镇自立」的非直辖之地（天启的乌思藏）：撤掉那条凭空来的藩镇；已扣的皇权、皇威不追回。
+  // 撤掉旧档里按旧规则判出的「藩镇」（天启的乌思藏，或直辖之地被判自立的），连同它每年正月凭空的进贡。
   function _dropMisjudgedWarlord(G, rid, reg) {
     delete reg._elevatedToFeudal;
     var list = G.feudalHoldings;

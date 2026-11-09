@@ -183,14 +183,14 @@
     }
 
     var config = (sc && sc.environmentConfig) || {};
-    var regions = (G.regions || []);
-
+    // GM.regions 官方剧本都是空的：剧本按顶级区划编号给了 initialCarrying（晚唐四十五道）就按这些编号建，整合桥建省环境时并进去；原先什么都不建，作者给的森林、耕地、初始疤痕从没生效。
+    var regions = (G.regions && G.regions.length) ? G.regions : Object.keys((config.initialCarrying && config.initialCarrying.byRegion) || {}).map(function(id) { return { id: id }; });
     G.environment = {
       _inited: true,
       nationalCarrying: { farmland: 0, water: 0, fuel: 0, housing: 0, sanitation: 0 },
       nationalLoad: 0.5,
       ecoDebt: 0,
-      byRegion: _initRegions(regions, config),
+      byRegion: {}, // 等下面技术时代定了再建：建时就标定，要按本朝的算式（原先在这里建，技术时代还没定，一律按唐算）
       climatePhase: (config.climateTimeline && config.climateTimeline[0]) || 'normal',
       historicalScarMap: [],
       crisisHistory: [],
@@ -198,7 +198,7 @@
       techEraRule: ENV_TECH_ERA_RULE,
       activePolicies: [] // 正在推行的政策列表
     };
-
+    G.environment.byRegion = _initRegions(regions, config);
     _recomputeNationalCarrying();
   }
 
@@ -468,8 +468,8 @@
     var water = _envFiniteNumber(reg.aquiferLevel, 1.0) * 1500000 * _envFiniteNumber(reg.riverFlow, 1.0)
                 - (scars.waterTableDrop || 0) * 300000
                 - (scars.riverSilting || 0) * 200000;
-    var fuel = _envFiniteNumber(reg.forestArea, 500000) * 1.5 + _envFiniteNumber(reg.coalReserve, 0) * 3
-               - (scars.deforestation || 0) * 400000;
+    var forest = _envFiniteNumber(reg.forestArea, 500000); // 森林退化按本省森林的比例扣：默认五十万时同旧（疤痕每一成扣四万）；旧写法不分林大小一律扣四十万×疤痕，林小的道几年就扣到地板
+    var fuel = forest * (1.5 - 0.8 * (scars.deforestation || 0)) + _envFiniteNumber(reg.coalReserve, 0) * 3;
     var sani = 1000000 - (scars.urbanSewageOverload || 0) * 500000;
     return { farmland: Math.max(100000, farmland), water: Math.max(100000, water),
              fuel: Math.max(50000, fuel), sanitation: Math.max(100000, sani) };
@@ -549,8 +549,8 @@
   function _getTechEraMult(tech, era, key) {
     var levels = TECH_TIERS[tech] && TECH_TIERS[tech].levels;
     if (!levels) return 1.0;
-    var lv = levels.find(function(l) { return l.era === era; });
-    if (!lv) lv = levels[levels.length - 1];
+    var eraOrder = ['先秦','汉','唐','宋','元','明','清'], at = eraOrder.indexOf(era); // 本朝这项没有一级就取此前最近一级（原先落到表尾：唐的选种取了清的 1.25、比宋还高，元一律取清）
+    var lv = levels.filter(function(l) { return at >= 0 && eraOrder.indexOf(l.era) <= at; }).pop() || (at >= 0 ? levels[0] : levels[levels.length - 1]);
     return _envFiniteNumber(lv[key], 1.0);
   }
 

@@ -281,7 +281,9 @@ function runAllRegionMigrationOrder(order) {
   orderCtx.P = {
     id: 'env-migration-order',
     name: '迁民顺序烟测',
-    dynasty: '汉',
+    // 引擎开局建省环境时原先还没定技术时代、一律按唐的算式算，本例的接纳容量就是照唐算的；
+    // 现在按剧本朝代算，汉的耕地只养得四十二万五千口，承接省接不下十五万，所以朝代写成唐。
+    dynasty: '唐',
     conf: {},
     time: { daysPerTurn: 30 },
     playerInfo: { factionName: 'player-faction' }

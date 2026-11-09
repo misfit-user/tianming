@@ -365,10 +365,34 @@
   //  初始化
   // ═══════════════════════════════════════════════════════════════════
 
+  // 私铸的开局份额按剧本给（11-10 同志定）：币种上写了 privateMintShare 的照写；铜钱另认 currencyRules.privateCoinage.prevalence
+  // （天启作者写「民间私铸盛行，沙板、铁镴劣钱充市」0.55，原先没人读）；都没写的算零。
+  function _declaredPrivateMintShare(rules, k) {
+    var dc = rules && rules.initialCoins && rules.initialCoins[k];
+    var v = dc && dc.privateMintShare != null ? Number(dc.privateMintShare)
+      : (k === 'copper' && rules && rules.privateCoinage ? Number(rules.privateCoinage.prevalence) : NaN);
+    return isFinite(v) ? Math.max(0, Math.min(0.9, v)) : 0;
+  }
+
+  // 记下私铸的底：开局（或旧档头一回）各币的私铸份额、官府控铸、民贫，之后只按与底的差涨落（见 _updatePrivateMinting）。
+  // 旧档原先每月从头按定式算出的份额（各朝都在两成上下）不当底，改按剧本；控铸、民贫取当下，不追溯。
+  function _seedPrivateMintBase(C, rules, atStart) {
+    var gmv = (global.GM && global.GM.vars) || {};
+    Object.keys(C.coins || {}).forEach(function(k) {
+      var l = C.coins[k];
+      if (!l || isFinite(Number(l.privateMintBase))) return;
+      l.privateMintBase = _declaredPrivateMintShare(rules, k);
+      if (atStart) l.privateMintShare = l.privateMintBase;
+    });
+    if (!isFinite(Number(C.mintingControlBase))) C.mintingControlBase = isFinite(Number(C.mintingControl)) ? Number(C.mintingControl) : 0.6; // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+    if (!isFinite(Number(C.povertyBase))) C.povertyBase = isFinite(Number(gmv.poverty)) ? Number(gmv.poverty) : 0.3; // arch-ok: CurrencyEngine owns declared currency initialization and settlement state.
+  }
+
   function init(sc) {
     var G = global.GM || {};
     // 已初始化则补全缺失字段（兼容老存档）
     if (G.currency && G.currency._inited) {
+      _seedPrivateMintBase(G.currency, (sc && sc.fiscalConfig && sc.fiscalConfig.currencyRules) || {});
       if (!G.currency.market) G.currency.market = makeMarketState();
       if (!G.currency.foreignFlow) G.currency.foreignFlow = makeForeignFlow();
       if (!G.currency.paper) G.currency.paper = { issuances: [], activeIssuances: [] };
@@ -425,6 +449,7 @@
         });
       }
     });
+    _seedPrivateMintBase(G.currency, rules, true);
 
     // 纸币启用——按朝代预设
     if (enabled.paper && rules.defaultPresets && rules.defaultPresets.paper) {
@@ -542,10 +567,18 @@
     }
   }
 
+  // 私铸只随真变化涨落（11-10 同志定）：开局份额按剧本（_seedPrivateMintBase），之后看官钱降成色、囤钱、
+  // 官府控铸比开局松紧（禁私铸、改革收紧了就往下）、民贫比开局深浅。原先份额每月从头按一条定式算——各朝开局
+  // 都在两成上下——官府「控铸」还每月自减 0.02、从不回升，两年半后私铸近四成；晚唐、绍宋的钱税开局就折 8%，
+  // 两年半后折一成五，而会昌前后与两宋常见的是钱荒（钱重物轻）。
   function _updatePrivateMinting(mr) {
     var C = global.GM.currency;
     if (!C) return;
     var gmv = global.GM.vars || {};
+    var controlBase = isFinite(Number(C.mintingControlBase)) ? Number(C.mintingControlBase) : 0.6;
+    var control = isFinite(Number(C.mintingControl)) ? Number(C.mintingControl) : controlBase;
+    var povertyNow = isFinite(Number(gmv.poverty)) ? Number(gmv.poverty) : 0.3;
+    var povertyBase = isFinite(Number(C.povertyBase)) ? Number(C.povertyBase) : povertyNow;
     Object.keys(C.coins).forEach(function(k) {
       var l = C.coins[k];
       if (!l.enabled || k === 'paper') return;
@@ -556,23 +589,17 @@
         l.purchasingPowerFactor = 1 - (Number(l.debasementLevel) || 0) * 0.3;
         return;
       }
-      var poverty = (gmv.poverty || 0.3);
-      var share = 0.05
-        + l.debasementLevel * 0.3
+      var debase = Number(l.debasementLevel) || 0;
+      var share = (isFinite(Number(l.privateMintBase)) ? Number(l.privateMintBase) : 0)
+        + debase * 0.3
         + (l.hoardingPressure > 0.5 ? 0.2 : 0)
-        + (1 - C.mintingControl) * 0.3
-        + poverty * 0.1;
+        + (controlBase - control) * 0.3
+        + (povertyNow - povertyBase) * 0.1;
       l.privateMintShare = Math.max(0, Math.min(0.9, share));
-      // 私铸影响有效 purity
-      if (l.privateMintShare > 0.1) {
-        var effPurity = l.purity * (1 - l.privateMintShare * 0.4);
-        l.purchasingPowerFactor = effPurity / (l.purity || 1);
-      } else {
-        l.purchasingPowerFactor = 1 - l.debasementLevel * 0.3;
-      }
+      // 私铸一成以内市面消化得了，不折；过一成的部分按劣钱四成折，与官钱降成色相乘。原先一过一成就整段按份额折，
+      // 份额从一成涨到一成零一，购买力陡降 4%。
+      l.purchasingPowerFactor = (1 - debase * 0.3) * (1 - Math.max(0, l.privateMintShare - 0.1) * 0.4);
     });
-    // mintingControl 自然衰减
-    C.mintingControl = Math.max(0, C.mintingControl - 0.02 * mr);
   }
 
   /** 钱税实收看的购买力：只认货币自身的事——降成色、私铸恶钱、纸币滥发；不含粮价随季节、年景、战事的起落（11-09）。

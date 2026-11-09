@@ -4961,8 +4961,8 @@
     },
     {
       "path": "tm-economy-engine-currency.js",
-      "sha256": "b7794b3912d0df2b828c551ea5701a4191ea12eb08b31a0ce8e8a644bfeac924",
-      "size": 70381
+      "sha256": "8977ae26c06ab2bcb9caf4eb95bd5acdf3c71fb2d54f895b864b1e216f58762a",
+      "size": 73272
     },
     {
       "path": "tm-economy-engine.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "e2da5fbe5321a9f32c2db65d5cdebd4093ed4e8e502a6f02e71b192f26acefe2",
+      "sha256": "dc6e7b19e22a6c4cde47ed7913287073b8dae7af0a54a54d235d5542a69b7e07",
       "size": 141013
     },
     {

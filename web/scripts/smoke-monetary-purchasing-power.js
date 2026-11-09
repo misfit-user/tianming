@@ -11,8 +11,8 @@ function ok(c, m) { if (!c) throw new Error('FAIL: ' + m); A++; console.log('  â
 function sliceFn(src, marker) { const a = src.indexOf(marker); if (a < 0) return null; let i = src.indexOf('{', a), d = 0, j = i; for (; j < src.length; j++) { const c = src[j]; if (c === '{') d++; else if (c === '}') { d--; if (d === 0) { j++; break; } } } return src.slice(a, j); }
 
 console.log('smoke-monetary-purchasing-power');
-const eco = fs.readFileSync(path.join(ROOT, 'tm-economy-engine.js'), 'utf8');
 const cur = fs.readFileSync(path.join(ROOT, 'tm-economy-engine-currency.js'), 'utf8');
+const eco = fs.readFileSync(path.join(ROOT, 'tm-economy-engine.js'), 'utf8');
 const mppSrc = sliceFn(cur, 'function getMonetaryPurchasingPower(');
 const ppSrc = sliceFn(eco, 'function getPurchasingPower(');
 const mintSrc = sliceFn(cur, 'function _updatePrivateMinting(');

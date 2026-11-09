@@ -150,6 +150,12 @@ console.log('===== 回合主写回预检：perItem 时剔除而不是判整回�
   try { cl.CentralLocalEngine.tick({ turn: 3 }); } catch (_) {}
   const evts = msgs.filter((m) => /^央地/.test(m));
   ok(evts.length > 0 && evts.every((m) => m.indexOf('延安府') >= 0 && m.indexOf('div_x') < 0), '抗命/藩镇事件写区划名字（' + evts.join(' / ') + '）');
+  // 人物记忆里的「央地财政」一段（getMemoryContext 的天下大势）同样写名字：区划、分账预设都不写内部编号；
+  // 羁縻之地（乌思藏这类，征收低是常态）不列进合规危险区域
+  game.fiscal.regions.div_w = { compliance: 0.15, autonomyLevel: 0.9, _signals: { seen: true } };
+  game.adminHierarchy.player.divisions.push({ id: 'div_w', name: '乌思藏都指挥使司', regionType: 'jimi' });
+  const clCtx = cl.CentralLocalEngine.getAIContext();
+  ok(clCtx.indexOf('合规危险区域：延安府(合规') >= 0 && clCtx.indexOf('乌思藏') < 0 && clCtx.indexOf('div_') < 0 && clCtx.indexOf('当前分账预设：明起运存留') >= 0, '人物记忆的央地财政写区划名、预设名，羁縻之地不列（' + clCtx.replace(/\n/g, ' / ') + '）');
 
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   if (failed) process.exit(1);

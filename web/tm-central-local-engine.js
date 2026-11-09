@@ -883,18 +883,24 @@
     });
   }
 
+  // 这段只进人物记忆（getMemoryContext 的「角色所知天下大势」）：区划、分账预设都写名字，不写内部编号。
+  // 区划名字借事件簿那个 _regionLabel；查不到名字、只剩编号的（不含汉字）不写。
   function getAIContext() {
     var G = global.GM;
     if (!G || !G.fiscal || !G.fiscal.regions) return '';
     var lines = ['【央地财政】'];
-    lines.push('当前分账预设：' + (G.fiscal._currentPreset || 'ming_qiyun_cunliu'));
+    var presetId = G.fiscal._currentPreset || 'ming_qiyun_cunliu';
+    lines.push('当前分账预设：' + ((ALLOCATION_PRESETS[presetId] && ALLOCATION_PRESETS[presetId].name) || presetId));
     var reports = getComplianceReport();
-    var problematic = reports.filter(function(r) { return r.compliance < 0.6 || r.autonomyLevel > 0.6; });
+    // 羁縻、土司、藩邦等本不直辖之地，征收低、自主高是常态，不算危险（同 _checkComplianceEvents，见 isDirectlyGoverned）
+    var problematic = reports.filter(function(r) { return (r.compliance < 0.6 || r.autonomyLevel > 0.6) && isDirectlyGoverned(r.regionId); });
     if (problematic.length > 0) {
-      lines.push('合规危险区域：' + problematic.slice(0, 5).map(function(r) {
-        return r.regionId + '(合规' + (r.compliance*100).toFixed(0) + '%'
-          + '/自治' + (r.autonomyLevel*100).toFixed(0) + '%)';
-      }).join('、'));
+      var named = problematic.slice(0, 5).map(function(r) {
+        var nm = _regionLabel(r.regionId);
+        if (!/[\u4e00-\u9fff]/.test(nm)) return '';
+        return nm + '(合规' + (r.compliance*100).toFixed(0) + '%' + '/自治' + (r.autonomyLevel*100).toFixed(0) + '%)';
+      }).filter(Boolean);
+      lines.push('合规危险区域：' + (named.length ? named.join('、') : problematic.length + ' 处'));
     }
     var auditCoverage = G.fiscal.auditSystem && G.fiscal.auditSystem.coverageRatio;
     if (auditCoverage !== undefined) lines.push('监察覆盖率：' + (auditCoverage*100).toFixed(0) + '%');

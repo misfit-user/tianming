@@ -6106,8 +6106,8 @@
     },
     {
       "path": "tm-npc-decision-ai-driven.js",
-      "sha256": "7d9934da2eb8083ee56d247e8758adc0d0782f250b6e39dff7ae3e83897fd60d",
-      "size": 66223
+      "sha256": "6487d2f1032cde1678b90374ea2589b67947af5f16eef53047382ce8831e8f42",
+      "size": 67016
     },
     {
       "path": "tm-npc-decision.js",
@@ -6296,8 +6296,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "991fc074c9ee2c97d833eccd75c85e0239176cfe1e2dff95e6d5c357c06a0733",
-      "size": 190746
+      "sha256": "9211cae11b28761815cf50d6faeb889b7d824d61899f66e7e733dd649de7a280",
+      "size": 190759
     },
     {
       "path": "tm-pause-fab.js",
@@ -6311,8 +6311,8 @@
     },
     {
       "path": "tm-person.js",
-      "sha256": "2163516e28deebf992005ecb83437f0b4984d00de0debf615d0dea738294a741",
-      "size": 23417
+      "sha256": "642bab7b85dd10ccca7164b7b50582dcf94d052322cc3347852d305b282f84c3",
+      "size": 23776
     },
     {
       "path": "tm-personal-memory-recall.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "05f79b7594661d93e3c52493998d4bcad3ca934cc772da12dc815c5ab2f29c22",
+      "sha256": "dd55c5353f189366ef5bd231eedda27144f4223447d60f67cb31e07f7001da8a",
       "size": 141013
     },
     {

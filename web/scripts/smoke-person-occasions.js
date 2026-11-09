@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // 人物统一底子（人2）smoke：各机制扮演人物时读同一份「他是谁」（tm-person.js）。
 //   · 人格核合成规矩：特质并 traitIds 与 traits（英文代号不进提示词）、口吻合一、立场与所求去重、名单一行。
-//   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前、奏疏、书信回信的提示词
+//   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前、奏疏、书信回信、NPC 自主决策的提示词
 //     与改造前逐字相同（金标准哈希）；开着时各场合的人物段含同一份人格核（一字不差）。
 // 金标准由改造前的文件在同一夹具上算出：TM_PERSON_SMOKE_GOLDEN_DIR=<放改造前文件的目录> node 本文件 → 打印哈希后退出。
-//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）；奏疏取 c563c01b（第四片之前）；书信取 ca9ccef3（第五片之前）。
+//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）；奏疏取 c563c01b（第四片之前）；书信取 ca9ccef3（第五片之前）；NPC 自主取 c19a05b7（第六片之前）。
 // 施工单：E:/tianming-tmp/orders/人2-各机制接人物底子-施工单.md；设计：docs/guanben-roleplay-20260930/tuiyan.md 7.2 节。
 'use strict';
 const fs = require('fs');
@@ -176,6 +176,31 @@ function letterSandbox() {
   return c;
 }
 
+// NPC 自主（人2 第六片）：tm-npc-decision-ai-driven.js——一人单独决策的「本人」资料、几人同批决策的名单
+function npcSandbox() {
+  const c = sandbox();
+  c.TM.NPC = { ActionLedger: {
+    findChar: (q) => c.GM.chars.find((x) => x && q && (x.name === q.name)),
+    capture: () => ({}), current: () => true,
+    state: () => ({ planExposure: {}, schedule: {}, sequence: 0, modelTurn: c.GM.turn, modelCalls: 0 }),
+    ensurePlans: () => [], planView: () => null, commitments: () => [], prepare() {}, due: () => false } };
+  c.NpcBehaviorRegistry = { list: () => ['none', 'petition'] };
+  c._npcAbilityProfile = () => ({});
+  vm.runInContext(read('tm-npc-decision-ai-driven.js'), c, { filename: 'tm-npc-decision-ai-driven.js' });
+  c.__npc = [];
+  c.callAI = async (p) => { c.__npc.push(p); return '[]'; };
+  c.extractJSON = (raw) => { try { return JSON.parse(raw); } catch (_) { return null; } };
+  return c;
+}
+
+async function npcPrompts(c) {
+  const wen = c.GM.chars[1], qian = c.GM.chars[3];
+  const self = JSON.stringify(c.buildNpcBehaviorContext(wen).self);
+  c.__npc.length = 0;
+  await c.batchNpcDecisions([wen, qian], c.buildNpcBehaviorContext(), {});
+  return { self, batch: c.__npc[0] || '' };
+}
+
 async function letterPrompt(c) {
   c.__letter.length = 0;
   c.GM.letters = [];
@@ -232,6 +257,8 @@ async function prompts(c) {
     console.log(JSON.stringify({ memorial: sha(gm), length: gm.length }, null, 2));
     const gl = await letterPrompt(letterSandbox());
     console.log(JSON.stringify({ letter: sha(gl), length: gl.length }, null, 2));
+    const gn = await npcPrompts(npcSandbox());
+    console.log(JSON.stringify({ npcSelf: sha(gn.self), npcBatch: sha(gn.batch), lengths: [gn.self.length, gn.batch.length] }, null, 2));
     return;
   }
 
@@ -377,7 +404,25 @@ async function prompts(c) {
   ok(lon.includes('1. 以上面所写此人的性情、口吻与身份') && lon.includes('「会推阁臣，卿意属谁？」') && lon.includes('语气：标准臣礼'), '开着：回信的场合规矩照旧');
   ok(lon.split(core).length === 2 && !/shrewd|t-sly/.test(lon), '开着：回信里人格核出现且只出现一次，与问对、常朝、廷议、御前一字不差；英文代号不进');
 
-  // ── 9. 接线与守卫 ──
+  // ── 9. NPC 自主（人2 第六片）：一人单独决策的「本人」资料、几人同批决策的名单 ──
+  // 由改造前（c19a05b7）的文件在同一夹具上算出：self 574 字（JSON）、同批提示词 1185 字
+  const NPC_GOLDEN = { self: '91a723b5086049ce04fd5e3132be921486aedc20ddc0feceb9fc977446ad322c', batch: '20a722957f38b3936c38a9cc8f6a662ce4a0ef0ab8cd1d3c4fb45101c053c9f8' };
+  const nc = npcSandbox();
+  const noff = await npcPrompts(nc);
+  eq(sha(noff.self), NPC_GOLDEN.self, '关着：NPC 单独决策的「本人」资料逐字不变');
+  eq(sha(noff.batch), NPC_GOLDEN.batch, '关着：NPC 同批决策的提示词逐字不变');
+  ok(noff.self.includes('"traits":["t-sly","t-ambitious"]') && noff.batch.includes('{"name":"温体仁","office":"礼部侍郎","location":""}'), '（改造前的毛病）单独决策的特质是英文代号；同批名单只有名字、官职、所在');
+  nc.P.conf.personUnifiedEnabled = true;
+  const non = await npcPrompts(nc);
+  const P7 = nc.TM.Person, wen7 = nc.GM.chars[1];
+  const self7 = JSON.parse(non.self);
+  eq(self7.traits, ['狡诈', '野心勃勃', '谨守'], '开着：单独决策的特质写中文定义名');
+  eq(self7.personality, P7.who(wen7), '开着：单独决策的性格是人格核＋人设长文（TM.Person.who）');
+  ok(self7.personality.startsWith(core) && self7.goal === '入阁拜相，独揽票拟之权' && self7.stress === 40, '开着：人格核与问对、常朝、廷议、御前、回信一字不差；目标、压力等其余字段照旧');
+  ok(non.batch.includes('{"name":"温体仁","office":"礼部侍郎","location":"","persona":"' + P7.line(wen7, { noName: true, goalMax: 30 }) + '"}') && non.batch.includes('"persona":"负才傲物"'), '开着：同批名单每人补一行性情、特质、所求');
+  ok(!/shrewd|t-sly|t-ambitious/.test(non.self + non.batch), '开着：英文代号不进 NPC 决策的提示词');
+
+  // ── 10. 接线与守卫 ──
   ok(read('tm-patches.js').includes("_togglePConf(\\'personUnifiedEnabled\\'"), '设置面板有「人物统一底子」开关');
   ok(read('tm-player-settings.js').includes('personUnifiedEnabled:'), '开关有提示语');
   console.log('[smoke-person-occasions] pass assertions=' + checks);

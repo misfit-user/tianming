@@ -837,7 +837,9 @@ async function batchNpcDecisions(npcs, context, options) {
     var exposure=modelBudget.planExposure||(modelBudget.planExposure={});
     (packet.plans||[]).forEach(function(p){exposure[p.id]=++modelBudget.sequence;});
   }
-  packet.actors=npcs.map(function(c){return {id:c.id,name:c.name,office:c.officialTitle||'',location:c.location||''};});
+  // 人2：开关开着时同批每人补一行人物统一底子的名单一行（性情、特质、所求），原来只有名字、官职、所在；关着时逐字不变
+  var _personOnB=!!(typeof TM!=='undefined'&&TM.Person&&TM.Person.on());
+  packet.actors=npcs.map(function(c){var a={id:c.id,name:c.name,office:c.officialTitle||'',location:c.location||''};if(_personOnB)a.persona=TM.Person.line(c,{noName:true,goalMax:30});return a;});
   var prompt='依据收到的信息选择行动，允许无事、等待、拒绝和改条件。禁止替玩家作决定。私人请求不表示对方同意；完成必须由程序核验。\n';
   prompt+='共享批次只含公开背景；未列出的私人事实不可推测为已知。\n';
   prompt+='行为类型：'+NpcBehaviorRegistry.list().join(',')+'。返回 JSON 数组 [{actorId,name,behaviorType,targetId,target,intent,shouldExecute,planId,phase,response,content,step,actingPositionId,appointmentId,positionId,task}]。office_duty 需具体事项：报告用 step=report 和实际 content；移交用 step=transfer 和明确账户、用途、金额。无事返回 none。\n';
@@ -986,7 +988,10 @@ function buildNpcBehaviorContext(npc, options) {
     npcInternalActions:_collectRecentNpcInternalActions(8,publicOnly?null:npc),characterEconomy:[]};
   Object.defineProperty(context,'_npcLease',{value:ledger.capture(),enumerable:false});
   if(publicOnly)return context;
-  context.self={id:npc.id,name:npc.name,goal:npc.personalGoal||'',thought:npc.innerThought||'',traits:npc.traitIds||[],personality:typeof getCharacterPersonalityBrief==='function'?getCharacterPersonalityBrief(npc):npc.personality||'',abilities:_npcAbilityProfile(npc),stress:npc.stress,resources:_npcBuildCharacterEconomySnapshot(npc,options)};
+  // 人2：开关开着时，「本人」的特质写中文定义名（原来是 traitIds 英文代号），性格写人物统一底子的人格核＋人设长文
+  //   （TM.Person.who，原来是八维短语）；处境、记忆、承诺、资财这个上下文本来就另列，不再抄完整档。关着时逐字不变。
+  var _personOn=!!(typeof TM!=='undefined'&&TM.Person&&TM.Person.on());
+  context.self={id:npc.id,name:npc.name,goal:npc.personalGoal||'',thought:npc.innerThought||'',traits:_personOn?TM.Person.traitNames(npc):(npc.traitIds||[]),personality:_personOn?TM.Person.who(npc):(typeof getCharacterPersonalityBrief==='function'?getCharacterPersonalityBrief(npc):npc.personality||''),abilities:_npcAbilityProfile(npc),stress:npc.stress,resources:_npcBuildCharacterEconomySnapshot(npc,options)};
   context.assignments=TM.OfficeHolderState?TM.OfficeHolderState.assignments(GM,npc).map(function(a){return {positionId:a.positionId,appointmentId:a.appointmentId,title:a.pos.name,powers:a.pos.powers||{},scope:a.pos.authorityScope||{},treasuryBinding:a.pos.treasuryBinding||null};}):[];
   var planExposure=ledger.state(GM).planExposure||{};
   context.plans=ledger.ensurePlans(GM).filter(function(p){return !p.localActivity&&!/^(done|rejected|failed|cancelled)$/.test(p.status);}).map(function(p){return ledger.planView(p,npc);}).filter(Boolean).sort(function(a,b){return (planExposure[a.id]||0)-(planExposure[b.id]||0);}).slice(0,8);

@@ -331,6 +331,13 @@
     return _s(ch.name) + (title ? '（' + title + '）' : '') + (bits.length ? '：' + _joinBits(bits) : '');
   }
 
+  // 他是谁：人格核＋人设长文（含识别状态）。给那些处境、记忆、承诺已经按自己的结构另行列出的场合用
+  //   （如 NPC 自主决策的 JSON 上下文），免得完整档把这些再抄一遍。
+  function who(ch) {
+    if (!ch) return '';
+    return _nl(coreText(ch) + _nl(frag.personaText(ch)));
+  }
+
   // 人格核的结构化读法。traits/speech/goal 三项是问对（人1）那版；人2 的统一读法看 temper/traitNames/speechFull/goalFull。
   function core(ch) {
     if (!ch) return null;
@@ -378,5 +385,5 @@
       + _filled(frag.commitments(ch, name)) + frag.ambition(ch) + frag.burden(ch) + frag.cognition(name));
   }
 
-  TM.Person = { frag: frag, core: core, brief: brief, coreText: coreText, traitNames: traitNames, speechText: speechText, line: line, on: on };
+  TM.Person = { frag: frag, core: core, brief: brief, coreText: coreText, who: who, traitNames: traitNames, speechText: speechText, line: line, on: on };
 })(typeof window !== 'undefined' ? window : globalThis);

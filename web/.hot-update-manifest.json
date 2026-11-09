@@ -5446,8 +5446,8 @@
     },
     {
       "path": "tm-guoku-engine.js",
-      "sha256": "60bef3260a60d42edd841082f986c2eec0d52e586511c29d6b727c3bf728666a",
-      "size": 159442
+      "sha256": "d8f5b9742825e90803f0399f68a5c6c6edae8c8bee6238ba4f595d24faae955f",
+      "size": 160065
     },
     {
       "path": "tm-guoku-panel.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "7a586ddfe3e60d6c6c3730cd9607ebe2f6ff2c0c046c336094b759e1a9135b59",
+      "sha256": "7e5a276578c21846f03af50cfeb0ac404e231bf55e34608c90416d67ebffc875",
       "size": 141013
     },
     {

@@ -1135,7 +1135,13 @@
     mr = (typeof mr === 'number' && isFinite(mr) && mr > 0) ? mr : 1;
     var b = _ensureBankruptcyState(g);
     var annual = Math.max(1, safe(g.annualIncome, safe(g.monthlyIncome, 80000) * 12));
-    var inCrisis = (g.balance || 0) < 0 || (g.ledgers && g.ledgers.money && g.ledgers.money.deficit > 0);
+    // 「待诏给付」的旧欠（开局欠饷等，manualSettlement）不算：它只能由诏令清结、自动还款不碰（见 _manualDeficit），
+    // 算进来就又成了「一次欠账=永久危机、破产链升满不解」（07-04 审查定过的病）。天启开局九百九十九万两欠饷全是待诏，
+    // 破产链从第一个月起逐月升级、第八个月必到「财政崩溃」，库里有钱也停不下（11-09 核）。
+    // 这笔欠饷的后果走军队欠饷那条线（欠饷月数、军心、兵变）。
+    var led = g.ledgers && g.ledgers.money;
+    var owed = led ? Math.max(0, safe(led.deficit, 0) - _manualDeficit(led)) : 0;
+    var inCrisis = (g.balance || 0) < 0 || owed > 0;
 
     if (inCrisis) {
       b.recoveryMonths = 0;

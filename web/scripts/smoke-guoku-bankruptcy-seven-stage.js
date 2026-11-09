@@ -94,4 +94,27 @@ ctx.GuokuEngine.checkBankruptcy(1);
 assert(b.recoveryMonths >= 1, 'positive balance should start recovery counter');
 assert(b.stage <= 6, 'recovery should step the state machine down');
 
+// 「待诏给付」的旧欠（开局欠饷，manualSettlement）不让破产链开跑：库里有钱、没有新欠，就不在危机里（11-09）。
+// 原先天启开局九百九十九万两待诏欠饷让破产链从第一个月起逐月升级，第八个月必到「财政崩溃」。
+G.guoku.balance = 850000;
+G.guoku.money = 850000;
+G.guoku.ledgers.money = {
+  stock: 850000, deficit: 9990300, sources: {}, sinks: {}, history: [],
+  deficitDetails: { junxiang: [{ id: 'army-arrears:tq:guanning:opening', name: '关宁军既欠军饷', amount: 9990300, manualSettlement: true }] }
+};
+G.guoku.bankruptcy = { active: false, consecutiveMonths: 0, severity: 0 };
+const hwBeforeManual = G.huangwei.index, hqBeforeManual = G.huangquan.index;
+for (let i = 0; i < 9; i++) {
+  G.turn += 1;
+  ctx.GuokuEngine.checkBankruptcy(1);
+}
+const bm = G.guoku.bankruptcy;
+assert(!bm.active && (bm.stage || 0) === 0 && (bm.consecutiveMonths || 0) === 0, 'manual-settlement opening arrears alone must not run the bankruptcy ladder, got stage ' + bm.stage + ' months ' + bm.consecutiveMonths);
+assert(G.huangwei.index === hwBeforeManual && G.huangquan.index === hqBeforeManual, 'no authority loss from manual-settlement arrears alone');
+G.guoku.ledgers.money.deficit += 50000;
+G.guoku.ledgers.money.deficitDetails.junxiang.push({ id: 'army-pay:new', name: '本月欠饷', amount: 50000 });
+G.turn += 1;
+ctx.GuokuEngine.checkBankruptcy(1);
+assert(bm.active && bm.stage >= 1, 'new (non-manual) arrears still enter the crisis ladder, got stage ' + bm.stage);
+
 console.log('[smoke-guoku-bankruptcy-seven-stage] PASS bankruptcy seven-stage state machine');

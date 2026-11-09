@@ -1622,13 +1622,14 @@
       expect(typeof TM.Endturn.Pipeline.lastRun).toBe('function');
       expect(typeof TM.Endturn.Pipeline.buildCtx).toBe('function');
     });
-    it('PipelineSteps 注册 6 个 step', function(){
+    it('PipelineSteps 注册 7 个 step', function(){
       expect(TM.Endturn.PipelineSteps).toBeDefined();
       expect(Array.isArray(TM.Endturn.PipelineSteps.list)).toBeTruthy();
-      // audit §4 六段规范·子系统(军工/御驾亲征等)折进对应 step 内·不另起顶层 step·见 docs/endturn-data-flow.md §4
-      expect(TM.Endturn.PipelineSteps.list.length).toBe(6);
+      // audit §4 六段规范·子系统(军工/御驾亲征等)折进对应 step 内·不另起顶层 step；
+      // 08-19 三轮审计(7eb1fd40)另加存档关口 prepare-commit-barrier（只声明本回合须过提交关口再存档），共七步
+      expect(TM.Endturn.PipelineSteps.list.length).toBe(7);
     });
-    it('6 step name 与 audit §4 切分一致', function(){
+    it('7 step name 与 audit §4 切分＋存档关口一致', function(){
       var names = TM.Endturn.PipelineSteps.list.map(function(s){return s.name;});
       expect(names).toContain('prep');
       expect(names).toContain('plan-prefetch');
@@ -1636,6 +1637,7 @@
       expect(names).toContain('post-ai-edict');
       expect(names).toContain('systems');
       expect(names).toContain('render-and-finalize');
+      expect(names).toContain('prepare-commit-barrier');
     });
     it('每 step 有 fn + onError', function(){
       TM.Endturn.PipelineSteps.list.forEach(function(s){
@@ -1643,10 +1645,10 @@
         expect(['abort','continue','retry']).toContain(s.onError || 'abort');
       });
     });
-    it('dryRun 返回 6 step 结构', function(){
+    it('dryRun 返回 7 step 结构', function(){
       var dry = TM.Endturn.Pipeline.dryRun();
       expect(Array.isArray(dry)).toBeTruthy();
-      expect(dry.length).toBe(6);
+      expect(dry.length).toBe(7);
       dry.forEach(function(s){
         expect(s).toHaveProperty('name');
         expect(s).toHaveProperty('onError');

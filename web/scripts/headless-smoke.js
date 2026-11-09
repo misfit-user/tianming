@@ -137,6 +137,9 @@ function makeStubs() {
 
   const doc = makeNode('document');
   doc.readyState = 'complete';
+  // 浏览器只在执行经典脚本时把 currentScript 设成该脚本元素，其余时候是 null；加载循环里逐个设。
+  // 山河境 tm-shanhe-runtime.js 开头就读它的 src 定底图目录，不设则整个脚本载入失败（09-20 山河境上线起）。
+  doc.currentScript = null;
   doc.documentElement = makeNode('html');
   doc.body = makeNode('body');
   doc.head = makeNode('head');
@@ -326,6 +329,11 @@ function main() {
   const sandbox = vm.createContext(win);
 
   const scripts = parseIndexHtmlScripts({ includeLazyScenarios: !bootOnly });
+  // 08-25（b7f1af8a 功能加载边界）起测试套件 tm-test-harness.js 改为按需加载（feature-manifest.js），不在 index.html 的
+  // 脚本链里了；照功能加载器的做法把它接在链尾，否则 TM.test 找不到、启动门禁也找不到截止点，两种跑法都直接退出。
+  if (scripts.findIndex(s => path.basename(s) === 'tm-test-harness.js') < 0 && fs.existsSync(path.join(ROOT, 'tm-test-harness.js'))) {
+    scripts.push('tm-test-harness.js');
+  }
   const bootCutoffName = 'tm-test-harness.js';
   const bootCutoffIndex = bootOnly ? scripts.findIndex(s => path.basename(s) === bootCutoffName) : -1;
   if (bootOnly && bootCutoffIndex < 0) {
@@ -351,11 +359,14 @@ function main() {
 
     try {
       const script = new vm.Script(code, { filename: src });
+      sandbox.document.currentScript = { src: 'http://127.0.0.1/' + String(src).replace(/\\/g, '/') };
       script.runInContext(sandbox, { displayErrors: true, timeout: 10000 });
       loaded++;
     } catch (e) {
       errors.push({ src, stage: 'run', msg: e.message, stack: (e.stack || '').split('\n').slice(0, 3).join('\n') });
       if (flag('--stop-on-error')) break;
+    } finally {
+      sandbox.document.currentScript = null;
     }
   }
 

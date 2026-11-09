@@ -24,8 +24,11 @@ let loaded = 0; const errors = [];
 for (const src of scripts) {
   const abs = path.join(ROOT, src);
   if (!fs.existsSync(abs)) { errors.push(src + ' [missing]'); continue; }
+  // 浏览器执行经典脚本时 document.currentScript 是该脚本元素（山河境 tm-shanhe-runtime.js 开头读它的 src）
+  sandbox.document.currentScript = { src: 'http://127.0.0.1/' + String(src).replace(/\\/g, '/') };
   try { new vm.Script(fs.readFileSync(abs, 'utf8'), { filename: src }).runInContext(sandbox, { timeout: 15000 }); loaded++; }
   catch (e) { errors.push(src + ' :: ' + (e && e.message)); }
+  finally { sandbox.document.currentScript = null; }
 }
 console.log('  载入 ' + loaded + '/' + scripts.length + ' 脚本');
 // 我改的文件必须全部成功载入(集成/语法/接线)

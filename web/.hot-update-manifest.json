@@ -6646,8 +6646,8 @@
     },
     {
       "path": "tm-test-harness.js",
-      "sha256": "3ddcfcf9a278ee1f07743fa047d4649b81ffb9f08cea954ef7caa8dc77df0a1d",
-      "size": 77470
+      "sha256": "e92fa54b4062267112d5763e1a1743916c31bbe0311b633dbeaf38d9c7a3e5d5",
+      "size": 77654
     },
     {
       "path": "tm-theme-font.js",

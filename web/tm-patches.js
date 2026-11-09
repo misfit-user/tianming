@@ -1125,7 +1125,7 @@ openSettings=function(){
           '<input type="checkbox" id="s-person-unified" ' + (P.conf && P.conf.personUnifiedEnabled === true ? 'checked ' : '') + 'onchange="_togglePConf(\'personUnifiedEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
           '<div style="flex:1;">' +
             '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">人物统一底子（默认关）</div>' +
-            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">同一个人在问对、常朝等场合由 AI 扮演时，性情、特质、口吻、立场与所求都读同一份底子，不再各写各的；场合只决定怎么说。已接：问对、常朝、廷议、御前、朝议插话、奏疏、书信、NPC 自主。</div>' +
+            '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">同一个人在问对、常朝等场合由 AI 扮演时，性情、特质、口吻、立场与所求，连同他知道什么、不知道什么，都读同一份底子，不再各写各的；场合只决定怎么说。已接：问对、常朝、廷议、御前、朝议插话、奏疏、书信、NPC 自主。</div>' +
           '</div>' +
         '</label>' +
       '</div>';

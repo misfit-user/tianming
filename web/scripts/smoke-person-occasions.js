@@ -3,8 +3,9 @@
 //   · 人格核合成规矩：特质并 traitIds 与 traits（英文代号不进提示词）、口吻合一、立场与所求去重、名单一行。
 //   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前、奏疏、书信回信、NPC 自主决策的提示词
 //     与改造前逐字相同（金标准哈希）；开着时各场合的人物段含同一份人格核（一字不差）。
+//   · 认知画像（sc07 写的）：开着时人格只认人格核，画像里的自识、人格、口吻、史标不写，其余精简档、完整档读同一段；奏疏名单带知与不知。
 // 金标准由改造前的文件在同一夹具上算出：TM_PERSON_SMOKE_GOLDEN_DIR=<放改造前文件的目录> node 本文件 → 打印哈希后退出。
-//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）；奏疏取 c563c01b（第四片之前）；书信取 ca9ccef3（第五片之前）；NPC 自主取 c19a05b7（第六片之前）。
+//   问对、常朝两路取 a8b8754d（人2 第一片之前）；廷议、插话、议程名单取 38ffde2a（第二片之前）；御前取 fe3076dd（第三片之前）；奏疏取 c563c01b（第四片之前）；书信取 ca9ccef3（第五片之前）；NPC 自主取 c19a05b7（第六片之前）；带认知画像的问对、常朝取 1af53976（画像这一刀之前）。
 // 施工单：E:/tianming-tmp/orders/人2-各机制接人物底子-施工单.md；设计：docs/guanben-roleplay-20260930/tuiyan.md 7.2 节。
 'use strict';
 const fs = require('fs');
@@ -193,6 +194,22 @@ function npcSandbox() {
   return c;
 }
 
+// 认知画像（11-09）：片段用真的 getNpcCognitionSnippet（从 tm-utils.js 截出这一个函数载进夹具），栏名一改这里就红
+const COG = {
+  温体仁: { selfIdentity: '浙江乌程人·礼部侍郎·浙党之望', personalityCore: '阴狡柔佞·外温文而内藏机心', speechThread: '恒言「臣愚以为」「容臣熟思之」',
+    historicalVoice: '崇祯朝首辅·排东林而专政', abilityAwareness: '长于揣摩上意', currentFocus: '迎合圣意而藏其私', attitudeTowardsPlayer: '阳恭阴测',
+    knows: ['己上停祠条陈。', '崔呈秀乞退留中。', '周延儒来与密议。', '第四条不进'], doesntKnow: ['崔呈秀谋帝之实。', '帝对己之真实观感。', '第三条不进'],
+    agenda: '入阁为首辅、破东林。', _identityInitialized: true },
+  温育仁: { personalityCore: '谨小慎微', speechThread: '唯唯诺诺', currentFocus: '为兄奔走' }
+};
+function withCog(c) {
+  const m = read('tm-utils.js').match(/function getNpcCognitionSnippet\(name, opts\) \{[\s\S]*?\r?\n\}\r?\n/);
+  if (!m) throw new Error('tm-utils.js 里找不到 getNpcCognitionSnippet');
+  vm.runInContext(m[0], c, { filename: 'tm-utils.js#getNpcCognitionSnippet' });
+  c.GM._npcCognition = JSON.parse(JSON.stringify(COG));
+  return c;
+}
+
 async function npcPrompts(c) {
   const wen = c.GM.chars[1], qian = c.GM.chars[3];
   const self = JSON.stringify(c.buildNpcBehaviorContext(wen).self);
@@ -259,6 +276,8 @@ async function prompts(c) {
     console.log(JSON.stringify({ letter: sha(gl), length: gl.length }, null, 2));
     const gn = await npcPrompts(npcSandbox());
     console.log(JSON.stringify({ npcSelf: sha(gn.self), npcBatch: sha(gn.batch), lengths: [gn.self.length, gn.batch.length] }, null, 2));
+    const gg = await prompts(withCog(sandbox()));
+    console.log(JSON.stringify({ cogOff: { wendui: sha(gg.wendui), reply: sha(gg.reply), react: sha(gg.react) }, lengths: [gg.wendui.length, gg.reply.length, gg.react.length] }, null, 2));
     return;
   }
 
@@ -422,7 +441,52 @@ async function prompts(c) {
   ok(non.batch.includes('{"name":"温体仁","office":"礼部侍郎","location":"","persona":"' + P7.line(wen7, { noName: true, goalMax: 30 }) + '"}') && non.batch.includes('"persona":"负才傲物"'), '开着：同批名单每人补一行性情、特质、所求');
   ok(!/shrewd|t-sly|t-ambitious/.test(non.self + non.batch), '开着：英文代号不进 NPC 决策的提示词');
 
-  // ── 10. 接线与守卫 ──
+  // ── 10. 认知画像（11-09）：人格只认人格核，知与不知各档都带 ──
+  // 由改动前（1af53976）的文件在同一夹具上带画像算出（关着）：问对 2672 字、常朝回应 438、自发表态 1555
+  const COG_GOLDEN = {
+    wendui: 'dd4e1c8aea31fe67f6efd01fbdbf450b8db1c36f619a18898b84960e52365267',
+    reply: '86c3c619b2bfb9c6ec7d93d1b52249766e6076cfdfd8555bb8294adb29c80f8e',
+    react: 'e35283eb8f6ac7bc9f14cef6dd531926f25faac869b9b38a9124840af45fe7e4'
+  };
+  const gc = withCog(sandbox());
+  const goff = await prompts(gc);
+  for (const k of Object.keys(COG_GOLDEN)) eq(sha(goff[k]), COG_GOLDEN[k], '关着：带认知画像时' + { wendui: '问对', reply: '常朝回应', react: '常朝自发表态' }[k] + '提示词逐字不变');
+  ok(goff.wendui.includes('人格：阴狡柔佞') && goff.react.includes('口吻：恒言') && goff.react.includes('史标：崇祯朝首辅'), '（改动前）问对、常朝把画像的人格、口吻、史标原样写进去，与人格核是两份');
+  gc.P.conf.personUnifiedEnabled = true;
+  const P8 = gc.TM.Person, wen8 = gc.GM.chars[1], yu8 = gc.GM.chars[2];
+  const cog8 = P8.cognitionText('温体仁');
+  ok(cog8.startsWith('\n【该臣认知·自我画像·文事籍影】\n') && cog8.includes('\n心念：迎合圣意而藏其私\n') && cog8.includes('\n对帝：阳恭阴测\n') && cog8.includes('\n自知：长于揣摩上意\n'), '画像：心念、对帝、自知照写');
+  ok(!/(^|\n)(自识|人格|口吻|史标)：/.test(cog8), '画像：自识、人格、口吻不写（人格只认人格核）；史标不写（会带进游戏时间之后的事）');
+  ok(cog8.includes('\n眼下所图：入阁为首辅、破东林。\n') && !cog8.includes('\n所求：'), '画像：所求改叫眼下所图，不和人格核的【所求】相混');
+  ok(cog8.includes('\n知：己上停祠条陈。崔呈秀乞退留中。周延儒来与密议。\n') && cog8.includes('\n不知：崔呈秀谋帝之实。帝对己之真实观感。\n') && !/第四条|第三条/.test(cog8), '画像：知取三条、不知取两条，句号后不多分号');
+  const brief8 = P8.brief(wen8, { detail: 'brief', topic: '会推阁臣' });
+  const full8 = P8.brief(wen8, { occasion: 'yuqian', detail: 'full', topic: '会推阁臣' });
+  ok(brief8.includes(cog8 + '▲ 上面是此人眼下真知道的') && full8.includes(cog8 + '▲ 上面是此人眼下真知道的'), '精简档、完整档带同一段画像');
+  ok(full8.includes('▲ 如被问及「不知」里的事') && full8.includes('  · 武人耿直 → ') && !brief8.includes('▲ 如被问及'), '完整档另有被问到不知之事怎么应对，精简档没有');
+  eq(P8.coreText(wen8), core, '剧本写了性情、口吻的照剧本，画像不顶替：人格核与前面各场合一字不差');
+  ok(P8.coreText(yu8).includes('【性情】谨小慎微\n') && P8.coreText(yu8).includes('【口吻】唯唯诺诺\n'), '剧本没写性情、口吻的，拿画像那句补进人格核');
+  ok(P8.line(yu8, { noName: true, speech: true }) === '谨小慎微；口吻唯唯诺诺' && !P8.cognitionText('温育仁').includes('人格：'), '补进人格核的，名单一行同样用；画像里那句不再重复');
+  const gon = await prompts(gc);
+  ok(gon.wendui.split(cog8).length === 2 && gon.react.split(cog8).length === 2 && gon.reply.split(cog8).length === 2, '开着：问对、常朝两路都带这段画像，各只一次');
+  ok(![gon.wendui, gon.reply, gon.react].some((s) => /人格：阴狡|口吻：恒言|史标：|自识：|doesntKnow/.test(s)), '开着：问对、常朝不再写画像的人格、口吻、自识、史标，规矩里不夹英文栏名');
+  const cc10 = withCog(courtSandbox());
+  cc10.P.conf.personUnifiedEnabled = true;
+  const con10 = await courtPrompts(cc10);
+  ok(['tinyi', 'mediate', 'interject'].every((k) => con10[k].includes(cog8 + '▲ 上面是此人眼下真知道的')), '开着：廷议发言、折中、朝议插话带同一段画像');
+  const yc10 = withCog(yqSandbox());
+  yc10.P.conf.personUnifiedEnabled = true;
+  const yon10 = await yqPrompts(yc10);
+  ok(yon10.speak.includes(cog8) && yon10.deep.includes(cog8) && yon10.deep.includes('▲ 如被问及「不知」里的事') && !yon10.speak.includes('▲ 如被问及'), '开着：御前直陈、深问带同一段画像（深问另有应对规矩）——同一场御前前后知道的一样');
+  const mc10 = withCog(memSandbox());
+  mc10.P.conf.personUnifiedEnabled = true;
+  const mon10 = await memPrompt(mc10);
+  ok(mon10.includes('；口吻言辞委婉、步步设防；知：己上停祠条陈。崔呈秀乞退留中。周延儒来与密议。不知：崔呈秀谋帝之实。帝对己之真实观感。 '), '开着：奏疏候选名单每人带知与不知');
+  const lc10 = withCog(letterSandbox());
+  lc10.P.conf.personUnifiedEnabled = true;
+  const lon10 = await letterPrompt(lc10);
+  ok(lon10.includes(cog8) && !/人格：阴狡|史标：/.test(lon10), '开着：回信带同一段画像，不写画像的人格、史标');
+
+  // ── 11. 接线与守卫 ──
   ok(read('tm-patches.js').includes("_togglePConf(\\'personUnifiedEnabled\\'"), '设置面板有「人物统一底子」开关');
   ok(read('tm-player-settings.js').includes('personUnifiedEnabled:'), '开关有提示语');
   console.log('[smoke-person-occasions] pass assertions=' + checks);

@@ -368,7 +368,7 @@ async function genMemorialsAI(count){
         + ' 军事' + (ch.military||50)
         + ' 政' + (ch.administration||50)
         + _moreAbi + _wcStr + _statStr + _partyStr + _bgStr
-        + ' ' + (_personOn ? TM.Person.line(ch, { noName: true, goalMax: 25, speech: true }) : traits + ' ' + goal) + ' ' + arc + ' ' + aff + memCtx + _memList + '\n';
+        + ' ' + (_personOn ? TM.Person.line(ch, { noName: true, goalMax: 25, speech: true, knows: true }) : traits + ' ' + goal) + ' ' + arc + ' ' + aff + memCtx + _memList + '\n';
     });
 
     // 帝王荒淫背景（影响奏疏内容——忠臣可能谏阻，佞臣可能献媚）

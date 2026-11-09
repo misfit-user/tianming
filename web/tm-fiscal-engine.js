@@ -1590,17 +1590,19 @@
         if (isFinite(_fa) && _fa !== 0) fuyiMult = 1 + Math.max(-0.5, Math.min(0.5, _fa));
       } catch (_) {}
     }
-    // 通胀/降成色侵蚀财政（#27·货币系统接权威税收）：主币购买力 <1(通胀或铜钱降成色)时·money 计价税实收按购买力缺口折减
-    //   让"降成色短期铸息暴利→长期通胀蚀税基"成真权衡(原 CurrencyEngine 算通胀/降成色却零反馈进 CascadeTax·通胀拉满国库一文不少)
-    //   仅 money 税(粮/布实物不折)·夹 ≤35%·CurrencyEngine 缺位/购买力≥1 = 不折 = 旧行为(零数据零变更)
+    // 货币侵蚀财政（#27·货币系统接权威税收）：钱税按「这笔钱本身」掉了多少折，只认货币自身的事（11-09 同志定）——
+    //   银本位（明清）：银两按分量成色收，粮价贵贱、季节、年景、战事都不改每亩几厘，白银也无私铸，不折；
+    //   铜钱本位：按铜钱降成色、私铸恶钱折；兼行纸币的本位再按纸币滥发折（会子、交钞）。
+    //   原先拿主币购买力折，那里头含随季节、战事、每年正月随机重掷的「年景」起落的粮价「通胀」：
+    //   天启同一开局两局，第二个月银税一局少收 13%、一局一文不少；封顶 35%。
+    //   仅 money 税（粮/布实物不折）；货币模块缺位或购买力≥1 = 不折。
     var inflationPenalty = 0;
     if ((tax.storeAs || 'money') === 'money') {
       try {
-        // 购买力访问器实际挂在 EconomyGapFill/EconomyCore（tm-economy-engine.js），不在 CurrencyEngine——
-        // #27 初版误取 CurrencyEngine.getPurchasingPower 恒 undefined，inflationPenalty 永远 0（prod 死线，smoke 桩掩盖）。此处按真命名空间优先查找。
-        var _ce = (typeof window !== 'undefined' && (window.EconomyGapFill || window.EconomyCore || window.CurrencyEngine)) || (typeof global !== 'undefined' && (global.EconomyGapFill || global.EconomyCore || global.CurrencyEngine)) || (typeof EconomyGapFill !== 'undefined' && EconomyGapFill) || (typeof CurrencyEngine !== 'undefined' && CurrencyEngine) || null;
-        if (_ce && typeof _ce.getPurchasingPower === 'function') {
-          var _pp = _ce.getPurchasingPower();
+        // 只认货币自身的购买力挂在 CurrencyEngine（tm-economy-engine-currency.js）；EconomyGapFill.getPurchasingPower 含粮价，不用。
+        var _ce = (typeof window !== 'undefined' && window.CurrencyEngine) || (typeof global !== 'undefined' && global.CurrencyEngine) || (typeof CurrencyEngine !== 'undefined' && CurrencyEngine) || null;
+        if (_ce && typeof _ce.getMonetaryPurchasingPower === 'function') {
+          var _pp = _ce.getMonetaryPurchasingPower();
           if (isFinite(_pp) && _pp < 1) inflationPenalty = Math.min(0.35, 1 - _pp);
         }
       } catch (_) {}

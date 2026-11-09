@@ -549,6 +549,13 @@
     Object.keys(C.coins).forEach(function(k) {
       var l = C.coins[k];
       if (!l.enabled || k === 'paper') return;
+      // 白银按分量成色流通（银两），不是官铸的钱，没有私铸可言（11-09）。原先照铜钱算私铸份额，
+      // 天启开局银的购买力就折去 8%，之后官府「控铸」每月自减 0.02，银价逐月再贬。
+      if (k === 'silver') {
+        l.privateMintShare = 0;
+        l.purchasingPowerFactor = 1 - (Number(l.debasementLevel) || 0) * 0.3;
+        return;
+      }
       var poverty = (gmv.poverty || 0.3);
       var share = 0.05
         + l.debasementLevel * 0.3
@@ -566,6 +573,26 @@
     });
     // mintingControl 自然衰减
     C.mintingControl = Math.max(0, C.mintingControl - 0.02 * mr);
+  }
+
+  /** 钱税实收看的购买力：只认货币自身的事——降成色、私铸恶钱、纸币滥发；不含粮价随季节、年景、战事的起落（11-09）。
+   *  银本位（明清）按分量成色收银两，恒为 1；铜钱本位看铜钱的 purchasingPowerFactor；兼行纸币的本位再按纸币滥发折。
+   *  征税（tm-fiscal-engine computeTaxAmount）用它；含粮价的 EconomyGapFill.getPurchasingPower 留给折实值的地方。 */
+  function getMonetaryPurchasingPower() {
+    var C = global.GM && global.GM.currency;
+    if (!C) return 1.0;
+    var std = String(C.currentStandard || '');
+    if (std.indexOf('silver') >= 0) return 1.0;
+    var copper = C.coins && C.coins.copper;
+    var factor = copper && isFinite(Number(copper.purchasingPowerFactor)) && Number(copper.purchasingPowerFactor) > 0 ? Number(copper.purchasingPowerFactor) : 1.0;
+    if (std.indexOf('paper') >= 0 && C.paper && Array.isArray(C.paper.issuances)) {
+      var paperInflation = 0;
+      C.paper.issuances.forEach(function(iss) {
+        if (iss && /^(circulate|overissue|depreciate|collapse)$/.test(iss.state)) paperInflation += (Number(iss.inflationCarried) || 0) * 0.1;
+      });
+      factor = factor / (1 + Math.max(0, paperInflation));
+    }
+    return Math.max(0.1, Math.min(2.0, factor));
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -1121,6 +1148,7 @@
     applyReform: applyReform,
     debaseCoin: debaseCoin,
     banPrivateMint: banPrivateMint,
+    getMonetaryPurchasingPower: getMonetaryPurchasingPower,
     getInflationText: getInflationText,
     getInflationColor: getInflationColor,
     getAIContext: getAIContext,

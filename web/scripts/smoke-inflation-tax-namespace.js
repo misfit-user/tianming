@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 'use strict';
 // smoke-inflation-tax-namespace — 通胀蚀税命名空间修(Tier1·簇2#1)
-//   #27 初版取 CurrencyEngine.getPurchasingPower 恒 undefined(实际挂 EconomyGapFill/EconomyCore)→inflationPenalty 永 0(prod 死线·smoke 桩掩盖)。
-//   验:_ce 查找含 EconomyGapFill/EconomyCore + 复刻解析证新查找命中、旧查找(仅 CurrencyEngine)落空。
+//   #27 初版取 CurrencyEngine.getPurchasingPower 恒 undefined → inflationPenalty 永 0(prod 死线·smoke 桩掩盖)。
+//   11-09 起钱税只认货币自身的购买力（降成色、私铸、纸币滥发），访问器 getMonetaryPurchasingPower 挂在 CurrencyEngine
+//   （tm-economy-engine-currency.js）；含粮价的 EconomyGapFill.getPurchasingPower 不用。
+//   验:征税处查 CurrencyEngine、CurrencyEngine 真导出它(不再是死线)，只有 EconomyGapFill 时落空(不回退到粮价)。
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const ROOT = path.resolve(__dirname, '..');
 let A = 0;
@@ -10,31 +12,21 @@ function ok(c, m){ if(!c) throw new Error('FAIL: '+m); A++; console.log('  ✓ '
 
 console.log('smoke-inflation-tax-namespace');
 const fis = fs.readFileSync(path.join(ROOT,'tm-fiscal-engine.js'),'utf8');
-ok(/window\.EconomyGapFill \|\| window\.EconomyCore/.test(fis), '★_ce 查找优先 EconomyGapFill/EconomyCore(真命名空间)');
-ok(/getPurchasingPower/.test(fis), '仍调 getPurchasingPower');
-// 确认 getPurchasingPower 真挂 EconomyGapFill(非 CurrencyEngine)
-const eco = (fs.readFileSync(path.join(ROOT, 'tm-economy-engine-currency.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-economy-engine.js'), 'utf8'));
-ok(/global\.EconomyGapFill = \{[\s\S]*getPurchasingPower: getPurchasingPower/.test(eco) || /getPurchasingPower: getPurchasingPower/.test(eco), 'EconomyGapFill 导出 getPurchasingPower');
+ok(/var _ce = \(typeof window !== 'undefined' && window\.CurrencyEngine\)/.test(fis), '★征税处查 CurrencyEngine');
+ok(/_ce\.getMonetaryPurchasingPower\(\)/.test(fis), '调只认货币自身的 getMonetaryPurchasingPower');
+const cur = fs.readFileSync(path.join(ROOT, 'tm-economy-engine-currency.js'), 'utf8');
+ok(/global\.CurrencyEngine = \{[\s\S]*getMonetaryPurchasingPower: getMonetaryPurchasingPower/.test(cur), '★CurrencyEngine 真导出 getMonetaryPurchasingPower（不再是死线）');
 
-// 复刻新/旧查找:stub window 只有 EconomyGapFill(无 CurrencyEngine)
-function resolveNew(win){
-  const ctx = { window:win, global:{} };
-  vm.createContext(ctx);
-  return vm.runInContext("(typeof window !== 'undefined' && (window.EconomyGapFill || window.EconomyCore || window.CurrencyEngine)) || (typeof global !== 'undefined' && (global.EconomyGapFill || global.EconomyCore || global.CurrencyEngine)) || null;", ctx);
-}
-function resolveOld(win){
+function resolve(win){
   const ctx = { window:win, global:{} };
   vm.createContext(ctx);
   return vm.runInContext("(typeof window !== 'undefined' && window.CurrencyEngine) || (typeof global !== 'undefined' && global.CurrencyEngine) || null;", ctx);
 }
-const win = { EconomyGapFill: { getPurchasingPower: function(){ return 0.8; } } };
-const ceNew = resolveNew(win);
-const ceOld = resolveOld(win);
-ok(ceNew && typeof ceNew.getPurchasingPower === 'function', '★新查找命中 EconomyGapFill(getPurchasingPower 可用)');
-ok(ceOld == null, '★swap-test:旧查找(仅 CurrencyEngine)落空→inflationPenalty 永 0(复现死线)');
-// 命中后 inflationPenalty 计算正确(购买力 0.8 → 罚 0.2 夹 0.35)
-const pp = ceNew.getPurchasingPower();
+const ce = resolve({ CurrencyEngine: { getMonetaryPurchasingPower: function(){ return 0.8; } }, EconomyGapFill: { getPurchasingPower: function(){ return 0.1; } } });
+ok(ce && typeof ce.getMonetaryPurchasingPower === 'function', '查找命中 CurrencyEngine.getMonetaryPurchasingPower');
+const pp = ce.getMonetaryPurchasingPower();
 const penalty = (pp < 1) ? Math.min(0.35, 1 - pp) : 0;
-ok(Math.abs(penalty - 0.2) < 1e-9, '购买力 0.8 → inflationPenalty 0.2');
+ok(Math.abs(penalty - 0.2) < 1e-9, '货币购买力 0.8 → inflationPenalty 0.2（含粮价的 0.1 不用）');
+ok(resolve({ EconomyGapFill: { getPurchasingPower: function(){ return 0.1; } } }) == null, '只有 EconomyGapFill 时落空 → 不折(不回退到含粮价的购买力)');
 
 console.log('\n结果: '+A+' 通过 / 0 失败');

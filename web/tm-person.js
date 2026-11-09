@@ -310,7 +310,7 @@
     }
     return out;
   }
-  // 名单一行：全知提示词里列一群人时用
+  // 名单一行：全知提示词里列一群人时用。opts.noName：名单自己已写了名字官职，只要冒号后面那半句
   function line(ch, opts) {
     if (!ch) return '';
     var max = (opts && opts.goalMax) || 30;
@@ -320,6 +320,7 @@
     if (temper) bits.push(temper);
     if (traits.length) bits.push('特质' + traits.join('、'));
     if (goal) bits.push('所求' + (goal.length > max ? goal.slice(0, max) + '…' : goal));
+    if (opts && opts.noName) return bits.join('；');
     return _s(ch.name) + (title ? '（' + title + '）' : '') + (bits.length ? '：' + bits.join('；') : '');
   }
 
@@ -350,6 +351,9 @@
   //   detail:'brief'（常朝、廷议、御前、朝议插话，一场十几个人、每人一次调用）：人格核 + 人设长文 + 处境一行 + 记忆 + 承诺、野心。
   //   detail:'line'：名单一行。
   //   都不含场合规矩（怎么说、对谁说、返回格式归各机制）。
+  // 片段只有【标题】没有内容时不写（交办凭据的 helper 在 TM.ImperialOrders 在时总带标题，哪怕此人什么交办都没有）。
+  // 只用在下面的精简档、完整档；问对原样调 frag，不受影响。
+  function _filled(s) { return s && String(s).replace(/【[^】]*】/g, '').trim() ? s : ''; }
   function brief(ch, opts) {
     opts = opts || {};
     if (!ch) return '';
@@ -358,13 +362,13 @@
     if (opts.detail === 'line') return line(ch, opts);
     if (opts.detail === 'brief') {
       return _nl(coreText(ch) + _nl(frag.personaText(ch)) + situationLine(ch)
-        + frag.memory(ch, memOpts) + frag.commitments(ch, name) + frag.ambition(ch));
+        + frag.memory(ch, memOpts) + _filled(frag.commitments(ch, name)) + frag.ambition(ch));
     }
     if (opts.occasion === 'wendui' && typeof root._wdBuildPrompt === 'function') return root._wdBuildPrompt(ch, name);
     return _nl(coreText(ch) + _nl(frag.personaText(ch)) + situationLine(ch) + situationMore(ch) + frag.edictRoles(name)
       + frag.background(ch, { noSpeech: true }) + frag.abilities(ch) + frag.appearance(ch)
       + frag.memory(ch, memOpts) + frag.arcs(ch) + frag.affinity(ch) + frag.works(ch)
-      + frag.commitments(ch, name) + frag.ambition(ch) + frag.burden(ch) + frag.cognition(name));
+      + _filled(frag.commitments(ch, name)) + frag.ambition(ch) + frag.burden(ch) + frag.cognition(name));
   }
 
   TM.Person = { frag: frag, core: core, brief: brief, coreText: coreText, traitNames: traitNames, speechText: speechText, line: line, on: on };

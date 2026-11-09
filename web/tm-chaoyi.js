@@ -140,10 +140,17 @@ async function _cyInterjectRespond(playerText, opts){
     var stance = (opts.stances && opts.stances[nm] && opts.stances[nm].current) || '';
     var p = '皇帝在' + (yuqian ? '御前密议' : '廷议') + '中发话：「' + txt + '」\n';
     p += '议题：' + (opts.topic || '') + '\n';
-    p += '你扮演' + nm + '（' + ((ch && (ch.officialTitle || ch.title)) || '') + '）' + (stance ? ('，当前立场：' + stance) : '') + '\n';
-    p += '性格：' + ((ch && ch.personality) || '') + '，忠诚' + ((ch && ch.loyalty) || 50) + (ch && ch.party ? ('，党：' + ch.party) : '') + '\n';
+    // 人2：开关开着时读人物统一底子（tm-person.js 精简档）；关着时下面两行逐字不变
+    var _personOn = !!(ch && typeof TM !== 'undefined' && TM.Person && TM.Person.on());
+    if(_personOn){
+      // 此议所持另写一句，免得和人格核里的【立场】（素来的政治立场）混成一个
+      p += '你扮演' + nm + (stance ? ('，此议眼下持「' + stance + '」') : '') + '。\n' + TM.Person.brief(ch, { occasion: yuqian ? 'yuqian' : 'tinyi', detail: 'brief', topic: opts.topic });
+    } else {
+      p += '你扮演' + nm + '（' + ((ch && (ch.officialTitle || ch.title)) || '') + '）' + (stance ? ('，当前立场：' + stance) : '') + '\n';
+      p += '性格：' + ((ch && ch.personality) || '') + '，忠诚' + ((ch && ch.loyalty) || 50) + (ch && ch.party ? ('，党：' + ch.party) : '') + '\n';
+    }
     if(mentioned.indexOf(nm) >= 0) p += '（陛下点名问你，须正面回应，勿顾左右。）\n';
-    p += '请以臣子口吻简短回应陛下此言：可顺旨/进谏/剖白/转圜/重申立场，须切合你的性格' + (stance ? '与立场' : '') + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint() : '') + '\n';
+    p += '请以臣子口吻简短回应陛下此言：可顺旨/进谏/剖白/转圜/重申立场，须切合' + (_personOn ? '上面所写你的性情与口吻' + (stance ? '，并顾及你此议所持' : '') : '你的性格' + (stance ? '与立场' : '')) + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint() : '') + '\n';
     p += '返回 JSON：{"newStance":"…(如因此改变立场则填，否则留空)","line":"…"}';
     // 时空约束·扫描源=玩家插话 txt + 议题 opts.topic·响应者 nm 作种子恒入(逐人循环各自 findCharByName(nm) 组 prompt)·防 AI 按史书卒年答「某某已伏诛」(typeof 守卫防加载序)
     if (typeof _buildTemporalConstraint === 'function') {
@@ -1148,10 +1155,14 @@ function _cc2_buildAgendaPrompt() {
     } catch (_) { return ''; }
   };
   var _at = (CY && CY._cc2 && CY._cc2.attendees) || [];
+  // 人2：开关开着时「性:」一栏换成统一底子的名单一行（性情、特质、所求，tm-person.js），关着时逐字不变
+  var _personOn = !!(typeof TM !== 'undefined' && TM.Person && TM.Person.on());
   if (_at.length) {
     p += '【在场官员】\n' + _at.slice(0,20).map(function(a){
       var ch = findCharByName(a.name);
-      return '  ' + a.name + (a.title?'('+a.title+')':'') + (a.faction?' 属'+a.faction:'') + (a.party?' 党'+a.party:'') + (ch&&ch.personality?' 性:'+ch.personality.slice(0,16):'') + _cc2CogCue07(a.name);
+      var _who = (ch && _personOn) ? TM.Person.line(ch, { noName: true, goalMax: 16 }) : '';
+      var _temper = _personOn ? (_who ? '｜' + _who : '') : (ch&&ch.personality?' 性:'+ch.personality.slice(0,16):'');
+      return '  ' + a.name + (a.title?'('+a.title+')':'') + (a.faction?' 属'+a.faction:'') + (a.party?' 党'+a.party:'') + _temper + _cc2CogCue07(a.name);
     }).join('\n') + '\n';
   }
   if (GM._ccHeldItems && GM._ccHeldItems.length) {

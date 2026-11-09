@@ -4691,8 +4691,8 @@
     },
     {
       "path": "tm-chaoyi-tinyi.js",
-      "sha256": "4627268cc9b064e3b1ac15e8deae7e563690e9a7d33ffac52d69630a2f333ab0",
-      "size": 89165
+      "sha256": "c3dedb9b8cc62014b7876ba3a5e2d143cfe1f566ed258ed501f23fba03c32a74",
+      "size": 91490
     },
     {
       "path": "tm-chaoyi-yuqian.js",
@@ -4701,8 +4701,8 @@
     },
     {
       "path": "tm-chaoyi.js",
-      "sha256": "d8431dfe6f03e919446275c48e32f8e2a36299424e2314428da51a021012a01d",
-      "size": 61847
+      "sha256": "26d2f9c691e22011f75a2ba70979b63cb163bb0082b690f1b534a2a28587675f",
+      "size": 62899
     },
     {
       "path": "tm-char-arcs.js",
@@ -6296,8 +6296,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "4a1f086f892852f7220ecf7428a2effbecc5c1a54f146013250a29d01448d082",
-      "size": 190695
+      "sha256": "b7144df60cb7d36a38f45cc0541fa57c800fb96e7e0c6da3c9497569021f4e93",
+      "size": 190719
     },
     {
       "path": "tm-pause-fab.js",
@@ -6311,8 +6311,8 @@
     },
     {
       "path": "tm-person.js",
-      "sha256": "817dd958c667307a4951595c63e39b9454c4fe9b0df1f69f227bd79a1af840ad",
-      "size": 22440
+      "sha256": "a64703c3f630d193b1aaaa0dc7b4a3a73a8e8f44e9896c2ef465ed6980e2e7c3",
+      "size": 22932
     },
     {
       "path": "tm-personal-memory-recall.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "7e5a276578c21846f03af50cfeb0ac404e231bf55e34608c90416d67ebffc875",
+      "sha256": "d558c725ac57715bd3e6061bee9fb52311ca1c50a9aac4db16d9e16b985f5b1e",
       "size": 141013
     },
     {

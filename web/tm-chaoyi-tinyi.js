@@ -592,17 +592,26 @@ async function _ty2_genOneSpeech(name, roundNum, prevSpeeches) {
   if (typeof _sovereignLanguagePromptLine === 'function') prompt += _sovereignLanguagePromptLine(typeof GM !== 'undefined' ? GM : null);
   prompt += '议题：' + CY._ty2.topic + '\n';
   if (CY._ty2.topicCustom) prompt += '说明：' + CY._ty2.topicCustom + '\n';
-  prompt += '你扮演' + name + '（' + (ch && ch.officialTitle || '') + '，' + (ch && _cyGetRank(ch) || '') + '）：\n';
-  // v2.6 Slice 4·Section A·复用 PromptComposer.buildAiPersonaText·若无 aiPersonaText 字段·fallback personality
+  // 人2：开关开着时，「他是谁」读人物统一底子（tm-person.js 精简档：人格核、人设长文、处境一行、按议题回想的记忆、承诺、野心），
+  //   人设长文不再截 200 字；关着时下面旧拼法逐字不变。皇威皇权、议题、党争、他官立场、返回格式这些场合规矩两路相同。
+  var _personOn = !!(ch && typeof TM !== 'undefined' && TM.Person && TM.Person.on());
   var _pcExists = (typeof window !== 'undefined' && window.TM && TM.PromptComposer);
-  if (_pcExists && ch && ch.aiPersonaText && typeof TM.PromptComposer.buildAiPersonaText === 'function') {
-    prompt += TM.PromptComposer.buildAiPersonaText(ch, { maxLen: 200 });  // 内省段
+  if (_personOn) {
+    var _rk = _cyGetRank(ch) || '';
+    prompt += '你扮演' + name + '，在廷议上发言。\n' + TM.Person.brief(ch, { occasion: 'tinyi', detail: 'brief', topic: CY._ty2.topic });
+    prompt += '【朝班】' + (_rk ? _rk + '｜' : '') + '名望' + (ch.prestige || 50) + '｜恩眷' + (ch.favor || 0) + '\n';
   } else {
-    prompt += '  性格：' + (ch && ch.personality || '') + '\n';
+    prompt += '你扮演' + name + '（' + (ch && ch.officialTitle || '') + '，' + (ch && _cyGetRank(ch) || '') + '）：\n';
+    // v2.6 Slice 4·Section A·复用 PromptComposer.buildAiPersonaText·若无 aiPersonaText 字段·fallback personality
+    if (_pcExists && ch && ch.aiPersonaText && typeof TM.PromptComposer.buildAiPersonaText === 'function') {
+      prompt += TM.PromptComposer.buildAiPersonaText(ch, { maxLen: 200 });  // 内省段
+    } else {
+      prompt += '  性格：' + (ch && ch.personality || '') + '\n';
+    }
+    prompt += '  党派：' + (ch && ch.party || '无') + '｜势力：' + (ch && ch.faction || '?') + '｜家族：' + (ch && ch.family || '?') + '\n';
+    prompt += '  数值：忠' + ((ch && ch.loyalty)||50) + '｜野' + ((ch && ch.ambition)||40) + '｜名望' + ((ch && ch.prestige)||50) + '｜恩眷' + ((ch && ch.favor)||0) + '\n';
   }
-  prompt += '  党派：' + (ch && ch.party || '无') + '｜势力：' + (ch && ch.faction || '?') + '｜家族：' + (ch && ch.family || '?') + '\n';
-  prompt += '  数值：忠' + ((ch && ch.loyalty)||50) + '｜野' + ((ch && ch.ambition)||40) + '｜名望' + ((ch && ch.prestige)||50) + '｜恩眷' + ((ch && ch.favor)||0) + '\n';
-  prompt += '  学识：' + (ch && ch.learning || '') + '\n';  // Section D learning·v2 已注入
+  if (!_personOn || ch.learning) prompt += '  学识：' + (ch && ch.learning || '') + '\n';  // Section D learning·v2 已注入
   // v2.6 Slice 4·Section C·新加·皇威 / 皇权·NPC 看见 hq<30 → confront/martyr 倾向
   if (typeof GM !== 'undefined') {
     var _hw = (GM.huangwei && typeof GM.huangwei.index === 'number') ? GM.huangwei.index : 50;
@@ -616,8 +625,8 @@ async function _ty2_genOneSpeech(name, roundNum, prevSpeeches) {
   if (ch && ch.background) prompt += '  生平：' + String(ch.background).slice(0, 120) + '\n';
   // 情节弧·若有当前 arc
   if (ch && ch.arc && ch.arc.title) prompt += '  当下处境：' + ch.arc.title + (ch.arc.stage ? '·阶段「' + ch.arc.stage + '」' : '') + '\n';
-  // v2.6 Slice 4·Section B·recognitionState·若有则用 PromptComposer.buildRecognitionState
-  if (_pcExists && ch && ch.recognitionState && typeof TM.PromptComposer.buildRecognitionState === 'function') {
+  // v2.6 Slice 4·Section B·recognitionState·若有则用 PromptComposer.buildRecognitionState（人2 开着时已在统一底子的人设长文里）
+  if (!_personOn && _pcExists && ch && ch.recognitionState && typeof TM.PromptComposer.buildRecognitionState === 'function') {
     prompt += TM.PromptComposer.buildRecognitionState(ch);
   }
   // v7.1·F4b·言官 attribution 注入·若 ch 是言官·补 mentor/cohort/strength prompt 块
@@ -629,13 +638,16 @@ async function _ty2_genOneSpeech(name, roundNum, prevSpeeches) {
   }
   // ★2026-07-01 S2治「跨界面人格分裂」:改用统一 getMemoryContext(与问对/奏疏同源·含心绪/人生底色/要事/印象/伤疤)·
   //   而非浅切片(_memory.slice(-5))——同一人在廷议/问对/奏疏读到同一份记忆与心性·人格一致。缓存·token 可控·无则回退。
-  var _unifiedMem = '';
-  try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _unifiedMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_umE) {}
-  if (_unifiedMem) {
-    prompt += '  【此人记忆与心性】' + _unifiedMem + '\n';
-  } else {
-    var _memList = (ch && ch._memory || []).slice(-5).map(function(m){return (m.event||'').slice(0,40);});
-    prompt += '  近期记忆：' + (_memList.join('；') || '无') + '\n';
+  //   人2 开着时记忆已在统一底子里（同一个 getMemoryContext，另按议题回想），这里不再重复。
+  if (!_personOn) {
+    var _unifiedMem = '';
+    try { if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.getMemoryContext) _unifiedMem = NpcMemorySystem.getMemoryContext(name) || ''; } catch (_umE) {}
+    if (_unifiedMem) {
+      prompt += '  【此人记忆与心性】' + _unifiedMem + '\n';
+    } else {
+      var _memList = (ch && ch._memory || []).slice(-5).map(function(m){return (m.event||'').slice(0,40);});
+      prompt += '  近期记忆：' + (_memList.join('；') || '无') + '\n';
+    }
   }
   // 党派立场+焦点争议·让 NPC 发言契合其党派纲领
   if (ch && ch.party) {
@@ -967,11 +979,15 @@ async function _ty2_judgeStanceShifts(speechesThisRound) {
   prompt += '本轮发言：\n';
   speechesThisRound.forEach(function(s){ prompt += '  ' + s.name + '(' + s.stance + ')：' + s.line.slice(0, 80) + '\n'; });
   prompt += '\n当前全体立场：\n';
+  // 人2：开关开着时名单每人一行读统一底子（性情、特质、所求，tm-person.js 名单一行），关着时逐字不变
+  var _personOn = !!(typeof TM !== 'undefined' && TM.Person && TM.Person.on());
   Object.keys(CY._ty2.stances).forEach(function(n) {
     var st = CY._ty2.stances[n];
     prompt += '  ' + n + '：' + st.current + '（confidence ' + (st.confidence||0) + '）';
     var ch = findCharByName(n);
-    if (ch) prompt += ' 性:' + (ch.personality||'').slice(0,12) + ' 党:' + (ch.party||'无');
+    var _who = (ch && _personOn) ? TM.Person.line(ch, { noName: true, goalMax: 20 }) : '';
+    if (ch && _personOn) prompt += (_who ? '｜' + _who : '') + '｜党:' + (ch.party||'无');
+    else if (ch) prompt += ' 性:' + (ch.personality||'').slice(0,12) + ' 党:' + (ch.party||'无');
     prompt += '\n';
   });
   try {
@@ -982,7 +998,7 @@ async function _ty2_judgeStanceShifts(speechesThisRound) {
         + '（同党难倒戈·敌党难转圜·倒戈须有过硬事由）\n';
     }
   } catch (_sjME) {}
-  prompt += '\n根据本轮发言的说服力、人物性格（顽固者难变；趋附者易变；deceitful 随风倒）、党派、利害，判断哪些人本轮立场发生变化。\n';
+  prompt += '\n根据本轮发言的说服力、人物性格（顽固者难变；趋附者易变；' + (_personOn ? '狡诈者' : 'deceitful ') + '随风倒）、党派、利害，判断哪些人本轮立场发生变化。\n';
   prompt += '只返回确实变化的。返回 JSON：[{"name":"","newStance":"","confidenceDelta":-20到+20,"reason":"简述"}]';
   try {
     var raw = await callAI(prompt, 700, null, (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined);  // 廷议走次 API
@@ -1018,6 +1034,10 @@ async function _ty2_offerMediation() {
   }
   if (!mediator) return _ty2_enterDecide();
   var prompt = '你扮演' + mediator + '，廷议议题：' + CY._ty2.topic + '\n';
+  // 人2：开关开着时，折中者也带上他自己的底子（原来只给名字）；关着时逐字不变
+  var _mdCh = findCharByName(mediator);
+  var _mdPerson = !!(_mdCh && typeof TM !== 'undefined' && TM.Person && TM.Person.on());
+  if (_mdPerson) prompt += TM.Person.brief(_mdCh, { occasion: 'tinyi', detail: 'brief', topic: CY._ty2.topic });
   prompt += '当前立场分布：\n';
   Object.keys(CY._ty2.stances).forEach(function(n){ prompt += '  ' + n + '：' + CY._ty2.stances[n].current + '\n'; });
   try {
@@ -1034,7 +1054,7 @@ async function _ty2_offerMediation() {
       if (_mdBits.length) prompt += '局中利害：' + _mdBits.join('；') + '\n';
     }
   } catch (_mdME) {}
-  prompt += '请提出一个折中方案（文言/半文言）——兼顾各方、可操作。' + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint() : '') + '\n返回纯文本。';
+  prompt += '请提出一个折中方案（文言/半文言' + (_mdPerson ? '，合乎上面所写你的性情与口吻' : '') + '）——兼顾各方、可操作。' + (typeof _aiDialogueWordHint === 'function' ? _aiDialogueWordHint() : '') + '\n返回纯文本。';
   try {
     var raw = await callAI(prompt, (typeof _aiDialogueTok==='function'?_aiDialogueTok("cy", 1):500), null, (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined);  // 廷议走次 API
     addCYBubble(mediator, '〔折中〕' + escHtml(raw.trim()), false, true);
@@ -1372,9 +1392,12 @@ async function _ty2_afterOverride(groups, direction) {
   if (!P.ai || !P.ai.key) return;
   var prompt = '廷议结束。议题：' + CY._ty2.topic + '\n';
   prompt += '皇帝逆众议而行。少数派（被压制者）：\n';
+  // 人2：开关开着时每人行尾补上统一底子的名单一行（性情、特质、所求），谁请辞、谁密结同党要看性情；关着时逐字不变
+  var _personOn = !!(typeof TM !== 'undefined' && TM.Person && TM.Person.on());
   minority.forEach(function(m) {
     var ch = findCharByName(m.name);
-    prompt += '  ' + m.name + (ch&&ch.officialTitle?'('+ch.officialTitle+')':'') + ' 党:' + (ch&&ch.party||'无') + ' 忠' + ((ch&&ch.loyalty)||50) + ' 野' + ((ch&&ch.ambition)||40) + '\n';
+    var _who = (ch && _personOn) ? TM.Person.line(ch, { noName: true, goalMax: 20 }) : '';
+    prompt += '  ' + m.name + (ch&&ch.officialTitle?'('+ch.officialTitle+')':'') + ' 党:' + (ch&&ch.party||'无') + ' 忠' + ((ch&&ch.loyalty)||50) + ' 野' + ((ch&&ch.ambition)||40) + (_who ? '｜' + _who : '') + '\n';
   });
   prompt += '\n判定：哪些人会有后续反应？类型：\n';
   prompt += '· resign 请辞 · sick 称病不朝 · plot 密结同党 · leak 散布不满 · accept 勉强受命 · confront 持续抗诤\n';

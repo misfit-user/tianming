@@ -1419,8 +1419,10 @@
     return Math.max(50000000, total);
   }
 
-  function normalizeTaxListForCascade(G, fc) {
+  // opts.occupationAtSplit（剧本选了「折损取最重一项」的旧账路）：自定义税的侵占率不乘进税率，留到分账时与腐败、上解率取最重的一项（11-11）。
+  function normalizeTaxListForCascade(G, fc, opts) {
     var taxes = [];
+    var keepOccupation = !!(opts && opts.occupationAtSplit);
     // 数据驱动税制根治(2026-06)：剧本工坊/国师 authored 的 fiscalConfig.taxList(数组)为权威·**支持架空朝代**
     //   (税制是剧本内容非引擎常量·dynasty 硬编码遇架空即失效)。未 authored 则回落 DEFAULT_TAXES(零回归)。
     //   fc.taxes 若已是数组(旧式/enableTaxesByDynasty 前)亦兼容。
@@ -1437,7 +1439,7 @@
         if (!ct || !ct.id || !ct.formulaType) return;
         var occupation = typeof ct.occupationRate === 'number' ? Math.max(0, Math.min(0.99, ct.occupationRate)) : 0;
         var nominalRate = typeof ct.nominalRate === 'number' ? ct.nominalRate : ct.rate;
-        var effectiveRate = typeof nominalRate === 'number' ? nominalRate * (1 - occupation) : null;
+        var effectiveRate = typeof nominalRate === 'number' ? nominalRate * (keepOccupation ? 1 : 1 - occupation) : null;
         var converted = null;
         if (ct.formulaType === 'perMu' && effectiveRate > 0) {
           converted = {
@@ -1454,7 +1456,7 @@
             _occupationRate: occupation
           };
         } else if (ct.formulaType === 'flat' && safeNumber(ct.amount, 0) > 0) {
-          var effectiveAmount = safeNumber(ct.amount, 0) * (1 - occupation);
+          var effectiveAmount = safeNumber(ct.amount, 0) * (keepOccupation ? 1 : 1 - occupation);
           converted = {
             id: ct.id,
             name: ct.name || ct.id,
@@ -1532,6 +1534,14 @@
     });
   }
 
+  // 当地腐败对征收的折损（0～0.5）。剧本选了「折损取最重一项」的旧账路在分账时与上解率、侵占率取最重的一项折（见 splitCascadeAmount），其余在算税时折。
+  function _corruptionPenalty(div) {
+    var corruption = safeNumber(div && div.corruption, safeNumber(div && div.corruptionLocal, 0));
+    return Math.min(0.5, corruption / 100 * 0.4);
+  }
+  // 剧本财政配置写了 collectionLoss.mode:'heaviest'（一笔钱只折一次，见 splitCascadeAmount）
+  function _lossOnceModel(fc) { return !!(fc && fc.collectionLoss && fc.collectionLoss.mode === 'heaviest'); }
+
   function computeTaxAmount(div, tax, ctx) {
     if (global.TM && global.TM.TaxPolicy) tax = global.TM.TaxPolicy.effectiveTax((ctx && ctx.game) || getGame(), div, tax, ctx);
     var base = taxBase(div, tax);
@@ -1539,8 +1549,8 @@
     var amount = rawTaxAmount(div, tax);
     if (tax.annual && ctx && ctx.turnFracOfYear) amount *= ctx.turnFracOfYear;
 
-    var corruption = safeNumber(div.corruption, safeNumber(div.corruptionLocal, 0));
-    var corrPenalty = Math.min(0.5, corruption / 100 * 0.4);
+    var lossAtSplit = !!(ctx && ctx.collectionLossAtSplit);
+    var corrPenalty = lossAtSplit ? 0 : Math.min(0.5, safeNumber(div.corruption, safeNumber(div.corruptionLocal, 0)) / 100 * 0.4); // 与 _corruptionPenalty 同式
     var disasterPenalty = 0;
     if (div.environment && div.environment.currentLoad > 0.9) disasterPenalty = 0.2;
     if (div.environment && div.environment.ecoScars && Object.keys(div.environment.ecoScars).length > 0) disasterPenalty += 0.1;
@@ -1577,7 +1587,9 @@
       if (_rs && typeof _rs.econMult === 'function') statusMult = _rs.econMult(div) || 1;
     } catch (_) {}
 
-    var autonomy = Math.max(0, Math.min(1, safeNumber(div.fiscal && div.fiscal.autonomyLevel, 0)));
+    // 「自主」只在没选「折损取最重一项」的旧账路上折（11-11）：统一预算早已不乘；自主经央地博弈逐月压低上解率
+    //   （tm-central-local-engine _updateCompliance），分账时上解率再折，等于同一件事折两回。绍宋的作者是照连乘校准的，照旧。
+    var autonomy = (ctx && ctx.accountingV2) || lossAtSplit ? 0 : Math.max(0, Math.min(1, safeNumber(div.fiscal && div.fiscal.autonomyLevel, 0)));
     // 年度赋役总纲·税率调整真入征收（2026-06-15·#6 假数字治理收尾）：玩家在赋役滑块设的 taxRateAdjust
     //   此前只算了 _annualFuyiAdjust 却无人读入收入。此处接入权威 cascade 税额路径——仅对年度农赋
     //   （赋役之所指）生效·无政令=0=乘 1 不改旧行为·夹 ±50% 防极端。让"赋役滑块"从空旋钮变真。
@@ -1607,7 +1619,7 @@
         }
       } catch (_) {}
     }
-    amount = amount * (1 - corrPenalty) * (1 - disasterPenalty) * (1 - exemption) * (1 - disruption) * (1 - fleePenalty) * (ctx && ctx.accountingV2 ? 1 : (1 - autonomy * 0.8)) * (1 - inflationPenalty) * statusMult * fuyiMult;
+    amount = amount * (1 - corrPenalty) * (1 - disasterPenalty) * (1 - exemption) * (1 - disruption) * (1 - fleePenalty) * (1 - autonomy * 0.8) * (1 - inflationPenalty) * statusMult * fuyiMult;
     return Math.max(0, ctx && ctx.accountingV2 ? fiscalRound(amount) : Math.round(amount));
   }
 
@@ -1630,9 +1642,13 @@
       cunliu = Math.max(0, 1 - qiyun);
     }
     var compliance = _complianceRatio(div.fiscal && div.fiscal.compliance, 0.85); // 2026-10-16：比例口径·百分数折回·上解乘数不可能 >1
+    // 剧本选了「折损取最重一项」（ctx.collectionLossAtSplit，11-11）：当地腐败的侵蚀、该税作者写的侵占率、上解不力，
+    //   是同一笔钱短下来的几种说法。连乘时天启辽饷名义五百零八万只到一百八十五万（腐败折两成六、自主一成六、上解两成七、路损一成五）。
+    //   起运按三者中最重的一项折，短下的记作截留（主官照旧分得一半）；存留按腐败与侵占率中较重的折。
+    var loss = ctx && ctx.collectionLossAtSplit ? Math.max(_corruptionPenalty(div), Math.max(0, Math.min(0.99, safeNumber(tax && tax._occupationRate, 0)))) : 0;
     var qiyunGross = amount * qiyun;
-    var cunliuAmount = amount * cunliu;
-    var qiyunNet = qiyunGross * compliance;
+    var cunliuAmount = amount * cunliu * (1 - loss);
+    var qiyunNet = qiyunGross * (ctx && ctx.collectionLossAtSplit ? Math.min(1 - loss, compliance) : compliance);
     var skimmed = qiyunGross - qiyunNet;
     var lossRate = ctx.logisticsLoss != null ? safeNumber(ctx.logisticsLoss, DEFAULT_LOGISTICS_LOSS) : DEFAULT_LOGISTICS_LOSS;
     var lost = qiyunNet * lossRate;
@@ -1959,7 +1975,8 @@
 
     opts = opts || {};
     var fc = getFiscalConfig(G);
-    var taxes = normalizeTaxListForCascade(G, fc);
+    var lossOnce = _lossOnceModel(fc);
+    var taxes = normalizeTaxListForCascade(G, fc, { occupationAtSplit: lossOnce });
     var ledgers = ensureGuoku(G);
     resetTurnLedger(ledgers.money, false);
     resetTurnLedger(ledgers.grain, false);
@@ -1975,7 +1992,8 @@
       centralLocalRules: fc.centralLocalRules || DEFAULT_ALLOCATION,
       logisticsLoss: fc.logisticsLoss != null ? safeNumber(fc.logisticsLoss, DEFAULT_LOGISTICS_LOSS) : DEFAULT_LOGISTICS_LOSS,
       turnDays: turnDays,
-      turnFracOfYear: turnFrac
+      turnFracOfYear: turnFrac,
+      collectionLossAtSplit: lossOnce
     };
 
     // 2026-08 玩家剧本事故根治：剧本未 authored 任何税制（无 taxList/taxes/customTaxes → DEFAULT_TAXES 兜底）时，

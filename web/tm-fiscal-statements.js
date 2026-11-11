@@ -265,7 +265,8 @@
     var G = getGame(opts.game), cfg = getFiscalConfig(G, opts.faction);
     if (!G || (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G))) return null;
     var unified = unifiedAccounting(G, opts.faction), year = unified ? 360 : 365;
-    var days = safeNumber(opts.turnDays, year), taxes = normalizeTaxListForCascade(G, cfg), nodes = [];
+    var lossOnce = !unified && !!(cfg.collectionLoss && cfg.collectionLoss.mode === 'heaviest'); // 与 cascadeCollect 同一口径（11-11）
+    var days = safeNumber(opts.turnDays, year), taxes = normalizeTaxListForCascade(G, cfg, { occupationAtSplit: lossOnce }), nodes = [];
     if (opts.division) {
       (function visit(d) { if (d.children && d.children.length) d.children.forEach(visit); else nodes.push(d); })(opts.division);
     }
@@ -279,7 +280,7 @@
     var ctx = { game:G, fiscalConfig:cfg, turnDays:days,
       turnFracOfYear:Math.max(0.01, Math.min(1, days/year)),
       centralLocalRules:cfg.centralLocalRules || DEFAULT_ALLOCATION,
-      logisticsLoss:safeNumber(cfg.logisticsLoss, DEFAULT_LOGISTICS_LOSS) };
+      logisticsLoss:safeNumber(cfg.logisticsLoss, DEFAULT_LOGISTICS_LOSS), collectionLossAtSplit:lossOnce };
     var parents = {};
     walkAdminDivisions(G, function(d, parent) { if (parent) parents[d.id || d.name] = parent; }, {leafOnly:true});
     return global.FiscalStatement.taxRevenuePreview(nodes, function(node) {

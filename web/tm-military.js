@@ -464,6 +464,15 @@ var MilitarySystems = (function(global) {
     }
   }
 
+  // 开局各军所欠是剧本底子：作者给的士气已按它定，记作已扣过，开局不再整笔扣一回（11-11）。只补没记过的军。
+  function _countOpeningPayArrears(G) {
+    (G && Array.isArray(G.armies) ? G.armies : []).forEach(function(army) {
+      if (!army || army._payArrearsAppliedMonths != null) return;
+      if (global.TM && global.TM.MilitaryArrears) global.TM.MilitaryArrears.syncArmy({game:G,army:army});
+      army._payArrearsAppliedMonths = payArrearsBaseline(army, G).months;
+    });
+  }
+
   function applyPayArrearsPressure(army, options, root) {
     if (!army) return { ok: false, reason: 'missing-army' };
     options = options || {};
@@ -471,16 +480,24 @@ var MilitarySystems = (function(global) {
     var turn = Number(G.turn || global.GM && global.GM.turn || 0) || 0;
     if (global.TM && global.TM.MilitaryArrears) global.TM.MilitaryArrears.syncArmy({game:G,army:army});
     var base = payArrearsBaseline(army, G);
-    if (base.months <= 0) return { ok: true, skipped: true, reason: 'no-arrears', baseline: base };
-    if (!options.force && army._payArrearsAppliedTurn === turn && army._payArrearsAppliedMonths === base.months) {
-      return { ok: true, skipped: true, reason: 'already-applied', baseline: base };
+    // 欠饷扣军心，每欠一个月扣一次（11-11）：原先每回合按积欠总月数整笔重扣，欠五个月的军每回合扣五十士气，
+    // 天启开局三个月内关宁、东江、诸镇与「全国卫所军·总览」相继跌破哗变线、七成溃散。
+    // 已扣过的月数记在 _payArrearsAppliedMonths：欠的月数涨了只扣涨出的那几个月；补过饷降下来就按降后的数记，日后再欠从那里算起。
+    // 开局所欠是剧本底子（作者给的士气已按它定），由 initializeArmyArrears 记作已扣。force＝整笔重扣（只供测试与显式调用）。
+    var counted = options.force ? 0 : Number(army._payArrearsAppliedMonths);
+    if (!isFinite(counted) || counted < 0) counted = 0;
+    if (base.months <= counted) {
+      army._payArrearsAppliedMonths = Math.max(0, base.months);
+      return { ok: true, skipped: true, reason: base.months > 0 ? 'no-new-arrears' : 'no-arrears', baseline: base };
     }
+    var fresh = base.months - counted, share = fresh / base.months;
     var validated = validatePayArrearsAdjustment(army, options.adjustment || null, G);
     if (!validated.ok) return validated;
     var system = getMilitarySystemForArmy(army, G);
     var attribution = _normalizeAttribution(army.loyaltyAttribution || system.loyaltyAttribution);
-    army.morale = _clamp100(_armyMorale(army) + validated.adjusted.moraleDelta);
-    army.loyalty = _clamp100((army.loyalty === undefined ? 50 : army.loyalty) + validated.adjusted.loyaltyDelta);
+    var moraleDelta = validated.adjusted.moraleDelta * share, loyaltyDelta = validated.adjusted.loyaltyDelta * share;
+    army.morale = _clamp100(_armyMorale(army) + moraleDelta);
+    army.loyalty = _clamp100((army.loyalty === undefined ? 50 : army.loyalty) + loyaltyDelta);
     army.loyaltyAttribution = attribution;
     army._payArrearsAppliedTurn = turn;
     army._payArrearsAppliedMonths = base.months;
@@ -490,13 +507,14 @@ var MilitarySystems = (function(global) {
       turn: turn,
       army: army.name || army.id || '',
       months: base.months,
-      moraleDelta: validated.adjusted.moraleDelta,
-      loyaltyDelta: validated.adjusted.loyaltyDelta,
+      newMonths: fresh,
+      moraleDelta: moraleDelta,
+      loyaltyDelta: loyaltyDelta,
       loyaltyAttribution: attribution,
       routed: !!army.routed,
       source: options.source || 'military-systems'
     });
-    return { ok: true, army: army, baseline: base, adjusted: validated.adjusted, routed: !!army.routed, loyaltyAttribution: attribution };
+    return { ok: true, army: army, baseline: base, newMonths: fresh, adjusted: { moraleDelta: moraleDelta, loyaltyDelta: loyaltyDelta }, routed: !!army.routed, loyaltyAttribution: attribution };
   }
 
   // 玩家补饷·确定性结算：按 兵×月饷率×欠饷月数 算 back-pay → 走国库 spendFromGuoku 扣银/粮/布（落真账·不再免费清欠）。
@@ -1090,7 +1108,7 @@ var MilitarySystems = (function(global) {
     validatePayArrearsAdjustment: validatePayArrearsAdjustment,
     applyPayArrearsPressure: applyPayArrearsPressure,
     settleArmyArrears: settleArmyArrears,
-    initializeArmyArrears: function(o) {return global.TM && global.TM.MilitaryArrears ? global.TM.MilitaryArrears.initialize(o) : {ok:false,missing:['military-arrears-module']};},
+    initializeArmyArrears: function(o) {var r=global.TM && global.TM.MilitaryArrears ? global.TM.MilitaryArrears.initialize(o) : {ok:false,missing:['military-arrears-module']};_countOpeningPayArrears(o&&o.game||global.GM);return r;},
     getArmyArrearsView: function(army,root) {return global.TM && global.TM.MilitaryArrears ? global.TM.MilitaryArrears.view({game:root||global.GM,army:army}) : {known:false,months:null,amounts:null};},
     applyBattleResult: applyBattleResult, findBattleArmy: _findArmy,
     _readConstant: _readConstant

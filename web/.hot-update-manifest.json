@@ -6021,8 +6021,8 @@
     },
     {
       "path": "tm-military.js",
-      "sha256": "fafba799d59da7ce02aa6c207d60e9346b1e7b2a567080f339a7a5e94a183566",
-      "size": 142140
+      "sha256": "681e45281b3c0c1adb2ea18f4ff0357fbd2135c2e4dea6e8840190ac2ad0df61",
+      "size": 143618
     },
     {
       "path": "tm-minxin-commitment-tracker.js",
@@ -6581,7 +6581,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "f7e4e2b13e2d686e7e8cd58d3591b95c2a0c5d546bab8beaab97b540a99d142c",
+      "sha256": "aed01524bd8d34b815f44f78cd5dd4206f56ef34d41663874fff355c66abbc48",
       "size": 141013
     },
     {

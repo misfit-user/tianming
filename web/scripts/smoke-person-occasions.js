@@ -3,7 +3,8 @@
 //   · 人格核合成规矩：特质并 traitIds 与 traits（英文代号不进提示词）、口吻合一、立场与所求去重、名单一行。
 //   · 开关 P.conf.personUnifiedEnabled 默认关：关着时问对、常朝、廷议、朝议插话、常朝议程名单、御前、奏疏、书信回信、NPC 自主决策的提示词
 //     与改造前逐字相同（金标准哈希）；开着时各场合的人物段含同一份人格核（一字不差）。
-//   · 认知画像（sc07 写的）：开着时人格只认人格核，画像里的自识、人格、口吻、史标不写，其余精简档、完整档读同一段；奏疏名单带知与不知。
+//   · 认知画像（sc07 写的）：开着时人格只认人格核，画像里的自识、人格、口吻、史标不写，其余精简档、完整档读同一段；奏疏名单带知与不知；
+//     NPC 单独决策和势力调度共用的「本人」资料也带这一段（人2-7），几人同批决策的共享上下文不带。
 //   · 记忆截短（11-09，两路都改）：深问补时空约束、关着也读全文记忆；奏疏名单的「心绪」只取此人自己那段
 //     （getMemoryContext 的 personalOnly，真跑 tm-mechanics-memory.js）。
 // 金标准由改造前的文件在同一夹具上算出：TM_PERSON_SMOKE_GOLDEN_DIR=<放改造前文件的目录> node 本文件 → 打印哈希后退出。
@@ -501,6 +502,17 @@ async function prompts(c) {
   lc10.P.conf.personUnifiedEnabled = true;
   const lon10 = await letterPrompt(lc10);
   ok(lon10.includes(cog8) && !/人格：阴狡|史标：/.test(lon10), '开着：回信带同一段画像，不写画像的人格、史标');
+  // NPC 自主、势力调度（人2-7）：一人单独决策的「本人」资料（势力调度 tm-political-actions.js 的 view 也读它）
+  const nc10 = withCog(npcSandbox());
+  eq(sha(JSON.stringify(nc10.buildNpcBehaviorContext(nc10.GM.chars[1]).self)), NPC_GOLDEN.self, '关着：带画像时 NPC 单独决策的「本人」资料也逐字不变（不带画像）');
+  nc10.P.conf.personUnifiedEnabled = true;
+  const nself10 = nc10.buildNpcBehaviorContext(nc10.GM.chars[1]).self;
+  eq(nself10.cognition, (cog8 + '▲ 上面是此人眼下真知道的：「不知」里的事不得提及，「知」里的事也不得装作不知。').trim(), '开着：NPC 单独决策、势力调度的「本人」带同一段画像和知与不知的规矩');
+  ok(brief8.includes(P8.mind('温体仁')) && full8.includes(P8.mind('温体仁') + '▲ 如被问及「不知」里的事'), '这一段就是精简档、完整档里那段（TM.Person.mind）');
+  ok(!('cognition' in nc10.buildNpcBehaviorContext(nc10.GM.chars[3]).self), '开着：没有画像的人不添这一栏');
+  nc10.__npc.length = 0;
+  await nc10.batchNpcDecisions([nc10.GM.chars[1], nc10.GM.chars[3]], nc10.buildNpcBehaviorContext(), {});
+  ok(nc10.__npc[0] && !/迎合圣意|己上停祠|崔呈秀谋帝/.test(nc10.__npc[0]), '开着：几人同批决策的共享上下文只含公开背景，不带各人的画像与知与不知');
 
   // ── 11. 记忆截短处只取此人自己那段（getMemoryContext 的 personalOnly，真跑 tm-mechanics-memory.js）──
   const ms = { console: { log() {}, warn() {}, error() {} }, Date, Math, JSON };
@@ -524,5 +536,10 @@ async function prompts(c) {
   // ── 12. 接线与守卫 ──
   ok(read('tm-patches.js').includes("_togglePConf(\\'personUnifiedEnabled\\'"), '设置面板有「人物统一底子」开关');
   ok(read('tm-player-settings.js').includes('personUnifiedEnabled:'), '开关有提示语');
+  const fl = read('tm-faction-npc-llm-decision.js'), pa = read('tm-political-actions.js');
+  ok(fl.includes('if(global.TM&&TM.PoliticalActions)return TM.PoliticalActions.prompt(fac,_politicalBindings.get(fac));')
+    && fl.includes("if(!boundary||!world)return {skipped:true,reason:'political_boundary_unavailable'};"), '势力调度走政治行动那套：绑不到真人不调模型；「历史推演大师」那段只在缺这套时才走');
+  ok(pa.includes("var own=typeof global.buildNpcBehaviorContext==='function'?global.buildNpcBehaviorContext(actor,") && pa.includes('person:own'),
+    '势力调度的「本人」就是 NPC 单独决策那份（人2-7）：开关开着时同读人格核与画像');
   console.log('[smoke-person-occasions] pass assertions=' + checks);
 })().catch((e) => { console.error('[smoke-person-occasions] FAIL', e && e.message || e); process.exit(1); });

@@ -992,6 +992,9 @@ function buildNpcBehaviorContext(npc, options) {
   //   （TM.Person.who，原来是八维短语）；处境、记忆、承诺、资财这个上下文本来就另列，不再抄完整档。关着时逐字不变。
   var _personOn=!!(typeof TM!=='undefined'&&TM.Person&&TM.Person.on());
   context.self={id:npc.id,name:npc.name,goal:npc.personalGoal||'',thought:npc.innerThought||'',traits:_personOn?TM.Person.traitNames(npc):(npc.traitIds||[]),personality:_personOn?TM.Person.who(npc):(typeof getCharacterPersonalityBrief==='function'?getCharacterPersonalityBrief(npc):npc.personality||''),abilities:_npcAbilityProfile(npc),stress:npc.stress,resources:_npcBuildCharacterEconomySnapshot(npc,options)};
+  // 人2-7：开关开着时「本人」再带眼下所知所想（认知画像＋知与不知的规矩，与精简档、完整档同一段，TM.Person.mind）。
+  //   势力调度的「本人」也是这份（tm-political-actions.js 的 view），一处两用。几人同批决策的共享上下文只含公开背景，不带。
+  if(_personOn){var _mind=TM.Person.mind(npc.name).trim();if(_mind)context.self.cognition=_mind;}
   context.assignments=TM.OfficeHolderState?TM.OfficeHolderState.assignments(GM,npc).map(function(a){return {positionId:a.positionId,appointmentId:a.appointmentId,title:a.pos.name,powers:a.pos.powers||{},scope:a.pos.authorityScope||{},treasuryBinding:a.pos.treasuryBinding||null};}):[];
   var planExposure=ledger.state(GM).planExposure||{};
   context.plans=ledger.ensurePlans(GM).filter(function(p){return !p.localActivity&&!/^(done|rejected|failed|cancelled)$/.test(p.status);}).map(function(p){return ledger.planView(p,npc);}).filter(Boolean).sort(function(a,b){return (planExposure[a.id]||0)-(planExposure[b.id]||0);}).slice(0,8);

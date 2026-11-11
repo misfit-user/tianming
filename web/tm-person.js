@@ -215,8 +215,8 @@
     cognition: function (name) {
       var out = '';
       if (on()) {
-        var _ct = cognitionText(name);
-        return _ct ? _ct + _COG_RULE + '▲ 如被问及「不知」里的事，如何应对按此人性情、五常、特质与忠诚、野心、清廉定：\n' + _COG_STYLES.join('') : '';
+        var _m = mind(name);
+        return _m ? _m + '▲ 如被问及「不知」里的事，如何应对按此人性情、五常、特质与忠诚、野心、清廉定：\n' + _COG_STYLES.join('') : '';
       }
       if (typeof getNpcCognitionSnippet === 'function') {
         var _cogSnip = getNpcCognitionSnippet(name);
@@ -309,6 +309,12 @@
     var k = (Array.isArray(c.knows) ? c.knows : []).slice(0, 3).map(_s).filter(Boolean);
     var d = (Array.isArray(c.doesntKnow) ? c.doesntKnow : []).slice(0, 2).map(_s).filter(Boolean);
     return _joinBits([k.length ? '知：' + _joinBits(k) : '', d.length ? '不知：' + _joinBits(d) : ''].filter(Boolean));
+  }
+  // 眼下所知所想：认知画像（去掉与人格核重复的几行）＋知与不知的规矩。精简档、完整档读的都是这一段；
+  //   处境、记忆另按自己结构列出的场合（NPC 自主、势力调度的「本人」）单取这一段（人2-7）
+  function mind(name) {
+    var cog = cognitionText(name);
+    return cog ? cog + _COG_RULE : '';
   }
   // 性情：剧本的 personality；剧本没写，才拿认知画像那句人格补上
   function temperOf(ch) {
@@ -430,9 +436,8 @@
     var memOpts = opts.topic ? { topic: opts.topic } : null;
     if (opts.detail === 'line') return line(ch, opts);
     if (opts.detail === 'brief') {
-      var cog = cognitionText(name);
       return _nl(coreText(ch) + _nl(frag.personaText(ch)) + situationLine(ch)
-        + frag.memory(ch, memOpts) + _filled(frag.commitments(ch, name)) + frag.ambition(ch) + (cog ? cog + _COG_RULE : ''));
+        + frag.memory(ch, memOpts) + _filled(frag.commitments(ch, name)) + frag.ambition(ch) + mind(name));
     }
     if (opts.occasion === 'wendui' && typeof root._wdBuildPrompt === 'function') return root._wdBuildPrompt(ch, name);
     return _nl(coreText(ch) + _nl(frag.personaText(ch)) + situationLine(ch) + situationMore(ch) + frag.edictRoles(name)
@@ -442,5 +447,5 @@
   }
 
   TM.Person = { frag: frag, core: core, brief: brief, coreText: coreText, who: who, traitNames: traitNames, speechText: speechText, line: line, on: on,
-    cognitionText: cognitionText, knowing: knowing };
+    cognitionText: cognitionText, knowing: knowing, mind: mind };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -47,6 +47,9 @@
   function initializeOne(a,g){
     if(!a||!a.id)return {ok:false,reason:'army-id-required'};var existing=claims(a,g);
     if(existing.items&&existing.items.length){syncArmy({game:g,army:a});return {ok:true,existing:true};}
+    // 屯军自给、旧账路上地方出饷的军，开局所欠不记在太仓账上（11-11）
+    if(a.funding&&a.funding.selfSupplied)return {ok:true,skipped:true,reason:'self-supplied'};
+    if((num(a.funding&&a.funding.localShare)||0)>=1&&!(global.CascadeTax&&global.CascadeTax.isUnified&&global.CascadeTax.isUnified(g,'player')))return {ok:true,skipped:true,reason:'local-funded'};
     var seed=a.initialPayArrears||{},months=num(seed.months!=null?seed.months:a.payArrearsMonths);if(!(months>0))return {ok:true,skipped:true};
     var monthly=monthlyAmounts(a,g,true),amounts=zero(),invalid=false;
     RES.forEach(function(k){var x=seed.amounts?num(seed.amounts[k]!=null?seed.amounts[k]:0):monthly[k]*months;if(x==null||x<0)invalid=true;amounts[k]=round(Math.max(0,x||0));});
@@ -56,7 +59,9 @@
     if(result&&result.ok)syncArmy({game:g,army:a});return result||{ok:false,reason:'liability-service-missing'};
   }
   function initialize(o){var g=G(o),report={ok:true,registered:0,existing:0,missing:[]};(g.armies||[]).forEach(function(a){if(!a||!((num(a.initialPayArrears&&a.initialPayArrears.months)||num(a.payArrearsMonths)||0)>0))return;var r=initializeOne(a,g);if(!r.ok){report.ok=false;report.missing.push({armyId:a.id,reason:r.reason,details:r.missing||[]});}else if(r.existing||r.duplicate)report.existing++;else if(!r.skipped)report.registered++;});return report;}
-  function settle(o){var g=G(o),a=o.army,initial=view(o);if((!initial.claims||!initial.claims.length)&&!((num(a&&a.payArrearsMonths)||0)>0))return {ok:true,monthsCleared:0,cost:zero(),paid:zero(),deducted:{},remaining:0,remainingAmounts:zero(),shortfall:0};if(!initial.claims||!initial.claims.length){var made=initializeOne(a,g);if(!made.ok)return made;initial=view(o);}if(!initial.known)return {ok:false,reason:'army-arrears-book-incomplete',missing:initial.missing};
+  // 屯军自给、地方出饷的军（11-11）开局所欠不记太仓（见 initializeOne）：补饷时照常返回、不动库、写明缘由。
+  //   原先报账簿不全，下诏「补发全部欠饷」整道诏书抛错，发饷按钮报「补饷未能交割」。
+  function settle(o){var g=G(o),a=o.army,initial=view(o);if((!initial.claims||!initial.claims.length)&&!((num(a&&a.payArrearsMonths)||0)>0))return {ok:true,monthsCleared:0,cost:zero(),paid:zero(),deducted:{},remaining:0,remainingAmounts:zero(),shortfall:0};if(!initial.claims||!initial.claims.length){var made=initializeOne(a,g);if(!made.ok)return made;if(made.skipped&&(made.reason==='self-supplied'||made.reason==='local-funded'))return {ok:true,skipped:true,reason:made.reason,note:made.reason==='self-supplied'?'屯军自给，所欠不由太仓支给':'地方存留出饷，所欠不由太仓支给',monthsCleared:0,cost:zero(),paid:zero(),deducted:{},remaining:num(a.payArrearsMonths)||0,remainingAmounts:zero(),shortfall:0};initial=view(o);}if(!initial.known)return {ok:false,reason:'army-arrears-book-incomplete',missing:initial.missing};
     var want=o.months==null?initial.exactMonths:Math.min(initial.exactMonths,Math.max(0,num(o.months)||0)),left=want,cost=zero(),paid=zero(),duplicate=true,results=[];
     if(want<=0)return {ok:true,monthsRequested:0,monthsCleared:0,cost:cost,deducted:{},remaining:0,remainingAmounts:initial.amounts,shortfall:0,note:'无欠饷可补'};
     var actionId=o.transactionId||'army-arrears-payment:'+String(g.sid||'')+':'+(g.turn||0)+':'+a.id+':'+JSON.stringify(initial.amounts);

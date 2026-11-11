@@ -328,6 +328,7 @@
     var _MS = global.MilitarySystems || (global.TM && global.TM.MilitarySystems);
     if (a && _MS && typeof _MS.settleArmyArrears === 'function') {
       var r = _MS.settleArmyArrears(a, {});
+      if (r && r.ok && r.skipped && r.note) { _toast(r.note); return; }
       if (!r || !r.ok) { _toast('补饷未能交割：'+(r&&r.reason||'账簿未齐')); return; }
       if (r.duplicate) { _toast('此笔补饷已交割，不重复支取'); return; }
       var paid=r.paid||{},ded=r.deducted||{},left=r.remainingAmounts||{};

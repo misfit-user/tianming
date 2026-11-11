@@ -2343,6 +2343,10 @@
       || (G && G.fiscal && G.fiscal.royalClanPressure)
       || null;
     if (!rcp || !rcp.enabled) return { total: { money: 0, grain: 0, cloth: 0 }, members: 0, arrears: 0 };
+    // 剧本写明宗禄出存留（paidFrom:'存留'，11-11）：明代王府禄米由所在布政司存留支给，不入太仓岁出
+    //   （《明史·食货志》载嘉靖四十一年林润疏：山西存留百五十二万石而宗禄三百十二万石，河南存留八十四万三千石而宗禄百九十二万石）。
+    //   太仓这里记零；存留那头的开支尚未设账（见交代）。
+    if (rcp.paidFrom === '存留') return { total: { money: 0, grain: 0, cloth: 0 }, members: safeNumber(rcp.totalClanMembers, 0), arrears: safeNumber(rcp.cumulativeArrears, 0), paidFrom: '存留' };
     var annualStone = safeNumber(rcp.annualStipendPaid, 0) * 10000;
     var turnFrac = getTurnDays(ctx, G) / 365;
     var stoneThis = annualStone * turnFrac;
@@ -2399,6 +2403,7 @@
     var turnFracMonth = turnDays / 30;
     var total = { money: 0, grain: 0, cloth: 0 };
     var byArmy = {};
+    var items = [], perArmy = false;
     // 根治(2026-06·绍宋财政):军饷只结算玩家势力自己的军·非本势力军不上玩家国库账。
     //   旧 bug:此处遍历 getArmies(全势力 initialTroops) 一律从玩家国库发饷=玩家替金军/群盗买单。
     //   修:按 army.faction 匹配玩家势力名(与 _playerFactionNameForArmy/_isPlayerOwnedArmy 同源)。
@@ -2410,24 +2415,32 @@
       if (!army || army.destroyed) return;
       var _af = String(army.faction || army.owner || '').trim();
       if (_pfn && _af && _af !== _pfn && !army._edictBuilt) return;   // 非玩家势力军·不上玩家国库账
+      // 写明出饷户头（army.funding）的军（11-11）：屯军自给（selfSupplied）不由太仓开支；地方出的那一份（localShare）不进太仓；
+      //   太仓那一份按户头（account：辽饷、年例、京营……）出账，短发的按军记欠（见 _payArmiesByAccount）。没写的军照旧全由太仓出。
+      var funding = army.funding && typeof army.funding === 'object' ? army.funding : null;
+      if (funding) perArmy = true;
+      if (funding && funding.selfSupplied) return;
+      var centralShare = funding ? 1 - Math.max(0, Math.min(1, safeNumber(funding.localShare, 0))) : 1;
+      if (centralShare <= 0) return;
       var soldiers = safeNumber(army.soldiers, safeNumber(army.strength, safeNumber(army.size, 0)));
       if (soldiers <= 0) return;
       var moneyPay = army.monthlyMoneyPayPerSoldier != null ? safeNumber(army.monthlyMoneyPayPerSoldier, pay.money) : pay.money;
       var grainPay = army.monthlyGrainPayPerSoldier != null ? safeNumber(army.monthlyGrainPayPerSoldier, pay.grain) : pay.grain;
       var clothPay = army.monthlyClothPayPerSoldier != null ? safeNumber(army.monthlyClothPayPerSoldier, pay.cloth) : pay.cloth;
       var item = {
-        money: soldiers * moneyPay * turnFracMonth,
-        grain: soldiers * grainPay * turnFracMonth,
-        cloth: soldiers * clothPay * turnFracMonth,
+        money: soldiers * moneyPay * turnFracMonth * centralShare,
+        grain: soldiers * grainPay * turnFracMonth * centralShare,
+        cloth: soldiers * clothPay * turnFracMonth * centralShare,
         soldiers: soldiers
       };
+      items.push({ armyId: army.id, name: army.name || army.id || '军', account: funding && funding.account ? String(funding.account) : '', money: item.money * _armyMult, grain: item.grain * _armyMult, cloth: item.cloth * _armyMult });
       total.money += item.money;
       total.grain += item.grain;
       total.cloth += item.cloth;
       byArmy[army.name || army.id || '军'] = item;
     });
     total.money *= _armyMult; total.grain *= _armyMult; total.cloth *= _armyMult;   // 演义旋钮·军饷松绑（P-FUV·硬核 ×1 不动）
-    return { total: total, byArmy: byArmy };
+    return { total: total, byArmy: byArmy, items: items, perArmy: perArmy };
   }
 
   function calcImperialExpense(ctx) {
@@ -2486,6 +2499,45 @@
     };
   }
 
+  // 写明出饷户头的各军（11-11）：都记在帑廪册「军饷」一项，细目按户头（辽饷、年例、京营……）列；库里不够时各军按应得同比例少发，
+  //   短发的按军记成欠饷（帑廪欠项「军饷」类，写明哪一军），各军欠饷月数由此按实欠算（TM.MilitaryArrears），
+  //   欠饷扣军心那条线（applyPayArrearsPressure）才接上真账。原先短发只记一笔不分军的总欠，各军欠饷月数从不随实欠涨。
+  function _payArmiesByAccount(G, ledgers, items) {
+    var out = {};
+    ['money', 'grain', 'cloth'].forEach(function(kind) {
+      var led = ledgers[kind], need = 0, paid = 0, owed = 0, byAccount = {};
+      items.forEach(function(it) { need += Math.max(0, safeNumber(it[kind], 0)); });
+      if (!led || !(need > 0)) { out[kind] = { deducted: 0, deficit: 0 }; return; }
+      var ratio = Math.max(0, Math.min(1, safeNumber(led.stock, 0) / need));
+      items.forEach(function(it) {
+        var amt = Math.max(0, safeNumber(it[kind], 0));
+        if (!amt) return;
+        var account = it.account || '军饷';
+        byAccount[account] = safeNumber(byAccount[account], 0) + amt * ratio;
+        var short = amt * (1 - ratio);
+        if (short > 0.0001) { _recordArmyPayArrears(G, led, it, short); owed += short; }
+      });
+      Object.keys(byAccount).forEach(function(account) {
+        var got = deductFromLedger(led, Math.min(byAccount[account], Math.max(0, safeNumber(led.stock, 0))), '军饷', true).deducted;
+        paid += got;
+        if (got > 0 && global.FiscalStatement && global.FiscalStatement.recordFlow) global.FiscalStatement.recordFlow(led, 'central', 'out', '军饷', 'army-account:' + account, account, got);
+      });
+      out[kind] = { deducted: paid, deficit: owed };
+    });
+    return out;
+  }
+  function _recordArmyPayArrears(G, led, it, amount) {
+    led.deficit = safeNumber(led.deficit, 0) + amount;
+    if (!led.sinks) led.sinks = {};
+    led.sinks['军饷_欠'] = safeNumber(led.sinks['军饷_欠'], 0) + amount; // 破产「军饷断裂」与册页都认这一项
+    if (!led.deficitDetails) led.deficitDetails = {};
+    var rows = led.deficitDetails.junxiang || (led.deficitDetails.junxiang = []);
+    var id = 'army-pay:' + String(G.sid || '') + ':' + String(it.armyId || it.name), row = null;
+    for (var i = 0; i < rows.length; i++) { if (rows[i] && rows[i].id === id) { row = rows[i]; break; } }
+    if (!row) { row = { id: id, name: it.name + '欠饷', amount: 0, armyId: it.armyId, subject: { kind: 'army', id: it.armyId }, incurredTurn: G.turn || 0 }; rows.push(row); }
+    row.amount = fiscalRound(safeNumber(row.amount, 0) + amount);
+  }
+
   function fixedCollect(ctx) {
     var G = getGame(ctx && ctx.game);
     if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return global.TM.NativeFiscal.collect(G, ctx);
@@ -2525,7 +2577,7 @@
       grain: deductFromLedger(guokuLedgers.grain, royal.total.grain, '宗禄'),
       cloth: deductFromLedger(guokuLedgers.cloth, royal.total.cloth, '宗禄')
     };
-    var armyDed = {
+    var armyDed = army.perArmy ? _payArmiesByAccount(G, guokuLedgers, army.items || []) : {
       money: deductFromLedger(guokuLedgers.money, army.total.money, '军饷'),
       grain: deductFromLedger(guokuLedgers.grain, army.total.grain, '军饷'),
       cloth: deductFromLedger(guokuLedgers.cloth, army.total.cloth, '军饷')

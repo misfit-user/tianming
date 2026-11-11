@@ -78,7 +78,7 @@ ok(80 > 5, '封顶80 >> 校准器窗口5(裁剪不伤逻辑消费)');
 const corr = read('tm-corruption-engine.js') + read('tm-corruption-cases.js') + read('tm-corruption-extras.js');
 ok((corr.match(/if \(GM\.corruption\.history\.exposedCases\.length > 160\)/g) || []).length === 2, '★exposedCases 两个 push 点各封顶160(单条体积最大)');
 ok(/if \(GM\.corruption\.history\.purgeCampaigns\.length > 200\)/.test(corr), 'purgeCampaigns 封顶200');
-ok(/if \(GM\.corruption\.history\.backlash\.length > 200\)/.test(corr), 'backlash 封顶200');
+ok(!/history\.backlash\.push/.test(corr), 'backlash 不再新记(11-09 删掷骰反噬·没有新条目要封顶)');
 ok(/history\.snapshots\.length > 120/.test(corr), '(对照)snapshots 原有封顶120 仍在');
 
 // ══ E. reform_effects 登记(行为级·toKnownFields 真纳入) ══

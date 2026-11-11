@@ -291,6 +291,7 @@ const checks = [
   { name: 'memory-visibility-audience', file: 'smoke-memory-visibility-audience.js', estSec: 1, expectExit: 0 },
   { name: 'memory-character-scope', file: 'smoke-memory-character-scope.js', estSec: 1, expectExit: 0 },
   { name: 'memory-temporal-validity', file: 'smoke-memory-temporal-validity.js', estSec: 1, expectExit: 0 },
+  { name: 'memory-world-context', file: 'smoke-memory-world-context.js', estSec: 1, expectExit: 0 },  // 2026-11-09·人物记忆天下大势只写朝中能知道的、写中文
   { name: 'hougong-module-load', file: 'smoke-houguong-module-load.js', estSec: 1, expectExit: 0 },
   { name: 'military-systems', file: 'smoke-military-systems.js', estSec: 1, expectExit: 0 },
   { name: 'endturn-battle-detail-fallback', file: 'smoke-endturn-battle-detail-fallback.js', estSec: 1, expectExit: 0 },

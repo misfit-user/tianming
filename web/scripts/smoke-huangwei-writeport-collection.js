@@ -18,7 +18,7 @@ console.log('smoke-huangwei-writeport-collection');
 // ── ① 源契约:主路已接口 ──
 const PORT_RE = /AuthorityEngines\s*&&\s*(?:global\.)?AuthorityEngines\.adjustHuang(wei|quan)|AuthorityEngines\s*!==\s*'undefined'\s*&&\s*AuthorityEngines\.adjustHuang(wei|quan)/;
 [
-  ['tm-corruption-engine.js', 5],
+  ['tm-corruption-engine.js', 2],  // 11-09 删掷骰反噬，连带其中四处走口；剩逐月侵蚀中枢、圣德两处
   ['tm-guoku-engine.js', 8],
   ['tm-neitang-engine.js', 7],
   ['tm-event-bus.js', 2],

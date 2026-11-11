@@ -278,6 +278,9 @@
     // 帑廪转运·拆三本色（读 guoku.expenses.neiting 总额按 70/15/15 拆）
     guokuTransfer: function() {
       var total = safe((GM.guoku && GM.guoku.expenses && GM.guoku.expenses.neiting), 0);
+      // 帑廪本期库里不够、转运只付了几成，内帑就只收那几成（帑廪结账先于内帑，记在 neitingTransferPaid）；没付的不记欠
+      var paid = GM.guoku && GM.guoku.neitingTransferPaid;
+      if (total > 0 && paid && paid.turn === GM.turn && safe(paid.due, 0) > 0) total = total * Math.max(0, Math.min(1, safe(paid.paid, 0) / paid.due));
       if (total === 0) { _setSubsN('guokuTransfer', []); return 0; }
       var s = Math.round(total * 0.7);
       var g = Math.round(total * 0.15);

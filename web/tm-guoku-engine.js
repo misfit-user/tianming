@@ -870,20 +870,41 @@
       };
       // 内廷转运帑廪照付：内帑那头 Sources.guokuTransfer 收这笔。原先按 FixedExpense 跑没跑分支，真跑过反而没人付，内帑白得
       residualMap.neiting = { label: '内廷转运', amount: expBreakdown.neiting || 0 };
+      // 库里有多少付多少（11-12 同志「按推荐来」）：原先不论库里有没有照扣，存银扣成负数，内帑照应付全额收转运——
+      // 帑廪没出的钱，内帑先收到了。现在各项按应付同比例少付（与俸饷、各军短发同一口径）：
+      // 赈济、工程、祭祀、赏赐、杂支短的照俸饷记欠（帑廪册「某某_欠」与欠项明细，库有余时照旧按月清偿）；
+      // 内廷转运短的不记欠，内帑只收帑廪实付的那部分（neitingTransferPaid，内帑 Sources.guokuTransfer 照它折）。
+      var led = g.ledgers.money, due = {}, totalDue = 0;
+      Object.keys(residualMap).forEach(function(catKey) {
+        var amt = (residualMap[catKey].amount / 12) * mr;
+        due[catKey] = amt > 0 ? amt : 0;
+        totalDue += due[catKey];
+      });
+      var stockBefore = safe(led.stock, 0);
+      var payFrac = totalDue > 0 ? Math.min(1, Math.max(0, stockBefore) / totalDue) : 1;
       periodOut = 0;
-      if (!g.ledgers.money.sinks) g.ledgers.money.sinks = {};
+      if (!led.sinks) led.sinks = {};
       // 累加 residual 到 stock + thisTurnOut + sinks（不覆盖 FixedExpense 写入的 俸禄/军饷/宫廷）
       Object.keys(residualMap).forEach(function(catKey) {
-        var item = residualMap[catKey];
-        var thisTurnAmt = (item.amount / 12) * mr;
-        if (thisTurnAmt > 0) {
-          periodOut += thisTurnAmt;
-          g.ledgers.money.sinks[item.label] = (g.ledgers.money.sinks[item.label] || 0) + thisTurnAmt;
+        var item = residualMap[catKey], amt = due[catKey];
+        if (!(amt > 0)) return;
+        var paid = amt * payFrac, short = amt - paid;
+        if (paid > 0) {
+          periodOut += paid;
+          led.sinks[item.label] = (led.sinks[item.label] || 0) + paid;
+        }
+        if (short > 0 && catKey !== 'neiting') {
+          led.sinks[item.label + '_欠'] = (led.sinks[item.label + '_欠'] || 0) + short;
+          led.deficit = safe(led.deficit, 0) + short;
+          if (global.FiscalStatement && global.FiscalStatement.recordArrears) global.FiscalStatement.recordArrears(led, item.label, short);
         }
       });
-      g.ledgers.money.stock = (g.ledgers.money.stock || 0) - periodOut;
-      g.ledgers.money.thisTurnOut = (g.ledgers.money.thisTurnOut || 0) + periodOut;
-      g.balance = g.ledgers.money.stock;
+      g.neitingTransferPaid = { turn: GM.turn, due: due.neiting || 0, paid: (due.neiting || 0) * payFrac };
+      var stockAfter = stockBefore - periodOut;
+      if (stockBefore >= 0 && stockAfter < 0) stockAfter = 0; // 同比例付清时的浮点尾差
+      led.stock = stockAfter;
+      led.thisTurnOut = safe(led.thisTurnOut, 0) + periodOut;
+      g.balance = led.stock;
     } else {
       // ✗ Fallback·cascade 未跑·走老逻辑
       periodIn = g.monthlyIncome * mr;
@@ -1124,7 +1145,8 @@
     if (facts[1]) {
       b.recoveryMonths = 0;
       b.consecutiveMonths = (b.consecutiveMonths || 0) + mr;
-      b.severity = Math.max(b.severity || 0, Math.abs(Math.min(0, g.balance || 0)) / annual);
+      // 亏空＝库存为负或新欠（库里不再扣成负数，欠下的记在欠项里），面板「亏空超几成年入」照这个
+      b.severity = Math.max(b.severity || 0, Math.max(Math.abs(Math.min(0, g.balance || 0)), owed) / annual);
       _setBankruptcyStage(g, _bankruptcyTargetStage(facts), facts);
     } else {
       b.recoveryMonths = (b.recoveryMonths || 0) + mr;

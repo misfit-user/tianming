@@ -567,6 +567,8 @@
     defaultPerTax: { qiyun: 0.7, cunliu: 0.3 }
   };
   var DEFAULT_LOGISTICS_LOSS = 0.15;
+  // 口径开关：存档里那份整份财政配置没写的，照开局时的口径算、不从新剧本层拾（11-11，见 getFiscalConfig）
+  var SAVE_PINNED_FISCAL_KEYS = ['collectionLoss', 'logisticsLoss'];
 
   var DEFAULT_RANK_SALARY = {
     '正一品': 100, '从一品': 90,
@@ -609,6 +611,10 @@
     if (sc && sc.fiscalConfig) copyFields(cfg, sc.fiscalConfig);
     if (global.P && global.P.fiscalConfig) copyFields(cfg, global.P.fiscalConfig);
     if (G && G.fiscalConfig) copyFields(cfg, G.fiscalConfig);
+    // 旧档不从新剧本迁移（11-11）：新开局时剧本财政配置整份存进 GM.fiscalConfig（带 productionTaxVersion）。此后剧本才加的口径开关
+    //   （折损取最重 collectionLoss、路损 logisticsLoss），存档那份里没有，就是开局在它之前——照开局时的口径（连乘、默认路损），
+    //   不从新剧本层拾。原先照拾：甲之前开局的天启旧档一读，太仓起运年额由四百八十余万跳到九百一十余万。
+    if (G && G.fiscalConfig && G.fiscalConfig.productionTaxVersion) SAVE_PINNED_FISCAL_KEYS.forEach(function(k) { if (!Object.prototype.hasOwnProperty.call(G.fiscalConfig, k)) delete cfg[k]; });
     if (global.scriptData && global.scriptData.fiscalConfig) copyFields(cfg, global.scriptData.fiscalConfig);
     var fac = budgetFaction(G, faction);
     var override = cfg.factionOverrides && (cfg.factionOverrides[fac.id] || cfg.factionOverrides[fac.name]);
@@ -622,6 +628,11 @@
       var saved = Object.assign.apply(Object, [{}].concat(oldLayers.filter(function(c) { return c && !c.productionTaxVersion; })));
       cfg._taxSwitches = {}; [cfg.legacyTaxConfig || (global.P && global.P.fiscalConfig)].concat([global.P && global.P.fiscalConfig, G.fiscalConfig, global.scriptData && global.scriptData.fiscalConfig, override, fac.fiscalConfig].filter(function(c) { return c && !c.productionTaxVersion; })).forEach(function(layer) { if (layer && FS && FS.taxSwitches) FS.taxSwitches(layer.taxesEnabled, cfg._taxSwitches); }); // 旧档的税种开关同样按旧税配置收集，与国库旧入口 sourceFiscalConfig 同源（2026-10-17·二次复审 R2-4：原来仍按新模板外层开关，有无财政引擎结果不同；三次复审 R3-5：补回 factionOverrides 层；不带生产税版本的层本身就是旧格式，照样生效，与上面 saved 筛税表同一口径）
       ['taxList','taxes','customTaxes','centralLocalRules'].forEach(function(k) { if (saved[k] != null) cfg[k] = saved[k]; else delete cfg[k]; });
+      // 开局在整份财政配置之前的旧档（11-11）：取最重的折损口径那时还没有，不拾；剧本在 legacyTaxConfig 里写明了旧档口径的
+      //   （固定支出、内帑规则、路损），照写明的算——这些旧档向来随剧本层走，剧本改了它们，旧档就按改前写明的值。
+      delete cfg.collectionLoss;
+      var legacy = cfg.legacyTaxConfig || {};
+      ['fixedExpense', 'neicangRules', 'logisticsLoss'].forEach(function(k) { if (Object.prototype.hasOwnProperty.call(legacy, k)) cfg[k] = legacy[k]; });
       delete cfg.productionTaxVersion;
     }
     return cfg;

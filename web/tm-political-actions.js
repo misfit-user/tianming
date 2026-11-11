@@ -303,11 +303,6 @@
     return {system:'你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达到程序条件后才可能形成组织签署。输出 JSON。',
       user:JSON.stringify(input)+'\n输出 {rationale,actions,proposals,proposalResponses}；各不超过 4 项，也可为空。actions 支持 office_change {kind, targetId, positionId, actingPositionId}、fiscal_policy {fromAccount,toAccount,amounts,purpose,actingPositionId}；履行 proposals 的 public_transfer 义务时，还须引用 proposalId、proposalVersion、obligationId，与原条款完全一致、diplomacy {toFactionId,proposalType,terms,durationTurns,actingPositionId}；memorial/edict/court_alignment {targetId,content} 表示提交文书或协商，不能自行通过命令。actions 也支持 military_order {armyId,commanderId或destinationId,actingPositionId}、declare_war/join_war {targetOrganizationId,casusBelliId,actingPositionId,warId}，须具备对应权限。对 candidates 可填 sourcePlanId、decision(reject/defer)、reason 明确拒绝或暂缓。若采纳 candidates 中的事项，填对应 sourcePlanId，并补充自己选择的人选或办法。proposalResponses 须含 proposalId、proposalVersion、decision(accept/reject/counter/defer/approve)、actingPositionId；counter 须含完整 counterTerms。只是材料，不得填写完成凭据或财政/人数差额。'};
   }
-  function tools(fac,context){
-    var out={fac:{id:fac.id,name:fac.name},formatters:{}},keys=['opponentMindModel','allyMindModel','courtDebate','worldDirective','lastTurnFailures','lastTurnCompliance','decisionStyleTrend','factionTrajectory','recentWorld','playerRecent','worldStatus','ownAdminHierarchy','militaryContext','fiscalContext','recall','officeQuery'];
-    keys.forEach(function(key){out.formatters[key]=function(query){if(!valid(context))return '';var v=view(fac,context),x=key==='recall'?v.person.memories:key==='officeQuery'?v.offices:key==='fiscalContext'?v.accounts:v.person;
-      if((key==='recall'||key==='officeQuery')&&typeof query==='string'&&query.trim())x=A(x).filter(function(r){return JSON.stringify(r).indexOf(query)>=0;});return JSON.stringify(x||[]);};});return out;
-  }
   function prepareMigration(g){
     ledger().migrate(g);var st=g._npcActionState;
     if(st.politicalVersion===1)return {changed:false};
@@ -343,5 +338,5 @@
       if(!selected)return;var p=offer(org,selected.actor,{type:'diplomacy',targetOrganizationId:r.targetId,intent:S(r.action||r.strategic_intent),factStatus:'suggestion'},sourceId+':'+i);if(p)out.push(p.id);
     });return out;
   }
-  TM.PoliticalActions={resolve:resolve,controlled:controlled,live:live,authority:authority,principals:principals,choose:choose,bind:bind,valid:valid,action:action,execute:execute,submit:submit,view:view,signature:signature,defer:defer,flush:flush,applyPacket:applyPacket,prompt:prompt,tools:tools,offer:offer,localCandidates:localCandidates,onReceipt:onReceipt,verifyEvidence:verifyEvidence,migrate:migrate,strategicPrompt:strategicPrompt,strategicCandidates:strategicCandidates,performWar:performWar,verifyReview:verifyReview,verifyIssued:function(a){return issuedDomainActions.has(a);}};
+  TM.PoliticalActions={resolve:resolve,controlled:controlled,live:live,authority:authority,principals:principals,choose:choose,bind:bind,valid:valid,action:action,execute:execute,submit:submit,view:view,signature:signature,defer:defer,flush:flush,applyPacket:applyPacket,prompt:prompt,offer:offer,localCandidates:localCandidates,onReceipt:onReceipt,verifyEvidence:verifyEvidence,migrate:migrate,strategicPrompt:strategicPrompt,strategicCandidates:strategicCandidates,performWar:performWar,verifyReview:verifyReview,verifyIssued:function(a){return issuedDomainActions.has(a);}};
 })(typeof window!=='undefined'?window:globalThis);

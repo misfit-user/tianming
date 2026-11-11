@@ -100,17 +100,7 @@ ok(q3.indexOf('兵部·尚书') >= 0 && q3.indexOf('出缺') >= 0, '⑫按权力
 ok(qod(QGM, '查无此衙').indexOf('未匹配') >= 0, '⑬无匹配→提示换 query');
 ok(qod(QGM, '').indexOf('户部') >= 0 && qod(QGM, '').indexOf('兵部') >= 0, '⑭空query→全部(由cap控)');
 
-// ── #2 势力工具集成：handle('query_office',{query},ctx) 经注入的 officeQuery formatter → queryOfficeDetail（async·收尾移进来）──
-require(path.join(__dirname, '..', 'tm-faction-decision-tools.js'));
-var fdt = global.TM && global.TM.FactionDecisionTools;
-(async function () {
-  ok(!!fdt && fdt.isToolName('query_office') === true, '⑮query_office 注册进势力工具 ROUTING(isToolName)');
-  var ctx = { fac: {}, formatters: { officeQuery: function (query) { return qod(QGM, String(query || '')); } } };
-  var r = await fdt.handle('query_office', { query: '户部' }, ctx);
-  ok(r && r.ok && r.text.indexOf('户部·尚书') >= 0 && r.text.indexOf('郭某') >= 0 && r.text.indexOf('职责:') >= 0, '⑯势力 query_office→handle 经 officeQuery 取户部详情(才/德/履职+duties)');
-  var r2 = await fdt.handle('query_office', { query: '查无此衙' }, ctx);
-  ok(r2 && r2.ok && r2.text.indexOf('未匹配') >= 0, '⑰query 无匹配→handle 仍 ok·返提示(不报错)');
+// （#2 势力工具集成 ⑮～⑰ 随「势力按需取数」一并撤掉，11-11：势力调度一次问完，不再许模型查工具；queryOfficeDetail 仍供 tm-office-recall-agent.js 用）
 
-  console.log('\n' + (fails === 0 ? 'PASS — ' : 'FAIL — ') + fails + ' 处失败\n');
-  process.exit(fails === 0 ? 0 : 1);
-})();
+console.log('\n' + (fails === 0 ? 'PASS — ' : 'FAIL — ') + fails + ' 处失败\n');
+process.exit(fails === 0 ? 0 : 1);

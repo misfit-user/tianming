@@ -3,7 +3,7 @@
 // tm-endturn-agent-read-tools.js — 模式 b · S2 · 只读工具集(全局按需取数)
 //
 // 让 agent **主动 pull 整局存档任意内容**(接收「只多不少」的按需侧:基线 prompt 是地板·这些工具是超集)。
-// 范本=tm-faction-decision-tools.js(势力按需取数)·范围从「单势力视角」扩到「全局 GM」。
+// 范本是原 tm-faction-decision-tools.js（势力按需取数，11-11 已撤）·范围从「单势力视角」扩到「全局 GM」。
 // 铁律:**纯只读·绝不 mutate**·缺失/超大优雅兜底·返回文本(回喂 LLM 下一轮)。
 // 详设 docs/agent-mode-design.md §4.1。S3 再建守护写工具。
 //

@@ -51,7 +51,7 @@
   var TM = global.TM = global.TM || {};
   TM.AgentFlags = {
     MASTER: 'agentUpgradesEnabled',
-    LIST: ['agentRecallEnabled', 'anomalyRoutingEnabled', 'courtDebateEnabled', 'memoryStewardEnabled', 'reflectionAgentEnabled', 'edictOversightEnabled', 'historyAdvisorEnabled', 'factionToolDecisionEnabled'],
+    LIST: ['agentRecallEnabled', 'anomalyRoutingEnabled', 'courtDebateEnabled', 'memoryStewardEnabled', 'reflectionAgentEnabled', 'edictOversightEnabled', 'historyAdvisorEnabled'],
     on: agentFlagOn,
     agentModeOn: agentModeOn,  // 模式 b 平行引擎开关(独立于总闸)
     // 一键设/读总闸（写 P.conf·与多数独立开关同命名空间·随游戏设置持久）

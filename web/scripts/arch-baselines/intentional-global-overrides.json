@@ -728,7 +728,6 @@
         "tm-endturn-agent-write-tools.js",
         "tm-endturn-agent-depth-tools.js",
         "tm-endturn-agent-intent-plan.js",
-        "tm-faction-decision-tools.js",
         "tm-keju-paradigm-presets.js",
         "tm-keju-paradigm.js",
         "tm-keju-reform-llm.js",

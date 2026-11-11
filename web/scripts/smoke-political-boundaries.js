@@ -62,7 +62,7 @@ test('private unreceived counter terms and secret offices do not enter another a
  const c=politicalFixture(),D=c.TM.FactionDiplomacy,B=c.TM.PoliticalActions,p=propose(c);c.a.location='远方';
  respond(c,p,'b',c.fb,'pb','counter-secret',{decision:'counter',counterTerms:'SECRET-COUNTER-ONLY-B'});
  c.fa.officeTree[0].positions.push({id:'hidden-office',name:'SECRET-PRIVATE-OFFICE',visibility:'private',holderId:'l'});
- const ctx=B.bind(c.fa,'a',{actingPositionId:'pa',sourceId:'read'});assert(!B.prompt(c.fa,ctx).user.includes('SECRET-'));assert(!B.tools(c.fa,ctx).formatters.officeQuery('').includes('SECRET-'));
+ const ctx=B.bind(c.fa,'a',{actingPositionId:'pa',sourceId:'read'});assert(!B.prompt(c.fa,ctx).user.includes('SECRET-'));assert(!B.tools,'势力按需取数的工具 11-11 已撤，只剩提示词这一路');
  c.GM.turn++;D.advance();assert(B.prompt(c.fa,B.bind(c.fa,'a',{actingPositionId:'pa',sourceId:'after-delivery'})).user.includes('SECRET-COUNTER-ONLY-B'));
 });
 test('the explicit human proposal channel uses the same treaty matter without an NPC consenting for the player',()=>{

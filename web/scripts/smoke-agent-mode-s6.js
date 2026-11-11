@@ -55,8 +55,8 @@ assert(patchSrc.indexOf('回合推演 agent 化') >= 0 && patchSrc.indexOf('局�
 assert(patchSrc.indexOf('启用全部 LLM 升级') >= 0, '④ "agent升级"已正名"LLM 升级"');
 assert(patchSrc.indexOf('启用全部 agent 升级') < 0, '④ 旧名"启用全部 agent 升级"已无');
 assert(patchSrc.indexOf('🧪 实验玩法') < 0, '④ 旧区头"🧪 实验玩法"已无');
-// 三个原有 toggle 保留(移入 LLM 分支)
-assert(/s-office-activation/.test(patchSrc) && /s-faction-toolcall/.test(patchSrc) && /s-event-unification/.test(patchSrc), '③ 原 LLM 升级三 toggle(官制/势力/事件)保留');
+// 原有 toggle 保留(移入 LLM 分支)；「势力按需取数」(s-faction-toolcall) 11-11 已撤：势力调度一次问完
+assert(/s-office-activation/.test(patchSrc) && /s-event-unification/.test(patchSrc) && !/s-faction-toolcall/.test(patchSrc), '③ 原 LLM 升级 toggle(官制/事件)保留，势力按需取数已撤');
 assert(/s-agent-upgrades/.test(patchSrc), '③ LLM 升级总闸 checkbox(id 留 s-agent-upgrades)保留');
 
 // ── ⑤ handlers(tm-player-settings.js) ──

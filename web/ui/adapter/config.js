@@ -187,7 +187,6 @@ const TOGGLES = [
     ['agentEdictOversightEnabled', '跨回合一致·诏令督查', false],
     ['agentAnomalyEnabled', '冷门动作深查', false],
     ['agentUpgradesEnabled', '启用全部 LLM 升级', false],
-    ['factionToolDecisionEnabled', '势力按需取数', false],
     ['eventUnificationEnabled', '事件系统统一', false],
     ['talentCohortEnabled', '人才范式渗透', false]
   ]]

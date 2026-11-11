@@ -41,6 +41,9 @@ const requestControls=['tm-call-retry-policy.js','tm-call-budget-settings.js'];
 const replyRetryModules=['tm-ai-reply-retry.js'];
 replyRetryModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(!scriptNames.some(src=>/^tm-emergency-recovery-/.test(src)),'回合复核与应急推演的模块不再加载');
+// 11-11 撤「势力按需取数」：势力调度由绑定的真人按职任一次问完，工具模块不再加载
+const retiredModules=['tm-faction-decision-tools.js'];
+retiredModules.forEach(name=>assert(!scriptNames.includes(name),name+' 不再加载'));
 const enactedOrderModules=['tm-agent-world-editor.js','tm-social-formation.js','tm-imperial-orders.js','tm-personal-memory-recall.js','tm-live-context.js','tm-tax-policy.js'];
 requestControls.concat(enactedOrderModules).forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads exactly once'));
 assert(scriptNames.indexOf('tm-call-retry-policy.js')<scriptNames.indexOf('tm-ai-infra-retry.js'),'retry settings are resolved before transport');
@@ -85,7 +88,7 @@ armyPayModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===n
 const localExpenseModules=['tm-fiscal-local-expense.js'];
 localExpenseModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-fiscal-army-pay.js'),'local expense registers after the fiscal engine family');});
 assert(scriptNames.indexOf('tm-map-circuits.js')<scriptNames.indexOf('phase8-formal-map-dossier.js'),'circuit data layer precedes the map dossier that reads it');
-assert.strictEqual(manifest.scriptCount,417+armyPayModules.length+localExpenseModules.length+dailyModules.length+politicalModules.length+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+replyRetryModules.length+edictEfficacyModules.length+mapDataModules.length+timeModules.length+travelModules.length+tenureModules.length+mattersModules.length+wenfengModules.length+personModules.length+ledgerFactsModules.length+continuationModules.length,'retain every prior script and every explicitly registered runtime addition');
+assert.strictEqual(manifest.scriptCount,417-retiredModules.length+armyPayModules.length+localExpenseModules.length+dailyModules.length+politicalModules.length+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+replyRetryModules.length+edictEfficacyModules.length+mapDataModules.length+timeModules.length+travelModules.length+tenureModules.length+mattersModules.length+wenfengModules.length+personModules.length+ledgerFactsModules.length+continuationModules.length,'retain every prior script and every explicitly registered runtime addition');
 fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-fiscal-statements.js')<scriptNames.indexOf('tm-fiscal-engine.js'),'shared statements precede the fiscal engine');
 assert(scriptNames.indexOf('tm-public-treasury.js')<scriptNames.indexOf('tm-military-arrears.js'),'public treasury precedes army liabilities');

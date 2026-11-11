@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "a020d777f37eef75cd581ddf7a32478cc34b6cc0451d6f7390ac965d6ef849c5",
-      "size": 79808
+      "sha256": "222f6b008e260b8b90f89b9dd5492a937cb23af4457d5d325996c41f237adca6",
+      "size": 79732
     },
     {
       "path": "INDEX.md",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "0518c0c89351320f3c27a8726c3475ccf3cc9cd3ec5c9b953a57a9c4a72af654",
-      "size": 392799
+      "sha256": "7050fa741b3d889e486135874f63850bf539c9bc6a76eb5724b9679efb8f4533",
+      "size": 392236
     },
     {
       "path": "styles.css",
@@ -4416,8 +4416,8 @@
     },
     {
       "path": "tm-agent-flags.js",
-      "sha256": "fc437eff5afc7cc4218f79c3f574321d677fa5cdabb5b64ec5cdffdab63380c7",
-      "size": 3979
+      "sha256": "c408c79b8a9f0c398d74f5f614313897032530f9ca55063035dc060f602dc364",
+      "size": 3949
     },
     {
       "path": "tm-agent-kernel.js",
@@ -5041,8 +5041,8 @@
     },
     {
       "path": "tm-endturn-agent-read-tools.js",
-      "sha256": "6b1c0aa4bebed1219ac508f8131a67fbedff4298b59c3df0845b179c3f8f077b",
-      "size": 28447
+      "sha256": "73581a03a9291e5349c5d1c25fb32feeb672253c1481d058c2f5e757fe42366e",
+      "size": 28472
     },
     {
       "path": "tm-endturn-agent-write-tools.js",
@@ -5255,11 +5255,6 @@
       "size": 96780
     },
     {
-      "path": "tm-faction-decision-tools.js",
-      "sha256": "fb0e4e3b5a3f4185f810d8d4d85e41716485cb139a17c6cefb05018393f4bc04",
-      "size": 6233
-    },
-    {
       "path": "tm-faction-derived-cohesion.js",
       "sha256": "014e180273d4b9f947cf0a1d6f503989095e16d0e90a9fdf7f79fe0ccba1efb8",
       "size": 6700
@@ -5331,8 +5326,8 @@
     },
     {
       "path": "tm-faction-npc-llm-decision.js",
-      "sha256": "2aa4b89fc15730cd89f49e497847ef84b12c4cb0f0d52a7619486d1265e483fa",
-      "size": 149152
+      "sha256": "c65f6769e2b9cd4807c50fb5aeb66ac1fb86f2ff99b528ef578f13f5afda27f3",
+      "size": 139371
     },
     {
       "path": "tm-faction-npc-llm-enrich.js",
@@ -6306,8 +6301,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "efa17c82aa7f8150995c808573225eb0354ba82236ad571cabe967b1d5c51f5d",
-      "size": 190804
+      "sha256": "c2a32941acffb007566a490e5ef0f41aaac21e5b835db562bfcf5446247bc861",
+      "size": 189680
     },
     {
       "path": "tm-pause-fab.js",
@@ -6361,8 +6356,8 @@
     },
     {
       "path": "tm-political-actions.js",
-      "sha256": "00a060f6353d1283f964627f8e477f538cff0cfc038dcd5f57ce1ff676aaa908",
-      "size": 39991
+      "sha256": "f62f36a764aaa9cc67c52ea10a2872e3280cf153fe22ea0390f061de79275362",
+      "size": 39178
     },
     {
       "path": "tm-post-turn-jobs.js",
@@ -6591,8 +6586,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "ac5735748281a6ca24e96f5c3223f508e2c36612b5456263ee1655c12a226ae7",
-      "size": 141695
+      "sha256": "d4fad9ab871d256e285a86dfd0ee10c4e09dbd8f0fc0c17a607864c5021ea209",
+      "size": 141495
     },
     {
       "path": "tm-start-selector.js",

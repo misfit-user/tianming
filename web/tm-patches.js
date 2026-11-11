@@ -943,7 +943,6 @@ openSettings=function(){
       var _mode = ((P.conf && P.conf.experimentalMode) || (P.ai && P.ai.experimentalMode) || 'llm');
       var _isAgent = (_mode === 'agent');
       var _on = !!((P.conf && P.conf.agentUpgradesEnabled) || (P.ai && P.ai.agentUpgradesEnabled));
-      var _ftc = !!((P.conf && P.conf.factionToolDecisionEnabled) || (P.ai && P.ai.factionToolDecisionEnabled));
       var _evu = !!((P.conf && P.conf.eventUnificationEnabled) || (P.ai && P.ai.eventUnificationEnabled));
       var _tlc = !!((P.conf && P.conf.talentCohortEnabled) || (P.ai && P.ai.talentCohortEnabled));
       var h = '<div class="settings-section" style="border-left:3px solid var(--vermillion-400,#c04030);background:rgba(192,64,48,0.04);">' +
@@ -1052,7 +1051,7 @@ openSettings=function(){
             '<input type="checkbox" id="s-agent-upgrades" ' + (_on?'checked ':'') + 'onchange="_togglePConf(\'agentUpgradesEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
             '<div style="flex:1;">' +
               '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🧠 启用全部 LLM 升级（默认关·实验）</div>' +
-              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">开启对 LLM 管线的增强：按需取数召回、异常路由、朝堂博弈、记忆管家固化、自我反思、诏令执行督查、史实顾问引证和势力按需取数。各项原有独立开关仍可单独调试。需主 API key·会增加 API 调用。</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">开启对 LLM 管线的增强：按需取数召回、异常路由、朝堂博弈、记忆管家固化、自我反思、诏令执行督查和史实顾问引证。各项原有独立开关仍可单独调试。需主 API key·会增加 API 调用。</div>' +
             '</div>' +
           '</label>' +
           // ── 官制·机制深化（S1/S4·各独立开关·与上「官制活化」并行·默认关·2026-06-30）──
@@ -1079,15 +1078,8 @@ openSettings=function(){
             }
             return _hh;
           })() +
-          // 【A·S4】势力按需取数·单独 opt-in(总闸已含·此处供隔离试)·换深度非降本
-          '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;border-top:1px solid rgba(192,64,48,0.15);margin-top:0.3rem;">' +
-            '<input type="checkbox" id="s-faction-toolcall" ' + (_ftc?'checked ':'') + 'onchange="_togglePConf(\'factionToolDecisionEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-            '<div style="flex:1;">' +
-              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🔧 势力按需取数（A·单独试·默认关）</div>' +
-              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">势力决策改 tool-calling：只给核心情报+工具，势力自己按需查对手/朝堂/往绩/世界/家底/历史先例(复用②检索)。<b>换决策深度，非降本</b>(2 轮·可能略增调用)。开后看控制台 <code>GM._factionToolStats</code> 观察查询行为。关 = 原单发不变。</div>' +
-            '</div>' +
-          '</label>' +
-          // 【事件系统统一·S1】统一事件总线开关·独立(不并 LLM 升级总闸·同势力按需取数那样单独 opt-in)
+          // 「势力按需取数」开关已撤（11-11）：势力调度由绑定的真人按职任一次问完，工具查回来的都是提示词里已有的资料
+          // 【事件系统统一·S1】统一事件总线开关·独立(不并 LLM 升级总闸·单独 opt-in)
           '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;border-top:1px solid rgba(192,64,48,0.15);margin-top:0.3rem;">' +
             '<input type="checkbox" id="s-event-unification" ' + (_evu?'checked ':'') + 'onchange="_togglePConf(\'eventUnificationEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
             '<div style="flex:1;">' +

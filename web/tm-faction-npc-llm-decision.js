@@ -128,11 +128,7 @@
     return !!(f && (_isMarkedPlayerFaction(f) || _isPlayerFactionName(f.name, playerFactionNames)));
   }
 
-  // 【A·按需取数 S2】prompt 构建模式·默认 'full'(原路径字节不变·零回归)·仅 _buildPromptCore 临时设 'core' 时按核心段过滤(其余 18 段走工具按需取)
-  var _promptBuildMode = 'full';
-  var _CORE_SECTIONS = { OWN_STRATEGIC_MEMORY: 1, ACTIVE_GOALS: 1, ACTION_CANDIDATES: 1, ACTION_CONTRACT: 1, RELATIONS_AND_WARS: 1, FISCAL_CONTEXT: 1, RULER_PSYCHE: 1, WORLD_STATUS: 1, INCOMING_PROPOSALS: 1, PLAYER_PROPOSAL_OUTCOMES: 1 };
   function _pushSection(lines, title, bodyLines) {
-    if (_promptBuildMode === 'core' && !_CORE_SECTIONS[title]) return;  // core 模式只放核心段·full 模式(默认)恒不过滤=零回归
     bodyLines = _arr(bodyLines).filter(function(x){ return !!x; });
     if (bodyLines.length > 0) {
       lines.push('\n[' + title + ']');
@@ -1782,124 +1778,6 @@
     return { parsed:null, diagnostics:{ kind:failureKind, error:lastError, rawPreview:lastRawPreview, rawLength:lastRawLength, possibleTruncation:lastPossibleTruncation, attempts:attempts, maxTokens:maxTokens } };
   }
 
-  // ─── 【A·按需取数 S2】tool-calling 决策路径(开关 factionToolDecisionEnabled·默认关·关时本段完全不执行) ───
-  // 核心 prompt(8 核心段+2 外交段)+ 6 工具 → 势力按需查 → 第二轮出决策·返回与 _callLLMDecision **同形** {parsed,diagnostics}(drop-in)·任何缺件/异常/解析失败一律回落原单发(保决策不丢)
-  function _buildPromptCore(fac) {
-    _promptBuildMode = 'core';
-    var p;
-    try { p = _buildPrompt(fac); } finally { _promptBuildMode = 'full'; }  // 同步无 await·set→build→reset 原子·并发安全
-    p.system += '\n\nTOOLS_USAGE: 上面 AI_DECISION_CONTEXT 只含核心情报(战略记忆/目标/可选行动/邦交战事/财政/君主/世界态势)。其余情报(对手心智·朝堂博弈·我方往绩·世界细况·我方家底·历史先例)未给·你可调用工具按需补取。先调你这回合真正需要的工具(最多 4 个·不需要则一个都不调·直接出决策)·拿到后再输出决策 JSON。勿重复查 AI_DECISION_CONTEXT 已有的。';
-    return p;
-  }
-
-  function _factionToolCtx(fac) {
-    if(global.TM&&TM.PoliticalActions)return TM.PoliticalActions.tools(fac,_politicalBindings.get(fac));
-    var entry = (global.GM && global.GM._facIndex && global.GM._facIndex[fac.name]) || null;
-    var alive = (entry && entry.chars) ? entry.chars.filter(function (c) { return c.alive !== false; }) : [];
-    function _safe(fn) { return function () { try { return fn.apply(null, arguments); } catch (e) { return ''; } }; }
-    return {
-      fac: fac, alive: alive,
-      formatters: {
-        opponentMindModel: _safe(function (f) { return _formatOpponentMindModel(f); }),
-        allyMindModel: _safe(function (f) { return _formatAllyMindModel(f); }),
-        courtDebate: _safe(function () { return (typeof _formatCourtDebateMemory === 'function') ? _formatCourtDebateMemory() : ''; }),
-        worldDirective: _safe(function (f) { return _formatSc16DirectiveForFac(f); }),
-        lastTurnFailures: _safe(function (f) { return _formatLastTurnFailures(f); }),
-        lastTurnCompliance: _safe(function (f) { return _formatLastTurnCompliance(f); }),
-        decisionStyleTrend: _safe(function (f) { return _formatDecisionStyleTrend(f); }),
-        factionTrajectory: _safe(function (f) { return _formatFactionTrajectory(f); }),
-        recentWorld: _safe(function (f) { return _formatRecentWorld(f.name); }),
-        playerRecent: _safe(function () { return _formatPlayerRecent(); }),
-        worldStatus: _safe(function (f) { return _formatWorldStatus(f); }),
-        ownAdminHierarchy: _safe(function (f) { return _formatOwnAdminHierarchy(f); }),
-        militaryContext: _safe(function (f) { return _formatMilitaryContext(f); }),
-        fiscalContext: _safe(function (f) { return _formatFiscalContext(f); }),
-        // 官制 agent 化·query_office 按需取数(返 duties 职责描述·复用 queryOfficeDetail·query 签名同 recall·查当前 GM.officeTree 含玩家本回合任免/拟制改制·不脱节)
-        officeQuery: function (query) {
-          var qod = global.queryOfficeDetail;
-          return (typeof qod === 'function') ? qod(global.GM, String(query || '').trim()) : '';
-        },
-        // 【S3】query-aware·复用②(TM.MemoryAgentTools.exec 'recall_by_term')做真检索·无②/无命中/异常→回落人物记忆(返回 Promise·handle 已 await)
-        recall: function (query, c) {
-          var q = String(query || '').trim();
-          var mat = global.TM && global.TM.MemoryAgentTools;
-          var _fallback = function () { return (typeof _formatCharacterMemory === 'function') ? _formatCharacterMemory(c && c.alive) : ''; };
-          if (!q || !mat || typeof mat.exec !== 'function') return _fallback();
-          return Promise.resolve(mat.exec('recall_by_term', { terms: [q], limit: 6 }, global.GM)).then(function (r) {
-            if (r && r.ok && Array.isArray(r.hits) && r.hits.length) {
-              return r.hits.slice(0, 6).map(function (h) {
-                var t = (h && (h.text || h.summary || h.title || h.content || h.desc)) || '';
-                return '· ' + String(t).slice(0, 120) + (h && h.turn ? ' (T' + h.turn + ')' : '');
-              }).join('\n');
-            }
-            return _fallback();
-          }).catch(_fallback);
-        }
-      }
-    };
-  }
-
-  // 【S3·观测】滚动记录工具路径每次决策的轮数/查询数/工具名(供真机看 A 的实际行为与成本·cap 40)
-  function _recordFacToolStat(facName, rounds, toolCalls, toolNames) {
-    try {
-      var GM = global.GM; if (!GM) return;
-      if (!Array.isArray(GM._factionToolStats)) GM._factionToolStats = [];
-      GM._factionToolStats.push({ turn: _currentTurn(), fac: facName, rounds: rounds, toolCalls: toolCalls, tools: toolNames || [] });
-      if (GM._factionToolStats.length > 40) GM._factionToolStats = GM._factionToolStats.slice(-40);
-    } catch (e) {}
-  }
-
-  async function _decideViaTools(fac, opts) {
-    opts = opts || {};
-    // 缺件兜底：工具基础设施未就绪 → 回落原单发(不因缺件而崩)
-    if (typeof global.callAIWithTools !== 'function' || !(global.TM && global.TM.FactionDecisionTools)) {
-      return _callLLMDecision(_buildPrompt(fac), opts);
-    }
-    var maxTokens = _precisionMaxTokens(opts);
-    var timeoutMs = _safeNum(opts.timeoutMs || (global.P && P.conf && P.conf.npcAiPrecisionTimeoutMs)) || 0;
-    try {
-      var core = _buildPromptCore(fac);
-      var combined = core.system + '\n\n' + core.user;
-      var defs = global.TM.FactionDecisionTools.defs();
-      var ctx = _factionToolCtx(fac);
-      // 第一轮：核心 prompt + 工具(势力自取所需)·【S3】id 供 TokenUsageTracker 按 id 记账
-      var r1 = await _withTimeout(global.callAIWithTools(combined, defs, {
-        maxTok: maxTokens, tier: 'secondary', priority: 'background', maxRetries: 1, timeoutMs: timeoutMs || undefined, allowText: true, id: 'faction_tool:r1'
-      }), timeoutMs);
-      var toolCalls = (r1 && Array.isArray(r1.toolCalls)) ? r1.toolCalls.slice(0, 4) : [];  // 护栏 ≤4/势力
-      if (!toolCalls.length) {
-        if (r1 && r1.error && ((r1.error._aiRetryExhausted || (typeof global._aiErrorIsTerminal === 'function' && global._aiErrorIsTerminal(r1.error))) || /^(?:aborted|tool-(?:call-failed|http-error|timeout|stale))$/.test(r1.error.code || ''))) {
-          return { parsed:null, diagnostics:{ kind:'call_or_parse', error:r1.error.code || 'tool-call-failed', status:r1.error.status || 0, via:'tools', rounds:1, maxTokens:maxTokens } };
-        }
-        // 未查工具 → r1.text 即决策 JSON(简单回合·1 轮即出·更省)
-        var p0 = _parseDecisionJson((r1 && r1.text) || '');
-        if (p0) { _recordFacToolStat(fac.name, 1, 0, []); return { parsed: p0, diagnostics: { kind: 'ok', via: 'tools', rounds: 1, toolCalls: 0, maxTokens: maxTokens } }; }
-        return _callLLMDecision(_buildPrompt(fac), opts);  // 既没查也没给 JSON → 回落原单发
-      }
-      // 执行工具·收集结果(handle 已 async·须 await·注入真 _format*/②recall)
-      var toolResultText = '', _toolNames = [];
-      for (var _ti = 0; _ti < toolCalls.length; _ti++) {
-        var _tc = toolCalls[_ti] || {};
-        if (!_tc.name) continue;
-        var _res = await global.TM.FactionDecisionTools.handle(_tc.name, _tc.input || {}, ctx);
-        toolResultText += '\n\n【工具·' + _tc.name + '】\n' + ((_res && _res.text) || '(无)');
-        _toolNames.push(_tc.name);
-      }
-      // 第二轮：核心 + 工具结果 → 出决策(单发·复用 callAI)·【S3】id 记账
-      var round2 = combined + '\n\n你已按需查得以下补充情报：' + toolResultText + '\n\n现综合全部情报·只返回决策 JSON(格式如上·不要 markdown 不要解释)。';
-      var raw2 = await _withTimeout(global.callAI(round2, maxTokens, null, 'secondary', {
-        priority: 'background', maxRetries: 1, timeoutMs: timeoutMs || undefined, id: 'faction_tool:r2'
-      }), timeoutMs);
-      var p2 = _parseDecisionJson(raw2);
-      if (p2) { _recordFacToolStat(fac.name, 2, _toolNames.length, _toolNames); return { parsed: p2, diagnostics: { kind: 'ok', via: 'tools', rounds: 2, toolCalls: _toolNames.length, maxTokens: maxTokens } }; }
-      return _callLLMDecision(_buildPrompt(fac), opts);  // 第二轮没解析出 → 回落原单发(保决策不丢)
-    } catch (e) {
-      if ((e && (e._aiRetryExhausted || e.message === 'LLM timeout' || (typeof global._aiErrorIsTerminal === 'function' && global._aiErrorIsTerminal(e))))) return { parsed:null, diagnostics:{ kind:'call_or_parse', error:(e && e.message) || 'tool-call-failed', status:e && e.status || 0, via:'tools', maxTokens:maxTokens } };
-      try { console.warn('[npc-llm-decision·tools] fallback to single-shot:', (e && e.message) || e); } catch (_) {}
-      return _callLLMDecision(_buildPrompt(fac), opts);  // 任何异常 → 回落原单发
-    }
-  }
-
   var VALID_MEM_TYPES = ['军务','政务','民生','经济','人事','密奏'];
   var VALID_DECISIONS = ['approved','rejected','annotated','referred'];
   var VALID_EDICT_TYPES = ['催征','减俸','补饷','整军','安抚','罢党争','怀柔','赏赐','巡抚','经略'];
@@ -2173,8 +2051,9 @@
     var token=ledgerRun.token;var boundRun=_readLedger(token.turn).runs[token.fac];boundRun.actorId=context.actorId;boundRun.actingPositionId=context.actingPositionId;boundRun.sourceKind='proposal';_politicalBindings.set(fac,context);
     try {
 
-      var callResult=global.P&&(typeof agentFlagOn==='function'?agentFlagOn('factionToolDecisionEnabled'):P.conf&&P.conf.factionToolDecisionEnabled)
-        ?await _decideViaTools(fac,opts):await _callLLMDecision(_buildPrompt(fac),opts);
+      // 一次问完（11-11）：原来「LLM 升级」总闸开着时先走「按需取数」（许模型查工具，再带结果问第二次）。政治行动那套接管后，
+      //   工具查回来的都是提示词里已有的同一份「本人」资料，第二轮白多几万 token，这一路撤了。
+      var callResult=await _callLLMDecision(_buildPrompt(fac),opts);
       if(!boundary.valid(context)||_isLedgerTokenStale(token)){_finishLedgerRun(token,'skipped','stale world or turn');return {skipped:true,expired:true,reason:'stale world or turn'};}
       var decision=callResult&&callResult.parsed&&_validateDecision(callResult.parsed);
       if(!decision){_finishLedgerRun(token,'failed','model_or_schema_failure',callResult&&callResult.diagnostics);return {failed:true,applied:false,reason:'model_or_schema_failure'};}
@@ -2528,8 +2407,6 @@
     decideAll: decideAll,
     getGlobalNpcLlmStatus: getGlobalNpcLlmStatus,
     _buildPrompt: _buildPrompt,
-    _buildPromptCore: _buildPromptCore,   // 【A·S2】测试/观测用·core 模式 prompt(只核心段+工具说明)
-    _decideViaTools: _decideViaTools,     // 【A·S2】测试用·工具决策路径
     buildRecentTrajectoryContextForSc16: buildRecentTrajectoryContextForSc16,
     buildFactionAdminSummaryForSc16: buildFactionAdminSummaryForSc16,
     _formatOwnAdminHierarchy: _formatOwnAdminHierarchy,

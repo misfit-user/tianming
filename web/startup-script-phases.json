@@ -2,11 +2,11 @@
   "version": 2,
   "source": "index.html",
   "generatedBy": "web/scripts/build-startup-phase-manifest.js",
-  "scriptCount": 481,
+  "scriptCount": 480,
   "phaseCounts": {
     "menu": 15,
     "core": 116,
-    "world": 321,
+    "world": 320,
     "optional": 29
   },
   "deferredChangesApproved": 9,
@@ -6703,7 +6703,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-decision-tools.js",
+      "script": "tm-faction-npc-in-turn-driver.js",
       "order": 267,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6720,7 +6720,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-in-turn-driver.js",
+      "script": "tm-faction-npc-dispatcher.js",
       "order": 268,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6737,7 +6737,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-dispatcher.js",
+      "script": "tm-faction-index.js",
       "order": 269,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6754,7 +6754,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-index.js",
+      "script": "tm-faction-derived-health.js",
       "order": 270,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6771,7 +6771,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-derived-health.js",
+      "script": "tm-faction-derived-economy.js",
       "order": 271,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6788,7 +6788,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-derived-economy.js",
+      "script": "tm-faction-derived-cohesion.js",
       "order": 272,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6805,7 +6805,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-derived-cohesion.js",
+      "script": "tm-faction-derived-strength.js",
       "order": 273,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6822,7 +6822,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-derived-strength.js",
+      "script": "tm-faction-npc-memorial.js",
       "order": 274,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6839,7 +6839,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-memorial.js",
+      "script": "tm-faction-npc-edict.js",
       "order": 275,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6856,7 +6856,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-edict.js",
+      "script": "tm-faction-npc-chaoyi.js",
       "order": 276,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6873,7 +6873,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-chaoyi.js",
+      "script": "tm-faction-npc-office.js",
       "order": 277,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6890,7 +6890,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-office.js",
+      "script": "tm-faction-npc-guoku.js",
       "order": 278,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6907,7 +6907,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-npc-guoku.js",
+      "script": "tm-faction-membership.js",
       "order": 279,
       "phase": "world",
       "loadPolicy": "eager-ordered",
@@ -6924,25 +6924,8 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-faction-membership.js",
-      "order": 280,
-      "phase": "world",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [
-        "TM"
-      ],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
       "script": "tm-three-systems-ui.js",
-      "order": 281,
+      "order": 280,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -6988,7 +6971,7 @@
     },
     {
       "script": "tm-char-arcs.js",
-      "order": 282,
+      "order": 281,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7008,7 +6991,7 @@
     },
     {
       "script": "tm-keju-learning-traits.js",
-      "order": 283,
+      "order": 282,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7025,7 +7008,7 @@
     },
     {
       "script": "tm-keju-tier.js",
-      "order": 284,
+      "order": 283,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7050,7 +7033,7 @@
     },
     {
       "script": "tm-keju-presets.js",
-      "order": 285,
+      "order": 284,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7070,7 +7053,7 @@
     },
     {
       "script": "tm-keju-paradigm-presets.js",
-      "order": 286,
+      "order": 285,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7089,7 +7072,7 @@
     },
     {
       "script": "tm-keju-paradigm.js",
-      "order": 287,
+      "order": 286,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7117,7 +7100,7 @@
     },
     {
       "script": "tm-keju-reform-llm.js",
-      "order": 288,
+      "order": 287,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7173,7 +7156,7 @@
     },
     {
       "script": "tm-keju-paradigm-panel-render.js",
-      "order": 289,
+      "order": 288,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7194,7 +7177,7 @@
     },
     {
       "script": "tm-keju-paradigm-panel.js",
-      "order": 290,
+      "order": 289,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7251,7 +7234,7 @@
     },
     {
       "script": "tm-keju-topic-router.js",
-      "order": 291,
+      "order": 290,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7271,7 +7254,7 @@
     },
     {
       "script": "tm-keju-examiner-view.js",
-      "order": 292,
+      "order": 291,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7289,7 +7272,7 @@
     },
     {
       "script": "tm-keju-tension.js",
-      "order": 293,
+      "order": 292,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7311,7 +7294,7 @@
     },
     {
       "script": "tm-keju-corruption.js",
-      "order": 294,
+      "order": 293,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7330,7 +7313,7 @@
     },
     {
       "script": "tm-keju-question-ui.js",
-      "order": 295,
+      "order": 294,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7353,7 +7336,7 @@
     },
     {
       "script": "tm-keju-budget-ui.js",
-      "order": 296,
+      "order": 295,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7370,7 +7353,7 @@
     },
     {
       "script": "tm-keju-dianshi-events.js",
-      "order": 297,
+      "order": 296,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7392,7 +7375,7 @@
     },
     {
       "script": "tm-keju-mentor.js",
-      "order": 298,
+      "order": 297,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7414,7 +7397,7 @@
     },
     {
       "script": "tm-keju-disciple-graph.js",
-      "order": 299,
+      "order": 298,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7438,7 +7421,7 @@
     },
     {
       "script": "tm-keju-disciple-memorial.js",
-      "order": 300,
+      "order": 299,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7459,7 +7442,7 @@
     },
     {
       "script": "tm-keju-cohort-meet.js",
-      "order": 301,
+      "order": 300,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7478,7 +7461,7 @@
     },
     {
       "script": "tm-keju-yanguan-attribution.js",
-      "order": 302,
+      "order": 301,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7497,7 +7480,7 @@
     },
     {
       "script": "tm-keju-yanguan-qingyi.js",
-      "order": 303,
+      "order": 302,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7516,7 +7499,7 @@
     },
     {
       "script": "tm-keju-reform-memorial.js",
-      "order": 304,
+      "order": 303,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7536,7 +7519,7 @@
     },
     {
       "script": "tm-keju-reform-evolution.js",
-      "order": 305,
+      "order": 304,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7577,7 +7560,7 @@
     },
     {
       "script": "tm-keju-reform-presets-history.js",
-      "order": 306,
+      "order": 305,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7598,7 +7581,7 @@
     },
     {
       "script": "tm-keju-special-exams.js",
-      "order": 307,
+      "order": 306,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7622,7 +7605,7 @@
     },
     {
       "script": "tm-keju-scandal.js",
-      "order": 308,
+      "order": 307,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7645,7 +7628,7 @@
     },
     {
       "script": "tm-keju-event-hooks.js",
-      "order": 309,
+      "order": 308,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7670,7 +7653,7 @@
     },
     {
       "script": "tm-keju-enke-player-initiative.js",
-      "order": 310,
+      "order": 309,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7700,7 +7683,7 @@
     },
     {
       "script": "tm-keju-enke.js",
-      "order": 311,
+      "order": 310,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7756,7 +7739,7 @@
     },
     {
       "script": "tm-keju-wuju.js",
-      "order": 312,
+      "order": 311,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7823,7 +7806,7 @@
     },
     {
       "script": "tm-keju-tongzi.js",
-      "order": 313,
+      "order": 312,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7879,7 +7862,7 @@
     },
     {
       "script": "tm-keju-school-network.js",
-      "order": 314,
+      "order": 313,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7943,7 +7926,7 @@
     },
     {
       "script": "tm-keju-reform-rollback.js",
-      "order": 315,
+      "order": 314,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -7970,7 +7953,7 @@
     },
     {
       "script": "tm-keju-reformer-bio.js",
-      "order": 316,
+      "order": 315,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8004,7 +7987,7 @@
     },
     {
       "script": "tm-keju-reform-apply.js",
-      "order": 317,
+      "order": 316,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8044,7 +8027,7 @@
     },
     {
       "script": "tm-keju-allocation.js",
-      "order": 318,
+      "order": 317,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8067,7 +8050,7 @@
     },
     {
       "script": "tm-keju-activation.js",
-      "order": 319,
+      "order": 318,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8087,7 +8070,7 @@
     },
     {
       "script": "tm-keju-indicators.js",
-      "order": 320,
+      "order": 319,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8110,7 +8093,7 @@
     },
     {
       "script": "tm-keju.js",
-      "order": 321,
+      "order": 320,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8167,7 +8150,7 @@
     },
     {
       "script": "tm-chaoyi.js",
-      "order": 322,
+      "order": 321,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8216,7 +8199,7 @@
     },
     {
       "script": "tm-official-scenario-seeder.js",
-      "order": 323,
+      "order": 322,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8233,7 +8216,7 @@
     },
     {
       "script": "tm-electron.js",
-      "order": 324,
+      "order": 323,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8271,7 +8254,7 @@
     },
     {
       "script": "tm-keju-runtime.js",
-      "order": 325,
+      "order": 324,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8334,7 +8317,7 @@
     },
     {
       "script": "tm-keju-runtime-keyi.js",
-      "order": 326,
+      "order": 325,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8406,7 +8389,7 @@
     },
     {
       "script": "tm-chaoyi-tinyi.js",
-      "order": 327,
+      "order": 326,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8454,7 +8437,7 @@
     },
     {
       "script": "tm-chaoyi-yuqian.js",
-      "order": 328,
+      "order": 327,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8493,7 +8476,7 @@
     },
     {
       "script": "tm-chaoyi-changchao-adapter.js",
-      "order": 329,
+      "order": 328,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8539,7 +8522,7 @@
     },
     {
       "script": "tm-chaoyi-changchao.js",
-      "order": 330,
+      "order": 329,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8646,7 +8629,7 @@
     },
     {
       "script": "tm-chaoyi-changchao-flows.js",
-      "order": 331,
+      "order": 330,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8694,7 +8677,7 @@
     },
     {
       "script": "tm-tinyi-v3-persona.js",
-      "order": 332,
+      "order": 331,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8783,7 +8766,7 @@
     },
     {
       "script": "tm-tinyi-v3.js",
-      "order": 333,
+      "order": 332,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8923,7 +8906,7 @@
     },
     {
       "script": "tm-tinyi-v3-edict-personnel.js",
-      "order": 334,
+      "order": 333,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -8992,7 +8975,7 @@
     },
     {
       "script": "tm-tinyi-v3-parties.js",
-      "order": 335,
+      "order": 334,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9078,7 +9061,7 @@
     },
     {
       "script": "tm-char-autogen.js",
-      "order": 336,
+      "order": 335,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9108,7 +9091,7 @@
     },
     {
       "script": "tm-bgm-config.js",
-      "order": 337,
+      "order": 336,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9128,7 +9111,7 @@
     },
     {
       "script": "tm-audio-theme.js",
-      "order": 338,
+      "order": 337,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9159,7 +9142,7 @@
     },
     {
       "script": "tm-save-stable-id-migration.js",
-      "order": 339,
+      "order": 338,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9184,7 +9167,7 @@
     },
     {
       "script": "tm-save-world-validation.js",
-      "order": 340,
+      "order": 339,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9208,7 +9191,7 @@
     },
     {
       "script": "tm-save-lifecycle.js",
-      "order": 341,
+      "order": 340,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9332,7 +9315,7 @@
     },
     {
       "script": "tm-save-close-flush.js",
-      "order": 342,
+      "order": 341,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9351,7 +9334,7 @@
     },
     {
       "script": "tm-office-editor.js",
-      "order": 343,
+      "order": 342,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9433,7 +9416,7 @@
     },
     {
       "script": "tm-topbar-vars.js",
-      "order": 344,
+      "order": 343,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9504,7 +9487,7 @@
     },
     {
       "script": "tm-shell-extras.js",
-      "order": 345,
+      "order": 344,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9527,7 +9510,7 @@
     },
     {
       "script": "tm-houguong.js",
-      "order": 346,
+      "order": 345,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9545,7 +9528,7 @@
     },
     {
       "script": "tm-shizheng-panel.js",
-      "order": 347,
+      "order": 346,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9590,7 +9573,7 @@
     },
     {
       "script": "tm-corruption-engine.js",
-      "order": 348,
+      "order": 347,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9607,7 +9590,7 @@
     },
     {
       "script": "tm-corruption-cases.js",
-      "order": 349,
+      "order": 348,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9622,7 +9605,7 @@
     },
     {
       "script": "tm-corruption-extras.js",
-      "order": 350,
+      "order": 349,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9640,7 +9623,7 @@
     },
     {
       "script": "tm-lizhi-panel.js",
-      "order": 351,
+      "order": 350,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9691,7 +9674,7 @@
     },
     {
       "script": "tm-guoku-engine.js",
-      "order": 352,
+      "order": 351,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9708,7 +9691,7 @@
     },
     {
       "script": "tm-guoku-panel.js",
-      "order": 353,
+      "order": 352,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9763,7 +9746,7 @@
     },
     {
       "script": "tm-neitang-engine.js",
-      "order": 354,
+      "order": 353,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9780,7 +9763,7 @@
     },
     {
       "script": "tm-neitang-panel.js",
-      "order": 355,
+      "order": 354,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9813,7 +9796,7 @@
     },
     {
       "script": "tm-char-economy-engine.js",
-      "order": 356,
+      "order": 355,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9830,7 +9813,7 @@
     },
     {
       "script": "tm-char-historical-profiles.js",
-      "order": 357,
+      "order": 356,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9851,7 +9834,7 @@
     },
     {
       "script": "tm-char-historical-wave-01.js",
-      "order": 358,
+      "order": 357,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9868,7 +9851,7 @@
     },
     {
       "script": "tm-char-historical-wave-02.js",
-      "order": 359,
+      "order": 358,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9885,7 +9868,7 @@
     },
     {
       "script": "tm-char-historical-wave-03.js",
-      "order": 360,
+      "order": 359,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9902,7 +9885,7 @@
     },
     {
       "script": "tm-char-historical-wave-04.js",
-      "order": 361,
+      "order": 360,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9919,7 +9902,7 @@
     },
     {
       "script": "tm-char-historical-wave-05.js",
-      "order": 362,
+      "order": 361,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9936,7 +9919,7 @@
     },
     {
       "script": "tm-char-historical-wave-06.js",
-      "order": 363,
+      "order": 362,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9953,7 +9936,7 @@
     },
     {
       "script": "tm-char-historical-wave-07.js",
-      "order": 364,
+      "order": 363,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9970,7 +9953,7 @@
     },
     {
       "script": "tm-char-historical-wave-08.js",
-      "order": 365,
+      "order": 364,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -9987,7 +9970,7 @@
     },
     {
       "script": "tm-char-historical-wave-09.js",
-      "order": 366,
+      "order": 365,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10004,7 +9987,7 @@
     },
     {
       "script": "tm-char-historical-wave-10.js",
-      "order": 367,
+      "order": 366,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10021,7 +10004,7 @@
     },
     {
       "script": "tm-char-historical-wave-11.js",
-      "order": 368,
+      "order": 367,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10038,7 +10021,7 @@
     },
     {
       "script": "tm-char-historical-wave-12.js",
-      "order": 369,
+      "order": 368,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10055,7 +10038,7 @@
     },
     {
       "script": "tm-ceming.js",
-      "order": 370,
+      "order": 369,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10072,7 +10055,7 @@
     },
     {
       "script": "tm-char-economy-ui.js",
-      "order": 371,
+      "order": 370,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10091,7 +10074,7 @@
     },
     {
       "script": "tm-char-full-schema.js",
-      "order": 372,
+      "order": 371,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10108,7 +10091,7 @@
     },
     {
       "script": "tm-economy-engine-currency.js",
-      "order": 373,
+      "order": 372,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10126,7 +10109,7 @@
     },
     {
       "script": "tm-economy-engine.js",
-      "order": 374,
+      "order": 373,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10147,7 +10130,7 @@
     },
     {
       "script": "tm-central-local-engine.js",
-      "order": 375,
+      "order": 374,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10164,7 +10147,7 @@
     },
     {
       "script": "tm-huji-engine.js",
-      "order": 376,
+      "order": 375,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10182,7 +10165,7 @@
     },
     {
       "script": "tm-edict-parser.js",
-      "order": 377,
+      "order": 376,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10201,7 +10184,7 @@
     },
     {
       "script": "tm-huji-deep-fill.js",
-      "order": 378,
+      "order": 377,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10218,7 +10201,7 @@
     },
     {
       "script": "tm-huji-runtime-bridge.js",
-      "order": 379,
+      "order": 378,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10236,7 +10219,7 @@
     },
     {
       "script": "tm-huji-governance-loop.js",
-      "order": 380,
+      "order": 379,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10254,7 +10237,7 @@
     },
     {
       "script": "tm-edict-complete.js",
-      "order": 381,
+      "order": 380,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10274,7 +10257,7 @@
     },
     {
       "script": "tm-env-recovery-fill.js",
-      "order": 382,
+      "order": 381,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10291,7 +10274,7 @@
     },
     {
       "script": "tm-authority-engines.js",
-      "order": 383,
+      "order": 382,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10313,7 +10296,7 @@
     },
     {
       "script": "tm-building-works.js",
-      "order": 384,
+      "order": 383,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10330,7 +10313,7 @@
     },
     {
       "script": "tm-talent-cohorts.js",
-      "order": 385,
+      "order": 384,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10347,7 +10330,7 @@
     },
     {
       "script": "tm-talent-bottlenecks.js",
-      "order": 386,
+      "order": 385,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10364,7 +10347,7 @@
     },
     {
       "script": "tm-talent-building-bridge.js",
-      "order": 387,
+      "order": 386,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10381,7 +10364,7 @@
     },
     {
       "script": "tm-talent-backlash.js",
-      "order": 388,
+      "order": 387,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10398,7 +10381,7 @@
     },
     {
       "script": "tm-field-pipelines.js",
-      "order": 389,
+      "order": 388,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10415,7 +10398,7 @@
     },
     {
       "script": "tm-region-status.js",
-      "order": 390,
+      "order": 389,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10432,7 +10415,7 @@
     },
     {
       "script": "tm-renli.js",
-      "order": 391,
+      "order": 390,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10449,7 +10432,7 @@
     },
     {
       "script": "tm-reported-view.js",
-      "order": 392,
+      "order": 391,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10466,7 +10449,7 @@
     },
     {
       "script": "tm-social-foundation.js",
-      "order": 393,
+      "order": 392,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10483,7 +10466,7 @@
     },
     {
       "script": "tm-authority-complete.js",
-      "order": 394,
+      "order": 393,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10500,7 +10483,7 @@
     },
     {
       "script": "tm-revolt-entity.js",
-      "order": 395,
+      "order": 394,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10517,7 +10500,7 @@
     },
     {
       "script": "tm-revolt-inference.js",
-      "order": 396,
+      "order": 395,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10534,7 +10517,7 @@
     },
     {
       "script": "tm-party-inference.js",
-      "order": 397,
+      "order": 396,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10551,7 +10534,7 @@
     },
     {
       "script": "tm-captive-court.js",
-      "order": 398,
+      "order": 397,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10568,7 +10551,7 @@
     },
     {
       "script": "tm-historical-presets.js",
-      "order": 399,
+      "order": 398,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10585,7 +10568,7 @@
     },
     {
       "script": "tm-prophecy.js",
-      "order": 400,
+      "order": 399,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10602,7 +10585,7 @@
     },
     {
       "script": "tm-region-enrich.js",
-      "order": 401,
+      "order": 400,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10619,7 +10602,7 @@
     },
     {
       "script": "tm-audit.js",
-      "order": 402,
+      "order": 401,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10636,7 +10619,7 @@
     },
     {
       "script": "tm-feedback-loops.js",
-      "order": 403,
+      "order": 402,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10654,7 +10637,7 @@
     },
     {
       "script": "tm-event-bus.js",
-      "order": 404,
+      "order": 403,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10673,7 +10656,7 @@
     },
     {
       "script": "tm-class-mobility.js",
-      "order": 405,
+      "order": 404,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10690,7 +10673,7 @@
     },
     {
       "script": "tm-authority-deep.js",
-      "order": 406,
+      "order": 405,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10707,7 +10690,7 @@
     },
     {
       "script": "tm-player-tools.js",
-      "order": 407,
+      "order": 406,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10728,7 +10711,7 @@
     },
     {
       "script": "tm-ledger-paper.js",
-      "order": 408,
+      "order": 407,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10745,7 +10728,7 @@
     },
     {
       "script": "tm-authority-ui.js",
-      "order": 409,
+      "order": 408,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10767,7 +10750,7 @@
     },
     {
       "script": "tm-ethnic-religion.js",
-      "order": 410,
+      "order": 409,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10784,7 +10767,7 @@
     },
     {
       "script": "tm-edict-thresholds.js",
-      "order": 411,
+      "order": 410,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10803,7 +10786,7 @@
     },
     {
       "script": "tm-fiscal-ui.js",
-      "order": 412,
+      "order": 411,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10822,7 +10805,7 @@
     },
     {
       "script": "tm-integration-bridge.js",
-      "order": 413,
+      "order": 412,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10840,7 +10823,7 @@
     },
     {
       "script": "tm-public-treasury.js",
-      "order": 414,
+      "order": 413,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10857,7 +10840,7 @@
     },
     {
       "script": "tm-military-arrears.js",
-      "order": 415,
+      "order": 414,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10874,7 +10857,7 @@
     },
     {
       "script": "tm-command-authority.js",
-      "order": 416,
+      "order": 415,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10891,7 +10874,7 @@
     },
     {
       "script": "tm-char-economy-ledger.js",
-      "order": 417,
+      "order": 416,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10908,7 +10891,7 @@
     },
     {
       "script": "tm-fiscal-statements.js",
-      "order": 418,
+      "order": 417,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10925,7 +10908,7 @@
     },
     {
       "script": "tm-fiscal-engine.js",
-      "order": 419,
+      "order": 418,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10946,7 +10929,7 @@
     },
     {
       "script": "tm-fiscal-army-pay.js",
-      "order": 420,
+      "order": 419,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10961,7 +10944,7 @@
     },
     {
       "script": "tm-fiscal-local-expense.js",
-      "order": 421,
+      "order": 420,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10976,7 +10959,7 @@
     },
     {
       "script": "tm-tax-policy.js",
-      "order": 422,
+      "order": 421,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -10993,7 +10976,7 @@
     },
     {
       "script": "tm-imperial-orders.js",
-      "order": 423,
+      "order": 422,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11011,7 +10994,7 @@
     },
     {
       "script": "tm-personal-memory-recall.js",
-      "order": 424,
+      "order": 423,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11028,7 +11011,7 @@
     },
     {
       "script": "tm-live-context.js",
-      "order": 425,
+      "order": 424,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11045,7 +11028,7 @@
     },
     {
       "script": "tm-invariants.js",
-      "order": 426,
+      "order": 425,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11062,7 +11045,7 @@
     },
     {
       "script": "tm-namespaces.js",
-      "order": 427,
+      "order": 426,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11079,7 +11062,7 @@
     },
     {
       "script": "tm-state.js",
-      "order": 428,
+      "order": 427,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11096,7 +11079,7 @@
     },
     {
       "script": "tm-diff.js",
-      "order": 429,
+      "order": 428,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11113,7 +11096,7 @@
     },
     {
       "script": "tm-hooks-tracker.js",
-      "order": 430,
+      "order": 429,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11130,7 +11113,7 @@
     },
     {
       "script": "tm-diagnostics-panel.js",
-      "order": 431,
+      "order": 430,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11148,7 +11131,7 @@
     },
     {
       "script": "tm-checklist.js",
-      "order": 432,
+      "order": 431,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11165,7 +11148,7 @@
     },
     {
       "script": "tm-onboard-tools.js",
-      "order": 433,
+      "order": 432,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11182,7 +11165,7 @@
     },
     {
       "script": "tm-ai-schema.js",
-      "order": 434,
+      "order": 433,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11199,7 +11182,7 @@
     },
     {
       "script": "tm-ai-output-validator.js",
-      "order": 435,
+      "order": 434,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11216,7 +11199,7 @@
     },
     {
       "script": "tm-data-access.js",
-      "order": 436,
+      "order": 435,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11233,7 +11216,7 @@
     },
     {
       "script": "tm-ai-change-pathutils.js",
-      "order": 437,
+      "order": 436,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11250,7 +11233,7 @@
     },
     {
       "script": "tm-ai-change-army.js",
-      "order": 438,
+      "order": 437,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11267,7 +11250,7 @@
     },
     {
       "script": "tm-ai-change-narrative.js",
-      "order": 439,
+      "order": 438,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11284,7 +11267,7 @@
     },
     {
       "script": "generated/tm-ai-change-applier.bundle.js",
-      "order": 440,
+      "order": 439,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11301,7 +11284,7 @@
     },
     {
       "script": "tm-ai-npc-memorials.js",
-      "order": 441,
+      "order": 440,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11320,7 +11303,7 @@
     },
     {
       "script": "tm-var-drawers.js",
-      "order": 442,
+      "order": 441,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11350,7 +11333,7 @@
     },
     {
       "script": "editor-division-deep.js",
-      "order": 443,
+      "order": 442,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11371,7 +11354,7 @@
     },
     {
       "script": "editor-office-deep.js",
-      "order": 444,
+      "order": 443,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11388,7 +11371,7 @@
     },
     {
       "script": "editor-presets.js",
-      "order": 445,
+      "order": 444,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11408,7 +11391,7 @@
     },
     {
       "script": "bundled-scenarios/manifest.js",
-      "order": 446,
+      "order": 445,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11423,7 +11406,7 @@
     },
     {
       "script": "tm-official-scenario-loader.js",
-      "order": 447,
+      "order": 446,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11440,7 +11423,7 @@
     },
     {
       "script": "tm-changelog.js",
-      "order": 448,
+      "order": 447,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11457,7 +11440,7 @@
     },
     {
       "script": "tm-online-client.js",
-      "order": 449,
+      "order": 448,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11474,7 +11457,7 @@
     },
     {
       "script": "tm-workshop-covers.js",
-      "order": 450,
+      "order": 449,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11491,7 +11474,7 @@
     },
     {
       "script": "tm-zip-store.js",
-      "order": 451,
+      "order": 450,
       "phase": "world",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11508,7 +11491,7 @@
     },
     {
       "script": "tm-content-manager.js",
-      "order": 452,
+      "order": 451,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11529,7 +11512,7 @@
     },
     {
       "script": "tm-content-manager-community.js",
-      "order": 453,
+      "order": 452,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11546,7 +11529,7 @@
     },
     {
       "script": "preview/img/east-asia-basemap-data.js",
-      "order": 454,
+      "order": 453,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11563,7 +11546,7 @@
     },
     {
       "script": "phase8-formal-bridge-styles.js",
-      "order": 455,
+      "order": 454,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11580,7 +11563,7 @@
     },
     {
       "script": "phase8-formal-bridge.js",
-      "order": 456,
+      "order": 455,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11608,7 +11591,7 @@
     },
     {
       "script": "phase8-formal-topbar.js",
-      "order": 457,
+      "order": 456,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11623,7 +11606,7 @@
     },
     {
       "script": "tm-map-circuits.js",
-      "order": 458,
+      "order": 457,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11640,7 +11623,7 @@
     },
     {
       "script": "tm-division-reassign.js",
-      "order": 459,
+      "order": 458,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11657,7 +11640,7 @@
     },
     {
       "script": "tm-map-route-days.js",
-      "order": 460,
+      "order": 459,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11674,7 +11657,7 @@
     },
     {
       "script": "tm-npc-travel.js",
-      "order": 461,
+      "order": 460,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11691,7 +11674,7 @@
     },
     {
       "script": "tm-circuit-governance.js",
-      "order": 462,
+      "order": 461,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11708,7 +11691,7 @@
     },
     {
       "script": "tm-circuit-governor-effects.js",
-      "order": 463,
+      "order": 462,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11725,7 +11708,7 @@
     },
     {
       "script": "tm-shanhe-runtime.js",
-      "order": 464,
+      "order": 463,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11742,7 +11725,7 @@
     },
     {
       "script": "phase8-formal-map.js",
-      "order": 465,
+      "order": 464,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11757,7 +11740,7 @@
     },
     {
       "script": "phase8-formal-map-dossier.js",
-      "order": 466,
+      "order": 465,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11772,7 +11755,7 @@
     },
     {
       "script": "phase8-formal-modules.js",
-      "order": 467,
+      "order": 466,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11789,7 +11772,7 @@
     },
     {
       "script": "phase8-formal-drafts.js",
-      "order": 468,
+      "order": 467,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11815,7 +11798,7 @@
     },
     {
       "script": "phase8-formal-drafts-message-panels.js",
-      "order": 469,
+      "order": 468,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11833,7 +11816,7 @@
     },
     {
       "script": "phase8-formal-records.js",
-      "order": 470,
+      "order": 469,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11848,7 +11831,7 @@
     },
     {
       "script": "tm-renwu-tuzhi.js",
-      "order": 471,
+      "order": 470,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11869,7 +11852,7 @@
     },
     {
       "script": "phase8-formal-rightrail.js",
-      "order": 472,
+      "order": 471,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11886,7 +11869,7 @@
     },
     {
       "script": "phase8-formal-rightrail-social.js",
-      "order": 473,
+      "order": 472,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11904,7 +11887,7 @@
     },
     {
       "script": "preview/scenario-editor-sandbox-bridge.js",
-      "order": 474,
+      "order": 473,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11921,7 +11904,7 @@
     },
     {
       "script": "tm-pause-fab.js",
-      "order": 475,
+      "order": 474,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11939,7 +11922,7 @@
     },
     {
       "script": "tm-capacitor-boot.js",
-      "order": 476,
+      "order": 475,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11956,7 +11939,7 @@
     },
     {
       "script": "tm-touch-gestures.js",
-      "order": 477,
+      "order": 476,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11971,7 +11954,7 @@
     },
     {
       "script": "tm-pinch-pan.js",
-      "order": 478,
+      "order": 477,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11989,7 +11972,7 @@
     },
     {
       "script": "tm-hover-fulltext.js",
-      "order": 479,
+      "order": 478,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -12007,7 +11990,7 @@
     },
     {
       "script": "tm-startup-contract.js",
-      "order": 480,
+      "order": 479,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",

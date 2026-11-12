@@ -1,6 +1,9 @@
 // verify-settle-arrears.js — P-D4J 波3：补饷接真账 MilitarySystems.settleArmyArrears 自检
 //   真加载 tm-fiscal-engine.js(spendFromGuoku) + tm-military.js(settleArmyArrears)，验：
-//   ①back-pay 按 兵×月饷率×欠饷月数 算 ②确定性扣国库 ③清欠饷月数 ④国库不足按比例部分清+记欠 ⑤无欠饷不乱扣。
+//   ①back-pay 按 兵×月饷率×欠饷月数 算 ②确定性扣国库 ③清欠饷月数 ④国库不足整笔不付（见案3） ⑤无欠饷不乱扣。
+//   此处没加载欠饷账（tm-military-arrears.js），走的是孤立旧路：1.3.5.0（9ba865c3）起旧路只许整笔付清，
+//   付不起就不付、什么都不动——部分付清要欠饷账留住未付的确数，否则剩下的欠就丢了。
+//   有欠饷账时按比例部分付清、记欠，由 smoke-army-liability-ledger 测。
 //   跑：node scripts/verify-settle-arrears.js
 'use strict';
 var fs = require('fs');
@@ -46,16 +49,17 @@ var r2 = MS.settleArmyArrears(a2, {});
 check('无欠饷 monthsCleared=0、cost=0', r2.monthsCleared === 0 && r2.cost.money === 0);
 check('国库银未动', GM.guoku.money === moneyBefore);
 
-console.log('案3·国库银不足·按比例部分清+记欠');
+console.log('案3·国库银不足·旧路没有欠饷账·整笔不付、什么都不动');
 GM.guoku = { money: 150000, grain: 1000000, cloth: 1000000 };
 var a3 = { name:'边军', soldiers:100000, payArrearsMonths:6, morale:30, mutinyRisk:80 };
 GM.armies = [a3];
-// 全额 cost 银=100000×0.5×6=300000·国库仅 15万→只够一半
+// 全额 cost 银=100000×0.5×6=300000·国库仅 15万→付不起整笔
 var r3 = MS.settleArmyArrears(a3, {});
-check('银尽扣到 0', GM.guoku.money === 0);
-check('记欠 shortfall>0', r3.shortfall > 0);
-check('按比例部分清（清<6月，剩>0）', r3.monthsCleared < 6 && a3.payArrearsMonths > 0);
-check('清的+剩的=原欠 6', r3.monthsCleared + a3.payArrearsMonths === 6);
+check('拒付并写明要欠饷账', r3.ok === false && r3.reason === 'arrears-ledger-required-for-partial-payment');
+check('应付仍按全额算（银 300000）', r3.cost && r3.cost.money === 300000);
+check('国库银粮布都没动', GM.guoku.money === 150000 && GM.guoku.grain === 1000000 && GM.guoku.cloth === 1000000);
+check('欠饷月数不变（仍 6）、清 0', a3.payArrearsMonths === 6 && r3.monthsCleared === 0);
+check('没发饷就不涨士气、不降兵变险', a3.morale === 30 && a3.mutinyRisk === 80);
 
 console.log('\n结果：' + pass + ' 过 / ' + fail + ' 败');
 process.exit(fail ? 1 : 0);

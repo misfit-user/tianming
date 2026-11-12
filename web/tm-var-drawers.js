@@ -1616,7 +1616,7 @@
     var SRC_LBL = {
       lowSalary:'俸薄',laxSupervision:'监弛',emergencyLevy:'急征',
       officeSelling:'鬻官',nepotism:'荐幸',innerCircle:'宠信',
-      redundancy:'冗员',institutional:'制弊',lumpSumSpending:'巨支'
+      redundancy:'冗员',institutional:'制弊',lumpSumSpending:'巨支',supervisionGap:'纠缺'
     };
     if (c.sources) {
       var sh = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;">';

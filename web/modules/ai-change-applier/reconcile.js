@@ -361,6 +361,29 @@ export function createReconcile(deps) {
     });
   }
 
+  // 没有辖区的纠劾官（11-12 同志「三种结合」）：出缺或失职不再把合计加到全国每个府，而是按它所监察的那一部记作监察缺口
+  //   （每月压力），交腐败引擎当作该部的一个腐败来源，按引擎自己的速率推高、有上限、补人后回落（CorruptionEngine.setSupervisionGap）。
+  //   每回合结算后都报一次，空的也报，免得上回合的缺口挂着不撤。有辖区的照旧落本辖区各府；没有腐败引擎（单测沙箱）时返回 null，照旧加到各府。
+  function _routeSupervisionGap(agg, days) {
+    var CE = global.CorruptionEngine;
+    if (!CE || typeof CE.setSupervisionGap !== 'function' || typeof CE.supervisedDept !== 'function') return null;
+    var months = Math.max(1e-6, (Number(days) || 30) / 30), gap = {}, posts = [];
+    ((agg && agg.details) || []).forEach(function(d) {
+      if (d.lever !== 'corruption' || d.regionId || d.regionName || !d.delta) return;
+      var dept = CE.supervisedDept(d.pos, d.dept), pressure = d.delta / months;
+      gap[dept] = (gap[dept] || 0) + pressure;
+      posts.push({ dept: d.dept || '', pos: d.pos || '', supervises: dept, pressure: pressure, delta: d.delta, band: d.band, fulfillment: d.fulfillment });
+    });
+    CE.setSupervisionGap(gap, { posts: posts });
+    return posts;
+  }
+  function _supervisionGapText(posts) {
+    var CE = global.CorruptionEngine, byDept = {}, order = [];
+    (posts || []).forEach(function(x) { if (!(x.supervises in byDept)) { byDept[x.supervises] = 0; order.push(x.supervises); } byDept[x.supervises] += x.pressure; });
+    if (!order.length) return '';
+    return '监察缺口：' + order.map(function(k) { var v = byDept[k]; return ((CE && CE._deptName) ? CE._deptName(k) : k) + (v >= 0 ? '+' : '') + v.toFixed(1); }).join('、') + '（每月，交腐败引擎）';
+  }
+
   // ── 官制活化 Slice②·履职 tick → 实征率/腐败（确定性·开关 officeDutyStateEnabled·默认关零回归）──
   // 每回合调 tickOfficeDutyState：失职扣/称职奖·按抽象 power 映射既有 FE 杠杆（taxCollect→compliance·supervise/impeach→corruption）。
   function _applyOfficeDutyTick(G) {
@@ -373,6 +396,7 @@ export function createReconcile(deps) {
       opts.skip = function (p) { return governors.has(p); };
     }
     var agg = tickOfficeDutyState(G, opts);
+    var gapPosts = _routeSupervisionGap(agg, days);
     if (!agg || (!agg.compliance && !agg.corruption && !(agg.details || []).length)) return;
     var FE = (typeof window !== 'undefined' && window.FiscalEngine) || (typeof global !== 'undefined' && global.FiscalEngine) || null;
     var _P = (typeof window !== 'undefined' && window.P) || (typeof global !== 'undefined' && global.P) || null;
@@ -380,6 +404,7 @@ export function createReconcile(deps) {
     if (!FE) return;
     var unscoped = agg.details && agg.details.length ? {compliance:0,corruption:0} : {compliance:agg.compliance,corruption:agg.corruption};
     (agg.details || []).forEach(function(d) { if (!d.regionId && !d.regionName) unscoped[d.lever] += d.delta; });
+    if (gapPosts && gapPosts.length) unscoped.corruption = 0;   // 全国性纠劾官的那部分已交腐败引擎（见 _routeSupervisionGap）
     // Retain the region of each duty. Only realm-wide roles use the legacy aggregate.
     (agg.details || []).filter(function(d) { return d.regionId || d.regionName; }).forEach(function(d) {
       var scope = { regionId:d.regionId, regionName:d.regionName };
@@ -405,7 +430,12 @@ export function createReconcile(deps) {
         var _seg = [];
         if (_low.length) _seg.push('失职：' + _low.join('、'));
         if (_high.length) _seg.push('称职：' + _high.join('、'));
-        if (_seg.length) { global.addEB('官制', '履职结算·' + _seg.join('；') + '（实征率' + (agg.compliance >= 0 ? '+' : '') + agg.compliance.toFixed(3) + '·腐败' + (agg.corruption >= 0 ? '+' : '') + agg.corruption.toFixed(1) + '）'); if (!Array.isArray(G._chronicle)) G._chronicle = []; G._chronicle.push({ turn: G.turn || 0, date: G._gameDate || '', type: (agg.compliance !== 0 && agg.corruption !== 0) ? '官制↔财政·吏治' : (agg.corruption !== 0 ? '官制↔吏治' : '官制↔财政'), text: '百官履职·' + _seg.join('；') + '·实征率' + (agg.compliance >= 0 ? '+' : '') + agg.compliance.toFixed(3) + '·吏治' + (agg.corruption >= 0 ? '+' : '') + agg.corruption.toFixed(1), tags: ['联动', '官制'] }); }
+        // 腐败数只记直接落到各府的那部分（有辖区的官）；全国性纠劾官的另写「监察缺口」，交腐败引擎按月结算
+        var _gapTurn = (gapPosts || []).reduce(function (s, x) { return s + x.delta; }, 0);
+        var _corrDirect = agg.corruption - _gapTurn, _gapTxt = _supervisionGapText(gapPosts);
+        var _corrTxt = (Math.abs(_corrDirect) > 1e-9 ? '·腐败' + (_corrDirect >= 0 ? '+' : '') + _corrDirect.toFixed(1) : '') + (_gapTxt ? '·' + _gapTxt : '');
+        var _lizhiTxt = (Math.abs(_corrDirect) > 1e-9 ? '·吏治' + (_corrDirect >= 0 ? '+' : '') + _corrDirect.toFixed(1) : '') + (_gapTxt ? '·' + _gapTxt : '');
+        if (_seg.length) { global.addEB('官制', '履职结算·' + _seg.join('；') + '（实征率' + (agg.compliance >= 0 ? '+' : '') + agg.compliance.toFixed(3) + _corrTxt + '）'); if (!Array.isArray(G._chronicle)) G._chronicle = []; G._chronicle.push({ turn: G.turn || 0, date: G._gameDate || '', type: (agg.compliance !== 0 && agg.corruption !== 0) ? '官制↔财政·吏治' : (agg.corruption !== 0 ? '官制↔吏治' : '官制↔财政'), text: '百官履职·' + _seg.join('；') + '·实征率' + (agg.compliance >= 0 ? '+' : '') + agg.compliance.toFixed(3) + _lizhiTxt, tags: ['联动', '官制'] }); }
       }
     } catch (_ebE) {}
   }

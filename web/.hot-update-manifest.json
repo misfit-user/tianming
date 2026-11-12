@@ -3196,8 +3196,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "2926a8bbe6a00ad663c2506218b2fdaa4d67877632598628ceaf56c6f206a3bd",
-      "size": 387869
+      "sha256": "910e05816f6ce96d8b6d11f4a85597f4bc951f0dd7dac2619b22be55a0827793",
+      "size": 389797
     },
     {
       "path": "icon.png",
@@ -3691,8 +3691,8 @@
     },
     {
       "path": "modules/ai-change-applier/reconcile.js",
-      "sha256": "d6a07da339a8be41ff1f00875cbecd6fe41afc723a83cd95661d190b26940164",
-      "size": 109219
+      "sha256": "4506aa8bbf907fe51c369ea518f934fd488d3129758ae6497004385d86094a51",
+      "size": 111831
     },
     {
       "path": "modules/ai-change-applier/validators.js",
@@ -4886,8 +4886,8 @@
     },
     {
       "path": "tm-corruption-engine.js",
-      "sha256": "73282e44fcc5ec216c1244d58f7b62aa305eed2cffaea1c420595a18d06948cd",
-      "size": 55584
+      "sha256": "4ade02a6f06763633a68d4c3c80406cb9d163a75ccc2c217bc41983028750965",
+      "size": 59300
     },
     {
       "path": "tm-corruption-extras.js",
@@ -5071,8 +5071,8 @@
     },
     {
       "path": "tm-endturn-ai.js",
-      "sha256": "62b767e42c03be961b58fabe71136a2a5ed25d0d6967c3df482a102baa2fb835",
-      "size": 410279
+      "sha256": "9e49bca980efc39394e9ab3f34eb21df647fb0d476c28bb28e2fb5cc6255c4e8",
+      "size": 410331
     },
     {
       "path": "tm-endturn-apply-stages.js",
@@ -6586,7 +6586,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "cb98dd3ee3fd82565f6f1a7bcb5ba65b0f5c8ceabd70fcc915c1b6d057ccc071",
+      "sha256": "654ef1ffbd2b7a3d4362eb4f650558d9b1a3aff3199d8f64fd894944c28a9bda",
       "size": 141375
     },
     {
@@ -6746,8 +6746,8 @@
     },
     {
       "path": "tm-var-drawers.js",
-      "sha256": "1c099fb478563d6d4381818914c307fbb7224db626ac1e7b00d5f29dc7ff2444",
-      "size": 119541
+      "sha256": "0bd20fb9cde23c3891de5d7138193f06b4437d9acb0b833e292369e639ba1ec8",
+      "size": 119565
     },
     {
       "path": "tm-wendui-persona-views.js",

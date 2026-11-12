@@ -69,7 +69,7 @@
     if (!c.supervision.recentReports) c.supervision.recentReports = [];
     if (!c.sources) c.sources = {
       lowSalary:0, laxSupervision:0, emergencyLevy:0, officeSelling:0,
-      nepotism:0, innerCircle:0, redundancy:0, institutional:0, lumpSumSpending:0
+      nepotism:0, innerCircle:0, redundancy:0, institutional:0, lumpSumSpending:0, supervisionGap:0
     };
     if (!c.countermeasures) c.countermeasures = {
       standingSupervision: 0.35,
@@ -210,6 +210,63 @@
     // 写入 GM.corruption.sources（便于 UI 显示）
     for (var k in sourceTotals) GM.corruption.sources[k] = sourceTotals[k];
     return { byDept: byDept, sourceTotals: sourceTotals };
+  }
+
+  // ─── 纠劾缺位（11-12 同志「三种结合」）───
+  // 没有辖区的纠劾官（六科、都察院堂官之类）出缺或失职，只削弱它所监察那一部的监察：
+  //   官制履职结算（ai-change-applier reconcile._applyOfficeDutyTick）每回合报来各部的监察缺口——每月压力，
+  //   力度照同志 6-20 定的对称档（出缺或履职<35 每职 2.5，称职 −1）。
+  //   本引擎把它当作那一部的一个腐败来源，与其他九源一样每月按 8% 推高该部腐败（原先每回合直接 +2.5 加到全国每个府）；
+  //   缺口推高的那一部分（lift）以 SUPERVISION_GAP_CAP 为限，越近上限涨得越慢；补人后压力归零，lift 随本引擎每月 0.5% 的自然回落退回。
+  //   报来的缺口只管紧接着的一回合：结算停了（开关关掉）就不再生效。lift 只用来算上限，该部腐败本身照常由本引擎结算。
+  var SUPERVISION_GAP_CAP = 20;
+  // 按官名里的监察对象判它监察哪一部（跨朝代：明六科、宋察院六察、唐监军使、各代按察巡按刺史……）；先看官名，再看所属官署，都不像的归中央。
+  var SUPERVISED_DEPT_RULES = [
+    [/兵科|兵察|兵房|兵部|枢密|监军|军/, 'military'],
+    [/刑科|刑察|刑房|刑部|大理|提刑|廷尉/, 'judicial'],
+    [/户科|户察|户房|户部|度支|盐铁|三司|转运|漕/, 'fiscal'],
+    [/司礼|东厂|西厂|锦衣|皇城司|内侍|宦/, 'imperial'],
+    [/道监察|巡按|按察|分巡|巡察|采访|观察|刺史|监司/, 'provincial']
+  ];
+  function supervisedDept(pos, dept) {
+    var names = [String(pos || ''), String(dept || '')];
+    for (var n = 0; n < names.length; n++) {
+      for (var i = 0; i < SUPERVISED_DEPT_RULES.length; i++) {
+        if (SUPERVISED_DEPT_RULES[i][0].test(names[n])) return SUPERVISED_DEPT_RULES[i][1];
+      }
+    }
+    return 'central';
+  }
+  function setSupervisionGap(pressure, meta) {
+    ensureCorruptionModel();
+    var g = GM.corruption.supervisionGap;
+    if (!g || typeof g !== 'object') g = GM.corruption.supervisionGap = { lift: {} }; // arch-ok: corruption owner keeps the supervision-gap ledger
+    if (!g.lift || typeof g.lift !== 'object') g.lift = {};
+    g.pressure = {};
+    CORR_DEPTS.forEach(function(k) {
+      var v = Number(pressure && pressure[k]);
+      if (isFinite(v) && v) g.pressure[k] = v;
+    });
+    g.turn = GM.turn || 0;
+    g.posts = (meta && Array.isArray(meta.posts)) ? meta.posts.slice(0, 40) : [];
+    return g;
+  }
+  function _applySupervisionGap(agg, mr) {
+    var g = GM.corruption.supervisionGap;
+    if (!g || !g.lift) return;
+    var fresh = g.pressure && typeof g.turn === 'number' && (GM.turn || 0) - g.turn <= 1;
+    var total = 0;
+    CORR_DEPTS.forEach(function(k) {
+      var lift = safe(g.lift[k], 0), p = fresh ? safe(g.pressure[k], 0) : 0;
+      var room = p > 0 ? Math.max(0, 1 - lift / SUPERVISION_GAP_CAP) : p < 0 ? Math.max(0, 1 + lift / SUPERVISION_GAP_CAP) : 0;
+      var eff = p * room;
+      agg.byDept[k] += eff;
+      total += eff;
+      var next = clamp(lift + eff * 0.08 * mr - lift * 0.005 * mr, -SUPERVISION_GAP_CAP, SUPERVISION_GAP_CAP);
+      if (Math.abs(next) < 1e-6) delete g.lift[k]; else g.lift[k] = next;
+    });
+    agg.sourceTotals.supervisionGap = total;
+    GM.corruption.sources.supervisionGap = total;
   }
 
   // ═════════════════════════════════════════════════════════════
@@ -546,6 +603,8 @@
 
     // 1. 计算九源 → 按部门分摊
     var agg = aggregateSources();
+    // 1b. 纠劾缺位：只记到它监察的那一部（见 setSupervisionGap）
+    _applySupervisionGap(agg, mr);
 
     // 每部门自然衰减（无来源时回归）
     ['central','provincial','military','fiscal','judicial','imperial'].forEach(function(k) {
@@ -1093,6 +1152,9 @@
     updatePerceived: updatePerceived,
     syncIndexFromSubDepts: syncIndexFromSubDepts,
     applyEdictDelta: applyEdictDelta,
+    setSupervisionGap: setSupervisionGap,
+    supervisedDept: supervisedDept,
+    SUPERVISION_GAP_CAP: SUPERVISION_GAP_CAP,
     isDeclaredLedger: isDeclaredLedger,
     ensureDeclaredLedger: ensureDeclaredLedger,
     calcVisibilityTier: calcVisibilityTier,

@@ -5495,6 +5495,34 @@
         if (typeof global.addEB === "function") global.addEB("财政改革", ({ anticorruption: "肃贪", landsurvey: "丈田", saltreform: "盐政改革", openmaritime: "开海通商", encouragefarming: "劝农" }[fr.type] || fr.type) + "·已确定性落账·必生效");
       });
     }
+    function _routeSupervisionGap(agg, days) {
+      var CE = global.CorruptionEngine;
+      if (!CE || typeof CE.setSupervisionGap !== "function" || typeof CE.supervisedDept !== "function") return null;
+      var months = Math.max(1e-6, (Number(days) || 30) / 30), gap = {}, posts = [];
+      (agg && agg.details || []).forEach(function(d) {
+        if (d.lever !== "corruption" || d.regionId || d.regionName || !d.delta) return;
+        var dept = CE.supervisedDept(d.pos, d.dept), pressure = d.delta / months;
+        gap[dept] = (gap[dept] || 0) + pressure;
+        posts.push({ dept: d.dept || "", pos: d.pos || "", supervises: dept, pressure, delta: d.delta, band: d.band, fulfillment: d.fulfillment });
+      });
+      CE.setSupervisionGap(gap, { posts });
+      return posts;
+    }
+    function _supervisionGapText(posts) {
+      var CE = global.CorruptionEngine, byDept = {}, order = [];
+      (posts || []).forEach(function(x) {
+        if (!(x.supervises in byDept)) {
+          byDept[x.supervises] = 0;
+          order.push(x.supervises);
+        }
+        byDept[x.supervises] += x.pressure;
+      });
+      if (!order.length) return "";
+      return "监察缺口：" + order.map(function(k) {
+        var v = byDept[k];
+        return (CE && CE._deptName ? CE._deptName(k) : k) + (v >= 0 ? "+" : "") + v.toFixed(1);
+      }).join("、") + "（每月，交腐败引擎）";
+    }
     function _applyOfficeDutyTick(G) {
       if (typeof officeFlagOn !== "function" || !officeFlagOn("officeDutyStateEnabled")) return;
       if (typeof tickOfficeDutyState !== "function") return;
@@ -5507,6 +5535,7 @@
         };
       }
       var agg = tickOfficeDutyState(G, opts);
+      var gapPosts = _routeSupervisionGap(agg, days);
       if (!agg || !agg.compliance && !agg.corruption && !(agg.details || []).length) return;
       var FE = typeof window !== "undefined" && window.FiscalEngine || typeof global !== "undefined" && global.FiscalEngine || null;
       var _P = typeof window !== "undefined" && window.P || typeof global !== "undefined" && global.P || null;
@@ -5516,6 +5545,7 @@
       (agg.details || []).forEach(function(d) {
         if (!d.regionId && !d.regionName) unscoped[d.lever] += d.delta;
       });
+      if (gapPosts && gapPosts.length) unscoped.corruption = 0;
       (agg.details || []).filter(function(d) {
         return d.regionId || d.regionName;
       }).forEach(function(d) {
@@ -5550,10 +5580,16 @@
           var _seg = [];
           if (_low.length) _seg.push("失职：" + _low.join("、"));
           if (_high.length) _seg.push("称职：" + _high.join("、"));
+          var _gapTurn = (gapPosts || []).reduce(function(s, x) {
+            return s + x.delta;
+          }, 0);
+          var _corrDirect = agg.corruption - _gapTurn, _gapTxt = _supervisionGapText(gapPosts);
+          var _corrTxt = (Math.abs(_corrDirect) > 1e-9 ? "·腐败" + (_corrDirect >= 0 ? "+" : "") + _corrDirect.toFixed(1) : "") + (_gapTxt ? "·" + _gapTxt : "");
+          var _lizhiTxt = (Math.abs(_corrDirect) > 1e-9 ? "·吏治" + (_corrDirect >= 0 ? "+" : "") + _corrDirect.toFixed(1) : "") + (_gapTxt ? "·" + _gapTxt : "");
           if (_seg.length) {
-            global.addEB("官制", "履职结算·" + _seg.join("；") + "（实征率" + (agg.compliance >= 0 ? "+" : "") + agg.compliance.toFixed(3) + "·腐败" + (agg.corruption >= 0 ? "+" : "") + agg.corruption.toFixed(1) + "）");
+            global.addEB("官制", "履职结算·" + _seg.join("；") + "（实征率" + (agg.compliance >= 0 ? "+" : "") + agg.compliance.toFixed(3) + _corrTxt + "）");
             if (!Array.isArray(G._chronicle)) G._chronicle = [];
-            G._chronicle.push({ turn: G.turn || 0, date: G._gameDate || "", type: agg.compliance !== 0 && agg.corruption !== 0 ? "官制↔财政·吏治" : agg.corruption !== 0 ? "官制↔吏治" : "官制↔财政", text: "百官履职·" + _seg.join("；") + "·实征率" + (agg.compliance >= 0 ? "+" : "") + agg.compliance.toFixed(3) + "·吏治" + (agg.corruption >= 0 ? "+" : "") + agg.corruption.toFixed(1), tags: ["联动", "官制"] });
+            G._chronicle.push({ turn: G.turn || 0, date: G._gameDate || "", type: agg.compliance !== 0 && agg.corruption !== 0 ? "官制↔财政·吏治" : agg.corruption !== 0 ? "官制↔吏治" : "官制↔财政", text: "百官履职·" + _seg.join("；") + "·实征率" + (agg.compliance >= 0 ? "+" : "") + agg.compliance.toFixed(3) + _lizhiTxt, tags: ["联动", "官制"] });
           }
         }
       } catch (_ebE) {

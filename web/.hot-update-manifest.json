@@ -3196,8 +3196,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "910e05816f6ce96d8b6d11f4a85597f4bc951f0dd7dac2619b22be55a0827793",
-      "size": 389797
+      "sha256": "c888d83e70481196bc7770ebd38e27d3dccd1b6b1fc042ee381ebcce466564a1",
+      "size": 392256
     },
     {
       "path": "icon.png",
@@ -3691,8 +3691,8 @@
     },
     {
       "path": "modules/ai-change-applier/reconcile.js",
-      "sha256": "4506aa8bbf907fe51c369ea518f934fd488d3129758ae6497004385d86094a51",
-      "size": 111831
+      "sha256": "6fe20b83eb156232344b32f8a7e55c222510724393b158bcfb03fad749346a46",
+      "size": 115652
     },
     {
       "path": "modules/ai-change-applier/validators.js",
@@ -6591,7 +6591,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "a7dcaf73e9d64f762d22a3ad8bafedccc02efe63a2ce8a116073e03853ba7118",
+      "sha256": "159442be4c109d3ea237f6d777b0d33909a1d569e35d22a48ddc0902e6b7e751",
       "size": 141693
     },
     {

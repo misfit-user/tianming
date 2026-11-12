@@ -5523,6 +5523,40 @@
         return (CE && CE._deptName ? CE._deptName(k) : k) + (v >= 0 ? "+" : "") + v.toFixed(1);
       }).join("、") + "（每月，交腐败引擎）";
     }
+    var TAX_GAP_CAP = 0.15, TAX_GAP_RECOVERY = 0.1;
+    function _routeTaxCollectGap(G, agg, days, FE, pFac) {
+      if (!G || !FE || typeof FE.adjustPlayerCompliance !== "function") return null;
+      var months = Math.max(1e-6, (Number(days) || 30) / 30), reported = 0, posts = [];
+      (agg && agg.details || []).forEach(function(d) {
+        if (d.lever !== "compliance" || d.regionId || d.regionName || !d.delta) return;
+        reported += d.delta;
+        posts.push({ dept: d.dept || "", pos: d.pos || "", pressure: d.delta / months, delta: d.delta, band: d.band, fulfillment: d.fulfillment });
+      });
+      var ledger = G._taxCollectGap && typeof G._taxCollectGap === "object" ? G._taxCollectGap : null;
+      if (!ledger && !reported) return { reported: 0, posts, lift: 0, change: 0 };
+      if (!ledger) ledger = G._taxCollectGap = { lift: 0 };
+      var turn = Number(G.turn) || 0;
+      if (ledger.turn === turn) return { reported, posts, lift: Number(ledger.lift) || 0, change: 0, repeated: true };
+      var lift = Math.max(-TAX_GAP_CAP, Math.min(TAX_GAP_CAP, Number(ledger.lift) || 0)), pressure = reported / months;
+      var rate = Math.abs(pressure) / TAX_GAP_CAP + TAX_GAP_RECOVERY, settle = pressure / rate;
+      var next = settle + (lift - settle) * Math.exp(-rate * months);
+      next = Math.max(-TAX_GAP_CAP, Math.min(TAX_GAP_CAP, next));
+      if (Math.abs(next) < 1e-6) next = 0;
+      var change = next - lift;
+      ledger.lift = next;
+      ledger.pressure = pressure;
+      ledger.turn = turn;
+      ledger.posts = posts.slice(0, 40);
+      if (Math.abs(change) > 1e-9) {
+        var n = FE.adjustPlayerCompliance(pFac, change, 0.1, 1);
+        if (n === 0) FE.adjustPlayerCompliance("", change, 0.1, 1);
+      }
+      return { reported, posts, lift: next, change };
+    }
+    function _taxCollectGapText(gap) {
+      if (!gap || !gap.posts.length && Math.abs(gap.change) < 1e-6) return "";
+      return "征收缺口：各府实征率" + (gap.change >= 0 ? "+" : "") + gap.change.toFixed(3) + "（累计" + (gap.lift >= 0 ? "+" : "") + gap.lift.toFixed(3) + "，以 " + TAX_GAP_CAP + " 为限）";
+    }
     function _applyOfficeDutyTick(G) {
       if (typeof officeFlagOn !== "function" || !officeFlagOn("officeDutyStateEnabled")) return;
       if (typeof tickOfficeDutyState !== "function") return;
@@ -5536,16 +5570,18 @@
       }
       var agg = tickOfficeDutyState(G, opts);
       var gapPosts = _routeSupervisionGap(agg, days);
-      if (!agg || !agg.compliance && !agg.corruption && !(agg.details || []).length) return;
       var FE = typeof window !== "undefined" && window.FiscalEngine || typeof global !== "undefined" && global.FiscalEngine || null;
       var _P = typeof window !== "undefined" && window.P || typeof global !== "undefined" && global.P || null;
       var pFac = _P && _P.playerInfo && _P.playerInfo.factionName || "";
+      var taxGap = _routeTaxCollectGap(G, agg, days, FE, pFac);
+      if (!agg || !agg.compliance && !agg.corruption && !(agg.details || []).length) return;
       if (!FE) return;
       var unscoped = agg.details && agg.details.length ? { compliance: 0, corruption: 0 } : { compliance: agg.compliance, corruption: agg.corruption };
       (agg.details || []).forEach(function(d) {
         if (!d.regionId && !d.regionName) unscoped[d.lever] += d.delta;
       });
       if (gapPosts && gapPosts.length) unscoped.corruption = 0;
+      if (taxGap) unscoped.compliance = 0;
       (agg.details || []).filter(function(d) {
         return d.regionId || d.regionName;
       }).forEach(function(d) {
@@ -5584,12 +5620,20 @@
             return s + x.delta;
           }, 0);
           var _corrDirect = agg.corruption - _gapTurn, _gapTxt = _supervisionGapText(gapPosts);
-          var _corrTxt = (Math.abs(_corrDirect) > 1e-9 ? "·腐败" + (_corrDirect >= 0 ? "+" : "") + _corrDirect.toFixed(1) : "") + (_gapTxt ? "·" + _gapTxt : "");
-          var _lizhiTxt = (Math.abs(_corrDirect) > 1e-9 ? "·吏治" + (_corrDirect >= 0 ? "+" : "") + _corrDirect.toFixed(1) : "") + (_gapTxt ? "·" + _gapTxt : "");
+          var _compDirect = agg.compliance - (taxGap ? taxGap.reported : 0), _taxTxt = _taxCollectGapText(taxGap);
+          var _dutyParts = function(corrLabel) {
+            var out = [];
+            if (Math.abs(_compDirect) > 1e-9) out.push("实征率" + (_compDirect >= 0 ? "+" : "") + _compDirect.toFixed(3));
+            if (_taxTxt) out.push(_taxTxt);
+            if (Math.abs(_corrDirect) > 1e-9) out.push(corrLabel + (_corrDirect >= 0 ? "+" : "") + _corrDirect.toFixed(1));
+            if (_gapTxt) out.push(_gapTxt);
+            return out.join("·");
+          };
+          var _ebTxt = _dutyParts("腐败"), _lizhiTxt = _dutyParts("吏治");
           if (_seg.length) {
-            global.addEB("官制", "履职结算·" + _seg.join("；") + "（实征率" + (agg.compliance >= 0 ? "+" : "") + agg.compliance.toFixed(3) + _corrTxt + "）");
+            global.addEB("官制", "履职结算·" + _seg.join("；") + (_ebTxt ? "（" + _ebTxt + "）" : ""));
             if (!Array.isArray(G._chronicle)) G._chronicle = [];
-            G._chronicle.push({ turn: G.turn || 0, date: G._gameDate || "", type: agg.compliance !== 0 && agg.corruption !== 0 ? "官制↔财政·吏治" : agg.corruption !== 0 ? "官制↔吏治" : "官制↔财政", text: "百官履职·" + _seg.join("；") + "·实征率" + (agg.compliance >= 0 ? "+" : "") + agg.compliance.toFixed(3) + _lizhiTxt, tags: ["联动", "官制"] });
+            G._chronicle.push({ turn: G.turn || 0, date: G._gameDate || "", type: agg.compliance !== 0 && agg.corruption !== 0 ? "官制↔财政·吏治" : agg.corruption !== 0 ? "官制↔吏治" : "官制↔财政", text: "百官履职·" + _seg.join("；") + (_lizhiTxt ? "·" + _lizhiTxt : ""), tags: ["联动", "官制"] });
           }
         }
       } catch (_ebE) {

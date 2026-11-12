@@ -2901,18 +2901,18 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "96381ba8471047450577971e983cbcae7ee4d9b413aeb51be6d9617741874f99",
+      "sha256": "9e077108b715d1420b8e6ea9ae90bf5821becfc66ab0283659745c6929f509fa",
       "size": 6008
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "a2c7ad95e715eaab5b8cd409d2302348ab7f730803968c31f4966c3488ec9946",
+      "sha256": "93dfc10d1194cf3c9b90bbc572476e9345a59ec8425067eefb96e52aec022319",
       "size": 6387
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
-      "sha256": "b306fd4e1fb02984e36c5c61da5737cea918098f1ee6f913f75b3f62d76a0c72",
-      "size": 16404336
+      "sha256": "9a3e800c4adc0036e34009735f00d96c9a85b5920ff8115d34710b9f1dda85e6",
+      "size": 16406067
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
@@ -2966,7 +2966,7 @@
     },
     {
       "path": "data/maps/scenario-library/index.json",
-      "sha256": "6742b2da5c31921deee71068996738f13ce796bd0f86a8a0141aa9de4efd8e39",
+      "sha256": "12c82a5bd89dca992260094c2c89114564aad29d22b1a0cd528b4ff309d4c2b0",
       "size": 2410
     },
     {
@@ -2981,7 +2981,7 @@
     },
     {
       "path": "data/maps/scenario-library/sc-tianqi7-1627.json",
-      "sha256": "e943da7f56f533a41480dec8e16758c3cf3688f139e1d171a7fa844d14d1786e",
+      "sha256": "46124788e087d8c3a3f31dc59f84c6528c2d7ef089e180e03b8d0b076b915a30",
       "size": 1486190
     },
     {
@@ -4261,8 +4261,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
-      "sha256": "44819ba9e808b5b74acb917a41679bf5713c50b1b52c29f071b6ed33d7a363df",
-      "size": 16421591
+      "sha256": "8c87ebf20f448a642390ea80a8a96fdccdea06d92a2ec7d6b1a745c063c52c4e",
+      "size": 16423322
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
@@ -4376,8 +4376,8 @@
     },
     {
       "path": "scenarios/tianqi7-1627.js",
-      "sha256": "a643e0d4eaa2137ecc3979e97f17bdca8bbf7c8bfcffd56aaf536764f8625e54",
-      "size": 10041488
+      "sha256": "35b1a8229232bed687d42b6037bab0f22329d5b04f83e9dedac63557893f144e",
+      "size": 10043219
     },
     {
       "path": "schemas/sc1.schema.json",

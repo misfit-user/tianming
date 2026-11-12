@@ -2901,18 +2901,18 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "733ae76325f11749e6223b5604efd703a91b9c95ff7cf4a2a928af617a28a414",
+      "sha256": "96381ba8471047450577971e983cbcae7ee4d9b413aeb51be6d9617741874f99",
       "size": 6008
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "f3b8ce3fcad31f8e7dac8718258d43b226fd14be69fc50247e19e83e1e55db77",
+      "sha256": "a2c7ad95e715eaab5b8cd409d2302348ab7f730803968c31f4966c3488ec9946",
       "size": 6387
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
-      "sha256": "a42137d01d82c26845d39215fa83836c07964be2f54deb1f820350e2ee03f7c5",
-      "size": 16403747
+      "sha256": "b306fd4e1fb02984e36c5c61da5737cea918098f1ee6f913f75b3f62d76a0c72",
+      "size": 16404336
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
@@ -2966,7 +2966,7 @@
     },
     {
       "path": "data/maps/scenario-library/index.json",
-      "sha256": "f483ba37fcb1ec8403fa10c9150f07ae1c1a3461bdb4cd1df61ac364b2571a5f",
+      "sha256": "6742b2da5c31921deee71068996738f13ce796bd0f86a8a0141aa9de4efd8e39",
       "size": 2410
     },
     {
@@ -2981,7 +2981,7 @@
     },
     {
       "path": "data/maps/scenario-library/sc-tianqi7-1627.json",
-      "sha256": "c88764536be104fbe7e999e93ce59198819e4e2207e7d17decde476f8805e38f",
+      "sha256": "e943da7f56f533a41480dec8e16758c3cf3688f139e1d171a7fa844d14d1786e",
       "size": 1486190
     },
     {
@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "1139f6fbc1510115e9131fe92c588c2170b43d2702a1766ef36dca1f256c0b5d",
-      "size": 79368
+      "sha256": "189317d17ad993cc836733fa9616ddf4f6c325daefadaa3d85631a656def552e",
+      "size": 79612
     },
     {
       "path": "INDEX.md",
@@ -4261,8 +4261,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
-      "sha256": "e67513ccdf58a38be8658e1d5d05ef4ad550cd24cf8afd3c18e16b58baeea864",
-      "size": 16421002
+      "sha256": "44819ba9e808b5b74acb917a41679bf5713c50b1b52c29f071b6ed33d7a363df",
+      "size": 16421591
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
@@ -4376,8 +4376,8 @@
     },
     {
       "path": "scenarios/tianqi7-1627.js",
-      "sha256": "307d479d122f3bc6e861f127b2f520a758f01d2ff9d8c49421bab9a1a0a82ec4",
-      "size": 10040899
+      "sha256": "a643e0d4eaa2137ecc3979e97f17bdca8bbf7c8bfcffd56aaf536764f8625e54",
+      "size": 10041488
     },
     {
       "path": "schemas/sc1.schema.json",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "6db12e3c892ee4101c2b87645d5032eb3e7f08fb3032d4c70d39b1244e3423ff",
-      "size": 391708
+      "sha256": "92356d914a25f5a6ece6336b6dae23ff0f1d0753d86f36d13846f61fad2d9957",
+      "size": 392258
     },
     {
       "path": "styles.css",
@@ -5400,9 +5400,14 @@
       "size": 6477
     },
     {
+      "path": "tm-fiscal-army-pay.js",
+      "sha256": "17940940cf4c3035fc54e36ef96b579aaca2834dc109da126f743157957b2b98",
+      "size": 7255
+    },
+    {
       "path": "tm-fiscal-engine.js",
-      "sha256": "9a3124a598b6f5b9fd0fbc667ae45faf53ab61fcce415af649299b7d5f08db10",
-      "size": 179219
+      "sha256": "cf550a85355c3a01f578f1b05442cb4033d22ea321cd7aef3fc634d44c6dbd87",
+      "size": 177738
     },
     {
       "path": "tm-fiscal-statements.js",
@@ -6581,8 +6586,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "68df6cb7af49146dc839880e4dc992bfcc8e025dfaf5f07c75a81098e0f1adaf",
-      "size": 141014
+      "sha256": "982bba4de7384071048a573251b70fa36ac08eba3622e7aeb6412d3c38b1a71c",
+      "size": 141375
     },
     {
       "path": "tm-start-selector.js",

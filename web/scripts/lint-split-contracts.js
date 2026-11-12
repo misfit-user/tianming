@@ -69,6 +69,9 @@ const CONTRACTS = [
   //   + AP-6 _applyPostValidateAssemble)迁出·stages 须【紧随 origin 之后】。origin writeBack 变薄为 dispatcher·
   //   运行时(回合推演调用期)调 ns.stages.<stage>(ctx)——两片装载期不互调仅定义·故 sibling 载于 origin 之后安全
   ['tm-endturn-apply.js', 'tm-endturn-apply-stages.js'],
+  // 第二十八拆(IIFE 型·origin-first bucket·11-12)：tm-fiscal-engine 军饷按户头出账三件(_payArmiesByAccount/_recordArmyPayArrears/_payEarmarkedArmies)迁出·army-pay 须【紧随 origin 之后】
+  //   origin 装载期向 bucket TM.__fiscalParts 导出 deductFromLedger/safeNumber/fiscalRound→army-pay 闭包捕获；army-pay 回填两件函数→origin 转发 shim(fixedCollect)调用期解析·错序即崩
+  ['tm-fiscal-engine.js', 'tm-fiscal-army-pay.js'],
 ];
 
 /** editor.html 入口的拆分家族（编辑器侧巨石） */

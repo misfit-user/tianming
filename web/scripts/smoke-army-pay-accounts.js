@@ -34,7 +34,7 @@ function fixture(stock, armies, extraCfg) {
   };
   c.window = c; c.globalThis = c;
   vm.createContext(c);
-  ['tm-field-pipelines.js', 'tm-fiscal-statements.js', 'tm-public-treasury.js', 'tm-fiscal-engine.js', 'tm-military.js', 'tm-military-arrears.js']
+  ['tm-field-pipelines.js', 'tm-fiscal-statements.js', 'tm-public-treasury.js', 'tm-fiscal-engine.js', 'tm-fiscal-army-pay.js', 'tm-military.js', 'tm-military-arrears.js']
     .forEach((f) => vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), c, { filename: f }));
   return { c, G };
 }
@@ -144,6 +144,70 @@ const account = (G, k, name) => (((G.guoku.ledgers[k].sinkDetails || {}).junxian
   ok(legacy.fixedExpense && legacy.fixedExpense.armyAnnualOverride && legacy.fixedExpense.armyAnnualOverride.money === 12000000, '天启 legacyTaxConfig 留着军饷总额一千二百万');
   ok(legacy.neicangRules && legacy.neicangRules.royalClanPressure && !legacy.neicangRules.royalClanPressure.paidFrom, '天启 legacyTaxConfig 宗禄照旧出太仓');
   ok(!sc.fiscalConfig.fixedExpense.armyAnnualOverride, '新开局不再有军饷总额');
+}
+
+// 8～11. 专款户头（11-12）：辽饷户头只出本期辽饷税入，排在俸禄之前，不够的按军记欠，不挪旧饷
+const earmarkCfg = (salaryMoney) => ({
+  fixedExpense: {
+    armyMonthlyPay: { money: 1.5, grain: 0.6, cloth: 0.05 },
+    salaryAnnualOverride: { money: salaryMoney || 0, grain: 0, cloth: 0 },
+    earmarkedArmyAccounts: { 辽饷: { fromTaxes: ['liaoxiang'] } }
+  }
+});
+// 本回合征收已入账、辽饷税入进了太仓多少
+function liaoIncome(G, amount, turn) {
+  G._lastCascadeTaxTurn = turn == null ? G.turn : turn;
+  G.guoku.ledgers.money.sources = { liaoxiang: amount };
+}
+const owedOf = (G, name) => (rows(G).find((r) => r.name === name + '欠饷') || {}).amount || 0;
+
+// 8. 库三千、辽饷进项两千四：关宁先得两千四（欠六百），余六百给宣府（欠两千四）；不再两军各一千五
+{
+  const { c, G } = fixture(3000, mingArmies(), earmarkCfg(0));
+  liaoIncome(G, 2400);
+  c.FixedExpense.collect({ game: G, turnDays: 30, force: true });
+  near(account(G, 'money', '辽饷'), 2400, '辽饷户头只发本期辽饷税入');
+  near(account(G, 'money', '年例'), 600, '年例户头只分到余下的旧饷');
+  near(owedOf(G, '关宁军'), 600, '关宁军短的按军记欠，不从旧饷挪补');
+  near(owedOf(G, '宣府镇'), 2400, '宣府镇短的按军记欠');
+  near(sinks(G, 'money')['军饷'], 3000, '帑廪册「军饷」合计仍是库里三千');
+}
+
+// 9. 专款排在俸禄之前：库两千四全是辽饷，关宁照得，俸禄这期欠发
+{
+  const { c, G } = fixture(2400, mingArmies(), earmarkCfg(12000));
+  liaoIncome(G, 2400);
+  c.FixedExpense.collect({ game: G, turnDays: 30, force: true });
+  near(account(G, 'money', '辽饷'), 2400, '辽饷先发，不被俸禄先扣走');
+  near(sinks(G, 'money')['俸禄_欠'], 12000 * 30 / 365, '俸禄这期全数欠发');
+  near(owedOf(G, '宣府镇'), 3000, '宣府镇这期一文未得');
+}
+
+// 10. 本回合还没征收入账：不按专款，照旧各户头同比例
+{
+  const { c, G } = fixture(3000, mingArmies(), earmarkCfg(0));
+  liaoIncome(G, 2400, 0);
+  c.FixedExpense.collect({ game: G, turnDays: 30, force: true });
+  near(account(G, 'money', '辽饷'), 1500, '没有本期税入可认：辽饷户头同比例一千五');
+  near(account(G, 'money', '年例'), 1500, '年例户头同比例一千五');
+}
+
+// 11. 辽饷进项多于辽东所需：关宁足额，多的留太仓公用
+{
+  const { c, G } = fixture(6000, mingArmies(), earmarkCfg(0));
+  liaoIncome(G, 5000);
+  c.FixedExpense.collect({ game: G, turnDays: 30, force: true });
+  near(account(G, 'money', '辽饷'), 3000, '关宁足额三千');
+  near(account(G, 'money', '年例'), 3000, '多出的辽饷留在太仓，宣府镇也足额');
+  near(G.guoku.ledgers.money.deficit, 0, '不记欠');
+}
+
+// 12. 剧本：天启写明辽饷户头只出辽饷加派；旧档口径不带专款
+{
+  const sc = JSON.parse(fs.readFileSync(path.join(ROOT, '..', 'scenarios', '天启七年·九月（官方）.json'), 'utf8'));
+  const em = (sc.fiscalConfig.fixedExpense || {}).earmarkedArmyAccounts || {};
+  ok(em['辽饷'] && Array.isArray(em['辽饷'].fromTaxes) && em['辽饷'].fromTaxes.indexOf('liaoxiang') >= 0, '天启辽饷户头专出辽饷加派');
+  ok(!((sc.fiscalConfig.legacyTaxConfig || {}).fixedExpense || {}).earmarkedArmyAccounts, '旧档口径不带专款（照旧同比例）');
 }
 
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

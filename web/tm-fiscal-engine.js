@@ -2499,44 +2499,15 @@
     };
   }
 
-  // 写明出饷户头的各军（11-11）：都记在帑廪册「军饷」一项，细目按户头（辽饷、年例、京营……）列；库里不够时各军按应得同比例少发，
-  //   短发的按军记成欠饷（帑廪欠项「军饷」类，写明哪一军），各军欠饷月数由此按实欠算（TM.MilitaryArrears），
-  //   欠饷扣军心那条线（applyPayArrearsPressure）才接上真账。原先短发只记一笔不分军的总欠，各军欠饷月数从不随实欠涨。
-  function _payArmiesByAccount(G, ledgers, items) {
-    var out = {};
-    ['money', 'grain', 'cloth'].forEach(function(kind) {
-      var led = ledgers[kind], need = 0, paid = 0, owed = 0, byAccount = {};
-      items.forEach(function(it) { need += Math.max(0, safeNumber(it[kind], 0)); });
-      if (!led || !(need > 0)) { out[kind] = { deducted: 0, deficit: 0 }; return; }
-      var ratio = Math.max(0, Math.min(1, safeNumber(led.stock, 0) / need));
-      items.forEach(function(it) {
-        var amt = Math.max(0, safeNumber(it[kind], 0));
-        if (!amt) return;
-        var account = it.account || '军饷';
-        byAccount[account] = safeNumber(byAccount[account], 0) + amt * ratio;
-        var short = amt * (1 - ratio);
-        if (short > 0.0001) { _recordArmyPayArrears(G, led, it, short); owed += short; }
-      });
-      Object.keys(byAccount).forEach(function(account) {
-        var got = deductFromLedger(led, Math.min(byAccount[account], Math.max(0, safeNumber(led.stock, 0))), '军饷', true).deducted;
-        paid += got;
-        if (got > 0 && global.FiscalStatement && global.FiscalStatement.recordFlow) global.FiscalStatement.recordFlow(led, 'central', 'out', '军饷', 'army-account:' + account, account, got);
-      });
-      out[kind] = { deducted: paid, deficit: owed };
-    });
-    return out;
-  }
-  function _recordArmyPayArrears(G, led, it, amount) {
-    led.deficit = safeNumber(led.deficit, 0) + amount;
-    if (!led.sinks) led.sinks = {};
-    led.sinks['军饷_欠'] = safeNumber(led.sinks['军饷_欠'], 0) + amount; // 破产「军饷断裂」与册页都认这一项
-    if (!led.deficitDetails) led.deficitDetails = {};
-    var rows = led.deficitDetails.junxiang || (led.deficitDetails.junxiang = []);
-    var id = 'army-pay:' + String(G.sid || '') + ':' + String(it.armyId || it.name), row = null;
-    for (var i = 0; i < rows.length; i++) { if (rows[i] && rows[i].id === id) { row = rows[i]; break; } }
-    if (!row) { row = { id: id, name: it.name + '欠饷', amount: 0, armyId: it.armyId, subject: { kind: 'army', id: it.armyId }, incurredTurn: G.turn || 0 }; rows.push(row); }
-    row.amount = fiscalRound(safeNumber(row.amount, 0) + amount);
-  }
+  // 军饷按户头出账三件（各军按户头同比例发、短发按军记欠、专款户头先由指定税入支给）拆在 tm-fiscal-army-pay.js（11-12·第二十八拆·origin-first bucket）：
+  //   本片装载时把那边要用的账本工具放进 bucket TM.__fiscalParts；那边紧随本片装载，捕获后回填，下面两个转发到 fixedCollect 调用时才去取。
+  global.TM = global.TM || {};
+  var _fiscalParts = global.TM.__fiscalParts = global.TM.__fiscalParts || {};
+  _fiscalParts.deductFromLedger = deductFromLedger;
+  _fiscalParts.safeNumber = safeNumber;
+  _fiscalParts.fiscalRound = fiscalRound;
+  function _payArmiesByAccount() { return _fiscalParts.payArmiesByAccount.apply(this, arguments); }
+  function _payEarmarkedArmies() { return _fiscalParts.payEarmarkedArmies.apply(this, arguments); }
 
   function fixedCollect(ctx) {
     var G = getGame(ctx && ctx.game);
@@ -2566,6 +2537,8 @@
     var royal = calcRoyalStipend(ctx);
     var army = calcArmyPay(ctx);
     var imperial = calcImperialExpense(ctx);
+    // 专款户头先发（在俸禄之前，见 _payEarmarkedArmies）
+    var earmarked = army.perArmy ? _payEarmarkedArmies(G, guokuLedgers, army.items || [], getSalaryConfig(G).earmarkedArmyAccounts) : null;
 
     var salaryDed = {
       money: deductFromLedger(guokuLedgers.money, salary.total.money, '俸禄'),
@@ -2577,11 +2550,12 @@
       grain: deductFromLedger(guokuLedgers.grain, royal.total.grain, '宗禄'),
       cloth: deductFromLedger(guokuLedgers.cloth, royal.total.cloth, '宗禄')
     };
-    var armyDed = army.perArmy ? _payArmiesByAccount(G, guokuLedgers, army.items || []) : {
+    var armyDed = army.perArmy ? _payArmiesByAccount(G, guokuLedgers, earmarked ? earmarked.rest : (army.items || [])) : {
       money: deductFromLedger(guokuLedgers.money, army.total.money, '军饷'),
       grain: deductFromLedger(guokuLedgers.grain, army.total.grain, '军饷'),
       cloth: deductFromLedger(guokuLedgers.cloth, army.total.cloth, '军饷')
     };
+    if (earmarked) armyDed.money = { deducted: armyDed.money.deducted + earmarked.deducted, deficit: armyDed.money.deficit + earmarked.deficit };
     var imperialDed = {
       money: deductFromLedger(neitangLedgers.money, imperial.total.money, '宫廷'),
       grain: deductFromLedger(neitangLedgers.grain, imperial.total.grain, '宫廷'),

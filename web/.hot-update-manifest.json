@@ -2901,18 +2901,18 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "4b4884e211d36b2e1b68c9b2d7abc7b334dc08eeae0c266342cedc88e773b855",
+      "sha256": "2aa7df1732cb149d4b27d7934124eaf3cf6c1aee874b38b7a07038dae4a80504",
       "size": 6008
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "d46b89cd2141ed275fc2bd38a29fa1b3e391003d657265b4d62a4cbeab731a05",
+      "sha256": "7c03569a47c4e3507a4917af48ecd418075eae8c3cea3b2afc4103a64d03d39c",
       "size": 6387
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
-      "sha256": "f159b8296135d1debc0f5fad1b033602ba772437cb15889f421fd8e2ca911670",
-      "size": 16408785
+      "sha256": "860dadc97163c3a936fe4752640895137d7bd72fc6a5f82121973340e2503a20",
+      "size": 16409328
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
@@ -2921,8 +2921,8 @@
     },
     {
       "path": "bundled-scenarios/绍宋·建炎元年八月（官方）.json",
-      "sha256": "3e4b0a86c594af3edb597d31ac50085fc868f649e1ba66fefc1b38ddcaad35da",
-      "size": 91006494
+      "sha256": "bf8b1cea7b350e425ffe302e53b611fdacb629aad4ae3125387528b4fe19034d",
+      "size": 91010470
     },
     {
       "path": "changelog.json",
@@ -2966,12 +2966,12 @@
     },
     {
       "path": "data/maps/scenario-library/index.json",
-      "sha256": "181bc437adc5600fa556c4b940de5feaeb42be5b1d56d383ec28ee9000730d28",
+      "sha256": "375238630585a913beb59826aa97f8e06f0c357137ec0363576e3234438b2660",
       "size": 2410
     },
     {
       "path": "data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
-      "sha256": "dbad04a99d64fd3262f0d04cda776ec8be8d8fd24af9d68526ff1654108c52ad",
+      "sha256": "fbda2e50847e50a3fb96de1be721bc60f5d26076b696b699d30b225b223232cd",
       "size": 11815292
     },
     {
@@ -2981,7 +2981,7 @@
     },
     {
       "path": "data/maps/scenario-library/sc-tianqi7-1627.json",
-      "sha256": "e7894b98870e4b9ff2264cbfae4dfaeabb0acf28efba210804cc6b90471a6fc9",
+      "sha256": "ae67d67bd66712b5987843366e59139f3006e744068fce307cded2973b4462a9",
       "size": 1486190
     },
     {
@@ -4261,8 +4261,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
-      "sha256": "eb662619dca77c0df5046c12b97580719e3df91c24a5e724d0aa47f3fbb57034",
-      "size": 16426040
+      "sha256": "a72e8800034b1b586a39567c81ba881fd7d72e0d4d1c19b55abee426ae0047d6",
+      "size": 16426583
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
@@ -4366,8 +4366,8 @@
     },
     {
       "path": "scenarios/shaosong-jianyan-1127.js",
-      "sha256": "e091990f86704a8c6cfd6a6830a803b40f060d90e6e29529c12449b24cbca594",
-      "size": 50899497
+      "sha256": "3ab9a3ceb71bdda5e040fcb7698960bfbaa364d1a3f0ebe349e685b6d86de0b6",
+      "size": 50903603
     },
     {
       "path": "scenarios/tang840-840.js",
@@ -4376,8 +4376,8 @@
     },
     {
       "path": "scenarios/tianqi7-1627.js",
-      "sha256": "d5ab6605bf9734c51e4264abb67e0b4ac3000bc28c704e5a31e327afa2337c80",
-      "size": 10045937
+      "sha256": "2685c8f0d4e977ed70c7b65495ec5ae24ad67b1c271fd2243775ea4e3da9e1fe",
+      "size": 10046500
     },
     {
       "path": "schemas/sc1.schema.json",
@@ -5406,13 +5406,13 @@
     },
     {
       "path": "tm-fiscal-engine.js",
-      "sha256": "1ee0d3ba65fcd2cc3fc98cee46b669136db29b8ab7dd10646ecb00ebb71ade7e",
-      "size": 178397
+      "sha256": "1420afa0fc3d72b2db41dde0eeecd0e30ae5149ee4fece6342dc60cad984790b",
+      "size": 179456
     },
     {
       "path": "tm-fiscal-local-expense.js",
-      "sha256": "11517b048e6fe2e8a3247255a8b2cea6b1d5e6c9920ad82379cf95c25ae37798",
-      "size": 6355
+      "sha256": "925693264696139665fa7244162aa67dcea6cbcad43cd000eeedc44007970fbc",
+      "size": 11397
     },
     {
       "path": "tm-fiscal-statements.js",
@@ -6591,8 +6591,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "159442be4c109d3ea237f6d777b0d33909a1d569e35d22a48ddc0902e6b7e751",
-      "size": 141693
+      "sha256": "9d7238e57cf557e1ab29ee764fac846c0fc3512fc134823a9e0cf1ae9c718dfc",
+      "size": 141694
     },
     {
       "path": "tm-start-selector.js",

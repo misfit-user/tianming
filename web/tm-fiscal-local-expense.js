@@ -10,8 +10,9 @@
 //   库粮不够的那部分本色照石折银改从库银出（游戏里存留多收银、库粮常是零）；各府按库存多少分摊，
 //   银粮都扣不足的折成石记作该布政司欠禄（G._royalRetained.byRegion[id].arrearsStone 累计）。
 //   没写 byRegion 的剧本、存档里自带旧 neicangRules 的旧档：照旧不扣。
+// 第二项：本路军饷出存留（11-13，见 payArmiesFromRetained）——军的地方那一份从剧本写明的承付之路扣，不够按军记欠。
 // 由 FixedExpense.collect（tm-fiscal-engine.js fixedCollect）在本回合固定支出结完时经 bucket TM.__fiscalParts 调用；
-//   同一回合只扣一次（G._royalRetained.turn）——固定支出整笔回滚重试时，地方库不会被扣两遍。
+//   两项各自同一回合只扣一次（G._royalRetained.turn、G._armyRetained.turn）——固定支出整笔回滚重试时，地方库不会被扣两遍。
 // ============================================================
 (function(global) {
   'use strict';
@@ -94,6 +95,76 @@
     return sum;
   }
 
+  // 第二项：本路军饷出存留（11-13 同志「按你推荐来」）。剧本给军写了 funding.localShare（本路自筹、地方支给）的，
+  //   地方那一份原先不进太仓、也没人扣——地方库只进不出。现在每回合从承付诸路的地方库扣：
+  //   承付之路由剧本写明——funding.regionIds（几路合用，如陕西六路、川峡四路），或 funding.regionId（一路）。
+  //   没写的不扣：旧档里的军是开局时从剧本抄进存档的，没有这两项，照旧不扣（同「旧档不拾新口径」）；
+  //   也不按驻地去猜——天启诸军的驻地是地图地块、不是区划，绍宋陕西诸军按驻地会全压在泾原一路。
+  //   钱、粮、布各从地方库的钱、粮、布出，不互折（各剧本钱的单位与粮价不一）；同一组路下的各军按应支同比例分摊。
+  //   不够的按军记欠（G._armyRetained.byArmy[军]：arrears 累计钱粮布，months 累计折成的月数——按钱、粮两项里欠得多的那项算；
+  //   布每兵每月不过几分，不计月数，只记账）。这是该路欠的，不进太仓欠账，补饷诏书也不从太仓补。
+  //   本路欠账暂不写进军的欠饷月数（army.payArrearsMonths）、不扣军心：老「三系统」回合更新（tm-three-systems-ext.js
+  //   _updateMilitaryState）对没有太仓欠账的军，只要势力账上钱不为负就每回合把欠饷月数白减一月，写进去也会在算军心前被抹掉；
+  //   且京畿、陕西本路存留只够付其军饷一二成，接上军心则数月溃散——两事待同志定。
+  //   写了承付之路却在区划里找不到的记 missing，不扣也不记欠。同一回合只扣一次（G._armyRetained.turn）。
+  function payerRegions(army) {
+    var f = (army && army.funding) || {};
+    if (Array.isArray(f.regionIds) && f.regionIds.length) return f.regionIds.map(String);
+    if (f.regionId) return [String(f.regionId)];
+    return [];
+  }
+  function payArmiesFromRetained(G, items, turnDays) {
+    if (!G || !Array.isArray(items)) return null;
+    // 只认写明承付之路的；一个都没有（旧档、没写的剧本）就不建账，照旧不扣
+    items = items.filter(function(it) { return it && payerRegions(it.army).length; });
+    if (!items.length) return null;
+    var turn = G.turn || 0;
+    var ledger = G._armyRetained && typeof G._armyRetained === 'object' ? G._armyRetained : (G._armyRetained = { byArmy: {} });
+    if (!ledger.byArmy || typeof ledger.byArmy !== 'object') ledger.byArmy = {};
+    if (ledger.turn === turn) return ledger.last || null;   // 本回合已扣
+    var months = Math.max(0, num(turnDays, 30)) / 30, RES = ['money', 'grain', 'cloth'];
+    var sum = { due: { money: 0, grain: 0, cloth: 0 }, paid: { money: 0, grain: 0, cloth: 0 }, short: { money: 0, grain: 0, cloth: 0 }, armies: 0, shortArmies: [], missing: [] };
+    var pools = {}, order = [];
+    items.forEach(function(it) {
+      var ids = payerRegions(it.army), leaves = [];
+      ids.forEach(function(id) { var r = findRegion(G, id); if (r) leaves = leaves.concat(leavesOf(r)); });
+      if (!leaves.length) { sum.missing.push(it.name); return; }
+      var key = ids.slice().sort().join('|');
+      if (!pools[key]) { pools[key] = { ids: ids, leaves: leaves, items: [] }; order.push(key); }
+      pools[key].items.push(it);
+    });
+    order.forEach(function(key) {
+      var pool = pools[key], ratio = {};
+      RES.forEach(function(k) {
+        var due = pool.items.reduce(function(s, it) { return s + Math.max(0, num(it[k], 0)); }, 0);
+        var paid = drawFromLeaves(pool.leaves, k, due);
+        ratio[k] = due > 0 ? paid / due : 1;
+        sum.due[k] += due; sum.paid[k] += paid; sum.short[k] += Math.max(0, due - paid);
+      });
+      pool.items.forEach(function(it) {
+        var id = String(it.armyId || it.name);
+        var rec = ledger.byArmy[id] || (ledger.byArmy[id] = { name: it.name, arrears: { money: 0, grain: 0, cloth: 0 }, months: 0 });
+        rec.name = it.name; rec.regionIds = pool.ids.slice();
+        var owed = 0;
+        RES.forEach(function(k) {
+          var due = Math.max(0, num(it[k], 0)), short = due * (1 - ratio[k]);
+          rec.arrears[k] = round(num(rec.arrears[k], 0) + short);
+          if (k !== 'cloth' && due > 0) owed = Math.max(owed, 1 - ratio[k]);
+        });
+        sum.armies++;
+        if (owed > 1e-9) {
+          rec.months = round(num(rec.months, 0) + owed * months);
+          sum.shortArmies.push(it.name);
+        }
+      });
+    });
+    RES.forEach(function(k) { sum.due[k] = round(sum.due[k]); sum.paid[k] = round(sum.paid[k]); sum.short[k] = round(sum.short[k]); });
+    ledger.turn = turn;
+    ledger.last = sum;
+    return sum;
+  }
+
   var parts = (global.TM = global.TM || {}).__fiscalParts = global.TM.__fiscalParts || {};
   parts.payRoyalFromRetained = payRoyalFromRetained;
+  parts.payArmiesFromRetained = payArmiesFromRetained;
 })(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));

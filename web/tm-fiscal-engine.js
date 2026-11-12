@@ -2404,7 +2404,7 @@
     var turnFracMonth = turnDays / 30;
     var total = { money: 0, grain: 0, cloth: 0 };
     var byArmy = {};
-    var items = [], perArmy = false;
+    var items = [], localItems = [], perArmy = false;
     // 根治(2026-06·绍宋财政):军饷只结算玩家势力自己的军·非本势力军不上玩家国库账。
     //   旧 bug:此处遍历 getArmies(全势力 initialTroops) 一律从玩家国库发饷=玩家替金军/群盗买单。
     //   修:按 army.faction 匹配玩家势力名(与 _playerFactionNameForArmy/_isPlayerOwnedArmy 同源)。
@@ -2421,13 +2421,15 @@
       var funding = army.funding && typeof army.funding === 'object' ? army.funding : null;
       if (funding) perArmy = true;
       if (funding && funding.selfSupplied) return;
-      var centralShare = funding ? 1 - Math.max(0, Math.min(1, safeNumber(funding.localShare, 0))) : 1;
-      if (centralShare <= 0) return;
+      var localShare = funding ? Math.max(0, Math.min(1, safeNumber(funding.localShare, 0))) : 0, centralShare = 1 - localShare;
       var soldiers = safeNumber(army.soldiers, safeNumber(army.strength, safeNumber(army.size, 0)));
       if (soldiers <= 0) return;
       var moneyPay = army.monthlyMoneyPayPerSoldier != null ? safeNumber(army.monthlyMoneyPayPerSoldier, pay.money) : pay.money;
       var grainPay = army.monthlyGrainPayPerSoldier != null ? safeNumber(army.monthlyGrainPayPerSoldier, pay.grain) : pay.grain;
       var clothPay = army.monthlyClothPayPerSoldier != null ? safeNumber(army.monthlyClothPayPerSoldier, pay.cloth) : pay.cloth;
+      // 地方出的那一份（11-13）不进太仓，交存留开支从剧本写明的承付之路扣（tm-fiscal-local-expense.js payArmiesFromRetained；没写的照旧不扣）
+      if (localShare > 0) localItems.push({ army: army, armyId: army.id, name: army.name || army.id || '军', localShare: localShare, money: soldiers * moneyPay * turnFracMonth * localShare * _armyMult, grain: soldiers * grainPay * turnFracMonth * localShare * _armyMult, cloth: soldiers * clothPay * turnFracMonth * localShare * _armyMult });
+      if (centralShare <= 0) return;
       var item = {
         money: soldiers * moneyPay * turnFracMonth * centralShare,
         grain: soldiers * grainPay * turnFracMonth * centralShare,
@@ -2441,7 +2443,7 @@
       byArmy[army.name || army.id || '军'] = item;
     });
     total.money *= _armyMult; total.grain *= _armyMult; total.cloth *= _armyMult;   // 演义旋钮·军饷松绑（P-FUV·硬核 ×1 不动）
-    return { total: total, byArmy: byArmy, items: items, perArmy: perArmy };
+    return { total: total, byArmy: byArmy, items: items, localItems: localItems, perArmy: perArmy };
   }
 
   function calcImperialExpense(ctx) {
@@ -2598,6 +2600,9 @@
     G.guoku.annualExpense = Math.round(guokuMoneyOut * (365 / Math.max(1, getTurnDays(ctx, G))));
     // 宗禄出存留（11-12）：剧本给了各布政司份额的，从各司存留扣，不够的记欠禄（tm-fiscal-local-expense.js；同一回合只扣一次）
     if (royal.paidFrom === '存留' && royal.byRegion && _fiscalParts.payRoyalFromRetained) turnExpense.royalRetained = _fiscalParts.payRoyalFromRetained(G, royal, getTurnDays(ctx, G));
+    // 本路军饷出存留（11-13）：写明 localShare 的军，地方那一份从剧本写明的承付之路（funding.regionId / regionIds）存留扣，不够的按军记欠；
+    //   没写承付之路的（旧档的军）照旧不扣；同一回合只扣一次
+    if (army.localItems && army.localItems.length && _fiscalParts.payArmiesFromRetained) turnExpense.armyRetained = _fiscalParts.payArmiesFromRetained(G, army.localItems, getTurnDays(ctx, G));
     G._lastFixedExpense = turnExpense;
     G._lastFixedExpenseTurn = G.turn || 0;
     if (global.GuokuEngine && global.GuokuEngine.finishOpeningFiscal) global.GuokuEngine.finishOpeningFiscal(G);

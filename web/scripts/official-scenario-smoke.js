@@ -277,7 +277,8 @@ function main() {
     'tm-region-enrich.js',
     'tm-integration-bridge.js',
     'tm-fiscal-engine.js',
-    'tm-fiscal-army-pay.js' // 第二十八拆：军饷按户头出账三件·紧随 origin（天启各军写了 funding，走按军出账）
+    'tm-fiscal-army-pay.js', // 第二十八拆：军饷按户头出账三件·紧随 origin（天启各军写了 funding，走按军出账）
+    'tm-fiscal-local-expense.js' // 地方存留开支：天启宗禄按布政司份额出存留
   ].forEach((rel) => runFile(ctx, rel));
 
   assert(ctx.IntegrationBridge, 'IntegrationBridge missing');

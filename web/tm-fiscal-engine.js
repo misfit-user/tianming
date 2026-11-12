@@ -2343,10 +2343,6 @@
       || (G && G.fiscal && G.fiscal.royalClanPressure)
       || null;
     if (!rcp || !rcp.enabled) return { total: { money: 0, grain: 0, cloth: 0 }, members: 0, arrears: 0 };
-    // 剧本写明宗禄出存留（paidFrom:'存留'，11-11）：明代王府禄米由所在布政司存留支给，不入太仓岁出
-    //   （《明史·食货志》载嘉靖四十一年林润疏：山西存留百五十二万石而宗禄三百十二万石，河南存留八十四万三千石而宗禄百九十二万石）。
-    //   太仓这里记零；存留那头的开支尚未设账（见交代）。
-    if (rcp.paidFrom === '存留') return { total: { money: 0, grain: 0, cloth: 0 }, members: safeNumber(rcp.totalClanMembers, 0), arrears: safeNumber(rcp.cumulativeArrears, 0), paidFrom: '存留' };
     var annualStone = safeNumber(rcp.annualStipendPaid, 0) * 10000;
     var turnFrac = getTurnDays(ctx, G) / 365;
     var stoneThis = annualStone * turnFrac;
@@ -2357,6 +2353,11 @@
     //   硬核/标准让玩家在真实宗藩+军饷重压下治国；叙事/演义档给宗禄减半、不至于一上来被宗禄压垮。系数·可调。
     var _diff = String((global.P && global.P.conf && global.P.conf.difficulty) || '').toLowerCase();
     var _royalMult = /narrative|叙事|简单|演义/.test(_diff) ? 0.5 : 1.0;   // 仅叙事 0.5·标准/硬核/默认满压保真（P-FUV）
+    // 剧本写明宗禄出存留（paidFrom:'存留'，11-11）：明代王府禄米由所在布政司存留支给，不入太仓岁出（《明史·食货志》载嘉靖四十一年
+    //   林润疏：山西存留百五十二万石而宗禄三百十二万石，河南存留八十四万三千石而宗禄百九十二万石）。太仓这里记零；
+    //   剧本给了各布政司份额（byRegion，11-12）的，fixedCollect 经 tm-fiscal-local-expense.js 从各司存留扣、不够记欠禄；没给的照旧不扣。
+    if (rcp.paidFrom === '存留') return { total: { money: 0, grain: 0, cloth: 0 }, members: safeNumber(rcp.totalClanMembers, 0), arrears: safeNumber(rcp.cumulativeArrears, 0), paidFrom: '存留',
+      byRegion: Array.isArray(rcp.byRegion) && rcp.byRegion.length ? rcp.byRegion : null, annualStone: annualStone, grainRatio: grainRatio, stoneToSilver: stoneToSilver, mult: _royalMult };
     stoneThis *= _royalMult;
     return {
       total: {
@@ -2595,6 +2596,8 @@
     var turnFrac30 = Math.max(1, getTurnDays(ctx, G)) / 30;
     G.guoku.monthlyExpense = Math.round(guokuMoneyOut / turnFrac30);
     G.guoku.annualExpense = Math.round(guokuMoneyOut * (365 / Math.max(1, getTurnDays(ctx, G))));
+    // 宗禄出存留（11-12）：剧本给了各布政司份额的，从各司存留扣，不够的记欠禄（tm-fiscal-local-expense.js；同一回合只扣一次）
+    if (royal.paidFrom === '存留' && royal.byRegion && _fiscalParts.payRoyalFromRetained) turnExpense.royalRetained = _fiscalParts.payRoyalFromRetained(G, royal, getTurnDays(ctx, G));
     G._lastFixedExpense = turnExpense;
     G._lastFixedExpenseTurn = G.turn || 0;
     if (global.GuokuEngine && global.GuokuEngine.finishOpeningFiscal) global.GuokuEngine.finishOpeningFiscal(G);

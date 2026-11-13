@@ -2217,7 +2217,9 @@ function _buildTemporalConstraint(ch, opts) {
     // 读侧兜底（刀B·治老玩家已污染存档）：与本局 GM 生死态冲突的记忆条目不注入（检测器/过滤器安家 tm-mechanics-memory.js·typeof 守卫）
     var _memSrc = (typeof _tmFilterMemories === 'function') ? _tmFilterMemories(ch._memory, GM) : ch._memory;
     var memLines = _memSrc.slice(-5).map(function(m) {
-      return '  · T' + (m.turn || 0) + '·' + (m.event || '') + (m.emotion ? '(' + m.emotion + ')' : '');
+      // 时空约束清编号（11-13）：开局前的事写「开局前」，不写负回合（天启真档魏忠贤有 T-1800；0 回合的原来写成 T0）
+      var when = typeof m.turn === 'number' ? (m.turn > 0 ? 'T' + m.turn : '开局前') : '';
+      return '  · ' + (when ? when + '·' : '') + (m.event || '') + (m.emotion ? '(' + m.emotion + ')' : '');
     }).join('\n');
     if (memLines) lines.push('本 NPC 关键记忆（时序）：\n' + memLines);
   }

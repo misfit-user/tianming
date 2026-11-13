@@ -4471,8 +4471,8 @@
     },
     {
       "path": "tm-ai-infra.js",
-      "sha256": "f4ed4cd58390390d3036fc310f6ea21dc8ae2e9b6dfd790364190e08b592bbaf",
-      "size": 168917
+      "sha256": "90fb328dfee946e25bae0ac1cc44055da2bee791f3701c70046ad69c4ed7c9a3",
+      "size": 169179
     },
     {
       "path": "tm-ai-narrative-guards.js",
@@ -5786,8 +5786,8 @@
     },
     {
       "path": "tm-live-context.js",
-      "sha256": "8bf8038058e617370fef41022dff69752aebccc00147857624bc6f1950af1235",
-      "size": 5686
+      "sha256": "4a6e527291ec3dd2e29ae96cdfce1db8bc73efad0dac86316a25191ea8aa29c7",
+      "size": 7437
     },
     {
       "path": "tm-lizhi-panel.js",
@@ -6321,8 +6321,8 @@
     },
     {
       "path": "tm-personal-memory-recall.js",
-      "sha256": "1b2123e8368c37f8f8e16f5996200c020bbb61f392951e5c1ec97c39e3ff286c",
-      "size": 2615
+      "sha256": "c08a16ee54f266babd90aa74828c7617214eef831a8a841f0d3a8dfc6ecba0d9",
+      "size": 2816
     },
     {
       "path": "tm-pinch-pan.js",
@@ -6586,7 +6586,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "44bcf947ce8e660e77aa07b63369d11dfa8e2c5483f1b94e07db51e3cf2ad014",
+      "sha256": "5b2f68d13c26d77408d9bfa667e655130b508ff28cd51a33ff04f3d3d7dd92c6",
       "size": 141497
     },
     {

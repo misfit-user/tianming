@@ -30,7 +30,9 @@ function personal(g,ch,query,limit){
  return recall(g,ch,query,limit).map(m=>{
   var certainty=m.factStatus==='unverified_claim'||m.source==='reported'||m.source==='rumor'?'当时听闻或自述，未经核验':m.factStatus==='verified'?'当时已核验':'个人历史记录';
   var e=txt(m.event),snippet=e.length>700?e.slice(0,330)+'…（摘录）…'+e.slice(-330):e;
-  return '['+(m.id||'NPC-memory:'+ch.id+':'+m.turn)+'] T'+(m.turn??'?')+' '+certainty+'：'+snippet;
+  // 时空约束清编号（11-13）：不写记忆编号（原来每条带 [NPC-memory:char_…]），开局前的事写「开局前」，不写负回合（天启真档有 T-1800）
+  var when=typeof m.turn==='number'?(m.turn>0?'T'+m.turn+' ':'开局前 '):'';
+  return when+certainty+'：'+snippet;
  }).join('\n');
 }
 TM.PersonalMemoryRecall={personal:personal,recall:recall,tokens:tokens};

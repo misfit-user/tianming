@@ -102,8 +102,9 @@ function _offMigratePosition(pos, world) {
       });
       if (nm && !duplicate) ah.push({ characterId: mirrorId, name: nm, generated: true });
     });
-    // 补占位到 actualCount 长度
-    while (ah.length < pos.actualCount) {
+    // 补占位到 actualCount 长度；unrecordedCount 已记的匿名在岗者不再另补占位行（11-13：原先两边各算一次，
+    //   绍宋给事中「姓名未详一员」开局后成了两员）
+    while (ah.length < pos.actualCount - (Number(pos.unrecordedCount) || 0)) {
       ah.push({ name: '', generated: false, placeholderId: 'ph_' + Math.random().toString(36).slice(2,8) });
     }
     pos.actualHolders = ah;
@@ -397,11 +398,15 @@ function _offGetCharOfficeTitles(ch, opts) {
   if (ch.concurrentTitle) String(ch.concurrentTitle).split(/[、,，;；\s]+/).forEach(function(t){ arr.push(t); });
   // 补：title 字段里 officialTitle 缺的官职段（剧本完整描述常落 title·治兼职丢高职，如张瑞图 title 含礼部尚书）。
   //   保留 officialTitle 原项不拆（保状态）；官职后缀过滤防垃圾；跳含罢/致仕等状态段。
-  if (ch.title && ch.title !== ch.officialTitle && !/罢|致仕|削籍|闲住|闲居|告归|乞休|夺职|守制|丁忧/.test(ch.officialTitle || '')) {
+  // 11-13：title 整串写的是旧衔或离职、贬谪处分（「翰林侍读学士·告归」「前门下侍郎·建炎初被贬」）时，各段都不算现任
+  if (ch.title && ch.title !== ch.officialTitle && !/罢|致仕|削籍|闲住|闲居|告归|乞休|夺职|守制|丁忧/.test(ch.officialTitle || '') && !_offIsFormerTitle(ch.title)) {
     String(ch.title).split(/[·、，,；;]/).forEach(function(seg){
       var raw = String(seg || '').trim();
       if (!raw || /罢|致仕|丁忧|守制|削籍|闲住|闲居|告归|养病|候起|候简|前任|原任/.test(raw)) return;
-      var clean = raw.replace(/[（(].*?[)）]/g, '').replace(/^(前|原|署理?|权|试|兼署?|兼理|兼管|兼|加授?|加衔|加|赠|追|带管|协理)/, '').trim();
+      // 旧衔与贬谪处分段不是现任（11-13）：原先把「前」字剥掉，「前尚书右丞」「前门下侍郎」反成了现任诉求，
+      //   绍宋许翰被坐上尚书右丞、耿南仲被坐上吏部侍郎。「前军统制」之类的「前」是军号，不算旧衔，也不再剥。
+      if (_offIsFormerTitle(raw)) return;
+      var clean = raw.replace(/[（(].*?[)）]/g, '').replace(/^(原|署理?|权|试|兼署?|兼理|兼管|兼|加授?|加衔|加|赠|追|带管|协理)/, '').trim();
       if (clean.length >= 2 && _OFF_TITLE_SUFFIX.test(clean) && !arr.some(function(x){ return String(x).indexOf(clean) >= 0; })) arr.push(clean);
     });
   }
@@ -1488,6 +1493,12 @@ function canPerformAction(charName, action) {
 
 // 致仕/罢归/待罪等"已离职"特征——不进活跃官制树
 var _OFF_RETIRE_RE = /已罢|罢归|罢居|罢闲|致仕|乞休|乞骸|告归|告病|养病|削籍|闲住|闲居|夺职|去职|待召还|待罪|起复待|先朝|前朝/;
+// 旧衔与贬谪处分（11-13）：「前某官」「（州军）安置」「编管」「责授」「除名」「贬（贬知、贬判某处仍是现任）」「某处居住」——
+//   写的是旧官或贬谪处分，不是现任，不据以认座。绍宋耿南仲「前尚书左丞·建炎初贬·南方安置」原被坐上尚书左丞。
+//   「前军统制」「前锋」之类的「前」是军号，不算旧衔。
+var _OFF_FORMER_RE = /^前(?!军|锋|营|卫|殿|部|行|将)|安置|编管|责授|除名|贬(?!知|判|通判|监|守)|居住/;
+// 整串套在括号里的注语照样看开头（「（前入内内侍省·都知·靖康后游离）」也是旧衔）
+function _offIsFormerTitle(t) { t = String(t == null ? '' : t).replace(/^[（(]+/, ''); return _OFF_RETIRE_RE.test(t) || _OFF_FORMER_RE.test(t); }
 // 后宫封号——非官僚职、不进官制树(仍在人物图志)
 var _OFF_HAREM_RE = /皇后|皇贵妃|贵妃|淑妃|德妃|贤妃|庄妃|宸妃|选侍|嫔|婕妤|才人|昭仪|贵人|奉圣夫人|乳母|宫女|尚宫/;
 
@@ -1502,6 +1513,28 @@ function _offLongestCommonSub(a, b) {
     }
   }
   return best;
+}
+// 官衔与座名按隔点分段后逐段比（11-13）：隔点两边是两个官，不能跨着凑字。
+//   绍宋吕好问「资政殿学士·知宣州」与「翰林学士·知制诰」跨隔点凑出「学士·知」四字，原被配进翰林学士。
+function _offSegCommonSub(a, b) {
+  var best = 0;
+  String(a).split(/[·、]/).forEach(function(x){
+    String(b).split(/[·、]/).forEach(function(y){ var k = _offLongestCommonSub(x, y); if (k > best) best = k; });
+  });
+  return best;
+}
+// 座名按隔点分段，头一段是这一座的本名（「编修官·计议官」的编修官）；官衔某一段含着它，也算相合（11-13）。
+//   不再跨隔点凑字以后，绍宋「枢密院编修官·破格起用」要靠这一条认回枢密院编修官座。
+//   括号里的是注语（「（建炎初尚未授官·后破格起用为枢密院编修官）」）；「假」「检校」「赠」开头的段是名义或赠官
+//   （「太常少卿·假给事中·大金通问使」不是给事中），「后」开头的段写的是日后——这些段都不算。
+function _offSegHeadHit(ct, own) {
+  var head = String(own).replace(/[（(].*?[)）]/g, '').split(/[·、]/)[0];
+  if (head.length < 3) return false;
+  return String(ct).replace(/[（(].*?[)）]/g, '').split(/[·、]/).some(function(x){
+    x = x.trim();
+    if (!x || /^(?:假|检校|追赠|赠|加衔|后)/.test(x)) return false;
+    return x.indexOf(head) >= 0;
+  });
 }
 
 // 职位"核心后缀"——去左/右/前/后/中等方位序数前缀后的可比对核
@@ -1543,12 +1576,25 @@ function _offTitleSlotScore(claimTitle, deptName, posName, prevHolder) {
   // A duty or honorary designation is not a substantive office with a similar name.
   // Preserve exact authored seats, including explicitly modeled duty positions.
   if (ct !== np && ct !== nd + np && /^(?:检校|追赠|赠|加衔|(?:权)?判.+事$)/.test(ct)) return 0;
+  // 跨部不配（11-13）：座位点了某部（礼部侍郎），官衔也点了部而不是这一部（户部侍郎）就不配——原先只看「侍郎」核心字与
+  //   部门字样，跨部也得 40 分过线，绍宋李擢「户部侍郎」配进礼部侍郎、张悫「户部尚书」配进兵部尚书。
+  //   座位不点部的（内阁「东阁大学士」）照旧可由「礼部尚书兼东阁大学士」认座。
+  var slotBu = (np + '|' + nd).match(/[吏户礼兵刑工]部/g) || [], claimBu = ct.match(/[吏户礼兵刑工]部/g) || [];
+  if (slotBu.length && claimBu.length && !claimBu.some(function(b){ return slotBu.indexOf(b) >= 0; })) return 0;
+  // 南京诸衙门（11-13）：明代南京六部、都察院等另是一套衙门，「南京兵部添设左侍郎」「南京户部尚书」不是兵部左侍郎、户部尚书；
+  //   座位与官衔一边写南京、一边不写，就不配。天启潘汝桢原被坐上兵部左侍郎（阎鸣泰被挤出）。
+  if (/南京/.test(np + '|' + nd) !== /南京/.test(ct)) return 0;
+  // 分路不配（11-13）：座位与官衔都写了某路、却不是同一路就不配。原先凭「路安抚使」四字过线，
+  //   绍宋杜充「大名府路安抚使」被坐上福建路安抚使，「淮南东路安抚使」也能配进淮南西路。
+  var slotLu = np.match(/[^·、（）()]{1,6}?路/), claimLu = ct.match(/[^·、（）()]{1,6}?路/g);
+  if (slotLu && claimLu && !claimLu.some(function(x){ return x.indexOf(slotLu[0]) >= 0 || slotLu[0].indexOf(x) >= 0; })) return 0;
   var sc = 0;
   if (ct === np) sc = 100;
   else if (ct === nd + np) sc = 98;
   else if (own.indexOf(ct) >= 0 && ct.length >= 3) sc = 88;
   else if (ct.indexOf(np) >= 0 && np.length >= 3) sc = 86;
-  else if (_offLongestCommonSub(ct, own) >= 4) sc = 76;
+  else if (_offSegHeadHit(ct, own)) sc = 86;
+  else if (_offSegCommonSub(ct, own) >= 4) sc = 76;
   else {
     var core = _offCoreOfPos(posName);
     if (core && ct.indexOf(core) >= 0) {
@@ -1562,6 +1608,32 @@ function _offTitleSlotScore(claimTitle, deptName, posName, prevHolder) {
   }
   if (prevHolder && sc > 0) sc += 50; // 既有座位优先(稳定)
   return sc;
+}
+
+/**
+ * 开局「官制任职者自动匹配」给空着的座位找人（tm-patches-start.js 调用）。
+ * 认人的规矩照旧：officialTitle 恰是座名，或 title 含座名。11-13 起再用认座同一套评分（_offTitleSlotScore，带衙门名）把关：
+ *   - 被评分整个否掉的不算。座名常只写「左侍郎」「右侍郎」，原先不看衙门，天启「南京兵部添设左侍郎」潘汝桢被排进
+ *     吏、户、兵三部左侍郎，「东阁大学士·礼部右侍郎」李国普被排进吏部右侍郎；开局认座又按「已有座位优先」把人锁在那里。
+ *   - 旧衔与贬谪处分不算（绍宋吕好问 title「前尚书右丞（建炎七月罢）」原被坐上尚书右丞）。
+ *   - 几人都合时取分最高者，同分取先列者；officialTitle 恰是座名的最优先。原先取先列者，礼部右侍郎给了
+ *     「东阁大学士·礼部右侍郎」李国普（阁臣的部衔），而不是官衔就是「礼部右侍郎」的李标。
+ *   - opts.seated（名→true）：树上已坐着别的座的人，不再凭「title 含座名」排进空座——「殿中侍御史」含「侍御史」，
+ *     绍宋殿中侍御史张浚原被另排进侍御史、一人占两座。官衔恰是座名的照旧。
+ */
+function _offPickVacantSeatHolder(chars, deptName, posName, opts) {
+  posName = String(posName || '');
+  if (!posName) return null;
+  var seated = opts && opts.seated;
+  var best = null, bestScore = 0;
+  (chars || []).forEach(function(c) {
+    if (!c || c.alive === false) return;
+    var s = 0;
+    if (c.officialTitle && c.officialTitle === posName) s = 1000;
+    else if (c.title && c.title.indexOf(posName) >= 0 && !_offIsFormerTitle(c.title) && !(seated && seated[c.name])) s = _offTitleSlotScore(c.title, deptName, posName, false);
+    if (s > bestScore) { bestScore = s; best = c; }
+  });
+  return best;
 }
 
 /** 解析玩家本朝 faction(用于 realm 过滤·敌国/外藩封号不进本朝官制树) */
@@ -1781,6 +1853,9 @@ function _offSyncHoldersFromChars(opts) {
       slots.push({
         node: n, pos: p, dept: n.name || '', posName: p.name || '',
         cap: Math.max(1, p.establishedCount || p.headCount || 1),
+        // 剧本写明满员（缺额为 0）的座位，余下员额是姓名未详的在任者：第二步只让官衔明说这一座的人（≥86）坐进来，
+        //   不凭模糊相似顶替（11-13：绍宋「入内内侍·近习」张去为原被坐进满员的入内内侍省副都知·押班）
+        minFuzzy: Number(p.vacancyCount) === 0 ? 86 : 40,
         prev: _offAllHolderEntries(p).map(function(holder) {
           return { characterId: holder.characterId || '', name: holder.name || '' };
         }),
@@ -1830,7 +1905,7 @@ function _offSyncHoldersFromChars(opts) {
     titles.forEach(function(t, i){
       var nt = _offNormalizeTitleName(t);
       if (!nt) return;
-      if (_OFF_RETIRE_RE.test(String(t))) return;
+      if (_offIsFormerTitle(t)) return;
       if (_OFF_HAREM_RE.test(String(t))) return;
       var idx = claims.length;
       var characterId = c.id === undefined || c.id === null ? '' : String(c.id).trim();
@@ -1856,7 +1931,18 @@ function _offSyncHoldersFromChars(opts) {
         var s = _offTitleSlotScore(claims[ci].title, sl.dept, sl.posName, true);
         if (s >= 40 && s > bestSc) { bestSc = s; bestCi = ci; }
       });
-      if (bestCi >= 0) { used[bestCi] = true; claimSlot[bestCi] = sl; sl.fill.push(claims[bestCi]); }
+      if (bestCi >= 0) {
+        used[bestCi] = true; claimSlot[bestCi] = sl; sl.fill.push(claims[bestCi]);
+        // 同一人说的是这同一座的别的官衔，也算已坐（11-13）：开局把座名记成兼衔、人物自己的官衔又是一条，
+        //   原先第二条在第二步又被坐进同一官位剩下的员额——绍宋中书舍人汪藻、礼部侍郎朱胜非一人占两员。
+        //   只看官衔头一段（≥72，即同衙门同类官）：天启孙元化坐职方司主事，官衔「兵部主事」算同一座；
+        //   「浙江巡抚·右副都御史」头一段是巡抚，不并进右副都御史座。
+        cis.forEach(function(ci){
+          if (used[ci]) return;
+          var head = String(claims[ci].title).replace(/[（(].*?[)）]/g, '').split(/[·、]/)[0];
+          if (head && _offTitleSlotScore(head, sl.dept, sl.posName, false) >= 72) { used[ci] = true; claimSlot[ci] = sl; }
+        });
+      }
     });
   });
 
@@ -1869,11 +1955,14 @@ function _offSyncHoldersFromChars(opts) {
       if (slots[si].fill.length >= slots[si].cap) continue;
       // Authored unknown holders are not vacancies for fuzzy auto-appointment.
       if (slots[si].pos.occupancyStatus === 'unrecorded') continue;
+      // 按制不除（vacantByRule·11-13）：按当时制度空着，不凭官衔模糊补人；正式任命仍可坐（Pass 1 锁既有座位）
+      if (slots[si].pos.vacantByRule) continue;
       var s = _offTitleSlotScore(claims[ci].title, slots[si].dept, slots[si].posName, false);
-      if (s >= 40) pairs.push({ ci: ci, si: si, s: s });
+      if (s >= (slots[si].minFuzzy || 40)) pairs.push({ ci: ci, si: si, s: s });
     }
   }
-  pairs.sort(function(a, b){ return b.s - a.s; });
+  // 同分时主衔先于兼衔与 title 拆出的段（11-13）：阁臣「东阁大学士·礼部右侍郎」的部衔，同分时让给官衔就是礼部右侍郎的人；再同分按人物先后
+  pairs.sort(function(a, b){ return (b.s - a.s) || ((claims[b.ci].primary ? 1 : 0) - (claims[a.ci].primary ? 1 : 0)); });
   pairs.forEach(function(pr){
     if (used[pr.ci]) return;
     var sl = slots[pr.si];
@@ -2020,7 +2109,7 @@ function _engineRetireOfficial(c, reason) {
   if (!c) return;
   c._preRetireTitle = c._preRetireTitle || c.officialTitle || '';
   c._retired = true; c.retired = true; c._retireTurn = (GM.turn || 0); c._seeksRetirement = null;
-  if (c.officialTitle && !_OFF_RETIRE_RE.test(c.officialTitle)) c.officialTitle = c.officialTitle + '·致仕';
+  if (c.officialTitle && !_offIsFormerTitle(c.officialTitle)) c.officialTitle = c.officialTitle + '·致仕';
   // 数组 claim 一并撤(2026-07-04 审查定罪)：officialTitles/concurrentTitles 里未带后缀的旧衔仍是活 claim·
   // 派生同步(claims 过滤只滤带致仕后缀的 officialTitle)会把致仕者原座坐回=致仕自我还原。_preRetireTitle 已留起复凭据。
   c.officialTitles = []; c.concurrentTitles = []; c.concurrentTitle = '';
@@ -2039,7 +2128,7 @@ function _tickOfficePersonnelTurnover() {
   var soft = _OFFICE_RETIRE_CFG.softAge, hard = _OFFICE_RETIRE_CFG.hardAge;
   GM.chars.forEach(function (c) {
     if (!c || c.isPlayer || c.alive === false || c._retired) return;
-    if (!c.officialTitle || _OFF_RETIRE_RE.test(c.officialTitle) || _OFF_HAREM_RE.test(c.officialTitle)) return;   // 非在任/已离职/后宫(后宫封号不入官制代谢)
+    if (!c.officialTitle || _offIsFormerTitle(c.officialTitle) || _OFF_HAREM_RE.test(c.officialTitle)) return;   // 非在任/已离职/旧衔贬谪/后宫(后宫封号不入官制代谢)
     var age = (typeof c.age === 'number') ? c.age : null;
     if (age == null) return;
     if (age >= hard) {
@@ -2077,7 +2166,7 @@ function _tickJingcha() {
   var demoted = [], promoted = [];
   GM.chars.forEach(function (c) {
     if (!c || c.isPlayer || c.alive === false || c._retired) return;
-    if (!c.officialTitle || _OFF_RETIRE_RE.test(c.officialTitle) || _OFF_HAREM_RE.test(c.officialTitle)) return;   // 非在任/已离职/后宫
+    if (!c.officialTitle || _offIsFormerTitle(c.officialTitle) || _OFF_HAREM_RE.test(c.officialTitle)) return;   // 非在任/已离职/旧衔贬谪/后宫
     var streak = c._reviewPoorStreak || 0;
     if (streak >= _JINGCHA_CFG.demoteStreak) {
       // 黜·沉沦庸劣（屡考劣等）→ 功名罚（rankLevel↓·可逆非硬罢），罚后清连劣计数重新起算

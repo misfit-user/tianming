@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "7050fa741b3d889e486135874f63850bf539c9bc6a76eb5724b9679efb8f4533",
-      "size": 392236
+      "sha256": "5e25fa1d52dbdb72fadb3ef556d70079c5ecd947f45ee898e950193f03c45a1f",
+      "size": 392381
     },
     {
       "path": "styles.css",
@@ -6216,8 +6216,8 @@
     },
     {
       "path": "tm-office-system.js",
-      "sha256": "0d3afa2ff52e77cd930442e3d9f4c9703d1d79a55c664d50efefa69fbca3c6d3",
-      "size": 110507
+      "sha256": "aaf88a7302c1ceab2f2a6936e61c52d2a61e1433d355f4f6b890c1b870b348c3",
+      "size": 118828
     },
     {
       "path": "tm-office-tenure.js",
@@ -6296,8 +6296,8 @@
     },
     {
       "path": "tm-patches-start.js",
-      "sha256": "792eeba43269d39f17656d8f034a0cfbd9a2cb871e0ce37525f338116837633e",
-      "size": 133480
+      "sha256": "300ef614cf4f825e1f51f946b64cc39f84a12305b1e64a990663976597227901",
+      "size": 134664
     },
     {
       "path": "tm-patches.js",
@@ -6586,7 +6586,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "376984bbd870740e349aa2cf8cbc74469ddd50596bbf1e866e15593253aa3d0e",
+      "sha256": "43a889269bd17f7dc2258e9ae814d23d4a3932591b6955598a2ec61f928fedcc",
       "size": 141497
     },
     {

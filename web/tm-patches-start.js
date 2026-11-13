@@ -2085,6 +2085,19 @@ function doActualStart(sid, requestToken){
   // 角色的 title/officialTitle 与 officeTree.positions.holder 双向同步
   if (GM.officeTree && GM.officeTree.length > 0 && GM.chars && GM.chars.length > 0) {
     var _syncCount = 0;
+    // 树上已坐着人的名单（11-13）：这些人不再凭 title 含座名被排进别的空座（见 _offPickVacantSeatHolder 的 opts.seated）
+    var _seatedNames = Object.create(null);
+    (function _collectSeated(nodes) {
+      (nodes || []).forEach(function(dept) {
+        (dept.positions || []).forEach(function(pos) {
+          var _hs = [];
+          if (typeof _offAllHolders === 'function') { try { _hs = _offAllHolders(pos) || []; } catch(_) { _hs = []; } }
+          if (!_hs.length && pos.holder) _hs = [pos.holder];
+          _hs.forEach(function(_hn) { if (_hn) _seatedNames[_hn] = true; });
+        });
+        if (dept.subs) _collectSeated(dept.subs);
+      });
+    })(GM.officeTree);
     // 1) position有holder但角色没officialTitle → 设角色officialTitle
     // 2) position无holder但角色title匹配某职位名 → 填充holder
     (function _syncOffice(nodes) {
@@ -2107,21 +2120,25 @@ function doActualStart(sid, requestToken){
           } else {
             // 未考定不是空缺，不能用人物描述猜出一个在任者。
             if (pos.occupancyStatus === 'unrecorded') return;
+            // 按制不除（vacantByRule·11-13）：剧本写明此职按当时制度空着，不按人物描述去补
+            if (pos.vacantByRule) return;
             // 职位空缺 → 从角色的title/officialTitle中寻找匹配
             var posName = pos.name || '';
             if (!posName) return;
-            var matched = GM.chars.find(function(c) {
-              if (c.alive === false) return false;
-              // officialTitle精确匹配
-              if (c.officialTitle && c.officialTitle === posName) return true;
-              // title中包含职位名（如title="尚书令·xx"包含pos.name="尚书令"）
-              if (c.title && c.title.indexOf(posName) >= 0) return true;
-              // title直接就是职位名
-              if (c.title && c.title === posName) return true;
-              return false;
-            });
+            // 11-13 起交官制模块挑人：带衙门名评分、不认旧衔、取分最高者（见 tm-office-system.js _offPickVacantSeatHolder）
+            var matched = typeof _offPickVacantSeatHolder === 'function'
+              ? _offPickVacantSeatHolder(GM.chars, dept.name || '', posName, { seated: _seatedNames })
+              : GM.chars.find(function(c) {
+                  if (c.alive === false) return false;
+                  // officialTitle精确匹配
+                  if (c.officialTitle && c.officialTitle === posName) return true;
+                  // title中包含职位名（如title="尚书令·xx"包含pos.name="尚书令"）
+                  if (c.title && c.title.indexOf(posName) >= 0) return true;
+                  return false;
+                });
             if (matched) {
               pos.holder = matched.name;
+              _seatedNames[matched.name] = true;
               if (!matched.officialTitle) matched.officialTitle = posName;
               _syncCount++;
             }

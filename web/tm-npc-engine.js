@@ -144,10 +144,28 @@ function getNpcPersonalityInjection(maxChars) {
     .slice(0, n);
 
   if (!sorted.length) return '';
+  // 人2-8：「人物统一底子」开着时，性情、特质、所求读名单一行（与问对、常朝同一份人格），不再由八维推一串性格短语
+  //   （八维短语是第三套人格，天启真档魏忠贤推出来是「胆大好斗，冷酷果断，贪财好利……」）；
+  //   八维摘要里不属人格、开局深读别处又没有的几样（忧、思、家人、表字）照旧附在后面
+  var _personOn = typeof TM !== 'undefined' && TM.Person && TM.Person.on();
+  function _personLine(char) {
+    var head = TM.Person.line(char), parts = [];
+    if (Array.isArray(char.stressSources) && char.stressSources.length > 0) parts.push('忧:' + char.stressSources.slice(0, 2).join('/'));
+    if (char.innerThought) parts.push('思:「' + char.innerThought.slice(0, 22) + (char.innerThought.length > 22 ? '…' : '') + '」');
+    if (Array.isArray(char.familyMembers) && char.familyMembers.length > 0) {
+      var fkin = char.familyMembers.filter(function(m) {
+        return !m.dead && (m.relation === '妻' || m.relation === '父' || m.relation === '母' || m.relation === '长子');
+      }).slice(0, 2).map(function(m) { return m.relation + m.name; }).join('·');
+      if (fkin) parts.push('家:' + fkin);
+    }
+    if (char.zi) parts.push('字' + char.zi);
+    // 名单一行以句号等收尾时不再接逗号（免得「入主中原。，忧」）；截断的省略号后照接
+    return head + (parts.length ? (/[。！？；]$/.test(head) ? '' : '，') + parts.join('，') : '');
+  }
   var lines = ['【重要人物·性格行为倾向】'];
   lines.push('以下信息决定了NPC的行为选择，AI在模拟NPC决策时必须参考其性格特征：');
   sorted.forEach(function(c) {
-    lines.push('- ' + getCharacterPersonalityBrief(c));
+    lines.push('- ' + (_personOn ? _personLine(c) : getCharacterPersonalityBrief(c)));
   });
   return lines.join('\n');
 }

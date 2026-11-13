@@ -132,8 +132,8 @@ function _generateConsortLiterary() {
     if ((c.stress||0) > 55) prob += 0.05;  // 压力大→发泄作文
     var neglectTurns = Math.max(0, GM.turn - (c._lastEmperorVisitTurn||0));
     if (neglectTurns >= 4) prob += 0.06;     // 冷落久→借文抒怀
-    if (c.traitIds && P.traitDefinitions) {
-      var tNames = c.traitIds.map(function(id){var d=P.traitDefinitions.find(function(t){return t.id===id;}); return d?d.name:'';}).join('');
+    if (c.traitIds && P.traitDefinitions) {  // person-ok：特质名只用来加减作文的机率，不进提示词
+      var tNames = c.traitIds.map(function(id){var d=P.traitDefinitions.find(function(t){return t.id===id;}); return d?d.name:'';}).join('');  // person-ok
       if (/笔|文|风雅|才女|聪慧/.test(tNames)) prob += 0.1;
     }
     prob = Math.min(0.3, prob);

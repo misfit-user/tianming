@@ -434,11 +434,13 @@ async function aiDeepReadScenario(options) {
     // 面子
     if (typeof FaceSystem !== 'undefined' && c._face !== undefined) line += ' ' + FaceSystem.getFaceText(c);
     // 特质名（比8D维度更可读）
-    if (c.traitIds && c.traitIds.length > 0 && P.traitDefinitions) {
+    // 人2-8：「人物统一底子」开着时，特质、性情、所求并成名单一行写在「人格:」里（与问对、常朝同一份人格），下面的特质、目标、性格不再各写
+    var _pOnB = typeof TM !== 'undefined' && TM.Person && TM.Person.on();
+    if (!_pOnB && c.traitIds && c.traitIds.length > 0 && P.traitDefinitions) {
       var _tNames = c.traitIds.map(function(tid){var d=P.traitDefinitions.find(function(t){return t.id===tid;});return d?d.name:'';}).filter(Boolean);
       if (_tNames.length) line += ' 特质:' + _tNames.join('·');
     }
-    if (c.stance) line += ' 立场:' + c.stance;
+    if (c.stance && !(_pOnB && c.stance === c.personalGoal)) line += ' 立场:' + c.stance;  // 开着时立场与所求相同只写所求（人格核同此）
     if (c.role && c.role !== c.title) line += ' 身份:' + c.role;
     if (c.faith) line += ' 信仰:' + c.faith;
     if (c.culture) line += ' 文化:' + c.culture;
@@ -448,13 +450,14 @@ async function aiDeepReadScenario(options) {
     if (c.partyRank) line += '(' + c.partyRank + ')';
     if (c.location && !_isSameLocation(c.location, GM._capital||'京城')) line += ' 在:' + c.location;
     if (c.bio) line += ' 简介:' + c.bio;
-    if (c.personalGoal) line += ' 目标:' + c.personalGoal;
+    if (_pOnB) { var _plB = TM.Person.line(c, { noName: true, goalMax: 200 }); if (_plB) line += ' 人格:' + _plB; }
+    else if (c.personalGoal) line += ' 目标:' + c.personalGoal;
     if (c._goalSatisfaction !== undefined) line += '(满足' + Math.round(c._goalSatisfaction) + '%)';
     // 永久伤疤/勋章（一生中最深刻的经历）
     if (c._scars && c._scars.length > 0) {
       line += ' \u523B\u9AA8:' + c._scars.slice(-3).map(function(s) { return s.event + '[' + s.emotion + ']'; }).join(';');
     }
-    if (c.personality) line += ' \u6027\u683C:' + String(c.personality);
+    if (!_pOnB && c.personality) line += ' \u6027\u683C:' + String(c.personality);
     if (c.appearance) line += ' \u5916\u8C8C:' + String(c.appearance);
     if (typeof _tmIsPlayerConsort === 'function' ? _tmIsPlayerConsort(c) : c.spouse === true) line += ' [\u914D\u5076]';
     if (c.family) line += ' \u5BB6\u65CF:' + c.family;
@@ -501,11 +504,15 @@ async function aiDeepReadScenario(options) {
       if (hasMemory || (c._mood && c._mood !== '平')) { _tier3.push(c); return; }
     });
 
+    // 人2-8：「人物统一底子」开着时只取此人自己那段（personalOnly）：记忆开头是约 500 字的「我是谁」身份块与天下大势，
+    //   原来截 300、180 字全落在那里，此人的往事、铭记、恩怨进不来
+    var _pOnM = typeof TM !== 'undefined' && TM.Person && TM.Person.on();
+    var _memOpts = _pOnM ? { personalOnly: true } : undefined;
     // Tier 1: 完整记忆上下文
     if (_tier1.length > 0) {
       _memLines.push('\n〔核心人物·完整记忆〕');
       _tier1.forEach(function(c) {
-        var ctx = NpcMemorySystem.getMemoryContext(c.name);
+        var ctx = NpcMemorySystem.getMemoryContext(c.name, _memOpts);
         if (ctx) _memLines.push('★ ' + c.name + '：' + ctx.slice(0, _t1Limit));
       });
     }
@@ -519,7 +526,7 @@ async function aiDeepReadScenario(options) {
         return bM - aM;
       });
       _tier2.forEach(function(c) {
-        var ctx = NpcMemorySystem.getMemoryContext(c.name);
+        var ctx = NpcMemorySystem.getMemoryContext(c.name, _memOpts);
         if (ctx) _memLines.push('- ' + c.name + '：' + ctx.slice(0, _t2Limit));
       });
     }
@@ -542,7 +549,7 @@ async function aiDeepReadScenario(options) {
     _memLines.push('共' + (_tier1.length + _tier2.length + _tier3.length) + '人有记忆（核心' + _tier1.length + '+重要' + _tier2.length + '+一般' + _tier3.length + '，模型倍率×' + _memScale.toFixed(1) + '）');
     _memLines.push('【记忆→行为规则】所有有记忆的NPC，其行为必须与记忆一致。');
     _memLines.push('核心人物(★)的记忆逐条考虑；重要人物(-)的关键事件影响行为；一般人物的情绪体现在叙事中。');
-    _memLines.push('特质(traitIds)叠加在记忆之上：狡诈者隐忍不发但暗中报复；坦诚者有仇当面说；勇猛者冲动行事；怯懦者逃避问题。');
+    _memLines.push((_pOnM ? '特质' : '特质(traitIds)') + '叠加在记忆之上：狡诈者隐忍不发但暗中报复；坦诚者有仇当面说；勇猛者冲动行事；怯懦者逃避问题。');
     blockB += '\n' + _memLines.join('\n') + '\n';
   }
 
@@ -1275,8 +1282,10 @@ async function aiDeepReadScenario(options) {
     var charDeepBlock = '请逐个分析以下关键角色的内心世界和行为预测：\n';
     topChars.forEach(function(c) {
       charDeepBlock += '\n' + c.name + (c.title?'('+c.title+')':'') + ' 忠' + (c.loyalty||50) + ' 野' + (c.ambition||50) + ' 智' + (c.intelligence||50);
-      if (c.personality) charDeepBlock += ' 性格:' + c.personality;
-      if (c.personalGoal) charDeepBlock += ' 目标:' + c.personalGoal;
+      var _pOnD = typeof TM !== 'undefined' && TM.Person && TM.Person.on();  // 人2-8：开着时性情、特质、所求读名单一行（与问对、常朝同一份人格）
+      if (_pOnD) { var _plD = TM.Person.line(c, { noName: true, goalMax: 200 }); if (_plD) charDeepBlock += ' 人格:' + _plD; }
+      if (!_pOnD && c.personality) charDeepBlock += ' 性格:' + c.personality;
+      if (!_pOnD && c.personalGoal) charDeepBlock += ' 目标:' + c.personalGoal;
       if (c.bio) charDeepBlock += ' 经历:' + c.bio;
       if (c.faction) charDeepBlock += ' 势力:' + c.faction;
       if (c.party) charDeepBlock += ' 党派:' + c.party;

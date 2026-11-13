@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09T06:36:13.619Z",
+  "generatedAt": "2026-11-13T10:27:40.156Z",
   "note": "各文件直接读人格字段的行数；只减不增。新拼人格改走 TM.Person（tm-person.js）。",
   "files": {
     "tm-prompt-composer.js": 1,
@@ -25,11 +25,10 @@
     "tm-endturn-helpers.js": 1,
     "tm-renwu-ui.js": 7,
     "tm-ai-planning.js": 4,
-    "tm-endturn-prep.js": 2,
     "tm-class-character-relations.js": 1,
     "tm-endturn-prompt.js": 1,
     "tm-endturn-apply.js": 1,
-    "tm-endturn-followup.js": 5,
+    "tm-endturn-followup.js": 3,
     "tm-patches-start.js": 3,
     "editor-details.js": 6,
     "tm-faction-npc-llm-decision.js": 4,

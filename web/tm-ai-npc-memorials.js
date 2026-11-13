@@ -214,6 +214,8 @@
           parts.push('~' + rstr);
         }
       }
+      // 人2-8：「人物统一底子」开着时带上名单一行（性情、特质、所求，与问对、常朝同一份人格）；原来只有官职与数值，上面标题说的「人设」其实没有
+      if (global.TM && global.TM.Person && global.TM.Person.on()) { var _pl = global.TM.Person.line(c, { noName: true }); if (_pl) parts.push('性:' + _pl); }
       lines.push('  · ' + parts.join(' '));
     });
     return lines.join('\n');

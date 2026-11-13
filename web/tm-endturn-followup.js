@@ -597,7 +597,8 @@
           if (c.party) parts.push('\u515A:' + c.party);
           if (c.officialTitle && c.officialTitle !== '\u65E0') parts.push('\u5B98:' + c.officialTitle);
           parts.push('\u5FE0' + (c.loyalty || 50) + ' \u91CE' + (c.ambition || 50) + ' \u667A' + (c.intelligence || 50) + ' \u6B66\u52C7' + (c.valor || 50) + ' \u519B\u4E8B' + (c.military || 50) + ' \u653F' + (c.administration || 50) + ' \u7BA1' + (c.management || 50) + ' \u9B45' + (c.charisma || 50) + ' \u4EA4' + (c.diplomacy || 50) + ' \u4EC1' + (c.benevolence || 50));
-          if (c.traits && c.traits.length > 0 && typeof getTraitBehaviorSummary === 'function') {
+          var _pOn15 = typeof TM !== 'undefined' && TM.Person && TM.Person.on();  // 人2-8：开着时特质、性情、所求并成名单一行写在「性:」里（与问对、常朝同一份人格）
+          if (!_pOn15 && c.traits && c.traits.length > 0 && typeof getTraitBehaviorSummary === 'function') {
             parts.push('\u7279:' + c.traits.slice(0, 6).map(function(tid) {
               var t = (typeof TRAIT_LIBRARY !== 'undefined' && TRAIT_LIBRARY[tid]) ? TRAIT_LIBRARY[tid].name : tid;
               return t;
@@ -605,9 +606,10 @@
           }
           if ((c.stress || 0) > 20) parts.push('\u538B\u529B' + c.stress);
           if (c._mood && c._mood !== '\u5E73') parts.push('\u60C5:' + c._mood);
-          if (c.personality) parts.push('\u6027:' + c.personality);
+          if (_pOn15) { var _pl15 = TM.Person.line(c, { noName: true }); if (_pl15) parts.push('\u6027:' + _pl15); }
+          else if (c.personality) parts.push('\u6027:' + c.personality);
           if (typeof _tmIsPlayerConsort === 'function' ? _tmIsPlayerConsort(c) : c.spouse === true) parts.push('[\u540E\u5BAB]');
-          if (c.personalGoal) parts.push('\u6C42:' + c.personalGoal.substring(0, 30));
+          if (!_pOn15 && c.personalGoal) parts.push('\u6C42:' + c.personalGoal.substring(0, 30));
           // 伤疤/勋章——永久影响此人行为的刻骨经历
           if (c._scars && c._scars.length > 0) {
             parts.push('\u4F24:' + c._scars.slice(-3).map(function(s) { return s.event + '[' + s.emotion + ']'; }).join(';'));
@@ -1573,8 +1575,8 @@
                 if (!GM._npcCognition || typeof GM._npcCognition !== 'object') GM._npcCognition = {};
                 var _exCog19 = GM._npcCognition[ech.name];
                 if (!_exCog19 || !_exCog19._identityInitialized) {
-                  var _sp19 = String(ech.speechStyle || tgt.speechStyle || '').slice(0, 120);
-                  var _pc19 = String(ech.personality || tgt.personality || '').slice(0, 80);
+                  var _sp19 = String(ech.speechStyle || tgt.speechStyle || '').slice(0, 120);  // person-ok：给认知画像写初值，不拼提示词
+                  var _pc19 = String(ech.personality || tgt.personality || '').slice(0, 80);  // person-ok
                   var _si19 = String(ech.bio || ech.personalGoal || tgt.bio || '').slice(0, 120);
                   if (_sp19 || _pc19 || _si19) {
                     GM._npcCognition[ech.name] = Object.assign({}, _exCog19 || {}, {
@@ -2777,12 +2779,15 @@
             }
             if (c.family) _lines.push('  \u5BB6\u65CF\uFF1A' + c.family);
             if (c.aspiration || c.goal || c.lifeGoal) _lines.push('  \u5FD7\u5411\uFF1A' + (c.aspiration||c.goal||c.lifeGoal));
-            if (c.personality) _lines.push('  \u6027\u683C\uFF1A' + String(c.personality).slice(0,60));
+            // 人2-8：「人物统一底子」开着时，性情、特质、所求、口吻读名单一行（与问对、常朝同一份人格），画像照它写，不再各说各的
+            var _pOn07 = typeof TM !== 'undefined' && TM.Person && TM.Person.on();
+            if (_pOn07) { var _pl07 = TM.Person.line(c, { noName: true, speech: true }); if (_pl07) _lines.push('  人格：' + _pl07); }
+            else if (c.personality) _lines.push('  \u6027\u683C\uFF1A' + String(c.personality).slice(0,60));
             if (c.birthplace) _lines.push('  \u7C4D\u8D2F\uFF1A' + c.birthplace);
             if (c.ethnicity) _lines.push('  \u6C11\u65CF\uFF1A' + c.ethnicity);
             if (c.faith) _lines.push('  \u4FE1\u4EF0\uFF1A' + c.faith);
             if (c.learning) _lines.push('  \u5B66\u8BC6\uFF1A' + c.learning);
-            if (c.speechStyle) _lines.push('  口吻：' + c.speechStyle);
+            if (!_pOn07 && c.speechStyle) _lines.push('  口吻：' + c.speechStyle);
             // 五常十维
             var _fv = [];
             if (c.ren != null) _fv.push('\u4EC1' + c.ren);
@@ -2801,7 +2806,7 @@
             if (c.diplomacy != null) _ab.push('\u4EA4' + c.diplomacy);
             if (c.benevolence != null) _ab.push('\u4EC1' + c.benevolence);
             if (_ab.length) _lines.push('  \u80FD\u529B\uFF1A' + _ab.join('/'));
-            if (Array.isArray(c.traits) && c.traits.length) _lines.push('  \u7279\u8D28\uFF1A' + c.traits.slice(0,4).join('/'));
+            if (!_pOn07 && Array.isArray(c.traits) && c.traits.length) _lines.push('  \u7279\u8D28\uFF1A' + c.traits.slice(0,4).join('/'));
             if (c.isHistorical || c.isHistoric) _lines.push('  \u26A0 \u53F2\u5B9E\u4EBA\u7269\u2014\u2014\u6240\u6709\u5185\u5BB9\u5FC5\u987B\u7B26\u5408\u6B63\u53F2\u8BB0\u8F7D\u3002');
             // 已有稳定画像
             if (GM._npcCognition && GM._npcCognition[c.name] && GM._npcCognition[c.name]._identityInitialized) {

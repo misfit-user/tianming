@@ -4481,8 +4481,8 @@
     },
     {
       "path": "tm-ai-npc-memorials.js",
-      "sha256": "ad3a93bf70ecd3fe383fd38df922812b23129a44b8d6118db55143e669c70371",
-      "size": 12954
+      "sha256": "c20c6da32b5856b31b278362373cfb72afcdf80e2e48a11e664389639d18e5e0",
+      "size": 13324
     },
     {
       "path": "tm-ai-output-validator.js",
@@ -4491,8 +4491,8 @@
     },
     {
       "path": "tm-ai-planning.js",
-      "sha256": "ed389c938e963de87b75f1c0b7ced2d3d9d1188807aea56e0bf3ab5a22e6b187",
-      "size": 127178
+      "sha256": "4f3448eb2b9422ce6488224f20da8e99ad750262b317a1375e8702a680855e45",
+      "size": 128478
     },
     {
       "path": "tm-ai-reply-retry.js",
@@ -5101,8 +5101,8 @@
     },
     {
       "path": "tm-endturn-followup.js",
-      "sha256": "d55fc04164c3a5a3df9755d859c08b7f3a3d488f9ee0599b3cc2ea86f3e3fbc2",
-      "size": 289569
+      "sha256": "83a869f321b75a731807d07cfecf5746623edce211da470f03c20501f9cf5922",
+      "size": 290430
     },
     {
       "path": "tm-endturn-helpers.js",
@@ -5136,8 +5136,8 @@
     },
     {
       "path": "tm-endturn-prep.js",
-      "sha256": "dfd2d04ffa4ce837882f8dcf35cbd4c0221b17fa482002629425f5c924a6b3cc",
-      "size": 40888
+      "sha256": "02584b217fb777713f30521d2b3e6ab5b1521238a38021c63266638f8af0560d",
+      "size": 40976
     },
     {
       "path": "tm-endturn-progress.js",
@@ -5146,8 +5146,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "b9b1873ff9c774e41039166363bac8781c879605d804e0211a82001355c57671",
-      "size": 364788
+      "sha256": "7c1e3fccfcf8dffd583f4da012c039e1241926225c33890fac8cc0437e444252",
+      "size": 365862
     },
     {
       "path": "tm-endturn-province.js",
@@ -6121,8 +6121,8 @@
     },
     {
       "path": "tm-npc-engine.js",
-      "sha256": "9a30da92bbdc61734629a4dd70fd7b82c14176eb0dd5d0700ca20a87399a04b6",
-      "size": 27571
+      "sha256": "8c35b53a7608d8f8afab6bc6a5cea779dd859942b73ecd877e3ea4a60459e608",
+      "size": 29154
     },
     {
       "path": "tm-npc-local-ai.js",
@@ -6586,7 +6586,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "0a9eb065cb005bad324ff2ce461d9ae42abd893f7e88b13880836caf88e36b2e",
+      "sha256": "44bcf947ce8e660e77aa07b63369d11dfa8e2c5483f1b94e07db51e3cf2ad014",
       "size": 141497
     },
     {

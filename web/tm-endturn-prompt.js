@@ -1051,7 +1051,9 @@
         // ★2026-07-01 S2治「跨界面人格分裂」:补人格串 + 顶级伤疤(定义性记忆)·令推演中的此人与问对/奏疏/朝议同一副性情。
         //   推演是多 NPC 单 prompt·不塞整份 getMemoryContext(token爆)·只补最定义人格的两样(轻量)·记忆事项仍由下方 imp 门槛出。
         var _selfBits = [];
-        if (c.personality) _selfBits.push(String(c.personality).slice(0, 60));
+        // 人2-8：「人物统一底子」开着时，性情、特质、所求读名单一行（与问对、常朝、奏疏同一份人格），不再只截性格 60 字
+        if (typeof TM !== 'undefined' && TM.Person && TM.Person.on()) { var _pLine = TM.Person.line(c, { noName: true }); if (_pLine) _selfBits.push(_pLine); }
+        else if (c.personality) _selfBits.push(String(c.personality).slice(0, 60));
         if (Array.isArray(c._scars) && c._scars.length) {
           var _topScar = c._scars.slice(-2).map(function(s){ return String(s.event||'').slice(0,24) + (s.emotion ? '[' + s.emotion + ']' : ''); }).filter(Boolean).join('、');
           if (_topScar) _selfBits.push('铭心：' + _topScar);
@@ -2856,6 +2858,8 @@
           if (_privRels.length > 0) sysP += '\n  私人关系：' + _privRels.join('、');
           // 玩家记忆中的私人情感
           if (typeof NpcMemorySystem !== 'undefined') {
+            // 人2-8 核过，这里不改只取本人那段（personalOnly）：各引擎的天下大势精要（货币、央地、户口、环境、诏令、皇权）只在
+            //   getMemoryContext 里拼，主推演只经玩家这段拿到；改了会把它们一起丢掉
             var _pMem = NpcMemorySystem.getMemoryContext(pi.characterName);
             if (_pMem) sysP += '\n  \u8FD1\u671F\u5FC3\u7EEA\uFF1A' + _pMem;
           }
@@ -3308,6 +3312,7 @@
     sysP += '\n- 地方官：发展治理(develop)、但也可能贪腐中饱(hoard)';
     sysP += '\n- 失意者：密谋串联(conspire)、出逃(flee)、告老(retire)';
     sysP += '\n- 小人物也要有行动——不是只有高官才会做事';
+    var _traitRuleAt = sysP.length;  // 人2-8：下面这段规矩的起点
     sysP += '\n\n【特质直接驱动行为——叠加在所有层之上】';
     sysP += '\n每个角色的traitIds(特质)不是装饰标签，而是行为的直接驱动力：';
     sysP += '\n  勇猛(brave) → 主动请战、冲动行事、鄙视怯懦者';
@@ -3324,6 +3329,8 @@
     sysP += '\n  宽厚(forgiving) → 既往不咎、化敌为友、但可能被反复利用';
     sysP += '\n特质与能力值组合产生独特行为——勇猛+高智=深思熟虑的果断；勇猛+低智=鲁莽冲动';
     sysP += '\n对立特质的角色自然互相看不惯——贪婪者鄙视慷慨者"败家"，坦诚者厌恶狡诈者"虚伪"';
+    // 人2-8：「人物统一底子」开着时，人物资料里的特质只写中文定义名（名单一行），这段规矩也不再提 traitIds、不带英文代号
+    if (typeof TM !== 'undefined' && TM.Person && TM.Person.on()) sysP = sysP.slice(0, _traitRuleAt) + sysP.slice(_traitRuleAt).replace('traitIds(特质)', '特质').replace(/\([a-z]+\)/g, '');
 
     _mark('npcDeep');
     sysP += '\n\n【NPC主动来书·鸿雁传书·扩充版】';

@@ -2901,13 +2901,13 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "1bc54fc78465cbcbe51ae155c6cb9948ab27bb776d19b0bb65434c43688e7236",
-      "size": 6008
+      "sha256": "9bdcd38d1a8c078da83a88dbe0c97c7014981895526ed21545f759645445d117",
+      "size": 508286
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "216c0e413be966642c123a3c4c4ef753d85a5fcd73c9c7c9c855b34404a72e86",
-      "size": 6387
+      "sha256": "18d28772e40397171fc9430563795a60299f95fd59bbee124ab6e964f31b4985",
+      "size": 508689
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
@@ -6356,8 +6356,8 @@
     },
     {
       "path": "tm-political-actions.js",
-      "sha256": "f62f36a764aaa9cc67c52ea10a2872e3280cf153fe22ea0390f061de79275362",
-      "size": 39178
+      "sha256": "8465f52b15b2cfe31dfdd985e8603f1445be35f306b91e3548c2b573d35ede6b",
+      "size": 42754
     },
     {
       "path": "tm-post-turn-jobs.js",
@@ -6586,8 +6586,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "c21276c7dd23ac4cf6e674044809506b1d91786a80ba5bb625ce4d7c5aa86ae4",
-      "size": 141495
+      "sha256": "376984bbd870740e349aa2cf8cbc74469ddd50596bbf1e866e15593253aa3d0e",
+      "size": 141497
     },
     {
       "path": "tm-start-selector.js",

@@ -119,6 +119,23 @@ function serializeEditorResetData(sourceHash) {
   ].join('\n');
 }
 
+// 外藩职任：非玩家势力的 officeTree 与议事规程（politicalRules），按势力 id 存。
+// 剧本给外藩新补职任后，此前开局的存档里没有这些职任，读档与过回合时由 TM.PoliticalActions 照此补回（tm-political-actions.js）。
+// 存成 JSON 字串：只有补旧档时才解析，开局不必把几十万字的对象建出来；manifest.json 缩进时也不会把它摊成上千行。
+function factionOffices(data) {
+  const player = data.playerInfo && data.playerInfo.factionName;
+  const out = {};
+  (Array.isArray(data.factions) ? data.factions : []).forEach((fac) => {
+    if (!fac || !fac.id || fac.isPlayer || (player && fac.name === player)) return;
+    if (!fac.officeTree && !fac.politicalRules) return;
+    const row = { name: fac.name };
+    if (fac.officeTree) row.officeTree = fac.officeTree;
+    if (fac.politicalRules) row.politicalRules = fac.politicalRules;
+    out[fac.id] = row;
+  });
+  return JSON.stringify(out);
+}
+
 function buildArtifacts() {
   const entries = readSources();
   const tianqi = entries.find((entry) => entry.key === 'tianqi7');
@@ -158,7 +175,8 @@ function buildArtifacts() {
       bytes: entry.builtinBytes,
       sha256: entry.builtinHash,
       sourceBytes: entry.bytes,
-      sourceSha256: entry.hash
+      sourceSha256: entry.hash,
+      factionOffices: factionOffices(entry.data)
     }))
   };
   const manifestJson = JSON.stringify(manifest, null, 2);

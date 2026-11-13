@@ -303,24 +303,77 @@
     return {system:'你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达到程序条件后才可能形成组织签署。输出 JSON。',
       user:JSON.stringify(input)+'\n输出 {rationale,actions,proposals,proposalResponses}；各不超过 4 项，也可为空。actions 支持 office_change {kind, targetId, positionId, actingPositionId}、fiscal_policy {fromAccount,toAccount,amounts,purpose,actingPositionId}；履行 proposals 的 public_transfer 义务时，还须引用 proposalId、proposalVersion、obligationId，与原条款完全一致、diplomacy {toFactionId,proposalType,terms,durationTurns,actingPositionId}；memorial/edict/court_alignment {targetId,content} 表示提交文书或协商，不能自行通过命令。actions 也支持 military_order {armyId,commanderId或destinationId,actingPositionId}、declare_war/join_war {targetOrganizationId,casusBelliId,actingPositionId,warId}，须具备对应权限。对 candidates 可填 sourcePlanId、decision(reject/defer)、reason 明确拒绝或暂缓。若采纳 candidates 中的事项，填对应 sourcePlanId，并补充自己选择的人选或办法。proposalResponses 须含 proposalId、proposalVersion、decision(accept/reject/counter/defer/approve)、actingPositionId；counter 须含完整 counterTerms。只是材料，不得填写完成凭据或财政/人数差额。'};
   }
+  // 给职位定稳定 id（没有的按官制路径生成）、按唯一姓名补任职人 id；迁移旧档与补回外藩职任共用这一套
+  function identifyPositions(g,tree,organizationId,ids){
+    TM.OfficeHolderState.walk(tree,function(pos,node,path){
+      var org=S(pos.authorityFactionId||node.authorityFactionId||organizationId),id=S(pos.id)||'political-office:'+encodeURIComponent(org)+':'+encodeURIComponent(path);
+      var key=org+':'+id;if(ids[key]&&ids[key]!==pos)throw Error('ambiguous_position_migration:'+key);ids[key]=pos;
+      if(!pos.id){pos.id=id;pos._identitySource='legacy-office-path';}
+      if(!pos.holderId&&pos.holder){var ch=resolve('character',{name:pos.holder},g);if(ch)pos.holderId=ch.id;}
+      A(pos.actualHolders).forEach(function(h){if(h&&h.generated!==false&&!h.characterId&&h.name){var ch=resolve('character',{name:h.name},g);if(ch)h.characterId=ch.id;}});
+    });
+  }
+  // 补外藩职任（11-13）：天启外藩职任 09-28 才写进剧本，此前开局的存档里外藩没有 officeTree；政治行动按职任绑真人拿主意，
+  // 旧档里外藩便无人可绑。此后剧本再给哪家补职任，已开局的存档同样带不进来。读档与过回合时按官方剧本清单
+  // （bundled-scenarios/manifest.js 的 factionOffices）补回存档里整棵缺失的职任，连同该势力的议事规程；
+  // 已有职任的势力一概不动，不拼半棵。剧本开局的任职人本局已故的，补回时不挂名、记出缺。
+  var officialOfficeCache = { source: null, data: null };
+  function officialFactionOffices(g) {
+    var manifest = global.TMOfficialScenarioManifest;
+    var entry = A(manifest && manifest.entries).filter(function(e) { return e && S(e.id) === S(g.sid); })[0];
+    if (!entry || typeof entry.factionOffices !== 'string') return null;
+    if (officialOfficeCache.source !== entry.factionOffices) {
+      officialOfficeCache = { source: entry.factionOffices, data: JSON.parse(entry.factionOffices) };
+    }
+    return officialOfficeCache.data;
+  }
+  function isPlayerOrganization(g, fac) {
+    var start = g.startContext || {}, info = g.playerInfo || {};
+    var id = S(start.playerFactionId || info.factionId || g.playerFactionId);
+    var name = S(info.factionName || g.playerFactionName || g.playerFaction);
+    return !!fac.isPlayer || (!!id && S(fac.id) === id) || (!!name && fac.name === name);
+  }
+  function backfillOfficialOffices(g) {
+    var offices = officialFactionOffices(g), hs = TM.OfficeHolderState, native = nativeState(g), filled = [];
+    if (!offices || !hs) return filled;
+    Object.keys(offices).forEach(function(id) {
+      var row = offices[id];
+      var fac = A(g.facs).filter(function(f) { return f && S(f.id) === id; })[0];
+      if (!fac) {
+        var named = A(g.facs).filter(function(f) { return f && f.name === row.name; });
+        fac = named.length === 1 ? named[0] : null;
+      }
+      if (!fac || fac.destroyed || fac.eliminated || isPlayerOrganization(g, fac)) return;
+      if (Array.isArray(fac.officeTree) && fac.officeTree.length) return;
+      if (native && native.offices && native.offices[S(fac.id)]) return;
+      if (!Array.isArray(row.officeTree) || !row.officeTree.length) return;
+      var tree = JSON.parse(JSON.stringify(row.officeTree));
+      hs.walk(tree, function(pos) {
+        if (pos.holderId && !hs.identity(g, pos.holderId).char) delete pos.holderId;  // 剧本里的人物 id 本局没有：改按姓名认
+        var holder = hs.identity(g, pos.holderId, pos.holder).char;
+        if (!holder || (holder.alive !== false && !holder.dead)) return;
+        pos.holder = '';
+        delete pos.holderId;
+        if (pos.vacancyCount != null) pos.vacancyCount = Math.min(hs.number(pos.establishedCount, 1), Number(pos.vacancyCount) + 1);
+      });
+      identifyPositions(g, tree, S(fac.id), {});
+      fac.officeTree = tree;
+      if (row.politicalRules && !fac.politicalRules) fac.politicalRules = JSON.parse(JSON.stringify(row.politicalRules));
+      filled.push(S(fac.id));
+    });
+    return filled;
+  }
   function prepareMigration(g){
     ledger().migrate(g);var st=g._npcActionState;
     if(st.politicalVersion===1)return {changed:false};
     if(st.politicalVersion!=null)throw Error('unsupported_political_state_version');
-    var ids={};TM.OfficeHolderState.scopes(g).forEach(function(scope){
-      TM.OfficeHolderState.walk(scope.tree,function(pos,node,path){
-        var org=S(pos.authorityFactionId||node.authorityFactionId||scope.organizationId),id=S(pos.id)||'political-office:'+encodeURIComponent(org)+':'+encodeURIComponent(path);
-        var key=org+':'+id;if(ids[key]&&ids[key]!==pos)throw Error('ambiguous_position_migration:'+key);ids[key]=pos;
-        if(!pos.id){pos.id=id;pos._identitySource='legacy-office-path';}
-        if(!pos.holderId&&pos.holder){var ch=resolve('character',{name:pos.holder},g);if(ch)pos.holderId=ch.id;}
-        A(pos.actualHolders).forEach(function(h){if(h&&h.generated!==false&&!h.characterId&&h.name){var ch=resolve('character',{name:h.name},g);if(ch)h.characterId=ch.id;}});
-      });
-    });
+    var ids={};TM.OfficeHolderState.scopes(g).forEach(function(scope){identifyPositions(g,scope.tree,scope.organizationId,ids);});
     if(TM.FactionDiplomacy)TM.FactionDiplomacy.migrate(g);
     st.politicalVersion=1;return {changed:true};
   }
   function migrate(g,opts){
     g=g||G();opts=opts||{};
+    if(g===G()){try{backfillOfficialOffices(g);}catch(e){try{console.warn('[PoliticalActions] 补外藩职任失败',e);}catch(_){}}}
     if(g._npcActionState&&g._npcActionState.politicalVersion===1)return {ok:true,changed:false};
     if(g!==G()) {var copy=JSON.parse(JSON.stringify(g));prepareMigration(copy);return {ok:true,game:copy,changed:true};}
     var guards=TM.AIChange&&TM.AIChange.WriteGuards;if(!guards)return {ok:false,reason:'migration_writer_unavailable'};
@@ -338,5 +391,5 @@
       if(!selected)return;var p=offer(org,selected.actor,{type:'diplomacy',targetOrganizationId:r.targetId,intent:S(r.action||r.strategic_intent),factStatus:'suggestion'},sourceId+':'+i);if(p)out.push(p.id);
     });return out;
   }
-  TM.PoliticalActions={resolve:resolve,controlled:controlled,live:live,authority:authority,principals:principals,choose:choose,bind:bind,valid:valid,action:action,execute:execute,submit:submit,view:view,signature:signature,defer:defer,flush:flush,applyPacket:applyPacket,prompt:prompt,offer:offer,localCandidates:localCandidates,onReceipt:onReceipt,verifyEvidence:verifyEvidence,migrate:migrate,strategicPrompt:strategicPrompt,strategicCandidates:strategicCandidates,performWar:performWar,verifyReview:verifyReview,verifyIssued:function(a){return issuedDomainActions.has(a);}};
+  TM.PoliticalActions={resolve:resolve,controlled:controlled,live:live,authority:authority,principals:principals,choose:choose,bind:bind,valid:valid,action:action,execute:execute,submit:submit,view:view,signature:signature,defer:defer,flush:flush,applyPacket:applyPacket,prompt:prompt,offer:offer,localCandidates:localCandidates,onReceipt:onReceipt,verifyEvidence:verifyEvidence,migrate:migrate,backfillOfficialOffices:backfillOfficialOffices,strategicPrompt:strategicPrompt,strategicCandidates:strategicCandidates,performWar:performWar,verifyReview:verifyReview,verifyIssued:function(a){return issuedDomainActions.has(a);}};
 })(typeof window!=='undefined'?window:globalThis);

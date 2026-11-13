@@ -5146,8 +5146,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "7c1e3fccfcf8dffd583f4da012c039e1241926225c33890fac8cc0437e444252",
-      "size": 365862
+      "sha256": "7efbc01df013237c5a9dcf4215f2bd6d99954afeda95f68918eebc7402b8d42a",
+      "size": 366449
     },
     {
       "path": "tm-endturn-province.js",
@@ -5866,8 +5866,8 @@
     },
     {
       "path": "tm-mechanics-memory.js",
-      "sha256": "1f86da4733bd21e288d645f6e67621782f01bb7ac2b22b9656cb92a5d84c54eb",
-      "size": 84958
+      "sha256": "399bb06b4c13bc2f66e0aa7ceb69df3ceed623b5cc9e2b24e3cb203e80084ce6",
+      "size": 85817
     },
     {
       "path": "tm-mechanics-world.js",
@@ -6586,7 +6586,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "5b2f68d13c26d77408d9bfa667e655130b508ff28cd51a33ff04f3d3d7dd92c6",
+      "sha256": "89c4b62dd612ebb266ecf48d847fb8b02622fc927bcd0d38a18221e350a737f5",
       "size": 141497
     },
     {

@@ -1213,3 +1213,7 @@ E:/tianming-tuiyan-lab/.key.json
   - 个人原始记录（`tm-personal-memory-recall.js`，「本局当前资料」与按议题回想的记忆都读它）不带 `[NPC-memory:char_…]` 编号；「本 NPC 关键记忆」（`tm-ai-infra.js`）与它一样，开局前（含 0 回合）的事写「开局前」，不写 T-1800、T0，开局后照写回合。
   - 顺手修：党派成员剧本里是「魏忠贤·崔呈秀……」这样的字串，原来按数组取，「成员」一栏一直是空的（主推演那份同修）。
   - 天启真档对照，不调模型（实验台 `tools/tc-plain-dry.cjs`，输出在 `E:/tianming-tmp/person-2/tc-dry`）：魏忠贤、温体仁、皇太极的时空约束里，内部编号与负回合原来分别 6、4、3 处，现在都是 0。新 smoke `smoke-tc-plain-names`（22 项）。
+- **近期心绪拆国中实况**（同志 11-13「按你想法来」）。主推演「主角·双重身份」一节的「近期心绪」原来是玩家那份 `getMemoryContext` 整份：开头「我是谁」身份块，接着货币、央地、户口、环境、诏令、皇权、民心各引擎的精要，最后才是本人的心绪往事，整段都标作「近期心绪」，主推演会当成皇帝的心事。这些精要只经这里进主推演（主推演别处的【天下大势】只列各势力），所以不删，只拆：
+  - `tm-mechanics-memory.js`：各引擎精要那一块原样搬进 `NpcMemorySystem._worldParts`；`getMemoryContext` 加 `opts.noWorld`（只要身份块与本人那段）；新增 `getWorldContext`（各段一段一行）。别处（问对、奏疏、朝议……）不带 noWorld，取到的与原来逐字相同，smoke 金标准守。
+  - `tm-endturn-prompt.js`：「近期心绪」取 noWorld；国中实况在主角一节末尾单列【国中实况·各项精要】，内容一字不删。不看「人物统一底子」开关。
+  - 天启真档对照，不调模型（实验台 `tools/world-split-dry.cjs`，输出在 `E:/tianming-tmp/person-2/world-dry`）：朱由检「近期心绪」原来是「家私……有清誉72。【货币·市场】……【皇威】70【皇权】75【民心】54。年少历多。谦。铭记：……」，七段精要夹在身份与心事中间；改后心绪只剩身份与心事，七段（300 字）原样挪到本节末尾。新 smoke `smoke-endturn-world-split`（20 项）。

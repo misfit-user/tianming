@@ -718,32 +718,11 @@ var NpcMemorySystem = {
     if (ch._memArchive.length > cap.archive) NpcMemorySystem._foldArchive(ch, cap);
   },
 
-  /** 获取角色的记忆摘要（供AI使用——像一个人的内心自述）6.2: 带每回合缓存。opts.topic：按议题另回想几条原始记忆。opts.personalOnly：只要此人自己那段（人生阶段、心绪、往事、铭记、恩怨……），不带开头的「我是谁」身份块与天下大势；要截短用的都该取这段——身份块约 500 字，截 120、300 字截下来全是它（2026-11-09） */
-  _memCache: {}, _memCacheTurn: -1,
-  getMemoryContext: function(charName, opts) {
-    opts = opts || {};
-    charName = _tmMemoryCanonName(charName);
-    // 6.2: 每回合缓存——同一回合内同一角色只构建一次（读档代际参与失效·读同turn档曾把旧局记忆注入新局prompt·2026-07-04 审查定罪）
-    var _mcGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
-    // 刀B·同回合生死翻转→缓存失效：本回合内某人物改判死/生后，含其生死态的旧 context 须重算(否则 turn+1 才消失)。
-    // 生死签名=本回合已判死人数(五个死亡 sink 均置 deathTurn=GM.turn·计此签名免在各 sink ++·覆盖全 sink 的判死方向)。
-    // ★边界：签名只覆盖「判死」方向；死→活的复活翻转(若保留 deathTurn)不使缓存失效。Codex 核实当前游戏无复活写口
-    //   (策名亦先返回同名死者)故不可达；若未来新增复活写口，须在该处同步 bust 本缓存。
-    var _vitalSig = 0, _vgChars = GM.chars || [];
-    for (var _vi = 0; _vi < _vgChars.length; _vi++) { var _vgc = _vgChars[_vi]; if (_vgc && (_vgc.deathTurn === GM.turn || _vgc._deathTurn === GM.turn)) _vitalSig++; }
-    if (this._memCacheTurn !== GM.turn || this._memCacheGen !== _mcGen || this._memCacheVital !== _vitalSig) { this._memCache = {}; this._memCacheTurn = GM.turn; this._memCacheGen = _mcGen; this._memCacheVital = _vitalSig; }
-    // World facts are rebuilt below; only the personal summary is cached.
-    if (!GM.chars) return '';
-    charName = _tmMemoryCanonName(charName);
-    var ch = _tmMemoryFindChar(charName);
-    if (!ch) return '';
-    var parts = [], liveParts = [];
-
-    // 角色自我认识（字/家族/仕途/心事等，AI 据此保持身份一致）
-    if (typeof CharFullSchema !== 'undefined' && typeof CharFullSchema.toAIContext === 'function') {
-      var selfCtx = CharFullSchema.toAIContext(ch);
-      if (selfCtx) liveParts.push(selfCtx);
-    }
+  /** 各引擎的国中实况精要：货币市场、央地财政、户口、环境承载、诏令奏疏、皇权皇威、历史预设，每段自带【】标题。
+   *  getMemoryContext 把它拼在「我是谁」身份块之后（问对、奏疏、朝议……都这样取，与原来逐字相同）；
+   *  主推演取 getWorldContext，在主角一节末尾单列，不再与玩家本人的心绪拼成一串标作「近期心绪」（2026-11-13） */
+  _worldParts: function() {
+    var liveParts = [];
     // 角色所知天下大势——货币/央地财政/户口/环境/诏令（精要）
     if (typeof CurrencyEngine !== 'undefined' && typeof CurrencyEngine.getAIContext === 'function') {
       try { var cc = CurrencyEngine.getAIContext(); if (cc) liveParts.push(cc); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
@@ -772,13 +751,44 @@ var NpcMemorySystem = {
     if (typeof HistoricalPresets !== 'undefined' && typeof HistoricalPresets.getAIContext === 'function') {
       try { var hp = HistoricalPresets.getAIContext(); if (hp) liveParts.push(hp); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
+    return liveParts;
+  },
+  getWorldContext: function() { return this._worldParts().join('\n'); },
+
+  /** 获取角色的记忆摘要（供AI使用——像一个人的内心自述）6.2: 带每回合缓存。opts.topic：按议题另回想几条原始记忆。opts.personalOnly：只要此人自己那段（人生阶段、心绪、往事、铭记、恩怨……），不带开头的「我是谁」身份块与天下大势；要截短用的都该取这段——身份块约 500 字，截 120、300 字截下来全是它（2026-11-09）。opts.noWorld：不带后面各引擎的国中实况精要，只要身份块与此人自己那段（主推演另取 getWorldContext 单列，2026-11-13） */
+  _memCache: {}, _memCacheTurn: -1,
+  getMemoryContext: function(charName, opts) {
+    opts = opts || {};
+    charName = _tmMemoryCanonName(charName);
+    // 6.2: 每回合缓存——同一回合内同一角色只构建一次（读档代际参与失效·读同turn档曾把旧局记忆注入新局prompt·2026-07-04 审查定罪）
+    var _mcGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
+    // 刀B·同回合生死翻转→缓存失效：本回合内某人物改判死/生后，含其生死态的旧 context 须重算(否则 turn+1 才消失)。
+    // 生死签名=本回合已判死人数(五个死亡 sink 均置 deathTurn=GM.turn·计此签名免在各 sink ++·覆盖全 sink 的判死方向)。
+    // ★边界：签名只覆盖「判死」方向；死→活的复活翻转(若保留 deathTurn)不使缓存失效。Codex 核实当前游戏无复活写口
+    //   (策名亦先返回同名死者)故不可达；若未来新增复活写口，须在该处同步 bust 本缓存。
+    var _vitalSig = 0, _vgChars = GM.chars || [];
+    for (var _vi = 0; _vi < _vgChars.length; _vi++) { var _vgc = _vgChars[_vi]; if (_vgc && (_vgc.deathTurn === GM.turn || _vgc._deathTurn === GM.turn)) _vitalSig++; }
+    if (this._memCacheTurn !== GM.turn || this._memCacheGen !== _mcGen || this._memCacheVital !== _vitalSig) { this._memCache = {}; this._memCacheTurn = GM.turn; this._memCacheGen = _mcGen; this._memCacheVital = _vitalSig; }
+    // World facts are rebuilt below; only the personal summary is cached.
+    if (!GM.chars) return '';
+    charName = _tmMemoryCanonName(charName);
+    var ch = _tmMemoryFindChar(charName);
+    if (!ch) return '';
+    var parts = [], liveParts = [];
+
+    // 角色自我认识（字/家族/仕途/心事等，AI 据此保持身份一致）
+    if (typeof CharFullSchema !== 'undefined' && typeof CharFullSchema.toAIContext === 'function') {
+      var selfCtx = CharFullSchema.toAIContext(ch);
+      if (selfCtx) liveParts.push(selfCtx);
+    }
+    var worldParts = this._worldParts();
 
     var personalStamp = JSON.stringify([ch.age,ch.stress,ch._mood,ch._mentorId,ch._tenure,ch._impressions,(ch._memory||[]).length,(ch._scars||[]).length,(ch._memArchive||[]).length]);
     this._personalStamps = this._personalStamps || {};
     function combine(text) {
       var topic = opts.topic || opts.query || '';
       var recalled = topic && typeof TM !== 'undefined' && TM.PersonalMemoryRecall ? TM.PersonalMemoryRecall.personal(GM,ch,topic,6) : '';
-      return [opts.personalOnly ? '' : liveParts.join('。'),text,recalled ? '议题相关原始记忆：'+recalled : ''].filter(Boolean).join('。');
+      return [opts.personalOnly ? '' : liveParts.concat(opts.noWorld ? [] : worldParts).join('。'),text,recalled ? '议题相关原始记忆：'+recalled : ''].filter(Boolean).join('。');
     }
     if(this._memCache[charName] && this._personalStamps[charName]===personalStamp) return combine(this._memCache[charName]);
 

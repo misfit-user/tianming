@@ -2845,6 +2845,7 @@
         }
         if (pi.characterAppearance) sysP += '\n  \u5916\u8C8C\uFF1A' + pi.characterAppearance;
         if (pi.factionGoal) sysP += '\n  \u6218\u7565\u76EE\u6807\uFF1A' + pi.factionGoal;
+        var _pWorld = '';  // 国中实况精要（11-13）：在主角一节末尾单列，见下「近期心绪」处
         // 玩家角色的私人关系网（家人、故交、仇敌）
         if (_playerCh) {
           var _privRels = [];
@@ -2858,10 +2859,12 @@
           if (_privRels.length > 0) sysP += '\n  私人关系：' + _privRels.join('、');
           // 玩家记忆中的私人情感
           if (typeof NpcMemorySystem !== 'undefined') {
-            // 人2-8 核过，这里不改只取本人那段（personalOnly）：各引擎的天下大势精要（货币、央地、户口、环境、诏令、皇权）只在
-            //   getMemoryContext 里拼，主推演只经玩家这段拿到；改了会把它们一起丢掉
-            var _pMem = NpcMemorySystem.getMemoryContext(pi.characterName);
+            // 11-13 同志「按你想法来」：各引擎的国中实况精要（货币、央地、户口、环境、诏令、皇权……）原来与玩家本人的身份、
+            //   心绪拼成一串，整段标作「近期心绪」，主推演会当成皇帝的心事；现在分开取——「近期心绪」只留本人那段（noWorld），
+            //   国中实况在主角一节末尾单列（getWorldContext），内容一字不删（这些精要只经这里进主推演，主推演别处拿不到）
+            var _pMem = NpcMemorySystem.getMemoryContext(pi.characterName, { noWorld: true });
             if (_pMem) sysP += '\n  \u8FD1\u671F\u5FC3\u7EEA\uFF1A' + _pMem;
+            if (typeof NpcMemorySystem.getWorldContext === 'function') _pWorld = NpcMemorySystem.getWorldContext() || '';
           }
         }
         // 后宫/妻室信息注入系统提示（动态位分名称）
@@ -2899,6 +2902,7 @@
         sysP += '\n  \u203B player_status\u53EA\u5199\u653F\u6CBB\u683C\u5C40\uFF1Bplayer_inner\u5199\u89D2\u8272\u5185\u5FC3\u2014\u2014\u7528\u7B2C\u4E00\u4EBA\u79F0\uFF0C\u4F53\u73B0\u79C1\u4EBA\u60C5\u611F\u548C\u6027\u683C\u3002';
         sysP += '\n  公务决策可能违背个人意愿（如不得不杀亲信），私人情感可能暗中影响政治判断（如偏袒宠臣）。';
         sysP += '\n  主角的【行止】是角色个人的举动（与诏书互补：诏书=元首发令，行止=个人行动）。行止内容可能包括召见、巡视、宴请、夜读、微服等，AI根据具体情境判断哪些NPC会知情。';
+        if (_pWorld) sysP += '\n\n【国中实况·各项精要】\n' + _pWorld;
       }
     }
 

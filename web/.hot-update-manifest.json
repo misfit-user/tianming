@@ -2901,12 +2901,12 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "9bdcd38d1a8c078da83a88dbe0c97c7014981895526ed21545f759645445d117",
+      "sha256": "2468f08e9a5423e4b724680e50af3f1b7d09b86bcbb9190e840243591fbbdf6c",
       "size": 508286
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "18d28772e40397171fc9430563795a60299f95fd59bbee124ab6e964f31b4985",
+      "sha256": "4d88b1d8213ce9f060ffd45dbefd73ead2c94e9b48cfe84f933ce82dd43eddb1",
       "size": 508689
     },
     {
@@ -2921,8 +2921,8 @@
     },
     {
       "path": "bundled-scenarios/绍宋·建炎元年八月（官方）.json",
-      "sha256": "cbdae9ed7a42eef291deec2f64f52d45562cec30c79a60d3cdd974892c140dfe",
-      "size": 91017478
+      "sha256": "78c35defc30716003d8682117d93443e2c86fc5c63cf8543584685335c81f699",
+      "size": 91039558
     },
     {
       "path": "changelog.json",
@@ -2966,12 +2966,12 @@
     },
     {
       "path": "data/maps/scenario-library/index.json",
-      "sha256": "c6bcb489f14104d02d0220d739fb4f6b51a40a84f30b2fcacc59b259ff1444ba",
+      "sha256": "05916dfe586c2bf9d66dc26886326deb278276c8fe685014b6152be26fc0ac36",
       "size": 2410
     },
     {
       "path": "data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
-      "sha256": "95df27327227560afcce4e014e53ef5467b5f185ab71827b369e356ca3a90db6",
+      "sha256": "0edaece851bfcb8a582d93de75c6dcfaf6e0ee7ca9ce00029376687450191e3f",
       "size": 11815292
     },
     {
@@ -4366,8 +4366,8 @@
     },
     {
       "path": "scenarios/shaosong-jianyan-1127.js",
-      "sha256": "69c4f8b35ca2f77dcf5564c8a36aeee7a6b9a901b5b2c312c848735105202136",
-      "size": 50910767
+      "sha256": "01fff83f51f0483466423ce1d95eb35fea5d18d4d62715930e32395e4d3f56a2",
+      "size": 50932993
     },
     {
       "path": "scenarios/tang840-840.js",
@@ -6586,7 +6586,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "43a889269bd17f7dc2258e9ae814d23d4a3932591b6955598a2ec61f928fedcc",
+      "sha256": "0a9eb065cb005bad324ff2ce461d9ae42abd893f7e88b13880836caf88e36b2e",
       "size": 141497
     },
     {

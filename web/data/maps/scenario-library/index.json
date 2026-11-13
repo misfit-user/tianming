@@ -71,11 +71,11 @@
       },
       "source": {
         "path": "scenarios/绍宋·建炎元年八月（官方）.json",
-        "sha256": "cbdae9ed7a42eef291deec2f64f52d45562cec30c79a60d3cdd974892c140dfe"
+        "sha256": "78c35defc30716003d8682117d93443e2c86fc5c63cf8543584685335c81f699"
       },
       "filename": "sc-jianyan1-1127-shaosong.json",
       "bytes": 11815292,
-      "sha256": "95df27327227560afcce4e014e53ef5467b5f185ab71827b369e356ca3a90db6"
+      "sha256": "0edaece851bfcb8a582d93de75c6dcfaf6e0ee7ca9ce00029376687450191e3f"
     }
   ]
 }

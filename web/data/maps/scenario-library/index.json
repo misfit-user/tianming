@@ -21,11 +21,11 @@
       },
       "source": {
         "path": "scenarios/天启七年·九月（官方）.json",
-        "sha256": "860dadc97163c3a936fe4752640895137d7bd72fc6a5f82121973340e2503a20"
+        "sha256": "b389a0bbec0a8ee460be15675c36900f07778193c52a3c5360aba51fc78bdaa7"
       },
       "filename": "sc-tianqi7-1627.json",
       "bytes": 1486190,
-      "sha256": "ae67d67bd66712b5987843366e59139f3006e744068fce307cded2973b4462a9"
+      "sha256": "613989a030bdc65520e99f8995301a1e3f70f5c276d497073820a50f311cde23"
     },
     {
       "id": "sc-tang840-840",

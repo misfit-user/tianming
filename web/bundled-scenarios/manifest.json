@@ -20,10 +20,10 @@
         "factions": 22,
         "regions": 307
       },
-      "bytes": 10046500,
-      "sha256": "2685c8f0d4e977ed70c7b65495ec5ae24ad67b1c271fd2243775ea4e3da9e1fe",
-      "sourceBytes": 16409328,
-      "sourceSha256": "860dadc97163c3a936fe4752640895137d7bd72fc6a5f82121973340e2503a20"
+      "bytes": 10048889,
+      "sha256": "3ddf96d4c5946ff756f97c531bf2a38bddd2aba6b129a4061686527250d42c04",
+      "sourceBytes": 16411519,
+      "sourceSha256": "b389a0bbec0a8ee460be15675c36900f07778193c52a3c5360aba51fc78bdaa7"
     },
     {
       "key": "shaosong",

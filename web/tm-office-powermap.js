@@ -111,8 +111,8 @@
   }
 
   function _score(GM, p, pwKeys) {
-    var s = pwKeys.length * 2;
-    if (HS && !HS.read(GM,p).occupied) s += 5;
+    var s = pwKeys.length * 2, occ = HS ? HS.read(GM,p) : null;
+    if (occ && !occ.occupied && !occ.vacantByRule) s += 5;   // 出缺的上浮；按制不除的不算出缺
     if (p._dutyState && p._dutyState.fulfillment < 35) s += 4;
     if (_rankLvl(p) <= 3) s += 3;
     return s;
@@ -147,11 +147,13 @@
     var overview = topOrder.map(function (n) {
       var list = byTop[n], vac = 0, head = null, headLvl = 9999;
       list.forEach(function (it) {
-        if (HS) vac+=HS.read(GM,it.p).vacancyCount;
+        // 按制不除的空额（vacantByRule·11-13）不算缺
+        if (HS) { var occ = HS.read(GM,it.p); if (!occ.vacantByRule) vac += occ.vacancyCount; }
         var lvl = _rankLvl(it.p);
         if (lvl < headLvl) { headLvl = lvl; head = it.p; }
       });
-      var st = vac === 0 ? '健全' : (head && HS && !HS.read(GM,head).occupied ? '瘫(主官缺)' : '弱(' + vac + '缺)');
+      var headOcc = head && HS ? HS.read(GM,head) : null;
+      var st = vac === 0 ? '健全' : (headOcc && !headOcc.occupied && !headOcc.vacantByRule ? '瘫(主官缺)' : '弱(' + vac + '缺)');
       return n + '·' + st;
     }).join(' ┊ ');
 

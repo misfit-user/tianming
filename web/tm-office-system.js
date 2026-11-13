@@ -305,7 +305,8 @@ function _offOccupancy(pos, world) {
   if(typeof TM!=='undefined' && TM.OfficeHolderState) return TM.OfficeHolderState.read(g,pos);
   var stats=_offPositionStats(pos), entries=_offAllHolderEntries(pos,g), primary=null;
   entries.some(function(h){var result=_offMigrateHolderIdentity(h,g);if(result.ok){primary=result.char;return true;}return false;});
-  return {occupied:stats.actualCount>0,actualCount:stats.actualCount,vacancyCount:stats.vacant,primary:primary,label:primary?primary.name:stats.actualCount>0?'在岗·姓名未详':'出缺'};
+  var byRule=!!(pos&&pos.vacantByRule)&&stats.vacant>0;   // 按制不除（11-13·同 TM.OfficeHolderState.read）
+  return {occupied:stats.actualCount>0,actualCount:stats.actualCount,vacancyCount:stats.vacant,vacantByRule:byRule,primary:primary,label:primary?primary.name:stats.actualCount>0?'在岗·姓名未详':byRule?'按制不除':'出缺'};
 }
 
 function _offWalkOfficeTree(nodes, visitor, chain) {

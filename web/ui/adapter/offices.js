@@ -40,9 +40,11 @@ function positionView(pos, path, deptName) {
   const stats = fn('_offPositionStats') ? w._offPositionStats(pos) : { headCount: 1, actualCount: 0, vacant: 1 };
   const entries = fn('_offAllHolderEntries') ? w._offAllHolderEntries(pos) : (pos.holder ? [{ name: pos.holder }] : []);
   const pe = pos._pendingEdict && pos._pendingEdict.turn === G().turn ? pos._pendingEdict : null;
+  // 按制不除（剧本写 vacantByRule·11-13）：此职按当时制度不除人，空着的员额不记「缺」
+  const byRule = !!pos.vacantByRule && stats.vacant > 0;
   return {
     path, dept: deptName, name: pos.name || '', rank: pos.rank || '', level: rankLevel(pos.rank), duties: String(pos.desc || pos.duties || ''),
-    head: stats.headCount, actual: stats.actualCount, vacant: stats.vacant, unnamed: Math.max(0, stats.actualCount - entries.length),
+    head: stats.headCount, actual: stats.actualCount, vacant: byRule ? 0 : stats.vacant, byRule, unnamed: Math.max(0, stats.actualCount - entries.length),
     holders: entries.map((e) => holderView(e, pos)),
     pending: pe ? { line: pe.edictLine || '', from: pe.prevHolder || '', to: pe.newHolder || '' } : null
   };

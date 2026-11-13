@@ -2901,12 +2901,12 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "e412431562d91384a65aef0572e16482b34fce5bd681fe4aea55d2f742048212",
+      "sha256": "03f2f3f02341de1ead6df8037674b7f3f60212428ff43041b157bfe0eedee34d",
       "size": 6008
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "51d766543d5bad7c4040cd676a3c8be1c02dd8ffdc29749d2f3d689d21294834",
+      "sha256": "f7464102d3cb0c937ba6e3f6147c75e3496b951a66bc313d24c9488f18fe897c",
       "size": 6387
     },
     {
@@ -2921,8 +2921,8 @@
     },
     {
       "path": "bundled-scenarios/绍宋·建炎元年八月（官方）.json",
-      "sha256": "e593369bd67026434d11ed0e4c750552a8116deb4a6825a60502f293779a4e09",
-      "size": 91017408
+      "sha256": "cbdae9ed7a42eef291deec2f64f52d45562cec30c79a60d3cdd974892c140dfe",
+      "size": 91017478
     },
     {
       "path": "changelog.json",
@@ -2966,12 +2966,12 @@
     },
     {
       "path": "data/maps/scenario-library/index.json",
-      "sha256": "369c169426590c624a3c2dfb2306c270fa2b81d27d6ec90e1368449406c77de3",
+      "sha256": "00229ce47d5bd54ed9a0e463632d3061aaba4eb610c1699cca8403d215e0636b",
       "size": 2410
     },
     {
       "path": "data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
-      "sha256": "1a9b0ab1b6886792394226af180314d65fd17b6df6db694762afe6067a6bd3e7",
+      "sha256": "95df27327227560afcce4e014e53ef5467b5f185ab71827b369e356ca3a90db6",
       "size": 11815292
     },
     {
@@ -4366,8 +4366,8 @@
     },
     {
       "path": "scenarios/shaosong-jianyan-1127.js",
-      "sha256": "1947688dd5322600a04b7c1235574f5a983143ea712e7456a5bed1b1dce5b680",
-      "size": 50910693
+      "sha256": "69c4f8b35ca2f77dcf5564c8a36aeee7a6b9a901b5b2c312c848735105202136",
+      "size": 50910767
     },
     {
       "path": "scenarios/tang840-840.js",
@@ -6166,8 +6166,8 @@
     },
     {
       "path": "tm-office-dutystate.js",
-      "sha256": "df37509377d335860249d5dfe37722a2b99071b7b62845daa47e58332e417fb2",
-      "size": 16936
+      "sha256": "5cd355a4d0034e618227f6cea1f1897452defc012333c75b2deb04c09c3517a1",
+      "size": 17823
     },
     {
       "path": "tm-office-editor.js",
@@ -6186,8 +6186,8 @@
     },
     {
       "path": "tm-office-holder-state.js",
-      "sha256": "83e031b5c8af9d1ba41691a9c198e4624017264f979b190ed679d59024b65842",
-      "size": 9884
+      "sha256": "5f699572d18af0449fd0a46d1e8e6d33b67d75731ee12e65b48039b120610897",
+      "size": 10167
     },
     {
       "path": "tm-office-panel.js",
@@ -6196,8 +6196,8 @@
     },
     {
       "path": "tm-office-powermap.js",
-      "sha256": "b2a24b45a2695c6ecbd5f12101e174a1941dca7b944dd97cf503a2fb9d89086b",
-      "size": 19048
+      "sha256": "df6a0de8533c84baa2bc2db34f2c2465976237cac455c977cadb11f9b82f779b",
+      "size": 19326
     },
     {
       "path": "tm-office-recall-agent.js",
@@ -6221,8 +6221,8 @@
     },
     {
       "path": "tm-office-system.js",
-      "sha256": "ce1057a6af6404fdb88ee9a05a7f8e255de6b1e14c78619cdb2b730ca850dc14",
-      "size": 110349
+      "sha256": "0d3afa2ff52e77cd930442e3d9f4c9703d1d79a55c664d50efefa69fbca3c6d3",
+      "size": 110507
     },
     {
       "path": "tm-office-tenure.js",
@@ -6591,8 +6591,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "ad6b0fa6da9278519c0e25ccd119120272da0cd93f63600ad44fb4a40c54321a",
-      "size": 141694
+      "sha256": "f9b6943f9317152b1f0a9ea2af4de13ba2402fb1371180019f738a2e7502597c",
+      "size": 141695
     },
     {
       "path": "tm-start-selector.js",

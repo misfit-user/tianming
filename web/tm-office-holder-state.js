@@ -38,9 +38,11 @@
     if (p.occupancyStatus==='unrecorded' && declared==null && p.vacancyCount==null) actual=Math.max(actual,established);
     var named=holders.filter(function(h){return !!h.char;});
     var unresolved=holders.some(function(h){return h.identityStatus==='invalid-id'||h.identityStatus==='ambiguous';});
-    return { actualCount:actual, establishedCount:established, vacancyCount:Math.max(0,established-actual), occupied:actual>0,
+    // 按制不除（11-13）：剧本写明此职按当时制度不除人（vacantByRule，如南宋初户部「或止除尚书若侍郎一员」），空着的员额不算缺官
+    var byRule=!!p.vacantByRule && established>actual;
+    return { actualCount:actual, establishedCount:established, vacancyCount:Math.max(0,established-actual), occupied:actual>0, vacantByRule:byRule,
       status:actual<=0?'vacant':unresolved?'unresolved':named.length===actual?'known':'unrecorded', holders:holders, characters:named,
-      primary:named.length ? named[0].char : null, label:named.length ? named.map(function(h){return h.name;}).join('、') : actual>0 ? (unresolved?'在岗·身份待核':'在岗·姓名未详') : '出缺' };
+      primary:named.length ? named[0].char : null, label:named.length ? named.map(function(h){return h.name;}).join('、') : actual>0 ? (unresolved?'在岗·身份待核':'在岗·姓名未详') : byRule ? '按制不除' : '出缺' };
   }
   function walk(nodes, fn, parent, visited) {
     visited=visited || [];

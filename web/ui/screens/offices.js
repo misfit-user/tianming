@@ -70,13 +70,13 @@ export function createOffices({ root, game, profile, onPerson, role = () => ({ s
     if (R.sovereign && R.ro) acts = acts.filter(Boolean).map((b) => yapaiOff(b.textContent, R.ro));
     return h('article.of-pos' + (p.vacant ? '.vacant' : ''),
       h('div.of-rank', p.rank || '—'),
-      h('div.of-name', h('b', { title: p.duties }, p.name), h('small', `额${num(p.head)}　在${num(p.actual)}${p.vacant ? '' : ''}`), p.vacant ? h('em', `缺${num(p.vacant)}`) : null),
+      h('div.of-name', h('b', { title: p.duties }, p.name), h('small', `额${num(p.head)}　在${num(p.actual)}${p.vacant ? '' : ''}`), p.vacant ? h('em', `缺${num(p.vacant)}`) : p.byRule ? h('em', '按制不除') : null),
       h('div.of-holders', p.holders.length ? p.holders.map((x) => h('button.of-holder' + (x.travel ? '.travel' : ''), { type: 'button', onclick: () => onPerson && onPerson(x.name), title: [x.location, x.party].filter(Boolean).join(' · ') },
         // 忠诚是人心：元首见、本人见，余者不列（所知之律，同列传）
         // 年齿与四项各成一段，窄栏里只在段与段之间折行（原先「忠五十／五」折在数字中间）
         h('b', x.name), x.travel ? h('em', '赴任') : null, h('small', [x.age ? `${num(x.age)}岁` : '', R.sovereign || x.name === R.self ? `忠${num(x.loyalty)}` : '', `智${num(x.int)}`, `政${num(x.adm)}`, `军${num(x.mil)}`]
           .filter(Boolean).flatMap((t, i) => (i ? [' ', h('span', t)] : [h('span', t)])))))
-        : h('span.of-empty', p.unnamed ? `在岗${num(p.unnamed)}人·姓名未详` : '此职无人·政务停滞'),
+        : h('span.of-empty', p.unnamed ? `在岗${num(p.unnamed)}人·姓名未详` : p.byRule ? '按制不除·空着不算缺官' : '此职无人·政务停滞'),
         p.pending ? h('div.of-pending', h('span', `待下${profile().annals.decree}`), h('i', p.pending.line), R.sovereign && !R.ro ? h('button', { type: 'button', onclick: () => run(() => O.undo(p)) }, '撤销') : null) : null),
       h('div.of-acts', acts));
   }

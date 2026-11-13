@@ -9,6 +9,7 @@
  *   出缺/履职<35：掌 taxCollect → compliance -0.025；掌 supervise|impeach → corruption +2.5
  *   履职>70(称职)：掌 taxCollect → compliance +0.01；掌 supervise|impeach → corruption -1
  *   35~70：无（中性·新官起步 fulfillment=50 即此带·先不奖不罚）
+ *   按制不除（剧本写 vacantByRule·11-13）：空着时无职可履，履职度回中性 50、不衰减、不奖不罚；有人坐上即照常结算
  * 跨朝代：按抽象 power 映射杠杆(taxCollect→实征率·supervise/impeach→腐败)，不认官署专名。
  * v1 域覆盖：仅 taxCollect/supervise/impeach 两类已接杠杆；military/personnel/justice/works 待接杠杆再扩。
  */
@@ -170,6 +171,14 @@
       var prev = (typeof ds.fulfillment === 'number') ? ds.fulfillment : 50;
       if(!ds.byPower) ds.byPower={};
       var keys=pwKeys.length?pwKeys:['general'], results={};
+      // 按制不除（11-13 同志「按你推荐来」）：剧本写明此职按当时制度不除人（如南宋初户部「或止除尚书若侍郎一员」），
+      //   空着时无职可履——履职度回中性 50，不衰减、不报失职、也不算称职；有人坐上即照常结算。
+      if (!row.state.occupied && p.vacantByRule) {
+        keys.forEach(function(k){ ds.byPower[k]=50; results[k]={next:50,low:0,high:0,exposure:segments.map(function(){return 0;})}; });
+        ds.fulfillment=50; ds.trend='stable'; ds.lastTurn=turn; ds.elapsedDays=start+days;
+        if(typeof opts._capture==='function')opts._capture({prev:prev,next:50,band:'mid',ticked:true,byPower:results});
+        return;
+      }
       keys.forEach(function(power) {
         var current=HS.number(ds.byPower[power],prev), result={next:current,low:0,high:0,exposure:[]};
         for(var bi=0;bi<segments.length;bi++) {

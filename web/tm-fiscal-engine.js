@@ -2405,7 +2405,7 @@
     var turnFracMonth = turnDays / 30;
     var total = { money: 0, grain: 0, cloth: 0 };
     var byArmy = {};
-    var items = [], localItems = [], perArmy = false;
+    var items = [], localItems = [], feastItems = [], perArmy = false;
     // 根治(2026-06·绍宋财政):军饷只结算玩家势力自己的军·非本势力军不上玩家国库账。
     //   旧 bug:此处遍历 getArmies(全势力 initialTroops) 一律从玩家国库发饷=玩家替金军/群盗买单。
     //   修:按 army.faction 匹配玩家势力名(与 _playerFactionNameForArmy/_isPlayerOwnedArmy 同源)。
@@ -2425,6 +2425,8 @@
       var localShare = funding ? Math.max(0, Math.min(1, safeNumber(funding.localShare, 0))) : 0, centralShare = 1 - localShare;
       var soldiers = safeNumber(army.soldiers, safeNumber(army.strength, safeNumber(army.size, 0)));
       if (soldiers <= 0) return;
+      // 依例犒设（11-14）：写了 funding.feast 的军，到期另由太仓发（tm-fiscal-army-pay.js _payArmyFeasts），同军饷一样认玩家军、乘演义旋钮
+      if (funding && funding.feast && typeof funding.feast === 'object') feastItems.push({ armyId: army.id, name: army.name || army.id || '军', soldiers: soldiers, everyDays: safeNumber(funding.feast.everyDays, 0), perSoldier: safeNumber(funding.feast.perSoldier, 0) * _armyMult });
       var moneyPay = army.monthlyMoneyPayPerSoldier != null ? safeNumber(army.monthlyMoneyPayPerSoldier, pay.money) : pay.money;
       var grainPay = army.monthlyGrainPayPerSoldier != null ? safeNumber(army.monthlyGrainPayPerSoldier, pay.grain) : pay.grain;
       var clothPay = army.monthlyClothPayPerSoldier != null ? safeNumber(army.monthlyClothPayPerSoldier, pay.cloth) : pay.cloth;
@@ -2444,7 +2446,7 @@
       byArmy[army.name || army.id || '军'] = item;
     });
     total.money *= _armyMult; total.grain *= _armyMult; total.cloth *= _armyMult;   // 演义旋钮·军饷松绑（P-FUV·硬核 ×1 不动）
-    return { total: total, byArmy: byArmy, items: items, localItems: localItems, perArmy: perArmy };
+    return { total: total, byArmy: byArmy, items: items, localItems: localItems, feastItems: feastItems, perArmy: perArmy };
   }
 
   function calcImperialExpense(ctx) {
@@ -2522,7 +2524,7 @@
     if (!(ctx && ctx.force) && G._lastFixedExpenseTurn != null && G._lastFixedExpenseTurn === (G.turn || 0)) {
       return { ok: false, skipped: 'already-collected-this-turn' };
     }
-    var _fixedTxn = _captureFiscalTransaction(G, ['guoku','neitang','_lastFixedExpense','_lastFixedExpenseTurn']);
+    var _fixedTxn = _captureFiscalTransaction(G, ['guoku','neitang','_lastFixedExpense','_lastFixedExpenseTurn','_armyFeast']);
     try {
     var guokuLedgers = ensureGuoku(G);
     var neitangLedgers = ensureNeitang(G);
@@ -2560,6 +2562,8 @@
       cloth: deductFromLedger(guokuLedgers.cloth, army.total.cloth, '军饷')
     };
     if (earmarked) armyDed.money = { deducted: armyDed.money.deducted + earmarked.deducted, deficit: armyDed.money.deficit + earmarked.deficit };
+    // 依例犒设（11-14）：军饷之后，到期的由太仓发，不够的按军记欠（tm-fiscal-army-pay.js；状态随本事务快照回滚）
+    var feastDed = army.feastItems && army.feastItems.length && _fiscalParts.payArmyFeasts ? _fiscalParts.payArmyFeasts(G, guokuLedgers, army.feastItems, getTurnDays(ctx, G)) : null;
     var imperialDed = {
       money: deductFromLedger(neitangLedgers.money, imperial.total.money, '宫廷'),
       grain: deductFromLedger(neitangLedgers.grain, imperial.total.grain, '宫廷'),
@@ -2589,7 +2593,8 @@
       totalMoney: safeNumber(salary.total.money, 0) + safeNumber(royal.total.money, 0) + safeNumber(army.total.money, 0) + safeNumber(imperial.total.money, 0),
       totalGrain: safeNumber(salary.total.grain, 0) + safeNumber(royal.total.grain, 0) + safeNumber(army.total.grain, 0) + safeNumber(imperial.total.grain, 0),
       totalCloth: safeNumber(salary.total.cloth, 0) + safeNumber(royal.total.cloth, 0) + safeNumber(army.total.cloth, 0) + safeNumber(imperial.total.cloth, 0),
-      turnDays: getTurnDays(ctx, G)
+      turnDays: getTurnDays(ctx, G),
+      feast: feastDed
     };
     // 宫廷扣在内帑，帑廪的本期支出不含它
     var guokuMoneyOut = turnExpense.totalMoney - safeNumber(imperial.total.money, 0);

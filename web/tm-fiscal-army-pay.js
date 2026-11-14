@@ -6,6 +6,7 @@
 //   _payArmiesByAccount    各军按户头（辽饷、年例、京营……）同比例发，短发的按军记欠
 //   _recordArmyPayArrears  按军记欠到帑廪欠项「军饷」类（写明哪一军）
 //   _payEarmarkedArmies    专款户头（剧本 fixedExpense.earmarkedArmyAccounts）先由指定税入支给，不够的按军记欠
+// 11-14 新增：_payArmyFeasts  依例犒设（剧本 funding.feast），到期由太仓发，不够的按军记欠；fixedCollect 经 bucket 取 payArmyFeasts
 // 【装载序·硬约束】须紧随 tm-fiscal-engine.js（origin）之后装载（index.html 中紧挨其后·两片共用一个 ?v= 戳）：
 //   origin 装载期把 deductFromLedger / safeNumber / fiscalRound 放进 bucket TM.__fiscalParts，本片装载时捕获，
 //   再回填 payArmiesByAccount / payEarmarkedArmies / recordArmyPayArrears；origin 的两个转发到 fixedCollect 调用时才取。
@@ -89,7 +90,53 @@
     return out;
   }
 
+  // 依例犒设（11-14 同志「按你想法来」）：剧本给军写了 funding.feast（everyDays：隔几日一犒；perSoldier：每人每次钱数，剧本钱的单位）的，
+  //   按回合日数累计，到期由太仓发一次，记帑廪册「军饷」、细目「依例犒设」（犒设本是五军给法的一部分，见剧本各军 funding.note）；
+  //   太仓钱不够的按军记欠（同军饷短发：帑廪欠项「军饷」类、写明哪一军，
+  //   欠饷月数照算、扣军心，补饷可补）。朝廷下诏罢犒设后（G._armyFeast.stopped）到期不发，也不记欠。
+  //   绍宋行在御营诸军：「自駐蹕南京以來，軍士日給食錢，比數十日一犒設」（《建炎以來繫年要錄》卷四三），卷四四注引《時政記》「先是月一犒設」。
+  //   状态 G._armyFeast（byArmy[军].days：距上次到期的日数）在 fixedCollect 的事务快照里，固定支出整笔回滚时一并还原；同一回合只发一次。
+  function _payArmyFeasts(G, ledgers, items, turnDays) {
+    var led = ledgers && ledgers.money;
+    if (!G || !led || !Array.isArray(items) || !items.length) return null;
+    var st = G._armyFeast && typeof G._armyFeast === 'object' ? G._armyFeast : (G._armyFeast = { byArmy: {} });
+    if (!st.byArmy || typeof st.byArmy !== 'object') st.byArmy = {};
+    var turn = G.turn || 0;
+    if (st.turn === turn) return st.last || null;   // 本回合已发
+    var days = Math.max(0, safeNumber(turnDays, 30)), due = [];
+    items.forEach(function(it) {
+      var every = safeNumber(it && it.everyDays, 0), per = Math.max(0, safeNumber(it && it.perSoldier, 0));
+      if (!(every > 0) || !(per > 0)) return;
+      var id = String(it.armyId || it.name);
+      var rec = st.byArmy[id] || (st.byArmy[id] = { name: it.name, days: 0 });
+      rec.name = it.name;
+      rec.days = safeNumber(rec.days, 0) + days;
+      var times = Math.floor((rec.days + 1e-9) / every);
+      if (times < 1) return;
+      rec.days = fiscalRound(Math.max(0, rec.days - times * every));
+      if (st.stopped) return;   // 已下诏罢犒设：到期不发
+      due.push({ it: it, rec: rec, amount: Math.max(0, safeNumber(it.soldiers, 0)) * per * times });
+    });
+    var need = due.reduce(function(s, d) { return s + d.amount; }, 0);
+    var sum = { turn: turn, need: fiscalRound(need), paid: 0, short: 0, armies: due.map(function(d) { return d.it.name; }) };
+    if (need > 0) {
+      var pay = Math.min(need, Math.max(0, safeNumber(led.stock, 0)));
+      var got = pay > 0 ? deductFromLedger(led, pay, '军饷', true).deducted : 0;
+      if (got > 0 && global.FiscalStatement && global.FiscalStatement.recordFlow) global.FiscalStatement.recordFlow(led, 'central', 'out', '军饷', 'army-feast', '依例犒设', got);
+      var ratio = got / need;
+      due.forEach(function(d) {
+        d.rec.lastTurn = turn;
+        var short = d.amount * (1 - ratio);
+        if (short > 0.0001) { _recordArmyPayArrears(G, led, d.it, short); sum.short += short; }
+      });
+      sum.paid = fiscalRound(got); sum.short = fiscalRound(sum.short);
+    }
+    st.turn = turn; st.last = sum;
+    return sum;
+  }
+
   parts.payArmiesByAccount = _payArmiesByAccount;
   parts.payEarmarkedArmies = _payEarmarkedArmies;
   parts.recordArmyPayArrears = _recordArmyPayArrears;
+  parts.payArmyFeasts = _payArmyFeasts;
 })(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));

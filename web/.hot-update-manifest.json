@@ -2901,12 +2901,12 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "d33162014132b28f1752e6e5e67b8370ee5a5bfef6d844f3aa6947fe232dfb3d",
+      "sha256": "72013752762f45dce7d90a38aaf6d20d2fc33b1471c1b7fb2728c491b07f4309",
       "size": 508286
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "aaad8c9abfd49197c394cc891606cda9e7f038fbd54ed7f05a82ab10bee4a639",
+      "sha256": "c5f9563544590e99eaf2ee7b9064904001246ca557ec6aad109ee602c70562ce",
       "size": 508689
     },
     {
@@ -2921,8 +2921,8 @@
     },
     {
       "path": "bundled-scenarios/绍宋·建炎元年八月（官方）.json",
-      "sha256": "b62774b4eea361e477866a8d2b4d97557e2c5663ea2063e22b5dff3bcb8813b2",
-      "size": 91052061
+      "sha256": "5ada23e54dc10e34654a01cd73b0de98bdbc82cf96d5baca32f9eb56700adbc9",
+      "size": 91057013
     },
     {
       "path": "changelog.json",
@@ -2966,12 +2966,12 @@
     },
     {
       "path": "data/maps/scenario-library/index.json",
-      "sha256": "c9a6d539ba98ceeb7a9375fb33725cedb7913500c66f1eccf1ac34a44eadcd00",
+      "sha256": "5f2dc5a367a6480ffc3f154e5634dcc6a6b414d23b675d65278c5703838c0027",
       "size": 2410
     },
     {
       "path": "data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
-      "sha256": "7af9fffe27de95373682c100c45ba151066b94b8143f7d14dde354136eb45b26",
+      "sha256": "e7679b244bf9ff28206d33770f0a063d519fc99cc988c682307d9c9d767ffe19",
       "size": 11815292
     },
     {
@@ -4366,8 +4366,8 @@
     },
     {
       "path": "scenarios/shaosong-jianyan-1127.js",
-      "sha256": "77eee965fa2538a0abb009922ab4aabbf4b6bc665ca5b6ac6d4e2ae2c0f07228",
-      "size": 50945556
+      "sha256": "9161a8c96d44fc11fbb5957806460bdb98cd08827debfffe3df968629b42576e",
+      "size": 50950556
     },
     {
       "path": "scenarios/tang840-840.js",
@@ -5396,13 +5396,13 @@
     },
     {
       "path": "tm-fiscal-army-pay.js",
-      "sha256": "17940940cf4c3035fc54e36ef96b579aaca2834dc109da126f743157957b2b98",
-      "size": 7255
+      "sha256": "42fe1aaf15361bdd1cd7c50824289786f4e39246ce43db7d1acbbb9810cd1db5",
+      "size": 10637
     },
     {
       "path": "tm-fiscal-engine.js",
-      "sha256": "e4a94a3219df13d3c1ad58258eeae5984a2855c6f53e3aaee580c304f09e279f",
-      "size": 179649
+      "sha256": "47e801d42cb1fa5a800f0578611ca5d8589e39fb303f969830ca5b4c4252e0d3",
+      "size": 180524
     },
     {
       "path": "tm-fiscal-local-expense.js",
@@ -6586,8 +6586,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "99a034bd30688e4ec8bc03976a5ec65aa85bafda29c088bc831f16f7d6d90faa",
-      "size": 142497
+      "sha256": "981929ef3035210755bcfe7e167f28f2f4f3bfc1e4879718d7d61bc9519787bf",
+      "size": 142498
     },
     {
       "path": "tm-start-selector.js",

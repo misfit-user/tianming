@@ -218,9 +218,10 @@ const placeGM = {
 ML.advanceUprisingChain(placeGM, { turn: 9 });
 const placeChains = placeGM.minxin.uprisingChain || [];
 assert(placeChains.some(c => c.region === '' && c.className === 'Farmers' && c.level >= 3), 'placeless class pressure should still brew as a chain');
+assert(placeChains.some(c => c.region === 'Mountain County' && c.level >= 3), 'placed class pressure brews as a chain too');
+// 民变重做·民2a（11-14）：链只记民情酝酿，不再直接生民变——起事由 tm-revolt-cases.js 判、tm-revolt-rising.js 落成真人真数
 const placeRevolts = (placeGM.minxin.revolts || []).filter(r => r && r.status === 'ongoing');
-assert(placeRevolts.length === 1 && placeRevolts[0].region === 'Mountain County', 'only the placed chain should become a revolt: ' + JSON.stringify(placeRevolts.map(r => r.region)));
-assert(!placeRevolts.some(r => r.region === 'unknown'), 'no revolt may be spawned without a place');
+assert(placeRevolts.length === 0, 'chains no longer spawn revolts by themselves: ' + JSON.stringify(placeRevolts.map(r => r.region)));
 
 // 同一阶层同一地方只认一条链：阶层桥每回合按回合号重出候选，旧写法每回合另立新链、各生一股民变。
 // 旧候选（早于上一回合）不再推链，压力消了链就消退。
@@ -241,11 +242,11 @@ ML.advanceUprisingChain(stableGM, { turn: 12 });
 const farmerChains = stableGM.minxin.uprisingChain.filter(c => c.className === 'Farmers');
 assert(farmerChains.length === 1 && farmerChains[0].region === 'Mountain County', 'one chain per class and place; a stale candidate must not open one: ' + JSON.stringify(farmerChains.map(c => c.id)));
 const ongoingOf = (G) => (G.minxin.revolts || []).filter(r => r && r.status === 'ongoing');
-assert(ongoingOf(stableGM).length === 1, 'two candidates for the same class and place should raise one revolt: ' + ongoingOf(stableGM).length);
+assert(ongoingOf(stableGM).length === 0, 'chains raise no revolt (民2a): ' + ongoingOf(stableGM).length);
 stableGM.turn = 13;
 stableGM.minxin.uprisingCandidates.push({ id: 'mxuc-13-farmers-mountaincounty', turn: 13, region: 'Mountain County', className: 'Farmers', level: 3, momentum: 80 });
 ML.advanceUprisingChain(stableGM, { turn: 13 });
-assert(ongoingOf(stableGM).length === 1, 'a fresh candidate next turn must not raise a second revolt in the same place: ' + ongoingOf(stableGM).length);
+assert(ongoingOf(stableGM).length === 0 && stableGM.minxin.uprisingChain.filter(c => c.className === 'Farmers').length === 1, 'a fresh candidate next turn refreshes the same chain, still no revolt: ' + ongoingOf(stableGM).length);
 
 // 进行中的民变不被挤出列表：只清已结束的（留最近 30 条）。旧写法 slice(-30) 会把最早起事、仍在进行的几股挤掉，
 // 实体层随后按覆灭清掉它们的势力和军队。
@@ -265,8 +266,12 @@ assert(keptIds.indexOf('e1') < 0 && keptIds.length === 35, 'only finished revolt
 const capGM = { turn: 18, minxin: { trueIndex: 50, perceivedIndex: 50, byClass: {}, sources: {}, revolts: [], uprisingCandidates: [],
   byRegion: { ash: { true: 20, regionName: 'Ash County' }, bell: { true: 20, regionName: 'Bell County' } } } };
 ML.advanceUprisingChain(capGM, { turn: 18 });
-assert(ongoingOf(capGM).length === 2, 'Ash and Bell should both rise at turn 18: ' + ongoingOf(capGM).length);
-capGM.minxin.revolts.find(r => r.region === 'Ash County').status = 'suppressed'; // 灰县这股已被剿平
+assert(ongoingOf(capGM).length === 0, 'chains raise no revolt (民2a): ' + ongoingOf(capGM).length);
+// 旧档里链生过的民变还在：灰县那股已剿平、链在复燃冷却里；钟县那股还在进行（挂在链号下）。这两条链封顶时照旧不挤。
+const ashChain = capGM.minxin.uprisingChain.find(c => c.region === 'Ash County'), bellChain = capGM.minxin.uprisingChain.find(c => c.region === 'Bell County');
+ashChain._lastSpawnTurn = 18;
+capGM.minxin.revolts.push({ id: 'old-ash', region: 'Ash County', status: 'suppressed', level: 3, scale: 30000, turn: 18, sourceChainId: ashChain.id });
+capGM.minxin.revolts.push({ id: 'old-bell', region: 'Bell County', status: 'ongoing', level: 3, scale: 30000, turn: 18, sourceChainId: bellChain.id });
 for (let i = 1; i <= 90; i++) capGM.minxin.byRegion['c' + i] = { true: 30, regionName: 'County ' + i }; // 另有九十州民心偏低、尚未起事
 capGM.turn = 20;
 ML.advanceUprisingChain(capGM, { turn: 20 });
@@ -299,19 +304,16 @@ ML.advanceUprisingChain(placeIdGM, { turn: 30 });
 const farmerChain = placeIdGM.minxin.uprisingChain.find(c => c.className === 'Farmers');
 assert(farmerChain && farmerChain.region === 'Mountain County', 'a candidate placed by division id should chain under the county name: ' + (farmerChain && farmerChain.region));
 const placeIdRevolts = ongoingOf(placeIdGM);
-assert(placeIdRevolts.some(r => r.region === 'Mountain County' && r.className === 'Farmers') && !placeIdRevolts.some(r => r.region === 'mountain'),
-  'the new revolt should carry the county name, not the id: ' + JSON.stringify(placeIdRevolts.map(r => r.region)));
-const weavers = placeIdRevolts.filter(r => r.className === 'Weavers');
-assert(weavers.length === 1 && weavers[0].id === 'revolt-old' && weavers[0].region === 'River County',
-  'an old revolt of the same class and place is adopted and renamed, not doubled: ' + JSON.stringify(weavers.map(r => r.id + '@' + r.region)));
+assert(placeIdRevolts.length === 1 && placeIdRevolts[0].id === 'revolt-old',
+  'no new revolt from chains (民2a); the old one in the save stays for the 民2d conversion: ' + JSON.stringify(placeIdRevolts.map(r => r.id + '@' + r.region)));
 
 // 民变重做前止血（同志 11-08 定）：起事最高到暴动；五级梯冻住——不按民心掷骰往上爬、不扣皇权皇威、不兵临京师；
 // 「同起升一级」也停。天启实测：第一回合陕西就有起义、改朝，第八回合起爬到改朝剑指京师。
 const startGM = { turn: 40, minxin: { trueIndex: 50, perceivedIndex: 50, byClass: {}, sources: {}, revolts: [], uprisingCandidates: [],
   byRegion: { zeta: { true: 5, regionName: 'Zeta County' } } } };
 ML.advanceUprisingChain(startGM, { turn: 40 });
-const zeta = ongoingOf(startGM).find(r => r.region === 'Zeta County');
-assert(zeta && zeta.level === 3 && zeta.scale === 30000, 'a revolt from a level-5 chain (local minxin 5) should start as a riot, level 3 / 30000: ' + JSON.stringify(zeta && { level: zeta.level, scale: zeta.scale }));
+const zetaChain = startGM.minxin.uprisingChain.find(c => c.region === 'Zeta County');
+assert(zetaChain && zetaChain.level === 5 && ongoingOf(startGM).length === 0, 'local minxin 5 makes a level-5 chain but no revolt (民2a; 起事归 tm-revolt-cases.js): ' + JSON.stringify(zetaChain && zetaChain.level));
 
 const ladderCalls = [];
 sandbox.AuthorityEngines.adjustHuangquan = (src, d) => ladderCalls.push('huangquan ' + d);

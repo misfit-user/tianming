@@ -1111,54 +1111,10 @@
         }
       }
     } catch (_msE) {}
-    // B·民变触发改各省：扫玩家叶子，任一省 div.minxin 低于阈值 → 该省按低概率揭竿（不再卡全国 trueIndex<20，
-    //   也不再被全国均值掩盖单省塌方）。越烂概率越高；该省已有 ongoing 民变由 _triggerRevolt 内去重。
-    //   阈值 P_REVOLT_MX / 基础概率 P_REVOLT_BASE 为机制参数·owner 可调。无 adminHierarchy 时回退旧的全国闸。
-    try {
-      var _IBr = global.IntegrationBridge || (typeof window !== 'undefined' && window.IntegrationBridge) || null;
-      if (_IBr && typeof _IBr.getLeafDivisions === 'function' && G && G.adminHierarchy) {
-        var P_REVOLT_MX = 25;      // 本省民心低于此值才可能揭竿
-        var P_REVOLT_BASE = 0.05;  // 基础月概率
-        var _rlvs = _IBr.getLeafDivisions(G.adminHierarchy, 'player') || [];
-        for (var _ri = 0; _ri < _rlvs.length; _ri++) {
-          var _rd = _rlvs[_ri];
-          if (!_rd || typeof _rd.minxin !== 'number' || _rd.minxin >= P_REVOLT_MX) continue;
-          var _sev = Math.min(1, (P_REVOLT_MX - _rd.minxin) / P_REVOLT_MX); // 越烂越高
-          if (Math.random() < P_REVOLT_BASE * (0.5 + _sev) * mr) _triggerRevolt(ctx, _rd);
-        }
-      } else if (mx.trueIndex < 20 && Math.random() < 0.05 * mr) {
-        _triggerRevolt(ctx); // 回退：无 adminHierarchy 时仍用旧全国闸 + G.regions 选址
-      }
-    } catch (_revTrigE) { try { if (mx.trueIndex < 20 && Math.random() < 0.05 * mr) _triggerRevolt(ctx); } catch (_e2) {} }
+    // 民变不在这里生了（民变重做·民2a，11-14）：原先扫玩家各州，民心低于 25 就按每月 5%×(0.5+严重度) 随机揭竿，
+    //   众五千到三万五随机，与民心链、五级梯各生各的。现由 tm-revolt-cases.js 按四样实账与地方官判起事，
+    //   tm-revolt-rising.js 落成真人真数的民变。
     _updateMinxinPerceived();
-  }
-
-  function _triggerRevolt(ctx, division) {
-    var mx = _ensureMinxin();
-    if (!mx) return;
-    var G = global.GM;
-    if (!Array.isArray(mx.revolts)) mx.revolts = [];
-    var regionName, regionObj = null;
-    if (division && division.name) {
-      regionName = division.name;   // B·各省路：region 写行政区名（与 AI 路同口径·C 的 findDivisionByNameOrId 解析器认得→读该省 div.minxin）
-    } else {
-      regionObj = (G.regions || []).filter(function(r) { return r.unrest > 60; })[0]; // 回退：旧 G.regions 选址
-      if (!regionObj) return;
-      regionName = regionObj.id;
-    }
-    // 同省已有 ongoing 民变 → 不重复点燃
-    if (mx.revolts.some(function(rv) { return rv.status === 'ongoing' && rv.region === regionName; })) return;
-    var revolt = {
-      id: 'revolt_' + ctx.turn + '_' + Math.floor(Math.random()*10000),
-      turn: ctx.turn,
-      region: regionName,
-      scale: Math.round(Math.random() * 30000 + 5000),
-      status: 'ongoing'
-    };
-    mx.revolts.push(revolt);
-    if (global.addEB) global.addEB('民变', regionName + ' 民变，众约 ' + revolt.scale);
-    if (typeof G.unrest === 'number') G.unrest = Math.min(100, G.unrest + 5);
-    if (regionObj) regionObj.unrest = Math.min(100, (regionObj.unrest||30) + 10);
   }
 
   // ═══════════════════════════════════════════════════════════════════

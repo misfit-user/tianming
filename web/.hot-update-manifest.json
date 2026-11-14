@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "ce6dd5d06e0aa6fd5e37d139a530534eaba3423c54864d24f22d4afa54bca36c",
-      "size": 79938
+      "sha256": "a3648b9949af4bb90ed25c014fc0d54f8e56d9e4aac94135d5369db645304f2b",
+      "size": 80186
     },
     {
       "path": "INDEX.md",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "35f7b5de2287b8caabf2d73e459575b0150e18e595b060fa9d37371d90afdfc4",
-      "size": 392934
+      "sha256": "4ffccc47c6019c27d56a029e3fb805a10c2ea51c357212024b9ac7c45e715306",
+      "size": 393488
     },
     {
       "path": "styles.css",
@@ -4566,8 +4566,8 @@
     },
     {
       "path": "tm-authority-engines.js",
-      "sha256": "bd90fe5c379427f21642ffe85f6117dbde62d6aa8ab0b82e1f6ba29427776752",
-      "size": 105234
+      "sha256": "326992ccbb8f115adafc60fb1670781d3861cc317700f2b0ab753f49e0f692b5",
+      "size": 102779
     },
     {
       "path": "tm-authority-ui.js",
@@ -5201,8 +5201,8 @@
     },
     {
       "path": "tm-endturn-systems.js",
-      "sha256": "2a30a130b69bc17c2c176ff8ebfb5746671b14db60f8ebc5fdb3d6b40e446ab0",
-      "size": 41072
+      "sha256": "48676e0e774329ebb25ef92e00249c15f68bda0e058d6893bc6f202bbde2d99c",
+      "size": 41129
     },
     {
       "path": "tm-endturn-timing-ledger.js",
@@ -6046,8 +6046,8 @@
     },
     {
       "path": "tm-minxin-ledger.js",
-      "sha256": "05f069cb2af81c2fd64d2286a319daf7bfb1136c88812ce8e549373a998b3c06",
-      "size": 50434
+      "sha256": "c61a022f244083bb9749642910a0f209874726ad0304931a2b1f1e542ff62942",
+      "size": 47768
     },
     {
       "path": "tm-minxin-pressure-actions.js",
@@ -6586,8 +6586,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "0e381c9ec8d3c60fcf430d63ece02bd3836b5163fd0984f15a028f004f3b3df9",
-      "size": 141818
+      "sha256": "3dd8db939a72d4eee7b1e1a71aff1f347e607d345e6ba2ca40aa60b418ce8653",
+      "size": 142182
     },
     {
       "path": "tm-start-selector.js",
@@ -6996,8 +6996,13 @@
     },
     {
       "path": "tm-revolt-cases.js",
-      "sha256": "7bd49bdb5506c3a4945c853ae557ef257ca9d2ce74b1b2b4bf1262205641e16d",
-      "size": 21999
+      "sha256": "cdb3171fa60ea01b687a97a833f742ef17a24c716970be4d34f0dee9646a3fed",
+      "size": 23676
+    },
+    {
+      "path": "tm-revolt-rising.js",
+      "sha256": "0bda2caa2e49b775685f189d94ab04d935c674222d57f4334042319e9d8736eb",
+      "size": 11034
     }
   ],
   "remove": []

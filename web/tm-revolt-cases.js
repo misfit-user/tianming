@@ -6,7 +6,8 @@
 //   州民心跌破 35 才立「苗头」案（民心只当门槛，不再拿它加权）；苗头每月起事的机会由四样实账相加，各有封顶——
 //   饥荒 ≤0.40、赋役 ≤0.30、流民 ≤0.20、邻州已起事 ≤0.10；再乘地方官：贪酷 ×1.5、庸常 ×1、清能且在赈 ×0.5、缺官 ×1.2。
 //   校准（同志 11-14 定）：四项和先扣门槛 0.3，再乘地方官与总系数 0.1——天启陕西连跑十回合，平均 3.7 府起事、外省不起。
-// 本片只判、只记：掷中记「当起」，不生民变（起事落地在民2）；不改提示词、不出事件、不动别的账。
+// 本模块只判：掷中交 tm-revolt-rising.js 落成一股真民变（首领、人数、游击，民2a 起）；本模块不改提示词、不动别的账。
+// 民变了结后案结掉，本州歇几回合才重新立案。民1 期间只记「当起」（dryRun）的案，民2 起重判一次。
 // 挂在过回合 GM.turn++ 之后、AuthorityComplete.tick 之后（tm-endturn-systems.js 6.145），读这回合更新过的民心、户口。
 // 存 GM.revoltCases（随 GM 整份入档）。不写 GM._revoltPrecursors：那是 AI 写的起义前兆，会回灌主推演提示词。
 // 只管玩家一方的区划（GM.adminHierarchy.player）；别家势力境内的民变不在本片。
@@ -30,6 +31,7 @@
     refugeeWeights: { fugitive: 0.6, roving: 0.4 },               // 〔初值〕流民两项的分量
     reliefTurns: 3,                // 〔初值〕赈后几回合内算「在赈」
     followerRate: 0.3,             // 〔初值〕裹挟规模＝本州逃户的三成（民2 起事落地时用）
+    reopenCooldown: 6,             // 〔初值〕民变了结后本州歇几回合才重新立案（人死的死、散的散）
     keepClosedTurns: 24,           // 结了的案留多少回合
     historyMax: 12                 // 每案留几回合的掷骰记录
   };
@@ -321,22 +323,39 @@
     return c;
   }
 
-  // 每回合一次：立案、结案、起事判定（民1 掷中只记「当起」）
+  // 每回合一次：立案、结案、起事判定；掷中交 tm-revolt-rising.js 落成一股真民变（民2a 起）
   function tick(G, ctx) {
     if (!G) return null;
     var turn = num(G.turn, 0);
     var store = ensureStore(G);
     if (store.lastTick === turn) return store;   // 同一回合只判一次：重跑、读档都不重掷
     if (store.grainBase == null) store.grainBase = grainPrice(G);
-    var leaves = realmLeaves(G), byDiv = {}, leafById = {};
+    // 0. 民1 期间掷中只记「当起」、不生民变（dryRun）：民2 起掷中即起事，这些案重判一次。
+    //    已起的民变了结了（剿平、瓦解、受抚、出档）：案结掉，本州歇几回合才重新立案。
+    var revById = {};
+    arr(G.minxin && G.minxin.revolts).forEach(function (r) { if (r && r.id != null) revById[r.id] = r; });
+    store.cases.forEach(function (c) {
+      if (c.status !== 'risen') return;
+      if (!c.revoltId) {
+        if (c.dryRun) { c.status = 'brewing'; c.risenTurn = null; delete c.dryRun; c.rejudgedTurn = turn; }
+        return;
+      }
+      var r = revById[c.revoltId];
+      if (r && r.status === 'ongoing') return;
+      c.status = 'closed'; c.closedTurn = turn; c.endedAs = r ? str(r.status) : 'gone';
+    });
+    var leaves = realmLeaves(G), byDiv = {}, leafById = {}, cooling = {};
     leaves.forEach(function (L) { leafById[L.node.id] = L; });
-    store.cases.forEach(function (c) { if (c.status !== 'closed') byDiv[c.divisionId] = c; });
+    store.cases.forEach(function (c) {
+      if (c.status !== 'closed') byDiv[c.divisionId] = c;
+      else if (c.endedAs && turn - num(c.closedTurn, -99) < CFG.reopenCooldown) cooling[c.divisionId] = 1;
+    });
     // 1. 立案、结案（民心只当门槛）
     leaves.forEach(function (L) {
       var mx = num(L.node.minxin, null);
       if (mx == null) return;
       var c = byDiv[L.node.id];
-      if (!c && mx < CFG.openBelow) { byDiv[L.node.id] = openCase(store, L, turn, mx); return; }
+      if (!c && mx < CFG.openBelow && !cooling[L.node.id]) { byDiv[L.node.id] = openCase(store, L, turn, mx); return; }
       if (!c || c.status !== 'brewing') return;
       if (mx > CFG.closeAbove) c.calmTurns = (c.calmTurns || 0) + 1; else c.calmTurns = 0;
       if (c.calmTurns >= CFG.closeTurns) { c.status = 'closed'; c.closedTurn = turn; }
@@ -355,7 +374,13 @@
       c.last = { turn: turn, minxin: round3(num(L.node.minxin, 0)), j: J, roll: roll, rise: rise };
       c.history.push({ t: turn, p: J.perTurn, roll: roll, rise: rise });
       if (c.history.length > CFG.historyMax) c.history.splice(0, c.history.length - CFG.historyMax);
-      if (rise) { c.status = 'risen'; c.risenTurn = turn; c.followers = J.followers; c.dryRun = true; }
+      if (!rise) return;
+      // 掷中：落成一股真民变（首领、人数、游击）。没落成（模块缺席或出错）案留着，下回合照判照落
+      var landed = null;
+      try { landed = TM.RevoltRising && typeof TM.RevoltRising.land === 'function' ? TM.RevoltRising.land(G, c, L, J) : null; }
+      catch (e) { c.landError = str((e && e.message) || e).slice(0, 160); }
+      c.last.landed = !!landed;
+      if (landed) { c.status = 'risen'; c.risenTurn = turn; delete c.landError; }
     });
     // 3. 结了的案只留一阵
     store.cases = store.cases.filter(function (c) { return c.status !== 'closed' || turn - num(c.closedTurn, turn) <= CFG.keepClosedTurns; });

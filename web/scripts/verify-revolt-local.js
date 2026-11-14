@@ -6,7 +6,7 @@
 // 验：
 //   A/C 民变按「本省」div.minxin 判级（陕西→高级别、山东→流言级），不再被全国 90 掩盖；解析不到→回退全国不崩
 //   D   _tickMinxinMatrix 的 byRegion.index 改为镜像 div.minxin 真值（不再向全国均值回归）
-//   B   触发改各省：random 放行时，烂省(陕西)炸民变、安定省(山东)不炸；同省已有民变不重复
+//   B   AuthorityEngines.tick 不再生民变（民变重做·民2a，11-14：起事归 tm-revolt-cases.js）
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
@@ -89,28 +89,14 @@ assert(sandbox.GM.minxin.byRegion['陕西'].index === 15, 'D①byRegion 陕西 9
 assert(sandbox.GM.minxin.byRegion['山东'].index === 95, 'D②byRegion 山东 90→镜像 95·实得 ' + sandbox.GM.minxin.byRegion['山东'].index);
 console.log('  D 并账: byRegion 各省 90 → 镜像真值(陕西15/山东95)，不再被拉向全国均值');
 
-// ── B：触发改各省（random 放行）——烂省炸、安定省不炸 ──
+// ── B：AuthorityEngines.tick 不再生民变（民变重做·民2a，11-14）──
+// 原先这里扫各省，民心低于 25 就按概率揭竿（众五千到三万五随机）。起事改由 tm-revolt-cases.js 按四样实账与地方官判、
+// tm-revolt-rising.js 落成真人真数的民变；random 全放行、陕西民心 15，这里也一股不生。
 RAND = 0; // 强制放行所有概率门
 sandbox.GM = freshGM([]);
 AE.tick({ turn: 5, monthRatio: 1 });
-var revs = sandbox.GM.minxin.revolts;
-assert(revs.some(function (r) { return r.region === '陕西' && r.status === 'ongoing'; }), 'B①烂省陕西(15<25)炸民变·实得 ' + JSON.stringify(revs.map(function(r){return r.region;})));
-assert(!revs.some(function (r) { return r.region === '山东'; }), 'B②安定省山东(95)不炸');
-
-// B 去重：陕西已有 ongoing 民变 → 再 tick 不重复点燃
-var before = sandbox.GM.minxin.revolts.filter(function (r) { return r.region === '陕西'; }).length;
-AE.tick({ turn: 6, monthRatio: 1 });
-var after = sandbox.GM.minxin.revolts.filter(function (r) { return r.region === '陕西'; }).length;
-assert(after === before, 'B③同省已有 ongoing 民变→不重复点燃·实得 ' + before + '→' + after);
-console.log('  B 触发: 陕西(15)炸民变·山东(95)不炸·同省不重复');
-
-// B 控制组：全境安定（都95）→ 一个都不炸
-RAND = 0;
-sandbox.GM = freshGM([]);
-sandbox.GM.adminHierarchy.player.divisions.forEach(function (d) { d.minxin = 95; });
-AE.tick({ turn: 5, monthRatio: 1 });
-assert(sandbox.GM.minxin.revolts.length === 0, 'B④全境治理良好(都95)→无民变·实得 ' + sandbox.GM.minxin.revolts.length);
-console.log('  B 控制组: 全省都95→零民变（B 不惩罚治理良好的玩家）');
+assert(sandbox.GM.minxin.revolts.length === 0, "B①AuthorityEngines.tick 不再按民心随机点燃民变（陕西 15、概率全放行）·实得 " + JSON.stringify(sandbox.GM.minxin.revolts.map(function(r){return r.region;})));
+console.log('  B 触发: AuthorityEngines.tick 不再生民变（起事归 tm-revolt-cases.js）');
 
 // ── E2·平乱接皇威（端到端·跑真 AuthorityComplete.tick）：官军镇压成功→adjustHuangwei('suppressRevolt')按等级、夹[2,8]、_hwAwarded 幂等 ──
 RAND = null;

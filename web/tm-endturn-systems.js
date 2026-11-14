@@ -256,9 +256,9 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
     }
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] AuthorityComplete.tick 失败:') : console.error('[endTurn] AuthorityComplete.tick 失败:', e); throw e; }
 
-  // 6.145 民变立案与起事判定（民变重做·民1，11-14）：州民心跌破 35 立「苗头」案，按饥荒、赋役、流民、邻州四样实账与地方官
-  //   算本回合起事的机会。本片只判、只记（GM.revoltCases），不生民变、不出事件；读的是上面这回合更新过的民心、户口。
-  //   判错不拦过回合：只记错误。
+  // 6.145 民变立案与起事判定（民变重做·民1、民2a，11-14）：州民心跌破 35 立「苗头」案，按饥荒、赋役、流民、邻州四样实账与地方官
+  //   算本回合起事的机会（GM.revoltCases）；掷中即起一股真民变（tm-revolt-rising.js：首领是真人，人数从本州逃户里拨）。
+  //   读的是上面这回合更新过的民心、户口。判错不拦过回合：只记错误。
   try {
     if (window.TM && TM.RevoltCases) TM.RevoltCases.tick(GM, { turn: GM.turn, monthRatio: monthRatio });
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] RevoltCases.tick 失败:') : console.error('[endTurn] RevoltCases.tick 失败:', e); }

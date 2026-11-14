@@ -779,50 +779,6 @@
     };
   }
 
-  function classOf(x) {
-    return normalizeName((x && (x.className || x.classKey)) || 'common');
-  }
-
-  function syncRevoltFromChain(root, chain, placeOf) {
-    var mx = ensureMinxin(root);
-    if (!chain || chain.level < 3) return null;
-    // 民变须有地方：阶层不满没指明地方的候选只留作酝酿的链，不生民变。旧写法把地方记成 unknown——
-    // 地图上找不到、账本认不出就按全国扣「民变不宁」，候选又按回合号每回合另立新链，天启四回合攒了十三股。
-    // 真要起事由各州民心链去起，那些都有地方。
-    if (!String(chain.region || '').trim()) return null;
-    placeOf = placeOf || function(ref) { return String(ref == null ? '' : ref).trim(); };
-    // 同一地方、同一阶层只认一股进行中的民变：先按链号认，认不着再按「地方 + 阶层」认。
-    // 旧档里同一处的民变可能挂在旧链号下（候选编号带回合号的旧写法），地方也可能记的是区划编号；
-    // 认着了就过继到本链名下、地名改成州名，不另起一股。
-    var place = placeOf(chain.region), cls = classOf(chain);
-    var existing = mx.revolts.filter(function(r) { return r && r.sourceChainId === chain.id && r.status === 'ongoing'; })[0]
-      || mx.revolts.filter(function(r) { return r && r.status === 'ongoing' && placeOf(r.region) === place && classOf(r) === cls; })[0];
-    if (existing) {
-      if (existing.sourceChainId !== chain.id) { existing.sourceChainId = chain.id; existing.region = chain.region; }
-      return existing;
-    }
-    var _t = Number(root.turn) || 0;
-    // 复燃冷却：同链上一场民变结束后 12 回合内不自动补位——旧行为=镇压次回合原地复活成永动民变(2026-07-04 审查定罪)
-    if (chain._lastSpawnTurn != null && (_t - chain._lastSpawnTurn) < CHAIN_RESPAWN_COOLDOWN) return null;
-    // 起事最高到暴动（同志 11-08 定，民变重做前止血）：旧写法按链级起事，州民心 ≤16 一起事就是起义、≤8 就是改朝，
-    // 号称二十万——天启第一回合陕西十五股里就有起义 6 股、改朝 2 股。
-    var revolt = {
-      id: 'revolt-' + chain.id + '-t' + _t, // 带回合号唯一 id·旧写法复用同 id 令镇压 find 命中旧尸体(按 id 镇不掉复燃场)
-      turn: chain.turn || root.turn || 0,
-      region: chain.region || 'unknown',
-      className: chain.className || '',
-      level: Math.min(chain.level, 3),
-      scale: 30000,
-      status: 'ongoing',
-      cause: chain.cause,
-      linkedIssue: chain.linkedIssue || '',
-      sourceChainId: chain.id
-    };
-    mx.revolts.push(revolt);
-    chain._lastSpawnTurn = _t;
-    return revolt;
-  }
-
   function advanceUprisingChain(root, options) {
     root = pickRoot(root);
     options = options || {};
@@ -880,8 +836,8 @@
       }
       return chain.momentum > 0;
     });
-    // 先让够级的链起事、再封顶，刚起事的链也算「已生过民变」，不会在起事前被挤掉。
-    mx.uprisingChain.forEach(function(chain) { syncRevoltFromChain(root, chain, placeOf); });
+    // 链只记民情酝酿，不再直接生民变（民变重做·民2a，11-14）：原先链到三级（州民心 ≤24）就生一股、规模写死 3 万。
+    //   现由 tm-revolt-cases.js 按四样实账与地方官判起事，tm-revolt-rising.js 落成真人真数的民变。
     mx.uprisingChain = trimChains(mx, _nowTurn);
     root._minxinLedgerUprising = { turn: Number(options.turn != null ? options.turn : root.turn) || 0, chains: mx.uprisingChain.length, revolts: toArray(mx.revolts).filter(function(r) { return r && r.status === 'ongoing'; }).length };
     return clone(root._minxinLedgerUprising);

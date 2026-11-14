@@ -846,8 +846,23 @@ function _ltCountNpcNew(name) {
 /** 检查驿路是否阻断 */
 function _ltIsRouteBlocked(from, to) {
   var disruptions = GM._routeDisruptions || [];
+  // 民变盘踞记的阻断（民变重做·民2c，tm-revolt-guerrilla.js）带州编号，认州不认字面：人物所在地是「陕西·延安」
+  //   「陕西延安府·延绥镇军营」这类写法，与州名字面对不上；落到那一州（只认点名到州的，只说到省的不算）就算阻断。
+  var RC = (typeof TM !== 'undefined' && TM.RevoltCases && typeof TM.RevoltCases.placeLeaf === 'function') ? TM.RevoltCases : null;
+  var leaves = null, placed = Object.create(null);
+  function divOf(loc) {
+    if (!RC || !loc) return null;
+    loc = String(loc);
+    if (!(loc in placed)) {
+      if (!leaves) leaves = RC.realmLeaves(GM);
+      var L = RC.placeLeaf(GM, loc, leaves);
+      placed[loc] = L ? String(L.node.id) : null;
+    }
+    return placed[loc];
+  }
   return disruptions.some(function(d) {
-    if (d.resolved) return false;
+    if (!d || d.resolved) return false;
+    if (d.divisionId != null) { var id = String(d.divisionId); return divOf(from) === id || divOf(to) === id; }
     // 检查方向是否匹配（任一端点匹配即视为阻断）
     return (d.from === from || d.to === from || d.from === to || d.to === to || d.route === from + '-' + to || d.route === to + '-' + from);
   });

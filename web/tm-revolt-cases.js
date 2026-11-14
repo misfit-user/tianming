@@ -195,7 +195,7 @@
       texts.push(str(f.territory) + '·' + str(f.name));
     });
     arr(G.rovingRebels).forEach(function (r) { if (r) texts.push(str(r.region || r.location || r.place)); });
-    return texts.join('｜');
+    return maskProvinces(texts.join('｜'), realmLeaves(G));   // 省名遮掉再认州名（「陕西安塞」不认作西安，见 placeLeaf）
   }
 
   function refugee(G, L, rebelText) {
@@ -389,11 +389,25 @@
     return store;
   }
 
-  // ── AI 宣布的起义并进案（民2b，同志 11-14 定）──
-  // AI 说的地方落到本朝哪一州：点名到州的认那州（编号、全名、去后缀的名字；地名里带着几个州名的，取最先说到的）；
-  // 只说到省的（省名，或通行简称加方位如「陕北」），在最先说到的那个省里挑一州：有案未起的先、起事机会大的先，
-  // 其次没起事的、民心最低的；同分按编号。落不到本朝州县返回 null。
-  function resolveLeaf(G, text, leaves) {
+  // ── 地名点名到哪一州 ──
+  // 编号、全名、去后缀的名字；地名里带着几个州名的，取最先说到的。只说到省、或对不上，返回 null。
+  // 省名先遮掉再找州名：「陕西安塞」里的「西安」是省名尾字连着县名头字，不是西安府；「山西安邑」同（民2c 改）。
+  // 省名与某州名相同、或被某州名包含的不遮（免得遮掉州名本身）。
+  function maskProvinces(text, leaves) {
+    var provs = {}, bases = [];
+    leaves.forEach(function (L) {
+      var p = L.chain[L.chain.length - 1];
+      if (p && p !== L.node) provs[baseName(p.name)] = 1;
+      bases.push(baseName(L.node.name));
+    });
+    Object.keys(provs).forEach(function (pb) {
+      if (pb.length < 2 || bases.some(function (b) { return b.indexOf(pb) >= 0; })) return;
+      text = text.split(pb).join(new Array(pb.length + 1).join('　'));
+    });
+    return text;
+  }
+
+  function placeLeaf(G, text, leaves) {
     text = str(text).trim();
     if (!text) return null;
     leaves = leaves || realmLeaves(G);
@@ -402,12 +416,26 @@
       var n = leaves[i].node;
       if (str(n.id) === text || str(n.name) === text || baseName(n.name) === tb) return leaves[i];
     }
+    // 括注是按语不是地名：「陕西米脂·银川驿(学界或作甘州驿)」不是甘州卫
+    var masked = maskProvinces(text.replace(/[（(][^）)]*[）)]/g, ''), leaves);
     var best = null, bestAt = Infinity, bestLen = 0;
     leaves.forEach(function (L) {
-      var b = baseName(L.node.name), at = b.length >= 2 ? text.indexOf(b) : -1;
+      var b = baseName(L.node.name), at = b.length >= 2 ? masked.indexOf(b) : -1;
       if (at < 0) return;
       if (at < bestAt || (at === bestAt && b.length > bestLen)) { best = L; bestAt = at; bestLen = b.length; }
     });
+    return best;
+  }
+
+  // ── AI 宣布的起义并进案（民2b，同志 11-14 定）──
+  // AI 说的地方落到本朝哪一州：点名到州的认那州（placeLeaf）；
+  // 只说到省的（省名，或通行简称加方位如「陕北」），在最先说到的那个省里挑一州：有案未起的先、起事机会大的先，
+  // 其次没起事的、民心最低的；同分按编号。落不到本朝州县返回 null。
+  function resolveLeaf(G, text, leaves) {
+    text = str(text).trim();
+    if (!text) return null;
+    leaves = leaves || realmLeaves(G);
+    var best = placeLeaf(G, text, leaves);
     if (best) return best;
     var RR = TM.RevoltRising;
     if (!RR || typeof RR.provinceAt !== 'function') return null;
@@ -507,7 +535,7 @@
   }
 
   TM.RevoltCases = {
-    CFG: CFG, tick: tick, judge: judge, summary: summary, riseFromAI: riseFromAI, resolveLeaf: resolveLeaf,
+    CFG: CFG, tick: tick, judge: judge, summary: summary, riseFromAI: riseFromAI, resolveLeaf: resolveLeaf, placeLeaf: placeLeaf,
     realmLeaves: realmLeaves, neighborsOf: neighborsOf, baseName: baseName, seededRoll: seededRoll, ensureStore: ensureStore
   };
 })(typeof window !== 'undefined' ? window : globalThis);

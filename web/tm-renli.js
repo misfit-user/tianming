@@ -45,7 +45,8 @@
 
   // 刀A·物理亏空→既有民变/流寇点火（激活·仅已种子地域·兑现 §5 走查点火基线）
   // 满意度(过闸·±14)是「被平滑的感知·小头」；真牙齿在物理亏空：粮荒缓蚀本府 div.minxin→既有民变机器自然点火，
-  //   持续逃亡分流进既有逃户池 taoohu→既有流寇凝聚机器接管。本层只供「物理压力」，点火/定级/镇压/招抚全用既有系统。
+  //   持续逃亡分流进既有逃户池 taoohu（民变重做·民2c 起全国逃户池不再凝成流寇，流寇只从各州起事来）。
+  //   本层只供「物理压力」，点火/定级/镇压/招抚全用既有系统。
   var UNREST_MX_STEP = 4;          // 役政崩坏每回合压低本府 div.minxin 的有界上限（缓蚀·配既有 5%/回合回归稳定器→灾去自复）
   var COLLAPSE_FLEE = 0.20;        // §5 流寇点火·累计逃亡占实在丁阈
   var COLLAPSE_DEFICIT_TURNS = 2;  // §5·连续亏空回合阈（缺粮不结转·deficitTurns 计数）
@@ -643,8 +644,8 @@
         if (routed > 0 && GM.population) {
           var bls = GM.population.byLegalStatus || (GM.population.byLegalStatus = {});
           var taoohu = bls.taoohu || (bls.taoohu = { mouths: 0 });
-          taoohu.mouths = num(taoohu.mouths, 0) + routed;   // 守恒入既有逃户池（_tickRovingCoalesce 据此聚流寇）
-          ledgerPush(GM, rid, 'taoohu', routed, '流亡聚为流寇之资', 'renli');
+          taoohu.mouths = num(taoohu.mouths, 0) + routed;   // 守恒入既有逃户池（民2c 起不再凝成全国流寇）
+          ledgerPush(GM, rid, 'taoohu', routed, '役政崩坏，流亡入逃户', 'renli');
           r._collapseTurn = num(GM.turn, 0);
         }
       }

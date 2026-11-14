@@ -82,12 +82,14 @@
   }
 
   // ── ② 逃隐户税基折减：逃户全免、隐户六成不纳（荫庇下仍有些许浮收），封顶 35% ──
+  //   从乱（民变裹挟去的人，populationDetail.rebels，民变重做·民2a 起）同逃户，一粒不纳——民2a 把人从逃户挪进从乱，
+  //   这里原先只认逃户，一州起事反倒多收了（民2c 补）。
   function fleeTaxPenalty(div) {
     if (!div) return 0;
     var pd = div.populationDetail || {};
     var mouths = num(pd.mouths, num(typeof div.population === 'number' ? div.population : 0, 0));
     if (mouths <= 0) return 0;
-    var fled = Math.max(0, num(pd.fugitives, 0)) + Math.max(0, num(pd.hiddenCount, 0)) * 0.6;
+    var fled = Math.max(0, num(pd.fugitives, 0)) + Math.max(0, num(pd.rebels, 0)) + Math.max(0, num(pd.hiddenCount, 0)) * 0.6;
     if (fled <= 0) return 0;
     return round2(Math.min(0.35, fled / mouths));
   }

@@ -263,6 +263,12 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
     if (window.TM && TM.RevoltCases) TM.RevoltCases.tick(GM, { turn: GM.turn, monthRatio: monthRatio });
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] RevoltCases.tick 失败:') : console.error('[endTurn] RevoltCases.tick 失败:', e); }
 
+  // 6.146 民变游击的连带（民变重做·民2c，11-14）：民变案落地的民变在它那一州盘踞——地块状态「某股盘踞」（本州征收打折）、
+  //   驿路阻断、户口逃散、本州民心（tm-revolt-guerrilla.js）。邻州民心照旧走「民变不宁」。出错不拦过回合：只记错误。
+  try {
+    if (window.TM && TM.RevoltGuerrilla) TM.RevoltGuerrilla.tick(GM, { turn: GM.turn, monthRatio: monthRatio });
+  } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] RevoltGuerrilla.tick 失败:') : console.error('[endTurn] RevoltGuerrilla.tick 失败:', e); }
+
   // 6.15 历史补完（年龄金字塔精细化+疫病战亡字段维护）
   try {
     if (typeof HistoricalPresets !== 'undefined') {

@@ -387,12 +387,11 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  C4·流寇跨省凝聚（2026-06-16·未 ship 未 commit）
-  //    民变→流寇军事实体的升级阶梯（接 C2/C3 的逃户底 taoohu）：起义阶层在场且逃户池够大→逃户守恒凝成流寇(roving)；
-  //    不喂新血则自溃散（守恒回逃户）·势穷瓦解。镇压(suppress)耗军饷/战损·斩首者离籍·溃散者回逃户；
-  //    招抚(pacify)守恒回编户/军户 + 开恶例（合法性代价·记账·不擅动刻意自由的皇威）。
-  //    注：radicalFrac/逃户现为全国级（§7.5）→ C4 做全国蓄水凝聚 + 起义省份 best-effort 标记 regions；
-  //    真·区域邻接凝聚待 radicalFrac 地域化。纯增量·朝代中立（流寇/逃户/编户皆通用词）。
+  //  C4·流寇（2026-06-16 起；民变重做·民2c 11-14 改）
+  //    原先：起义阶层在场且全国逃户池够大→逃户守恒凝成一股全国的「流寇」，每月从池里招一成多壮大，地方取阶层数据的泛称
+  //    （天启里一处也落不到州）。民2c 删了这一段凝聚：流寇池并进游击——流寇只从各州起事来（tm-revolt-cases.js 判、
+  //    tm-revolt-rising.js 落地，人从本州逃户里拨），在它那一州盘踞、扰征收、断驿路、驱户口（tm-revolt-guerrilla.js）。
+  //    旧档里已有的流寇照旧：不喂新血每月溃散一成回逃户、势穷瓦解；镇压(suppress)、招抚(pacify)照旧可用。民2d 剿抚换新制时一并折算。
   function _ensureRoving(G) { if (!Array.isArray(G.rovingRebels)) G.rovingRebels = []; return G.rovingRebels; }
   function _findRoving(G, ref) {
     var list = (G && G.rovingRebels) || [];
@@ -401,6 +400,7 @@
     // 无 ref / 未命中 → 取首股在编流寇（AI 笼统下令「剿流寇」不给精确 id 亦可执行）
     return list.filter(function(r){ return r && !r.disbanded && (Number(r.strength) || 0) > 0; })[0] || null;
   }
+  // 名字沿用（PhaseF3 导出、旧测试认它）；民2c 起只剩溃散：旧档里已有的流寇不再壮大，每月溃散一成回逃户，势穷瓦解。
   function _tickRovingCoalesce(ctx, mr) {
     var G = global.GM;
     if (!G || !Array.isArray(G.classes) || !G.population) return;
@@ -409,60 +409,7 @@
     var taoohu = bls.taoohu || (bls.taoohu = { mouths: 0 });
     var rebels = _ensureRoving(G);
     var turn = G.turn || (ctx && ctx.turn) || 0;
-    // ②·E↔C4：按 unrestArchetype 分化造反方式——只「暴烈/哗变/倒戈」(下层揭竿/军哗变)聚为流寇；
-    //   「不合作/撤离/请愿」(上层安静而致命)走隐田/抗税(已由 flight→hiddenCount 承接)·不聚流寇；无描述符默认计入(回归安全)。
-    function _isViolentArchetype(c) {
-      var arch = (c && c.descriptor && c.descriptor.unrestArchetype) || '';
-      return !arch || /暴烈|哗变|倒戈/.test(arch);
-    }
-    function _isViolentUprising(c) {
-      var rf = Number(c && c._radicalFrac) || 0;
-      if (!((c && c.revoltState && c.revoltState.phase === 'uprising') || rf >= 0.6)) return false;
-      return _isViolentArchetype(c);
-    }
-    var violentUprising = 0;
-    G.classes.forEach(function(c) { if (_isViolentUprising(c)) violentUprising += 1; });
-    // ④·地域化：收集热区（暴烈类的 per-region radicalFrac≥0.5 地域·真跨省凝聚据此·非全国近似）
-    var hotReg = {};
-    G.classes.forEach(function(c) {
-      if (!_isViolentArchetype(c)) return;
-      ((c && c.regionalVariants) || []).forEach(function(v) {
-        var vrf = Number(v && v._radicalFrac) || 0;
-        if (v && v.region && vrf >= 0.5) hotReg[v.region] = Math.max(hotReg[v.region] || 0, vrf);
-      });
-    });
-    var hotList = Object.keys(hotReg).sort(function(a, b) { return hotReg[b] - hotReg[a]; });
-    var pool = Number(taoohu.mouths) || 0;
-    var fervor = Math.max(violentUprising, hotList.length);   // 全国级暴烈起义阶层数 或 地域热区数（取大·愈多省糜烂愈盛）
-    // ── 凝聚/壮大：暴烈起义在场(全国级 或 地域热区) + 逃户池够大 → 逃户守恒入伙 ──
-    if (fervor >= 1 && pool >= 50000) {
-      var recruit = Math.min(Math.floor(pool * Math.min(0.12 + 0.04 * fervor, 0.35) * mr), Math.floor(pool * 0.5));
-      if (recruit > 0) {
-        taoohu.mouths = pool - recruit;
-        var active = rebels.filter(function(r){ return r && !r.disbanded; })[0];
-        if (!active) {
-          active = { id: 'roving_' + turn + '_' + rebels.length, name: '流寇', strength: 0, regions: [], _bornTurn: turn, _peakStrength: 0, _lastGrewTurn: turn, disbanded: false };
-          rebels.push(active);
-          if (global.addEB) global.addEB('民变', '流民聚为流寇，啸聚' + recruit + '众' + (hotList.length >= 2 ? '·' + hotList.slice(0, 3).join('、') + '跨省连结' : '') + '，势成燎原');
-        }
-        active.strength = (Number(active.strength) || 0) + recruit;
-        active._lastGrewTurn = turn;
-        if (active.strength > (active._peakStrength || 0)) active._peakStrength = active.strength;
-        // ④·区域标记：优先 per-region 真热区（按乱民排序·真跨省）；无热区则回退 best-effort（暴烈起义类低满意省份）
-        if (hotList.length) {
-          hotList.slice(0, 5).forEach(function(rg) { if (active.regions.indexOf(rg) < 0) active.regions.push(rg); });
-        } else {
-          G.classes.forEach(function(c) {
-            if (!_isViolentUprising(c)) return;
-            ((c && c.regionalVariants) || []).forEach(function(v) {
-              var s = (v && v.satisfaction != null) ? Number(v.satisfaction) : 50;
-              if (v && v.region && s < 30 && active.regions.indexOf(v.region) < 0) active.regions.push(v.region);
-            });
-          });
-        }
-      }
-    }
-    // ── 溃散（未壮大者守恒回逃户）+ 势穷瓦解 ──
+    // ── 溃散（不喂新血者守恒回逃户）+ 势穷瓦解 ──
     rebels.forEach(function(r) {
       if (!r || r.disbanded) return;
       if (r._lastGrewTurn !== turn) {
@@ -576,8 +523,10 @@
       // 上面一处也没挂上；旧写法照样每回合报「劫掠北方燕齐等地，焚庐舍」，地方上什么都没发生，是假事件。
       if (global.addEB && sev >= 0.3 && plundered.length) global.addEB('民变', (r.name || '流寇') + '劫掠' + plundered[0] + (plundered.length > 1 ? '等地' : '') + '，焚庐舍、掠丁壮');
     });
-    // ② 民变据府扰攘（轻于流寇·按级别）
-    var revolts = (G.minxin && Array.isArray(G.minxin.revolts)) ? G.minxin.revolts.filter(function (rv) { return rv && rv.status === 'ongoing' && rv.region; }) : [];
+    // ② 民变据府扰攘（轻于流寇·按级别）。民变案落地的民变（source 'revolt-cases'）不在这里：它们在本州的连带
+    //   （地块「某股盘踞」、征收打折、驿路阻断、户口逃散、本州民心）由 tm-revolt-guerrilla.js 按真人数落（民2c）；
+    //   这里只剩旧档里的旧式民变，民2d 折算后整段删。
+    var revolts = (G.minxin && Array.isArray(G.minxin.revolts)) ? G.minxin.revolts.filter(function (rv) { return rv && rv.status === 'ongoing' && rv.region && rv.source !== 'revolt-cases'; }) : [];
     revolts.forEach(function (rv) {
       var div = findDiv(rv.region);
       if (div && RS && typeof RS.add === 'function') {

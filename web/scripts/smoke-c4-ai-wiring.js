@@ -48,12 +48,13 @@ function runConsumer(GM, p1) {
   const fn = new Function('p1', 'PhaseF3', 'addEB', 'Number', 'Array', consumerLine);
   fn(p1, global.PhaseF3, function () {}, Number, Array);
 }
-// 造一股流寇
+// 造一股流寇：民2c 起全国逃户池不再凝成流寇，这里放一股旧档里已有的（剿抚照旧认它，民2d 换新制）
 function mkRebelGM() {
   const GM = { turn: 5, classes: [{ name: '自耕农', _radicalFrac: 0.7, revoltState: { phase: 'uprising' } }],
-    population: { byClass: { peasant_self: { mouths: 5000000 } }, byLegalStatus: { taoohu: { mouths: 400000 } } },
-    fiscal: { treasury: 2000000 } };
-  global.GM = GM; PF3._tickRovingCoalesce({ turn: 5 }, 1);
+    population: { byClass: { peasant_self: { mouths: 5000000 } }, byLegalStatus: { taoohu: { mouths: 336000 } } },
+    fiscal: { treasury: 2000000 },
+    rovingRebels: [{ id: 'roving_3_0', name: '流寇', strength: 64000, regions: ['陕西'], _bornTurn: 3, _peakStrength: 64000, _lastGrewTurn: 3, disbanded: false }] };
+  global.GM = GM;
   return GM;
 }
 // 剿

@@ -425,7 +425,8 @@
         items.push(candidate({
           source: row[1], ref: x.id || x._key || shortHash(title + text), originKind: 'signal',
           kind: row[2], domain: row[1] === 'routeDisruption' ? 'works' : 'military', title: title, text: text || title,
-          severity: x.severity || x.level || 'high', priority: x.priority, closed: isClosedWord(x.status),
+          // 驿路复通记的是 resolved:true（主推演写的、民变盘踞记的都是），不写 status；原先只认 status，复通了的驿路照旧当未了的事立案
+          severity: x.severity || x.level || 'high', priority: x.priority, closed: isClosedWord(x.status) || x.resolved === true,
           order: 800 + i
         }, ctx.names));
         items[items.length - 1]._needsLine = true;

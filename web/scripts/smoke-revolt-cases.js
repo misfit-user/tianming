@@ -135,6 +135,17 @@ const st2 = RC.tick(G2, { monthRatio: 1 });
 const yang2 = st2.cases.find((x) => x.name === '平阳府').last.j;
 ok(yang2.official.kind === 'upright' && yang2.official.mult === 0.5, '平阳府有灾且已赈：清官作「清能且在赈」×0.5');
 near(yang2.famine.score, 0.4 * (0.35 * 0.64 + 0.5 * 0.8 * 0.3), '赈过的灾，灾的分量打三折');
+const judgeAt = (Gx, name) => RC.judge(Gx, RC.realmLeaves(Gx).find((l) => l.node.name === name), { months: 1 });
+const G2b = world();
+Object.assign(G2b.adminHierarchy.player.divisions[0].disaster, { _relieved: true, _reliefTurn: 2 });
+const yan2b = judgeAt(G2b, '延安府');
+ok(yan2b.famine.relieved === true, '剧本写在区划上的陕西大饥荒，开仓记了已赈：算在赈');
+near(yan2b.famine.score, 0.4 * (0.35 * 0.64 + 0.5 * 0.95 * 0.3), '剧本写的灾在赈：灾的分量打三折');
+G2b.turn = 6;
+ok(judgeAt(G2b, '延安府').famine.relieved === false, '开仓已过 4 回合：不再算在赈');
+const G2d = world();
+G2d.activeDisasters = [{ region: '太原府', type: 'drought', severity: 'severe' }];
+near(judgeAt(G2d, '太原府').famine.score, 0.4 * (0.35 * 0.64 + 0.5 * 0.7), '在册天灾写 severe：照灾害系统的折法记 70（原先读不出数，一律记 20）');
 
 // ── 掷骰可复现；同回合不重掷 ──
 ok(RC.seededRoll('camp-1|2|d-yanan') === RC.seededRoll('camp-1|2|d-yanan') && RC.seededRoll('a') !== RC.seededRoll('b'), '掷骰按局、回合、州定，可复现');

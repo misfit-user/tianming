@@ -1342,6 +1342,39 @@
     return passed;
   }
 
+  // 剧本写在区划上的灾（division.disaster，如天启陕西大饥荒）不在在册天灾 GM.activeDisasters 里，原先开仓数不到它：
+  //   赈陕西被当「无灾空赈」，民心回升减半、流民不复业，民变判定（tm-revolt-cases.js）也读不到「在赈」。
+  //   开仓时一并记「已赈」与回合（_relieved、_reliefTurn）。这类灾剧本不设期限，过几回合可再赈；同一回合只算一次。
+  //   只管玩家一方的区划；指定了地方的，按区划名（去府州卫等后缀）、编号或灾情里列的受灾子区划认。
+  function _divBaseName(name) {
+    var s = String(name == null ? '' : name).trim();
+    var b = s.replace(/(承宣布政使司|布政使司|都指挥使司|府|州|卫|镇)$/, '');
+    return b.length >= 2 ? b : s;
+  }
+  function _reliefScenarioDisasters(scale, region) {
+    var ah = GM.adminHierarchy && GM.adminHierarchy.player;
+    var tops = ah && (ah.divisions || ah.children);
+    if (!Array.isArray(tops)) return 0;
+    var turn = GM.turn || 0, want = String(region == null ? '' : region).trim(), wantBase = _divBaseName(want), n = 0;
+    function hit(node, d) {
+      if (scale === 'national' || !want) return true;
+      if (node.id === want || node.name === want || _divBaseName(node.name) === wantBase) return true;
+      return (Array.isArray(d.affectedSubDivisions) ? d.affectedSubDivisions : []).some(function (s) { return _divBaseName(s) === wantBase; });
+    }
+    (function walk(list) {
+      list.forEach(function (node) {
+        if (!node || typeof node !== 'object') return;
+        var d = node.disaster;
+        if (d && typeof d === 'object' && d.active !== false && hit(node, d) && d._reliefTurn !== turn) {
+          d._relieved = true; d._reliefTurn = turn; n++;
+        }
+        var kids = node.children || node.divisions || node.subs;
+        if (Array.isArray(kids)) walk(kids);
+      });
+    })(tops);
+    return n;
+  }
+
   var Actions = {
     // 加派（临时提高税率）
     extraTax: function(rate) {
@@ -1380,6 +1413,7 @@
           if (hit && !d._relieved) { d._relieved = true; d._reliefTurn = GM.turn || 0; relieved++; }
         });
       }
+      relieved += _reliefScenarioDisasters(scale, region);   // 剧本写在区划上的灾也是在灾（见上）
       GM._grainReleaseTurn = GM.turn || 0;   // 放粮入市信号→updatePriceIndex 平抑粮价指数(央地平粜同写此信号)
       // 民心回升：有灾可赈按 scale·无灾空赈减半(避免无灾刷民心)
       var minxinGain = scale === 'national' ? 15 :

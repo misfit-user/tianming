@@ -91,6 +91,14 @@
   // ── 饥荒 ≤0.40：承载负荷过 1、当地有灾而无赈、粮价 ──
   function grainPrice(G) { return num(G.currency && G.currency.market && G.currency.market.grainPrice, null); }
 
+  // 灾的轻重折成 0～100：剧本写的是数（天启陕西大饥荒 95）；灾害系统在册天灾写的是 minor / moderate / severe / catastrophic，
+  // 照灾害系统自己的折法（tm-guoku-engine.js _DISASTER_SEV：0.2 / 0.45 / 0.7 / 0.95）
+  var SEVERITY_WORDS = { minor: 20, moderate: 45, severe: 70, catastrophic: 95 };
+  function severityOf(v, d) {
+    if (typeof v === 'string' && SEVERITY_WORDS[v.trim().toLowerCase()] != null) return SEVERITY_WORDS[v.trim().toLowerCase()];
+    return num(v, d);
+  }
+
   function disasterOf(G, leaf, chain, turn) {
     var hit = null, leafBase = baseName(leaf.name);
     // 剧本写在区划上的灾情：叶子自己的，或上级的；上级的若列了受灾子区划，要点到本州
@@ -99,14 +107,16 @@
       if (!d || typeof d !== 'object' || d.active === false) continue;
       var list = arr(d.affectedSubDivisions);
       if (i > 0 && list.length && !list.some(function (n) { return baseName(n) === leafBase; })) continue;
-      hit = { severity: num(d.severity, 60), name: str(d.type || d.name || '灾'), src: str(chain[i].name), relieved: false };
+      // 开仓放粮在剧本写的灾上也记「已赈」（tm-guoku-engine.js openGranary），开仓后几回合内算在赈
+      var rel = !!d._relieved && turn - num(d._reliefTurn, -99) <= CFG.reliefTurns;
+      hit = { severity: severityOf(d.severity, 60), name: str(d.type || d.name || '灾'), src: str(chain[i].name), relieved: rel };
     }
     // 灾害系统的在册天灾（开仓放粮在这张表上记「已赈」）
     var names = {};
     chain.forEach(function (n) { if (n) { names[str(n.id)] = 1; names[str(n.name)] = 1; names[baseName(n.name)] = 1; } });
     arr(G.activeDisasters).forEach(function (d) {
       if (!d || !(names[str(d.region)] || names[baseName(d.region)])) return;
-      var sev = num(d.severity, num(d.level, 1) * 20);
+      var sev = severityOf(d.severity, num(d.level, 1) * 20);
       var relieved = !!d._relieved && turn - num(d._reliefTurn, -99) <= CFG.reliefTurns;
       if (!hit || sev > hit.severity) hit = { severity: sev, name: str(d.type || d.name || '灾'), src: '在册天灾', relieved: relieved };
       else if (relieved) hit.relieved = true;

@@ -942,6 +942,9 @@
       g.monthlyIncome = Math.round((g.ledgers.money.thisTurnIn || 0) / mr);
       g.monthlyExpense = Math.round((g.ledgers.money.thisTurnOut || 0) / mr);
       g.annualIncome = Math.round(g.monthlyIncome * 12);
+      // 年支同年入一样按真账（11-14）：原先只有固定支出那一段（fiscal-engine fixedCollect 写的俸禄、军饷、宗禄），截川纲、赈济、
+      //   工程等每回合另走的没进，推演给 AI 的国用摘要里月支按真账、年支却只算固定支出——绍宋看着年入年出差两百余万，实则每回合持平
+      g.annualExpense = Math.round(g.monthlyExpense * 12);
     }
     // 趋势
     var threshold = g.annualIncome * 0.01;

@@ -93,7 +93,7 @@ ok(!ping.refugee.roving && yan.refugee.followers === Math.round(32700 * 0.3), '�
 ok(yan.official.kind === 'cruel' && yan.official.mult === 1.5 && yan.official.name === '胡廷宴', '府里没主官，落到巡抚胡廷宴：廉 32、冷酷 → 贪酷 ×1.5');
 ok(yang.official.kind === 'ordinary' && /清能/.test(yang.official.label), '山西某清官不在赈：作庸常 ×1');
 ok(kai.official.kind === 'vacant' && kai.official.mult === 1.2, '河南一路没人：缺官 ×1.2');
-near(yan.monthly, Math.min(0.95, (yan.famine.score + yan.levy.score + yan.refugee.score) * 1.5), '每月机会＝四项相加 × 地方官 × 总系数（封顶 0.95）');
+near(yan.monthly, Math.max(0, yan.famine.score + yan.levy.score + yan.refugee.score - 0.3) * 1.5 * 0.1, '每月机会＝（四项和 − 门槛 0.3）× 地方官 × 总系数 0.1');
 
 // ── 地方官认谁：官制树上的在任者，其次区划上的主官名字（任免改它），governorId 只在没有名字时认 ──
 const offOf = (Gx, name) => RC.judge(Gx, RC.realmLeaves(Gx).find((l) => l.node.name === name), { months: 1 }).official;
@@ -118,8 +118,8 @@ Gd.adminHierarchy.player.divisions[1].governor = '某清官';
 Gd.chars[1].alive = false;
 ok(offOf(Gd, '平阳府').kind === 'vacant', '区划上写的主官已死：缺官');
 
-// ── 校准用的两个数：门槛与总系数（默认 0 与 1＝照定案原样） ──
-ok(RC.CFG.floor === 0 && RC.CFG.scale === 1, '默认门槛 0、总系数 1：照定案原样相加');
+// ── 校准定的两个数：门槛 0.3、总系数 0.1（同志 11-14 定）；换一组数照公式算 ──
+ok(RC.CFG.floor === 0.3 && RC.CFG.scale === 0.1, '门槛 0.3、总系数 0.1');
 const cF = sandbox();
 cF.TM.RevoltCases.CFG.floor = 0.3;
 cF.TM.RevoltCases.CFG.scale = 0.5;

@@ -438,7 +438,12 @@
       if (targetRows.length && leaves.length) {
         var total = targetRows.reduce(function(sum, r) { return sum + Math.max(0, Number(r.weight) || 0); }, 0) || 1;
         targetRows.forEach(function(r) {
-          var matched = leaves.filter(function(div) { return r.exact ? exactRegion(div, r.region) : matchRegion(div, r.region); });
+          // 点名正好是某一州的编号或名字，就只认那一州（同 exact）；对不上任何一州时才按「包含」模糊认。
+          //   模糊认法双向包含：府的编号（div_pref_ming_01_03）含着全省共用的地图编号（ming-01），点一个府会认中全省各府，
+          //   每府还吃整笔——天启户籍治理的信号每条点北直隶八府，十一府各吃八倍，第二回合顺天府一回合跌 13（应约 1.7）。
+          var exactHit = r.exact ? null : leaves.filter(function(div) { return exactRegion(div, r.region); });
+          var matched = r.exact ? leaves.filter(function(div) { return exactRegion(div, r.region); })
+            : (exactHit.length ? exactHit : leaves.filter(function(div) { return matchRegion(div, r.region); }));
           var perRegionDelta = r.deltaTrue != null ? Number(r.deltaTrue) : delta * ((Number(r.weight) || 1) / total);
           matched.forEach(function(div) {
             var before = Number(div.minxin != null ? div.minxin : div.minxinLocal);

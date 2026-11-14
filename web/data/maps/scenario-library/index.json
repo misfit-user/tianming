@@ -21,11 +21,11 @@
       },
       "source": {
         "path": "scenarios/天启七年·九月（官方）.json",
-        "sha256": "b389a0bbec0a8ee460be15675c36900f07778193c52a3c5360aba51fc78bdaa7"
+        "sha256": "cee3c5bbb010938fd25a5adac3599fd25c5ee4aaf5444fcdb8d2b68e720c5600"
       },
       "filename": "sc-tianqi7-1627.json",
       "bytes": 1486190,
-      "sha256": "613989a030bdc65520e99f8995301a1e3f70f5c276d497073820a50f311cde23"
+      "sha256": "b8bd918013e280581e9ecf03b23d9340f61992ca46e33f0b3b9f1d81d224adb1"
     },
     {
       "id": "sc-tang840-840",
@@ -71,11 +71,11 @@
       },
       "source": {
         "path": "scenarios/绍宋·建炎元年八月（官方）.json",
-        "sha256": "78c35defc30716003d8682117d93443e2c86fc5c63cf8543584685335c81f699"
+        "sha256": "b62774b4eea361e477866a8d2b4d97557e2c5663ea2063e22b5dff3bcb8813b2"
       },
       "filename": "sc-jianyan1-1127-shaosong.json",
       "bytes": 11815292,
-      "sha256": "0edaece851bfcb8a582d93de75c6dcfaf6e0ee7ca9ce00029376687450191e3f"
+      "sha256": "7af9fffe27de95373682c100c45ba151066b94b8143f7d14dde354136eb45b26"
     }
   ]
 }

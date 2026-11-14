@@ -797,6 +797,7 @@ inst._imprisonedTurn = GM.turn||0;
               _patch.revolt_events.forEach(function(r) {
                 if (!GM.minxin) GM.minxin = {};
                 if (!Array.isArray(GM.minxin.revolts)) GM.minxin.revolts = [];
+                var _revChanged = false;   // 账上真有变动才记进本回合变量（护栏拦下、找不到那股，都不记）
                 if (r.action === 'start') {
                   // 确定性护栏：AI 叙事可提鼓噪，但该省民心若仍安定(div.minxin>=阈值)，不坐实为引擎民变——
                   //   防「AI 推演不认数值」(E.B 报：全国/各省民心 98 仍冒叛军)。解析不到该省真值则照旧放行(不误拦)。
@@ -815,6 +816,16 @@ inst._imprisonedTurn = GM.turn||0;
                   if (_rmx != null && _rmx >= P_AI_REVOLT_MX) {
                     if (typeof addEB === 'function') addEB('民变', (r.region||'某地') + '虽有鼓噪，然民心 ' + Math.round(_rmx) + ' 尚安，未成气候（确定性护栏·未坐实）');
                   } else {
+                    // 民变重做·民2b（同志 11-14 定）：落在本朝一州的并进民变案，与主推演宣布的起义同一个入口（TM.RevoltCases.riseFromAI）——
+                    //   首领按叙事里的名字先在档里找、找不到用这名字按出身新生，人数按户口算（不取叙事报的数）；该州已有一股就是那一股。
+                    //   落不到本朝州县的（别家境内、地名对不上）照旧补一股（规模照旧封顶）。
+                    var _riseR = null;
+                    if (typeof TM !== 'undefined' && TM.RevoltCases && typeof TM.RevoltCases.riseFromAI === 'function') {
+                      try { _riseR = TM.RevoltCases.riseFromAI(GM, { by: 'reconcile', region: r.region, leaderName: r.leader, reason: r.reason }); }
+                      catch (_riseRE) { _riseR = null; (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_riseRE, 'reconcile revolt riseFromAI:') : console.warn('[Reconcile] revolt riseFromAI failed:', _riseRE); }
+                    }
+                    if (_riseR && _riseR.landed) _revChanged = true;
+                    else if (!(_riseR && _riseR.already)) {
                     // AI 报的叛军规模确定性封顶·不许凭空 30 万：按该省人口比例卡上限(解析不到走绝对上限)
                     var P_AI_REVOLT_SCALE_FRAC = 0.05, P_AI_REVOLT_SCALE_ABS = 80000;
                     var _mouths = (_rdiv && _rdiv.populationDetail && typeof _rdiv.populationDetail.mouths === 'number') ? _rdiv.populationDetail.mouths : null;
@@ -829,10 +840,13 @@ inst._imprisonedTurn = GM.turn||0;
                       status: 'ongoing',
                       _autoFromReconcile: true
                     });
+                    _revChanged = true;
+                    }
                   }
                 } else if (r.action === 'suppress' || r.action === 'appease') {
                   var openR = GM.minxin.revolts.find(function(x){return x && x.status === 'ongoing' && x.region === r.region;});
                   if (openR) {
+                    _revChanged = true;
                     openR.status = (r.action === 'suppress') ? 'suppressed' : 'appeased';
                     openR.endedTurn = GM.turn || 0;
                     // AI 叙事的武力平乱也确定性接皇威（与引擎/手动平乱同口径·_hwAwarded 防重复·状态互斥不双计）；招抚不计
@@ -845,6 +859,7 @@ inst._imprisonedTurn = GM.turn||0;
                     }
                   }
                 }
+                if (!_revChanged) return;
                 if (!GM.turnChanges) GM.turnChanges = {};
                 if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
                 GM.turnChanges.variables.push({ path: 'minxin.revolts', label: r.region + '·民变·' + r.action, delta: r.action==='start'?1:-1, reason: r.reason || '一致性补录' });

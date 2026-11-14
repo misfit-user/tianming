@@ -252,14 +252,11 @@
         if (G.population && G.population.military) G.population.military._mutinyRisk = (G.population.military._mutinyRisk||0) + 0.2;
         if (global.addEB) global.addEB('破产', '边镇饷断，士卒哗变在即');
     } },
-    { id:6, name:'民变迭起',    effect:function(G){
+    // 民变重做·民2b（11-14）：这一步原叫「民变迭起」，在「某地」生一股五千人——假地方，删；民心 −10 留。
+    //   民变由各州民变案按实账判（tm-revolt-cases.js）。
+    { id:6, name:'民不堪命',    effect:function(G){
         if (global._adjAuthority) global._adjAuthority('minxin', -10);
-        if (G.minxin && !G.minxin.revolts) G.minxin.revolts = [];
-        if (G.minxin) G.minxin.revolts.push({
-          id: 'bankr_rev_' + (G.turn||0),
-          region: '某地', turn: G.turn||0, cause: '破产', status:'ongoing', level: 2, scale: 5000
-        });
-        if (global.addEB) global.addEB('破产', '民不堪命，处处起事');
+        if (global.addEB) global.addEB('破产', '帑廪久空，民不堪命');
     } },
     { id:7, name:'朝廷崩溃',    effect:function(G){
         if (global.AuthorityEngines && global.AuthorityEngines.adjustHuangwei) {

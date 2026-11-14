@@ -205,6 +205,24 @@ function memCount(ctx) { return (ctx.GM.chars || []).reduce(function (s, c) { re
   });
   ok(memOf(ctx, '陕西巡抚').length === 0, '④民变 窗外(旧 startTurn)不触发');
 })();
+(function () {
+  // 民变重做·民2b：民变案落地的民变（GM.minxin.revolts·source==='revolt-cases'）也认——主推演宣布的起义并进民变案后不再进 _activeRevolts；
+  //   州里不设主官的，落到省里的主官
+  const ctx = runC1(function () {
+    return {
+      turn: 10, _capital: '京城',
+      chars: [{ name: '陕西巡抚', alive: true }, { name: '首辅', alive: true, location: '京城', _lv: 2 }],
+      minxin: { revolts: [
+        { id: 'rv-d-yanan-t10', source: 'revolt-cases', region: '延安府', province: '陕西布政使司', leaderName: '王二', turn: 10, status: 'ongoing', level: 2 },
+        { id: 'old-1', region: '某地', turn: 10, status: 'ongoing', level: 2 }
+      ] },
+      __divs: [{ name: '陕西布政使司', governor: '陕西巡抚' }, { name: '延安府' }]
+    };
+  });
+  ok(memOf(ctx, '陕西巡抚').length === 1 && memOf(ctx, '陕西巡抚')[0].emotion === '惧', '④民变 民变案落地的也认：州不设主官→省主官 惧');
+  ok(memOf(ctx, '首辅').length === 1, '④民变 民变案落地的：京中高品 忧（无来源的旧式不认，只记一次）');
+  ok(ctx.GM.minxin.revolts[0]._upriseRippleReacted === true && !ctx.GM.minxin.revolts[1]._upriseRippleReacted, '④民变 只认 source=revolt-cases 的，幂等标记打在民变上');
+})();
 
 // ═══════════════════ ⑤ 拒抚背约 / 受抚招安 ═══════════════════
 (function () {

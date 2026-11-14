@@ -11,6 +11,7 @@
 // 挂在过回合 GM.turn++ 之后、AuthorityComplete.tick 之后（tm-endturn-systems.js 6.145），读这回合更新过的民心、户口。
 // 存 GM.revoltCases（随 GM 整份入档）。不写 GM._revoltPrecursors：那是 AI 写的起义前兆，会回灌主推演提示词。
 // 只管玩家一方的区划（GM.adminHierarchy.player）；别家势力境内的民变不在本片。
+// 民2b（11-14）：AI 宣布的起义（class_revolt）、一致性补录的民变经 riseFromAI 并进案，见该函数注释。
 // ============================================================
 (function (global) {
   'use strict';
@@ -388,6 +389,109 @@
     return store;
   }
 
+  // ── AI 宣布的起义并进案（民2b，同志 11-14 定）──
+  // AI 说的地方落到本朝哪一州：点名到州的认那州（编号、全名、去后缀的名字；地名里带着几个州名的，取最先说到的）；
+  // 只说到省的（省名，或通行简称加方位如「陕北」），在最先说到的那个省里挑一州：有案未起的先、起事机会大的先，
+  // 其次没起事的、民心最低的；同分按编号。落不到本朝州县返回 null。
+  function resolveLeaf(G, text, leaves) {
+    text = str(text).trim();
+    if (!text) return null;
+    leaves = leaves || realmLeaves(G);
+    var tb = baseName(text), i;
+    for (i = 0; i < leaves.length; i++) {
+      var n = leaves[i].node;
+      if (str(n.id) === text || str(n.name) === text || baseName(n.name) === tb) return leaves[i];
+    }
+    var best = null, bestAt = Infinity, bestLen = 0;
+    leaves.forEach(function (L) {
+      var b = baseName(L.node.name), at = b.length >= 2 ? text.indexOf(b) : -1;
+      if (at < 0) return;
+      if (at < bestAt || (at === bestAt && b.length > bestLen)) { best = L; bestAt = at; bestLen = b.length; }
+    });
+    if (best) return best;
+    var RR = TM.RevoltRising;
+    if (!RR || typeof RR.provinceAt !== 'function') return null;
+    var prov = null, provAt = Infinity;
+    leaves.forEach(function (L) {
+      var p = L.chain[L.chain.length - 1];
+      if (!p || p === L.node) return;
+      var at = RR.provinceAt(text, baseName(p.name));
+      if (at >= 0 && at < provAt) { prov = p; provAt = at; }
+    });
+    if (!prov) return null;
+    var byDiv = {};
+    arr(G.revoltCases && G.revoltCases.cases).forEach(function (c) { if (c.status !== 'closed') byDiv[c.divisionId] = c; });
+    function rank(L) { var c = byDiv[L.node.id]; return !c ? 1 : (c.status === 'brewing' ? 0 : 2); }   // 有案未起 0、无案 1、已起 2
+    var pool = leaves.filter(function (L) { return L.chain[L.chain.length - 1] === prov; });
+    pool.sort(function (a, b) {
+      var ra = rank(a), rb = rank(b);
+      if (ra !== rb) return ra - rb;
+      if (ra === 0) {
+        var pa = num(byDiv[a.node.id].last && byDiv[a.node.id].last.j && byDiv[a.node.id].last.j.perTurn, 0);
+        var pb = num(byDiv[b.node.id].last && byDiv[b.node.id].last.j && byDiv[b.node.id].last.j.perTurn, 0);
+        if (pa !== pb) return pb - pa;
+      }
+      var ma = num(a.node.minxin, 100), mb = num(b.node.minxin, 100);
+      if (ma !== mb) return ma - mb;
+      return str(a.node.id) < str(b.node.id) ? -1 : (str(a.node.id) > str(b.node.id) ? 1 : 0);
+    });
+    return pool[0] || null;
+  }
+
+  // 主推演宣布的阶层起义（class_revolt）、一致性补录查出叙事里有而账上漏了的民变，都走这里：
+  //   落到本朝一州：该州有案就当「起」，没案就立案并当起（AI 看到了账上没有的东西，如教门、兵变），交 tm-revolt-rising.js 落地——
+  //   首领、骨干按 AI 给的名字先在档里找，找不到用这名字按出身新生；规模按户口算，不取 AI 报的兵数。
+  //   该州已有一股民变在，或 AI 点名的首领已领着一股：就是那一股，不另起（already）。
+  //   不并（otherPath，调用方照旧）：落不到本朝州县（别家境内、地名对不上）；首领是在任官员、领兵将帅、宗室、别家势力的人，
+  //   或 AI 说是民族、边疆、宗室起事——那是兵变、割据、土司叛乱，另一条路；落地出错。
+  // decl：by（class_revolt／reconcile）、region、leaderName、secondaryLeaders、className、ideology、organizationType、
+  //   religiousSect、slogan、demands、historicalArchetype、reason
+  function riseFromAI(G, decl) {
+    decl = decl || {};
+    var RR = TM.RevoltRising;
+    if (!G || !RR || typeof RR.land !== 'function') return { otherPath: true, why: '落地模块缺席' };
+    if (decl.ideology === 'ethnic' || decl.ideology === 'tributary' || decl.ideology === 'nobleClaim') {
+      return { otherPath: true, why: '民族、边疆、宗室起事（另一条路）' };
+    }
+    var turn = num(G.turn, 0), store = ensureStore(G), by = str(decl.by || 'ai');
+    var leaves = realmLeaves(G);
+    var L = resolveLeaf(G, decl.region, leaves);
+    if (!L) return { otherPath: true, why: '地名对不上本朝州县' };
+    var revs = arr(G.minxin && G.minxin.revolts);
+    var nl = str(decl.leaderName).trim() && typeof RR.namedLeader === 'function' ? RR.namedLeader(G, decl.leaderName) : null;
+    if (nl && nl.otherPath) return { otherPath: true, why: str(decl.leaderName).trim() + nl.why };
+    if (nl && nl.leading) {
+      var his = revs.filter(function (r) { return r && r.status === 'ongoing' && (r.leaderId === nl.ch.id || r.leaderName === nl.ch.name); })[0];
+      return { already: true, revoltId: his ? his.id : '', region: his ? str(his.region) : '' };
+    }
+    var c = null;
+    store.cases.forEach(function (x) { if (x.divisionId === L.node.id && x.status !== 'closed') c = x; });
+    if (c && c.status === 'risen' && c.revoltId) {
+      var r0 = revs.filter(function (r) { return r && r.id === c.revoltId; })[0];
+      if (r0 && r0.status === 'ongoing') return { already: true, revoltId: r0.id, region: str(L.node.name) };
+      c.status = 'closed'; c.closedTurn = turn; c.endedAs = r0 ? str(r0.status) : 'gone';
+      c = null;
+    }
+    if (c && c.dryRun) { delete c.dryRun; c.rejudgedTurn = turn; }
+    if (!c) { c = openCase(store, L, turn, num(L.node.minxin, 0)); c.openedBy = by; }
+    var J = judge(G, L, { store: store, leaves: leaves });
+    var revolt;
+    try {
+      revolt = RR.land(G, c, L, J, {
+        by: by, leaderName: decl.leaderName, lieutenants: decl.secondaryLeaders,
+        origin: typeof RR.originFromDecl === 'function' ? RR.originFromDecl(decl) : '', cause: decl.reason, ai: decl
+      });
+    } catch (e) {
+      c.landError = str((e && e.message) || e).slice(0, 160);
+      return { otherPath: true, why: '落地出错：' + c.landError };
+    }
+    c.status = 'risen'; c.risenTurn = turn; c.risenBy = by; delete c.landError;
+    c.last = { turn: turn, minxin: round3(num(L.node.minxin, 0)), j: J, roll: null, rise: true, landed: true, by: by };
+    c.history.push({ t: turn, p: J.perTurn, roll: null, rise: true, by: by });
+    if (c.history.length > CFG.historyMax) c.history.splice(0, c.history.length - CFG.historyMax);
+    return { landed: true, revoltId: revolt.id, leaderName: revolt.leaderName, region: revolt.region, caseId: c.id };
+  }
+
   // 校准表、调试用：每案一行
   function summary(G) {
     var store = G && G.revoltCases;
@@ -403,7 +507,7 @@
   }
 
   TM.RevoltCases = {
-    CFG: CFG, tick: tick, judge: judge, summary: summary,
+    CFG: CFG, tick: tick, judge: judge, summary: summary, riseFromAI: riseFromAI, resolveLeaf: resolveLeaf,
     realmLeaves: realmLeaves, neighborsOf: neighborsOf, baseName: baseName, seededRoll: seededRoll, ensureStore: ensureStore
   };
 })(typeof window !== 'undefined' ? window : globalThis);

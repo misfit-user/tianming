@@ -1874,10 +1874,41 @@
         }
 
         // ── 阶层起义爆发——长周期生命周期起点 ──
-        if (p1.class_revolt && Array.isArray(p1.class_revolt) && GM.classes) {
+        // 民变重做·民2b（同志 11-14 定）：落在本朝一州的并进民变案（TM.RevoltCases.riseFromAI）——该州有案当「起」、没案立案并起，
+        //   首领、骨干按 AI 给的名字先在档里找，找不到用这名字按出身新生；人数按户口算，不取 AI 报的兵数；游击不挂战事。
+        //   之后的进展、剿抚、建政走新制（revolt_update 等四样只管下面这本旧账，随对应的片撤掉）。
+        //   落不到本朝州县的（别家境内、地名对不上），土司、宗室、在任官员领头的（兵变、割据，另一条路）：照旧记进 GM._activeRevolts。
+        if (p1.class_revolt && Array.isArray(p1.class_revolt)) {
           if (!Array.isArray(GM._activeRevolts)) GM._activeRevolts = [];
           p1.class_revolt.forEach(function(rv) {
-            if (!rv || !rv.class || !rv.leaderName) return;
+            if (!rv) return;
+            var _rise = null;
+            if (typeof TM !== 'undefined' && TM.RevoltCases && typeof TM.RevoltCases.riseFromAI === 'function') {
+              try {
+                _rise = TM.RevoltCases.riseFromAI(GM, {
+                  by: 'class_revolt', region: rv.region, leaderName: rv.leaderName, secondaryLeaders: rv.secondaryLeaders,
+                  className: rv.class, ideology: rv.ideology, organizationType: rv.organizationType, religiousSect: rv.religiousSect,
+                  slogan: rv.slogan, demands: rv.demands, historicalArchetype: rv.historicalArchetype, reason: rv.reason
+                });
+              } catch (_riseE) {
+                _rise = null;
+                (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_riseE, 'endturn] class_revolt riseFromAI:') : console.warn('[endturn] class_revolt riseFromAI:', _riseE);
+              }
+            }
+            if (_rise && (_rise.landed || _rise.already)) {
+              if (_rise.landed) {
+                var _rCls = rv.class && Array.isArray(GM.classes) ? GM.classes.find(function(c){return c.name === rv.class;}) : null;
+                if (_rCls) {
+                  if (!Array.isArray(_rCls.leaders)) _rCls.leaders = [];
+                  if (_rCls.leaders.indexOf(_rise.leaderName) < 0) _rCls.leaders.push(_rise.leaderName);
+                }
+                if (Array.isArray(GM._revoltPrecursors)) {
+                  GM._revoltPrecursors = GM._revoltPrecursors.filter(function(pc){return !(pc.class === rv.class && pc.region === rv.region);});
+                }
+              }
+              return;
+            }
+            if (!rv.class || !rv.leaderName || !Array.isArray(GM.classes)) return;
             var cObj = GM.classes.find(function(c){return c.name === rv.class;});
             if (!cObj) return;
             var _rid = rv.revoltId || ('revolt_' + GM.turn + '_' + Math.random().toString(36).slice(2, 8));

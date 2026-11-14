@@ -487,17 +487,10 @@
       if (G.guoku) G.guoku.money = (G.guoku.money || 0) + amount;
       // 冷却惩罚已在 checkForcedLevyCooldown 中应用
       // unrest +30 若连续
+      // 民变重做·民2b（11-14）：原先超额五成再掷三成就在财政区划编号上生一股万人民变（地点是编号、人数写死），删；
+      //   民变由各州民变案按实账判（tm-revolt-cases.js）。
       if (cd.penaltyMult > 1.5) {
         reg.unrest = Math.min(100, (reg.unrest || 30) + 30);
-        // 超额 50% 触发地方暴动
-        if (amount > (reg.claimedRevenue || 100000) * 1.5 && Math.random() < 0.3) {
-          if (G.minxin && !G.minxin.revolts) G.minxin.revolts = [];
-          if (G.minxin) G.minxin.revolts.push({
-            id: 'force_levy_rev_' + (G.turn||0),
-            region: regionId, turn: G.turn||0, cause:'强征', status:'ongoing', level: 3, scale: 10000
-          });
-          if (global.addEB) global.addEB('强征', regionId + ' 强征激民变');
-        }
       }
       return { ok: true, penaltyMult: cd.penaltyMult };
     }

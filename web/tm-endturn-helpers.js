@@ -1383,16 +1383,19 @@ function _factionEventRipple() {
   }
 
   // ④ 民变首义 —— GM._activeRevolts startTurn|turn 近1回合(对象形状 tm-endturn-apply.js:2161)·幂等 revolt._upriseRippleReacted
+  //   民变重做·民2b（11-14）：并认民变案落地的民变（GM.minxin.revolts 里 source==='revolt-cases'·turn=起事回合·tm-revolt-rising.js）——
+  //   主推演宣布的起义并进民变案后不再记进 GM._activeRevolts，不认就漏了这份人物反应。州里不设主官的，落到省里的主官
   var _revs = Array.isArray(GM._activeRevolts) ? GM._activeRevolts : [];
-  for (var ri = 0; ri < _revs.length && wrote < CAP; ri++) {
-    var rv = _revs[ri];
+  var _revs4 = _revs.concat((GM.minxin && Array.isArray(GM.minxin.revolts) ? GM.minxin.revolts : []).filter(function (r) { return r && r.source === 'revolt-cases'; }));
+  for (var ri = 0; ri < _revs4.length && wrote < CAP; ri++) {
+    var rv = _revs4[ri];
     if (!rv || rv._upriseRippleReacted) continue;
     var rt = (typeof rv.startTurn === 'number') ? rv.startTurn : rv.turn;
     if (!_isNew(rt)) continue;
     rv._upriseRippleReacted = true;
     var rg = rv.region || '';
     var seen4 = {};
-    var g4 = _govOf(rg);   // 起事省区主官(惧·imp8)
+    var g4 = _govOf(rg) || (rv.province ? _govOf(rv.province) : null);   // 起事省区主官(惧·imp8)
     if (g4) { seen4[g4.name] = 1; _rem(g4, '「' + rg + '」民变首义·守土失职·惶惧', '惧', 8, { stress: 10, mood: '惧' }); }
     _capitalHigh(4).forEach(function (c) { if (!seen4[c.name]) { seen4[c.name] = 1; _rem(c, '「' + rg + '」民变蜂起·京师忧惧', '忧', 6); } });   // 京中高品(忧·imp6·top4)
   }

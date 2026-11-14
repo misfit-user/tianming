@@ -5,7 +5,7 @@
  *
  * 补完：
  *  B1 region 五字段（bySettlement/byAge.decade/byGender/byEthnicity/byFaith）+ 三维承载力 + 羁縻土司/屯田军镇
- *  B2 徭役死亡率四维 + 逃役五因子 + 徭役民变三元触发
+ *  B2 徭役死亡率四维 + 逃役五因子 + 徭役惨烈三元触发（民2b 起只扣民心，不再直接生民变）
  *  B3 军种6分 + 军粮三供应 + 军队调动公式 + 马政 + 兵权归属
  *  B4 年龄金字塔十年层 + 男女比 + 迁徙通道 + 京畿虹吸四因子
  *  B5 F1 历史耦合（气候×人口/作物革命/疫病/路引/税基流失四手法）+ endturn phase 标识
@@ -237,7 +237,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  B2 · 徭役死亡率四维 + 逃役五因子 + 徭役民变
+  //  B2 · 徭役死亡率四维 + 逃役五因子 + 徭役惨烈
   // ═══════════════════════════════════════════════════════════════════
 
   var CORVEE_DEATH_WORK_MOD = {
@@ -307,7 +307,9 @@
     return Math.min(0.8, r);
   }
 
-  /** 徭役民变三元触发：死亡率峰值 + 农民负担 + 徭役制度完整度 */
+  /** 徭役惨烈三元触发：死亡率峰值 + 农民负担 + 徭役制度完整度 → 民心 −8。
+   *  民变重做·民2b（11-14）起这里不再直接生民变：原先在 corvee.recentRegion 生一股五千人，但这个地点从来没人写，
+   *  回回落在「某地」——假地方。民变由各州民变案按实账判（tm-revolt-cases.js，赋役一项含本州徭役）。 */
   function checkCorveeRebellionTrigger(ctx) {
     var G = global.GM;
     if (!G.population || !G.population.corvee) return { triggered: false };
@@ -323,20 +325,8 @@
     var triggered = false;
     if (recentPeakDeaths > 10000 && peasantBurden > 0.6 && integrity < 0.5) triggered = true;
     if (triggered) {
-      if (global.addEB) global.addEB('民变', '徭役惨烈引发民变（死亡 ' + recentPeakDeaths + '；峻役未改）');
-      if (G.minxin) {
-        if (!G.minxin.revolts) G.minxin.revolts = [];
-        G.minxin.revolts.push({
-          id: 'corvee_rev_' + (ctx.turn||0) + '_' + Math.floor(Math.random()*10000),
-          region: corvee.recentRegion || '某地',
-          turn: ctx.turn || 0,
-          cause: '徭役',
-          status: 'ongoing',
-          level: 2,
-          scale: 5000
-        });
-      }
       if (global._adjAuthority) global._adjAuthority('minxin', -8);
+      if (global.addEB) global.addEB('徭役', '徭役惨烈（役死 ' + recentPeakDeaths + ' 人；峻役未改），民怨沸腾');
     }
     // 清空本回合
     corvee.recentDeaths = 0;
@@ -698,7 +688,7 @@
     try { tickNewWorldCrops(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseB] crops:') : console.error('[phaseB] crops:', e); }
     try { tickDiseaseCycle(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseB] disease:') : console.error('[phaseB] disease:', e); }
     try { computeTaxEvasion(G); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseB] taxEvasion:') : console.error('[phaseB] taxEvasion:', e); }
-    // Phase B2: 徭役民变检查
+    // Phase B2: 徭役惨烈检查（民心；民变由各州民变案判）
     try { checkCorveeRebellionTrigger(ctx); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseB] corveeRev:') : console.error('[phaseB] corveeRev:', e); }
   }
 

@@ -43,7 +43,36 @@
     if(!state.items.length)return {known:false,months:null,amounts:null,claims:[],missing:state.missing};
     return {known:known,months:known?Math.ceil(Math.max(0,exact-1e-8)):null,exactMonths:known?exact:null,amounts:amounts,claims:state.items,missing:state.missing||[]};
   }
-  function syncArmy(o){var v=view(o);if(v.known)o.army.payArrearsMonths=v.months;return v;}
+  // 本路欠账（11-14）：剧本写明承付之路（funding.regionIds / regionId）的军，地方那一份付不足记在 G._armyRetained.byArmy
+  //   （tm-fiscal-local-expense.js payArmiesFromRetained），月数按全饷折、可有零头。欠饷月数＝太仓账＋本路账。
+  function routeIds(a){var f=a&&a.funding;if(!f||typeof f!=='object')return [];return Array.isArray(f.regionIds)&&f.regionIds.length?f.regionIds:(f.regionId?[f.regionId]:[]);}
+  function isRouteFunded(a){var f=a&&a.funding;return !!(f&&!f.selfSupplied&&routeIds(a).length&&(num(f.localShare)||0)>0);}
+  function routeRec(g,a){var led=g._armyRetained&&g._armyRetained.byArmy;return led&&led[String(a.id||a.name)]||null;}
+  // 军上原有的欠饷月数（开局剧本所欠；或 11-13 存的旧档，那时本路账还没写回军上），第一次对本路账时，多出本路账与太仓账的部分
+  //   记进本路账作既欠：钱粮布按本路那份月饷折，并算作已欠下（accruedMonths），军务当它已扣过军心
+  function seedRoute(g,a){
+    if(a._routeArrearsSeeded)return;a._routeArrearsSeeded=true;
+    var rec=routeRec(g,a),had=num(rec&&rec.months)||0,seed=num(a.initialPayArrears&&a.initialPayArrears.months);
+    if(seed==null)seed=num(a.payArrearsMonths);
+    var v=view({game:g,army:a}),extra=Math.max(0,(seed||0)-had-(v.known?v.exactMonths:0));if(!(extra>1e-9))return;
+    var share=Math.max(0,Math.min(1,num(a.funding.localShare)||0)),monthly=monthlyAmounts(a,g,true);
+    if(!g._armyRetained||typeof g._armyRetained!=='object')g._armyRetained={byArmy:{}};if(!g._armyRetained.byArmy)g._armyRetained.byArmy={};
+    rec=rec||(g._armyRetained.byArmy[String(a.id||a.name)]={name:a.name||a.id,arrears:zero(),months:0,accruedMonths:0,repaidMonths:0,regionIds:routeIds(a).map(String)});
+    if(!rec.arrears)rec.arrears=zero();if(rec.accruedMonths==null)rec.accruedMonths=num(rec.months)||0;
+    RES.forEach(function(k){rec.arrears[k]=round((num(rec.arrears[k])||0)+monthly[k]*share*extra);});
+    rec.months=round(had+extra);rec.accruedMonths=round((num(rec.accruedMonths)||0)+extra);rec.seededMonths=round((num(rec.seededMonths)||0)+extra);
+  }
+  function routeView(o){var g=G(o),a=o.army;if(!a||!isRouteFunded(a))return {known:false,months:0,accruedMonths:0,repaidMonths:0,amounts:zero()};seedRoute(g,a);var rec=routeRec(g,a);
+    if(!rec)return {known:true,months:0,accruedMonths:0,repaidMonths:0,amounts:zero()};
+    var m=Math.max(0,num(rec.months)||0),acc=num(rec.accruedMonths);
+    return {known:true,months:m,accruedMonths:Math.max(0,acc==null?m:acc),repaidMonths:Math.max(0,num(rec.repaidMonths)||0),amounts:plus(zero(),rec.arrears),regionIds:rec.regionIds||[]};}
+  // 军务扣、回军心用（tm-military.js applyPayArrearsPressure）：本路账自上次看过以来新欠下的、本路余钱新还掉的月数，
+  //   看过的记在军上（_routeAccruedSeen、_routeRepaidSeen）——同一回合又欠又还时两样各算，不相抵。
+  //   军上还没有记号（开局、或 11-13 存的旧档本路账已记却没接军心）：已记的当作已看过，不一次扣下。force＝现欠整笔当新欠。
+  function routeDelta(o){var a=o.army,r=routeView(o);if(!r.known)return {known:false,fresh:0,regained:0};
+    var sa=Number(a._routeAccruedSeen),sr=Number(a._routeRepaidSeen);if(!isFinite(sa))sa=r.accruedMonths;if(!isFinite(sr))sr=r.repaidMonths;
+    var out={known:true,fresh:o.force?r.months:Math.max(0,r.accruedMonths-sa),regained:Math.max(0,r.repaidMonths-sr)};a._routeAccruedSeen=r.accruedMonths;a._routeRepaidSeen=r.repaidMonths;return out;}
+  function syncArmy(o){var v=view(o),r=routeView(o);if(r.known)o.army.payArrearsMonths=Math.round(Math.max(0,(v.known?v.exactMonths:0)+r.months));else if(v.known)o.army.payArrearsMonths=v.months;return v;}
   function initializeOne(a,g){
     if(!a||!a.id)return {ok:false,reason:'army-id-required'};var existing=claims(a,g);
     if(existing.items&&existing.items.length){syncArmy({game:g,army:a});return {ok:true,existing:true};}
@@ -61,7 +90,36 @@
   function initialize(o){var g=G(o),report={ok:true,registered:0,existing:0,missing:[]};(g.armies||[]).forEach(function(a){if(!a||!((num(a.initialPayArrears&&a.initialPayArrears.months)||num(a.payArrearsMonths)||0)>0))return;var r=initializeOne(a,g);if(!r.ok){report.ok=false;report.missing.push({armyId:a.id,reason:r.reason,details:r.missing||[]});}else if(r.existing||r.duplicate)report.existing++;else if(!r.skipped)report.registered++;});return report;}
   // 屯军自给、地方出饷的军（11-11）开局所欠不记太仓（见 initializeOne）：补饷时照常返回、不动库、写明缘由。
   //   原先报账簿不全，下诏「补发全部欠饷」整道诏书抛错，发饷按钮报「补饷未能交割」。
-  function settle(o){var g=G(o),a=o.army,initial=view(o);if((!initial.claims||!initial.claims.length)&&!((num(a&&a.payArrearsMonths)||0)>0))return {ok:true,monthsCleared:0,cost:zero(),paid:zero(),deducted:{},remaining:0,remainingAmounts:zero(),shortfall:0};if(!initial.claims||!initial.claims.length){var made=initializeOne(a,g);if(!made.ok)return made;if(made.skipped&&(made.reason==='self-supplied'||made.reason==='local-funded'))return {ok:true,skipped:true,reason:made.reason,note:made.reason==='self-supplied'?'屯军自给，所欠不由太仓支给':'地方存留出饷，所欠不由太仓支给',monthsCleared:0,cost:zero(),paid:zero(),deducted:{},remaining:num(a.payArrearsMonths)||0,remainingAmounts:zero(),shortfall:0};initial=view(o);}if(!initial.known)return {ok:false,reason:'army-arrears-book-incomplete',missing:initial.missing};
+  // 本路欠饷由太仓代补（11-14）：接上军心后，朝廷下诏补饷、按发饷按钮，本路所欠从太仓出钱粮布补——太仓有多少补多少，
+  //   不欠新账；月数按钱、粮两项里还剩得多的那项同比例减（同本路余钱还旧欠）。回军心在 settleArmyArrears 按补掉的月数算。
+  function guokuAvail(g,k){var acc=g.guoku||{},L=acc.ledgers&&acc.ledgers[k],s=num(acc[k]!=null?acc[k]:(k==='money'?acc.balance:null)),l=L?num(L.stock):null;var v=l!=null&&s!=null?Math.min(l,s):(l!=null?l:s);return Math.max(0,v||0);}
+  function settleRoute(o){
+    var g=G(o),a=o.army,rec=routeRec(g,a);if(!rec)return {ok:true,monthsCleared:0,cost:zero(),paid:zero()};
+    var months=Math.max(0,num(rec.months)||0),want=o.months==null?months:Math.min(months,Math.max(0,num(o.months)||0));
+    var frac=months>1e-9?Math.min(1,want/months):(o.months==null?1:0),before={},cost=zero(),pay=zero(),paid=zero();
+    RES.forEach(function(k){before[k]=Math.max(0,num(rec.arrears&&rec.arrears[k])||0);cost[k]=round(before[k]*frac);pay[k]=round(Math.min(cost[k],guokuAvail(g,k)));});
+    if(!RES.some(function(k){return pay[k]>0;}))return {ok:true,monthsCleared:0,cost:cost,paid:paid};
+    var spend=global.FiscalEngine&&typeof global.FiscalEngine.spendFromGuoku==='function'?global.FiscalEngine.spendFromGuoku(pay,'补饷·'+(a.name||a.id||'军'),g):null;
+    if(!spend||spend.ok===false)return {ok:false,reason:'arrears-payment-unavailable',monthsCleared:0,cost:cost,paid:paid};
+    RES.forEach(function(k){var d=spend.deducted&&spend.deducted[k];paid[k]=round(d?num(d.deducted)||0:0);rec.arrears[k]=round(Math.max(0,before[k]-paid[k]));});
+    var left=null;['money','grain'].forEach(function(k){if(before[k]>1e-9){var x=rec.arrears[k]/before[k];left=left==null?x:Math.max(left,x);}});
+    var after=left==null?months:round(months*Math.min(1,left));rec.months=after;
+    return {ok:true,monthsCleared:Math.max(0,round(months-after)),cost:cost,paid:paid};
+  }
+  function settle(o){
+    var a=o&&o.army;if(!a||!isRouteFunded(a))return settleCentral(o);
+    var g=G(o),rv=routeView(o),route={ok:true,monthsCleared:0,cost:zero(),paid:zero()};
+    if(rv.months>1e-9||RES.some(function(k){return rv.amounts[k]>0;})){route=settleRoute(o);if(route.ok===false)return route;}
+    var v=view(o),central=null;
+    if(v.claims&&v.claims.length){var rest=o.months==null?undefined:Math.max(0,(num(o.months)||0)-route.monthsCleared);central=settleCentral({game:g,army:a,months:rest,transactionId:o.transactionId,_faultInjector:o._faultInjector});if(!central||central.ok===false)return central;}
+    var after=routeView(o);syncArmy(o);
+    var cost=plus(plus(zero(),route.cost),central&&central.cost),paid=plus(plus(zero(),route.paid),central&&central.paid),deducted={};
+    RES.forEach(function(k){deducted[k]={deducted:paid[k],deficit:round(Math.max(0,cost[k]-paid[k]))};});
+    var cleared=round(route.monthsCleared+(central&&!central.skipped?num(central.monthsCleared)||0:0));
+    return {ok:true,monthsRequested:o.months==null?null:num(o.months),monthsCleared:cleared,cost:cost,paid:paid,deducted:deducted,remaining:num(a.payArrearsMonths)||0,remainingAmounts:after.amounts,shortfall:deducted.money.deficit,
+      note:route.monthsCleared>0?'本路所欠由太仓代补':(rv.months>1e-9?'太仓无钱可补本路所欠':'无欠饷可补'),routeMonthsCleared:route.monthsCleared};
+  }
+  function settleCentral(o){var g=G(o),a=o.army,initial=view(o);if((!initial.claims||!initial.claims.length)&&!((num(a&&a.payArrearsMonths)||0)>0))return {ok:true,monthsCleared:0,cost:zero(),paid:zero(),deducted:{},remaining:0,remainingAmounts:zero(),shortfall:0};if(!initial.claims||!initial.claims.length){var made=initializeOne(a,g);if(!made.ok)return made;if(made.skipped&&(made.reason==='self-supplied'||made.reason==='local-funded'))return {ok:true,skipped:true,reason:made.reason,note:made.reason==='self-supplied'?'屯军自给，所欠不由太仓支给':'地方存留出饷，所欠不由太仓支给',monthsCleared:0,cost:zero(),paid:zero(),deducted:{},remaining:num(a.payArrearsMonths)||0,remainingAmounts:zero(),shortfall:0};initial=view(o);}if(!initial.known)return {ok:false,reason:'army-arrears-book-incomplete',missing:initial.missing};
     var want=o.months==null?initial.exactMonths:Math.min(initial.exactMonths,Math.max(0,num(o.months)||0)),left=want,cost=zero(),paid=zero(),duplicate=true,results=[];
     if(want<=0)return {ok:true,monthsRequested:0,monthsCleared:0,cost:cost,deducted:{},remaining:0,remainingAmounts:initial.amounts,shortfall:0,note:'无欠饷可补'};
     var actionId=o.transactionId||'army-arrears-payment:'+String(g.sid||'')+':'+(g.turn||0)+':'+a.id+':'+JSON.stringify(initial.amounts);
@@ -73,5 +131,5 @@
     var after=syncArmy(o),deducted={};RES.forEach(function(k){deducted[k]={deducted:paid[k],deficit:round(Math.max(0,cost[k]-paid[k]))};});
     return {ok:true,duplicate:duplicate,monthsRequested:want,monthsCleared:duplicate?0:Math.max(0,initial.months-after.months),cost:cost,paid:paid,deducted:deducted,remaining:after.months,remainingAmounts:after.amounts,shortfall:deducted.money.deficit,payments:results};
   }
-  TM.MilitaryArrears={initialize:initialize,view:view,syncArmy:syncArmy,settle:settle,monthlyAmounts:monthlyAmounts};
+  TM.MilitaryArrears={initialize:initialize,view:view,routeView:routeView,routeDelta:routeDelta,isRouteFunded:isRouteFunded,syncArmy:syncArmy,settle:settle,monthlyAmounts:monthlyAmounts};
 })(typeof window!=='undefined'?window:globalThis);

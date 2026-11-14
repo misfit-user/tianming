@@ -549,7 +549,9 @@
         a.supply = Math.min(100, a.supply + 2);
       }
       // 2. 粮饷欠发累计(仅国家兵)
-      if (a.controlLevel < 60) {
+      //   剧本写明承付之路的军（11-14）：欠饷月数照本路账与太仓账（TM.MilitaryArrears 对账写回），这里不再白减白加
+      var _routeFunded = !!(global.TM && global.TM.MilitaryArrears && typeof global.TM.MilitaryArrears.isRouteFunded === 'function' && global.TM.MilitaryArrears.isRouteFunded(a));
+      if (a.controlLevel < 60 && !_routeFunded) {
         // 简化处理：若势力财政低·累加欠饷
         var owner = a.faction;
         if (owner && global.GM.facs) {

@@ -382,8 +382,10 @@ var MilitarySystems = (function(global) {
   function payArrearsBaseline(army, root) {
     army = army || {};
     var cfg = _readConstant('militaryPayArrearsBaseline', root) || {};
-    var ledgerView = global.TM && global.TM.MilitaryArrears && global.TM.MilitaryArrears.view({game:_root(root),army:army});
-    var months = ledgerView && ledgerView.known ? ledgerView.months : Math.max(0, Math.round(Number(army.payArrearsMonths || 0)));
+    var MA = global.TM && global.TM.MilitaryArrears, ledgerView = MA && MA.view({game:_root(root),army:army});
+    var rv = MA && MA.routeView ? MA.routeView({game:_root(root),army:army}) : null, route = rv && rv.known ? rv : null; // 写明承付之路的军（11-14）：太仓账＋本路账，不看军上取整数
+    var centralMonths = ledgerView && ledgerView.known ? ledgerView.months : (route ? 0 : Math.max(0, Math.round(Number(army.payArrearsMonths || 0))));
+    var months = centralMonths + (route ? route.months : 0);
     var moralePerMonth = Number(cfg.moralePerMonth);
     var loyaltyPerMonth = Number(cfg.loyaltyPerMonth);
     var routeMoraleBelow = Number(cfg.routeMoraleBelow);
@@ -391,7 +393,7 @@ var MilitarySystems = (function(global) {
     if (!isFinite(loyaltyPerMonth)) loyaltyPerMonth = -5;
     if (!isFinite(routeMoraleBelow)) routeMoraleBelow = 10;
     return {
-      months: months,
+      months: months, centralMonths: centralMonths, route: route, moralePerMonth: moralePerMonth, loyaltyPerMonth: loyaltyPerMonth,
       moraleDelta: months > 0 ? moralePerMonth * months : 0,
       loyaltyDelta: months > 0 ? loyaltyPerMonth * months : 0,
       routeMoraleBelow: routeMoraleBelow
@@ -464,14 +466,17 @@ var MilitarySystems = (function(global) {
     }
   }
 
-  // 开局各军所欠是剧本底子：作者给的士气已按它定，记作已扣过，开局不再整笔扣一回（11-11）。只补没记过的军。
+  // 开局各军所欠是剧本底子：作者给的士气已按它定，记作已扣过，开局不再整笔扣一回（11-11）。只补没记过的军。本路账记作已看过（11-14）。
   function _countOpeningPayArrears(G) {
     (G && Array.isArray(G.armies) ? G.armies : []).forEach(function(army) {
       if (!army || army._payArrearsAppliedMonths != null) return;
       if (global.TM && global.TM.MilitaryArrears) global.TM.MilitaryArrears.syncArmy({game:G,army:army});
-      army._payArrearsAppliedMonths = payArrearsBaseline(army, G).months;
+      army._payArrearsAppliedMonths = payArrearsBaseline(army, G).centralMonths;
+      if (global.TM && global.TM.MilitaryArrears && global.TM.MilitaryArrears.routeDelta) global.TM.MilitaryArrears.routeDelta({game:G,army:army});
     });
   }
+  // 补了饷、本路还了旧欠：按补掉的月数回军心（每月士气四、上限十五；忠诚二、上限十；兵变险十）
+  function _relieveArrears(army, m) { army.morale = _clamp100(_armyMorale(army) + Math.min(15, 4 * m)); army.loyalty = _clamp100((army.loyalty == null ? 60 : Number(army.loyalty)) + Math.min(10, 2 * m)); army.mutinyRisk = Math.max(0, (Number(army.mutinyRisk) || 0) - 10 * m); }
 
   function applyPayArrearsPressure(army, options, root) {
     if (!army) return { ok: false, reason: 'missing-army' };
@@ -484,23 +489,27 @@ var MilitarySystems = (function(global) {
     // 天启开局三个月内关宁、东江、诸镇与「全国卫所军·总览」相继跌破哗变线、七成溃散。
     // 已扣过的月数记在 _payArrearsAppliedMonths：欠的月数涨了只扣涨出的那几个月；补过饷降下来就按降后的数记，日后再欠从那里算起。
     // 开局所欠是剧本底子（作者给的士气已按它定），由 initializeArmyArrears 记作已扣。force＝整笔重扣（只供测试与显式调用）。
+    // 本路账（11-14）：_payArrearsAppliedMonths 只管太仓那本；本路那本按新欠下的月数扣、按本路余钱新还掉的月数回（TM.MilitaryArrears.routeDelta）。
     var counted = options.force ? 0 : Number(army._payArrearsAppliedMonths);
     if (!isFinite(counted) || counted < 0) counted = 0;
-    if (base.months <= counted) {
-      army._payArrearsAppliedMonths = Math.max(0, base.months);
-      return { ok: true, skipped: true, reason: base.months > 0 ? 'no-new-arrears' : 'no-arrears', baseline: base };
+    var rd = global.TM && global.TM.MilitaryArrears && global.TM.MilitaryArrears.routeDelta ? global.TM.MilitaryArrears.routeDelta({game:G,army:army,force:options.force}) : { fresh: 0, regained: 0 };
+    if (rd.regained > 1e-9) _relieveArrears(army, rd.regained);
+    var fresh = Math.max(0, base.centralMonths - counted) + rd.fresh;
+    if (!(fresh > 1e-9)) {
+      army._payArrearsAppliedMonths = Math.max(0, base.centralMonths);
+      return { ok: true, skipped: true, reason: base.months > 0 ? 'no-new-arrears' : 'no-arrears', baseline: base, regainedMonths: rd.regained };
     }
-    var fresh = base.months - counted, share = fresh / base.months;
     var validated = validatePayArrearsAdjustment(army, options.adjustment || null, G);
     if (!validated.ok) return validated;
     var system = getMilitarySystemForArmy(army, G);
     var attribution = _normalizeAttribution(army.loyaltyAttribution || system.loyaltyAttribution);
-    var moraleDelta = validated.adjusted.moraleDelta * share, loyaltyDelta = validated.adjusted.loyaltyDelta * share;
+    var share = base.months > 0 ? fresh / base.months : 0, moraleDelta = share ? validated.adjusted.moraleDelta * share : base.moralePerMonth * fresh;
+    var loyaltyDelta = share ? validated.adjusted.loyaltyDelta * share : base.loyaltyPerMonth * fresh; // 按新欠月数扣；同回合本路又欠又还、现欠为零时按每月扣数算
     army.morale = _clamp100(_armyMorale(army) + moraleDelta);
     army.loyalty = _clamp100((army.loyalty === undefined ? 50 : army.loyalty) + loyaltyDelta);
     army.loyaltyAttribution = attribution;
     army._payArrearsAppliedTurn = turn;
-    army._payArrearsAppliedMonths = base.months;
+    army._payArrearsAppliedMonths = base.centralMonths;
     if (army.morale < base.routeMoraleBelow) _markRouted(army, attribution, turn);
     if (!G._militaryPayArrearsLog) G._militaryPayArrearsLog = [];
     G._militaryPayArrearsLog.push({
@@ -527,12 +536,7 @@ var MilitarySystems = (function(global) {
     if (arrears) {
       var result = arrears.settle({game:opts.game || global.GM,army:army,months:opts.months,transactionId:opts.transactionId,_faultInjector:opts._faultInjector});
       if (!result.ok || result.duplicate) return result;
-      var completed = result.monthsCleared || 0;
-      if (completed > 0) {
-        army.morale = _clamp100(_armyMorale(army) + Math.min(15, 4 * completed));
-        army.loyalty = _clamp100((army.loyalty == null ? 60 : Number(army.loyalty)) + Math.min(10, 2 * completed));
-        army.mutinyRisk = Math.max(0, (Number(army.mutinyRisk) || 0) - 10 * completed);
-      }
+      if ((result.monthsCleared || 0) > 0) _relieveArrears(army, result.monthsCleared);
       army._lastArrearsSettleTurn = Number((opts.game || global.GM || {}).turn || 0);
       return result;
     }

@@ -1808,7 +1808,7 @@
           var _srDivName = div.name || div.id || 'unknown';
           totals.contribByCategory.staticRemit[_srDivName] = safeNumber(totals.contribByCategory.staticRemit[_srDivName], 0) + _srTopUp;
         }
-        if (div.fiscal) div.fiscal._thisTurnRemitMoney = _staticExpect;
+        if (div.fiscal) { div.fiscal._thisTurnRemitMoney = _staticExpect; div.fiscal._thisTurnRemitTurn = G.turn || 0; }
         return; // 作者静态账保持原样·不走下方计算覆写
       }
     }
@@ -1830,6 +1830,7 @@
     div.fiscal.retained = retainMoney;
     div.fiscal.annualTax = ctx.turnFracOfYear > 0 ? Math.round(actualTotal / ctx.turnFracOfYear) : actualTotal;
     div.fiscal._thisTurnRemitMoney = remitMoney;
+    div.fiscal._thisTurnRemitTurn = G.turn || 0;   // 本回合征过才记（截川纲按本回合起运数截，tm-fiscal-local-expense.js）
     div.fiscal.contributionsByCategory = contribByCategory;
   }
 

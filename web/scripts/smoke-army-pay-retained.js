@@ -4,7 +4,8 @@
 //   剧本给军写了 funding.localShare（本路自筹）的，地方那一份每回合从承付诸路的地方库扣：
 //   承付之路由剧本写明（funding.regionIds 几路合用，或 funding.regionId 一路）；没写的不扣、也不按驻地去猜（旧档的军都没写，照旧）；
 //   钱粮布各从地方库钱粮布出，同一组路下各军同比例；
-//   不够的按军记在本路欠账上（钱粮布与折成的月数）；本路欠账暂不写进军的欠饷月数、不扣军心（待同志定）；太仓只出朝廷那一份。
+//   不够的按军记在本路欠账上（钱粮布与折成的月数）；太仓只出朝廷那一份。
+//   本路欠账对账写回军上、接军心、余钱还旧欠、截川纲、太仓代补（11-14）见 smoke-army-route-arrears-morale；本测试不载对账模块，只看存留这一步。
 //   同一回合只扣一次；写了承付之路却在区划里找不到的记 missing，不扣不记欠。
 const fs = require('fs');
 const path = require('path');
@@ -100,9 +101,9 @@ const armySink = (G) => ((G.guoku.ledgers && G.guoku.ledgers.money && G.guoku.le
   near(L.dongjing.arrears.grain, 200, '东京留守司欠粮二百');
   near(L.xijun.months, 0.5, '西军记欠半个月');
   near(L.dongjing.months, 1, '东京留守司记欠一个月');
-  near(Number(armyOf(G, 'xijun').payArrearsMonths) || 0, 0, '本路欠账不写进西军的欠饷月数');
-  near(Number(armyOf(G, 'wujie').payArrearsMonths) || 0, 0, '吴玠部欠饷月数不动');
-  near(Number(armyOf(G, 'dongjing').payArrearsMonths) || 0, 0, '东京留守司欠饷月数不动');
+  near(Number(armyOf(G, 'xijun').payArrearsMonths) || 0, 0, '存留这一步本身不改西军的欠饷月数（对账在 TM.MilitaryArrears）');
+  near(Number(armyOf(G, 'wujie').payArrearsMonths) || 0, 0, '存留这一步不改吴玠部欠饷月数');
+  near(Number(armyOf(G, 'dongjing').payArrearsMonths) || 0, 0, '存留这一步不改东京留守司欠饷月数');
   near(armyOf(G, 'half').payArrearsMonths, 2, '半本路的军足额，原欠不动');
   ok(L.nopayer === undefined && L.ghost === undefined && L.yijun === undefined && L.yuying === undefined, '未写承付之路、找不到、自给、朝廷四军不进本路账');
   ok(L.xijun.regionIds.join() === 'sx' && L.dongjing.regionIds.join() === 'jj', '记明承付之路');
@@ -120,7 +121,7 @@ const armySink = (G) => ((G.guoku.ledgers && G.guoku.ledgers.money && G.guoku.le
   near(G._armyRetained.byArmy.xijun.months, 1.5, '西军第二回合再欠一个月，累计一个半月');
   near(G._armyRetained.byArmy.wujie.arrears.money, 1500 + 3000, '吴玠部欠钱累计');
   near(G._armyRetained.byArmy.dongjing.months, 2, '东京留守司累计两个月');
-  near(Number(armyOf(G, 'xijun').payArrearsMonths) || 0, 0, '两回合下来西军欠饷月数仍不动');
+  near(Number(armyOf(G, 'xijun').payArrearsMonths) || 0, 0, '两回合下来存留这一步仍不改西军欠饷月数');
 }
 
 // 4. 叙事难度：本路那一份与太仓军饷同样按七成算

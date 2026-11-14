@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "222f6b008e260b8b90f89b9dd5492a937cb23af4457d5d325996c41f237adca6",
-      "size": 79732
+      "sha256": "ce6dd5d06e0aa6fd5e37d139a530534eaba3423c54864d24f22d4afa54bca36c",
+      "size": 79938
     },
     {
       "path": "INDEX.md",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "5e25fa1d52dbdb72fadb3ef556d70079c5ecd947f45ee898e950193f03c45a1f",
-      "size": 392381
+      "sha256": "35f7b5de2287b8caabf2d73e459575b0150e18e595b060fa9d37371d90afdfc4",
+      "size": 392934
     },
     {
       "path": "styles.css",
@@ -5201,8 +5201,8 @@
     },
     {
       "path": "tm-endturn-systems.js",
-      "sha256": "5259defe76f6a278cbb281e08de1cfb947542a327456cdf2320bd43a1961835c",
-      "size": 40390
+      "sha256": "2a30a130b69bc17c2c176ff8ebfb5746671b14db60f8ebc5fdb3d6b40e446ab0",
+      "size": 41072
     },
     {
       "path": "tm-endturn-timing-ledger.js",
@@ -6316,8 +6316,8 @@
     },
     {
       "path": "tm-person.js",
-      "sha256": "cf2152c71bd1b59b5c72422948140d49d2f5491a38ec4269be61b417e7b7968e",
-      "size": 27852
+      "sha256": "4d9aff3ef1fe75574e624e9e9f5a7493462fffef0a595ea078af0ba796b0cb86",
+      "size": 29937
     },
     {
       "path": "tm-personal-memory-recall.js",
@@ -6586,8 +6586,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "421fcca6562858c63765ffe34e9065b496ad2f3d092ba2b05f99f4108108e2ad",
-      "size": 141497
+      "sha256": "b168ec42e2dd5b4afd10abb2475127ee2cefa052ac58d38bc09c49d7c6f7a825",
+      "size": 141818
     },
     {
       "path": "tm-start-selector.js",
@@ -6993,6 +6993,11 @@
       "path": "modules/ai-change-applier/travel-route.js",
       "sha256": "550dc4774431a534d8ad4d14f17f6206602d7f75fb1c665544b46797a0536d33",
       "size": 3669
+    },
+    {
+      "path": "tm-revolt-cases.js",
+      "sha256": "85b5cb5116975e391190684f13c953ea55c35bbe6b9fc02f4628bd05421c8d29",
+      "size": 21039
     }
   ],
   "remove": []

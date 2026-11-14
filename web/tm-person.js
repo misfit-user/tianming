@@ -272,6 +272,39 @@
     });
     return out;
   }
+  // 性情维度：给按人判是非的代码读（地方官贪酷还是清能、报还是瞒、守城还是弃城……民变重做民1 起，11-14）。
+  //   特质与 traitNames 同一来源（traitIds、traits），逐项把特质库 TRAIT_LIBRARY 的 aiHints（荣誉、同情、贪、胆、精力、理性、
+  //   记仇、合群、虔）相加；特质库里没有、剧本定义里有 dims（约 ±0.5）的，乘 100 折算（粗略）。另带廉、忠、野（缺省 50）。
+  //   问对、常朝读的也是这几样特质，代码判的与 AI 扮演的是同一个人。
+  var DISPOSITION_KEYS = ['honor', 'compassion', 'greed', 'boldness', 'energy', 'rationality', 'vengefulness', 'social', 'zeal'];
+  function disposition(ch) {
+    if (!ch) return null;
+    var lib = (typeof TRAIT_LIBRARY !== 'undefined' && TRAIT_LIBRARY) ? TRAIT_LIBRARY : null;
+    var defs = (typeof P !== 'undefined' && P && Array.isArray(P.traitDefinitions)) ? P.traitDefinitions : [];
+    var out = { traits: [] }, seen = {};
+    DISPOSITION_KEYS.forEach(function (k) { out[k] = 0; });
+    var ids = [].concat(Array.isArray(ch.traitIds) ? ch.traitIds : [], Array.isArray(ch.traits) ? ch.traits : []);
+    ids.forEach(function (raw) {
+      var id = _s(raw && typeof raw === 'object' ? (raw.id || raw.name) : raw);
+      if (!id || seen[id]) return;
+      seen[id] = 1;
+      var hints = lib && lib[id] && lib[id].aiHints, mul = 1;
+      if (!hints) {
+        for (var i = 0; i < defs.length; i++) { if (defs[i] && defs[i].id === id && defs[i].dims) { hints = defs[i].dims; mul = 100; break; } }
+      }
+      if (!hints) return;
+      out.traits.push(id);
+      DISPOSITION_KEYS.forEach(function (k) {
+        var v = Number(hints[k] != null ? hints[k] : (k === 'social' ? hints.sociability : null));
+        if (isFinite(v)) out[k] += v * mul;
+      });
+    });
+    function num(v) { v = Number(v); return isFinite(v) ? v : 50; }
+    out.integrity = num(ch.integrity);
+    out.loyalty = num(ch.loyalty);
+    out.ambition = num(ch.ambition);
+    return out;
+  }
   // 几段并成一句用「；」隔开，前一段已以句末标点收尾时不再加（免得「破东林。；口吻」）
   var _END_PUNCT = /[。！？；…」』）)]$/;
   function _joinBits(bits) {
@@ -447,5 +480,5 @@
   }
 
   TM.Person = { frag: frag, core: core, brief: brief, coreText: coreText, who: who, traitNames: traitNames, speechText: speechText, line: line, on: on,
-    cognitionText: cognitionText, knowing: knowing, mind: mind };
+    cognitionText: cognitionText, knowing: knowing, mind: mind, disposition: disposition };
 })(typeof window !== 'undefined' ? window : globalThis);

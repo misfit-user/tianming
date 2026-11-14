@@ -2,7 +2,8 @@
 /* eslint-env node */
 // smoke-region-status.js — 地块状态系统实跑断言（2026-06-12）
 // 验：normalize 硬闸（econPct/minxin/工期封顶）→ add 同源替换/上限 → econMult →
-//     tick（过期/民心摊叶/繁荣缓变）→ 建筑钩子（工成投利/失修撤/拆毁撤）→
+//     tick（过期/民心摊叶/繁荣缓变；扫游戏里那份与剧本库那份、同一州只结一次；地板顶只拦往那一头走）→
+//     建筑钩子（工成投利/失修撤/拆毁撤）→
 //     cascade 乘子 vm 实跑 → 五处接线源码契约。
 'use strict';
 
@@ -67,6 +68,41 @@ const td2 = { name: '无繁荣', minxin: 80, statusEffects: [{ kind: 'event', na
 tP.adminHierarchy.player.divisions.push(td2);
 RS.tick({ turn: 11 }, tP);
 ok(td2.prosperity === undefined, '无 prosperity 字段不凭空造字段');
+
+// ── 4b. tick 扫两份区划（11-14·同志定「乙」）：游戏里那份（GM.adminHierarchy，开局、读档是剧本库那份的深拷贝）上挂的状态
+//   照样过期、摊民心、繁荣缓变；剧本库那份（P.adminHierarchy）照旧扫；同一州只结一次 ──
+const gLeaf = { name: '延安府', minxin: 30, prosperity: 40, statusEffects: [
+  { id: 'r', kind: 'disaster', name: '民变扰攘', econPct: -0.04, minxinPerTurn: -0.4, expiresTurn: 12, source: 'revolt' },
+  { id: 'q', kind: 'disaster', name: '流寇劫掠', econPct: -0.1, minxinPerTurn: -1, expiresTurn: 11, source: 'roving' }
+] };
+const pLeaf = { name: '延安府', minxin: 15, prosperity: 40 };   // 剧本库那份：同名、另一个对象、没挂状态
+const gGM = { turn: 11, adminHierarchy: { player: { divisions: [{ name: '陕西', children: [gLeaf] }] } } };
+const gP = { adminHierarchy: { player: { divisions: [{ name: '陕西', children: [pLeaf] }] } } };
+const st4b = RS.tick(gGM, gP);
+ok(gLeaf.statusEffects.length === 1 && gLeaf.statusEffects[0].id === 'r' && st4b.expired === 1, '游戏里那份：到期的「流寇劫掠」撤掉（原先只扫剧本库那份，挂上就永远压征收）');
+ok(gLeaf.minxin === 29.6, '游戏里那份：状态民心 −0.4 落到州上 30→29.6（实得 ' + gLeaf.minxin + '）');
+// 繁荣：民心 29.6 → (29.6−55)×0.02＝−0.508；乘子 0.96 → −0.16；净 −0.668 → 39.33
+ok(gLeaf.prosperity === 39.33, '游戏里那份：繁荣缓变 40→39.33（实得 ' + gLeaf.prosperity + '）');
+ok(pLeaf.minxin === 15 && pLeaf.prosperity === 39.2, '剧本库那份照旧扫（没挂状态，只繁荣缓变 40→39.2）');
+const shared = { name: '开封府', minxin: 50, statusEffects: [{ id: 's', kind: 'disaster', name: '水患', econPct: 0, minxinPerTurn: -1, expiresTurn: null }] };
+const sharedAH = { player: { divisions: [shared] } };
+RS.tick({ turn: 5, adminHierarchy: sharedAH }, { adminHierarchy: sharedAH });
+ok(shared.minxin === 49, '两份是同一对象：同一州只结一次 50→49（实得 ' + shared.minxin + '）');
+const shared2 = { name: '归德府', minxin: 50, statusEffects: [{ id: 's2', kind: 'disaster', name: '水患', econPct: 0, minxinPerTurn: -1, expiresTurn: null }] };
+const P2 = { adminHierarchy: { player: { divisions: [shared2] } } };
+RS.tick({ turn: 5, adminHierarchy: { player: P2.adminHierarchy.player } }, P2);
+ok(shared2.minxin === 49, '两份共用同一州对象：也只结一次 50→49（实得 ' + shared2.minxin + '）');
+
+// ── 4c. 地板 20、顶 100 只拦往那一头走（11-14）：本就低于 20 的州，负的状态不再把它抬回 20；正的不再一下拉到 20 ──
+const mkMx = (mx) => ({ name: 'd' + mx, minxin: mx });
+const low = mkMx(11), mid = mkMx(25), edge = mkMx(20.2), upLow = mkMx(11);
+[low, mid, edge].forEach((d) => RS.add(d, { name: '民变扰攘', kind: 'disaster', minxinPerTurn: -0.4, durationTurns: 2, source: 'revolt' }, { turn: 3 }));
+RS.add(upLow, { name: '赈济', kind: 'player', minxinPerTurn: 0.5, durationTurns: 2, source: 'relief' }, { turn: 3 });
+RS.tick({ turn: 3 }, { adminHierarchy: { player: { divisions: [low, mid, edge, upLow] } } });
+ok(low.minxin === 11, '民心 11 遇 −0.4：不再被抬到 20（实得 ' + low.minxin + '）');
+ok(mid.minxin === 24.6, '民心 25 遇 −0.4 → 24.6');
+ok(edge.minxin === 20, '民心 20.2 遇 −0.4：停在地板 20');
+ok(upLow.minxin === 11.5, '民心 11 遇 +0.5 → 11.5（不再一下拉到 20）');
 
 // ── 5. 建筑钩子（require building-works·statusApi 经 globalThis.TM 找到本模块）──
 const BW = require(path.join(WEB, 'tm-building-works.js'));

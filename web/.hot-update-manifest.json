@@ -6416,8 +6416,8 @@
     },
     {
       "path": "tm-region-status.js",
-      "sha256": "c4399c6ba8cd58120e3ceebd53f689ca9c7ede1c2b46f43dbd530218e1fdcb74",
-      "size": 9140
+      "sha256": "e5d01148b6595ba723cdc6a9015eb18e17bf543e08f74cfd8bb52932d27411b6",
+      "size": 10387
     },
     {
       "path": "tm-rel-graph.js",
@@ -6586,8 +6586,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "981929ef3035210755bcfe7e167f28f2f4f3bfc1e4879718d7d61bc9519787bf",
-      "size": 142498
+      "sha256": "d60f71cc4880459ef953cf2d8cd286aa398bbf942a61aadbb42de3c84f22daad",
+      "size": 142499
     },
     {
       "path": "tm-start-selector.js",

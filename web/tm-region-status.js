@@ -103,16 +103,25 @@
 
   // 每回合确定性步（endturn-core·BuildingWorks.tick 之后·final aggregate 之前）：
   // ①过期状态清除 ②minxinPerTurn 摊民心叶（合计夹 ±2）③繁荣度缓变（有 prosperity 字段才动）
+  // 扫两份区划、同一州只结一次（11-14 改，同志定「乙」）：游戏里那份 GM.adminHierarchy——开局、读档都是剧本库那份的深拷贝
+  //   （tm-patches-start.js、tm-save-lifecycle.js），游戏里挂的状态都在这份上——与剧本库那份 P.adminHierarchy。
+  //   原先只扫剧本库那份：游戏里挂的状态从不过期（「民变扰攘」「流寇劫掠」挂上就一直压征收）、状态的民心从不落、繁荣从不漂。
+  //   营建 tick 07-03 修过同一毛病（tm-building-works.js：两份都扫、按对象去重），这里照办。
   function tick(GM, P) {
     var stat = { expired: 0, minxinTouched: 0, prosperityDrift: 0, activeTotal: 0 };
-    if (!GM || !P || !P.adminHierarchy) return stat;
+    if (!GM) return stat;
     var turn = num(GM.turn, 0);
-    Object.keys(P.adminHierarchy).forEach(function (fk) {
-      var fh = P.adminHierarchy[fk];
+    var trees = [], seen = typeof Set !== 'undefined' ? new Set() : null;
+    [GM.adminHierarchy, P && P.adminHierarchy].forEach(function (AH, i) {
+      if (!AH || typeof AH !== 'object' || (i === 1 && AH === GM.adminHierarchy)) return;
+      Object.keys(AH).forEach(function (fk) { trees.push(AH[fk]); });
+    });
+    trees.forEach(function (fh) {
       if (!fh || !fh.divisions) return;
       (function walk(ds) {
         ds.forEach(function (div) {
           if (!div) return;
+          if (seen) { if (seen.has(div)) return; seen.add(div); }
           var kids = div.children || div.divisions;
           if (Array.isArray(div.statusEffects) && div.statusEffects.length) {
             // ① 过期
@@ -128,12 +137,14 @@
             div.statusEffects = keep;
             stat.activeTotal += keep.length;
             // ② 民心摊叶（状态合计·夹 ±2/回合·地板 20 顶 100）
+            //   地板、顶只拦往那一头走：本就低于 20 的州，负的状态不再把它抬回 20（天启陕西各州民心十一，
+            //   一条「民变扰攘」−0.4 会把它一下抬到 20）；本就高于 100 的同理不往下拽。
             var mxSum = 0;
             keep.forEach(function (e) { mxSum += num(e.minxinPerTurn, 0); });
             mxSum = clamp(mxSum, -2, 2);
             if (mxSum && (div.minxin !== undefined || div.minxinLocal !== undefined)) {
               var cur = num(div.minxin, num(div.minxinLocal, 60));
-              var next = round2(clamp(cur + mxSum, 20, 100));
+              var next = round2(mxSum < 0 ? Math.max(cur + mxSum, Math.min(cur, 20)) : Math.min(cur + mxSum, Math.max(cur, 100)));
               if (next !== cur) {
                 if (div.minxin !== undefined) div.minxin = next;
                 if (div.minxinLocal !== undefined) div.minxinLocal = next;

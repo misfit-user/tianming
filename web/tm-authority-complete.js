@@ -411,7 +411,8 @@
           }
         }
       }
-      // 镇压尝试：官军作战
+      // 镇压尝试：官军作战。民变案落地的民变（民2d-1）不认「调兵数够即平」：发兵剿走行军与战斗引擎（tm-revolt-suppress.js）
+      if (r.source === 'revolt-cases' && r._suppressionOrder) delete r._suppressionOrder;
       if (r._suppressionOrder && !r._suppressed) {
         var suppressionStrength = r._suppressionOrder.strength || 0;
         if (suppressionStrength > r.scale * 2) {
@@ -444,6 +445,8 @@
     if (!mx || !mx.revolts) return { ok: false };
     var r = mx.revolts.find(function(x) { return x.id === revoltId; });
     if (!r) return { ok: false };
+    // 民变案落地的民变（民2d-1）：要选一支军发兵剿（TM.RevoltSuppress.order），报个兵数不算——危机回复里写「平乱」也不再就此判平
+    if (r.source === 'revolt-cases') return { ok: false, reason: '这股要选一支军发兵剿（民变面板「发兵剿」）' };
     r._suppressionOrder = { strength: troops, turn: global.GM.turn };
     return { ok: true };
   }
@@ -1003,18 +1006,47 @@
     return true;
   }
 
+  // 一仗里玩家这方是胜是败（民2d-1 修）：战报本没有「我方胜」一栏（b.win 从没有哪里写），原先本回合每一仗——
+  //   不分胜负、连不关玩家的——都当军败扣皇威（每仗 -10，扣分累计封顶 18）。
+  //   引擎结的仗按 verdict（攻方视角：大胜、小胜＝攻方胜，败北＝守方胜，僵持无胜负）与攻守两方的势力认；
+  //   结构化战果（AI 报的、亲征结的，verdict 'structured'）按胜败两方的势力认。认不出玩家在哪一边的不算。
+  function _battlePlayerOutcome(b, G) {
+    var MS = global.MilitarySystems;
+    if (!b || !MS || typeof MS.battlePlayerFaction !== 'function' || typeof MS.battleFactionName !== 'function') return '';
+    var pf = String(MS.battlePlayerFaction(G) || '');
+    if (!pf || b.verdict === '僵持') return '';
+    function fac(ref) { return ref == null || ref === '' ? '' : String(MS.battleFactionName(ref, G) || ''); }
+    var win, lose;
+    if (b.verdict === '大胜' || b.verdict === '小胜') { win = fac(b.attackerFaction); lose = fac(b.defenderFaction); }
+    else if (b.verdict === '败北') { win = fac(b.defenderFaction); lose = fac(b.attackerFaction); }
+    else { win = fac(b.winnerFactionId || b.winnerFaction || b.winner); lose = fac(b.loserFactionId || b.loserFaction || b.loser); }
+    if (win === pf && lose !== pf) return 'won';
+    if (lose === pf && win !== pf) return 'lost';
+    return '';
+  }
+
   function _autoDetectHuangweiEvents(ctx, mr) {
     var G = global.GM;
     var hw = G.huangwei;
     if (!hw) return;
     // ── 客观事实反馈（已发生的实事，系统确实记录了）──
-    // 军事胜负（有具体战报才反馈）
+    // 军事胜负（有具体战报才反馈；只算玩家这方的胜负，见 _battlePlayerOutcome）
     if (G._turnBattleResults) {
+      var RS = global.TM && global.TM.RevoltSuppress, bandFac = RS && RS.CFG && RS.CFG.faction;
       G._turnBattleResults.forEach(function(b) {
-        if (b._hwChecked) return;
+        if (!b || b._hwChecked) return;
         b._hwChecked = true;
-        if (b.win) triggerHuangweiEvent('militaryVictory', { personallyLed: b.personallyLed, foreign: b.enemyType === 'foreign', reason: '\u519b\u4e8b\u6377\u62a5' });
-        else triggerHuangweiEvent('militaryDefeat', { reason: '\u519b\u4e8b\u5931\u5229' });
+        var outcome = _battlePlayerOutcome(b, G);
+        if (outcome === 'lost') triggerHuangweiEvent('militaryDefeat', { reason: '军事失利' });
+        else if (outcome === 'won' && !b._applierAftermathDone && !(bandFac && (b.attackerFaction === bandFac || b.defenderFaction === bandFac))) {
+          // 胜仗：AI 报的战果在写回时已按 P-5TK 加过（_applierAftermathDone），不再记；剿民变的胜仗归平乱（那一股散了才记），不另记军胜。
+          //   引擎结的胜仗没有 AI 给的量，照 P-5TK「AI 没给量走保底」每场 +2；战报带了 huangweiDelta 的取它，单场封顶 8（同 P-5TK）。
+          var gain = Number(b.huangweiDelta);
+          gain = isFinite(gain) && gain > 0 ? Math.min(gain, 8) : 2;
+          if (global.AuthorityEngines && typeof global.AuthorityEngines.adjustHuangwei === 'function') {
+            global.AuthorityEngines.adjustHuangwei('militaryVictory', gain, '军事捷报');
+          }
+        }
       });
     }
     // 都城沦陷（具体事实）
@@ -1130,7 +1162,7 @@
       G._turnBattleResults.forEach(function(b) {
         if (b._hqChecked) return;
         b._hqChecked = true;
-        if (!b.win && b.scale === 'decisive') triggerHuangquanEvent('militaryDefeat', { reason: '\u51b3\u5b9a\u6027\u6218\u8d25' });
+        if (b.scale === 'decisive' && _battlePlayerOutcome(b, G) === 'lost') triggerHuangquanEvent('militaryDefeat', { reason: '\u51b3\u5b9a\u6027\u6218\u8d25' });
       });
     }
   }
@@ -1683,6 +1715,7 @@
     tickMinxinSources: _tickMinxinAdditionalSources,   // 民心七源单跑（smoke 核「民变不宁只扰本省」）
     tickRevoltUpgrade: _tickRevoltUpgrade,             // 民变爬梯单跑（smoke 核「进行中的民变不被挤出列表」）
     tickHeavenSigns: _tickHeavenSigns,                 // 天象单跑（smoke 核「只留天上的、不随民心」）
+    autoDetectHuangwei: _autoDetectHuangweiEvents,     // 战报接皇威单跑（smoke 核「只算玩家这方的胜负」）
     refreshHuangquanDimensions: _tickHuangquanSubDims,
     detectPowerMinister: _detectPowerMinister,
     tickPowerMinister: _tickPowerMinister,

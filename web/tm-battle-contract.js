@@ -134,8 +134,24 @@
     if (applied && applied.ok) { battle.phase = 'resolved'; battle.result = applied.result; G._turnBattleResults.push(applied.result); return true; } // arch-ok: canonical battle dispatch mirrors one settled battle report
     return false;
   }
+  // 地形写法折成战斗引擎认的键（民2d-1）：剧本区划写的是中文（「山地」「丘陵」……，编辑器地形修正表的中文名同此），
+  //   引擎地形修正（BattleEngine._getTerrainMod）认 plains/hills/mountain/river/swamp/desert/forest。
+  //   一处写了几样的取最利守的（这样的地方守方会挑着打）；认不出的当平原（与原先缺省同）。
+  var TERRAIN_WORDS = [
+    ['mountain', /山地|山区|山岭|山|岭|mountain/i], ['forest', /林地|森林|林|forest/i], ['hills', /丘陵|丘|塬|hill/i],
+    ['swamp', /沼泽|泽|swamp/i], ['river', /河流|水网|江河|河|水|river/i], ['desert', /沙漠|荒漠|戈壁|沙|desert/i],
+    ['plains', /平原|平川|平|plain/i]
+  ];
+  function battleTerrainKey(text) {
+    var t = String(text == null ? '' : text).trim();
+    if (!t) return 'plains';
+    if (/^(plains|hills|mountain|river|swamp|desert|forest)$/.test(t)) return t;
+    for (var i = 0; i < TERRAIN_WORDS.length; i++) if (TERRAIN_WORDS[i][1].test(t)) return TERRAIN_WORDS[i][0];
+    return 'plains';
+  }
   Object.assign(ms, { battleParticipants:battleParticipants, battleFactionName:battleFactionName, battlePlayerFaction:battlePlayerFaction,
-    validateBattleResult:validateBattleResult, ensureBattleId:ensureBattleId, findSettledBattle:findSettledBattle, turnBattleCasualties:turnBattleCasualties, consumeBattleResults:consumeBattleResults, dispatchComputedBattle:dispatchComputedBattle });
+    validateBattleResult:validateBattleResult, ensureBattleId:ensureBattleId, findSettledBattle:findSettledBattle, turnBattleCasualties:turnBattleCasualties, consumeBattleResults:consumeBattleResults, dispatchComputedBattle:dispatchComputedBattle,
+    battleTerrainKey:battleTerrainKey });
 })(typeof window !== 'undefined' ? window : globalThis);
 
 // Shared strength implementation; the public military function is a lazy forwarder.

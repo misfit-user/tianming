@@ -5,7 +5,7 @@
 // 依据 docs/guanben-roleplay-20260930/minbian.md 定案第 4 条（首领从哪来）与「新的样子」二（游击）：
 //   案掷中（tm-revolt-cases.js）即起一股真民变，写进 GM.minxin.revolts（面板、顶栏、民心不宁、上下文照旧读）。
 //   - 首领是真人。先在档里挑：起义一类势力的人，与不在任的草莽（盐枭、教首、驿卒、边卒、流民头目……）；
-//     所在点到本州的优先，其次同省（「陕北」这类省简称加方位也算）；年满十六、活着、不在任、不领兵、没领着别的民变。
+//     所在点到本州的优先，其次同省（「陕北」这类省简称加方位也算）；年满十六、活着、不在任、不领兵、没领着别的民变、不在押。
 //     在任官员、将领不当民变首领（他们造反是兵变、割据，另一条路）。
 //     挑不到按出身新生（TM.Roster.createChar）：卫所边镇作边兵，有灾作饥民，盐区作盐枭，其余作佃农；
 //     特质按出身配，名字按种子掷（同局可复现），不调 AI。人格由 TM.Person 按特质读，与问对同一份。
@@ -15,6 +15,7 @@
 // 民2b（11-14）：AI 宣布的起义并进案（TM.RevoltCases.riseFromAI）也走这里落地——首领、骨干按 AI 给的名字先在档里找，
 //   找不到用这个名字按出身新生（出身照 AI 说的：教门、兵变、盐枭、饥民、佃农）；人数照样从户口拨，不取 AI 报的兵数；
 //   口号、诉求、教派这些原话当文字留在民变上。
+// 民2d-1（11-15）：落地即在军册立这股的军（tm-revolt-suppress.js ensureArmy）：兵数＝人数 × 本州丁口比，不是写死的兵数。
 // 本模块不判起不起（那是 tm-revolt-cases.js），只把已判定起事的案落成人和数。
 // ============================================================
 (function (global) {
@@ -72,6 +73,7 @@
     rebels = rebels || rebelFactionNames(G);
     return arr(G.armies).some(function (a) {
       if (!a || a.destroyed === true || !(a.commanderId === ch.id || (a.commander && a.commander === ch.name))) return false;
+      if (a._revoltBand) return false;   // 民变案每股的军（民2d-1）：领的是自己那一股
       return !(rebels[str(a.faction)] || rebels[str(a.factionId)]);
     });
   }
@@ -111,6 +113,7 @@
     var rebels = rebelFactionNames(G), best = [], bestScore = 0;
     arr(G.chars).forEach(function (ch) {
       if (!ch || ch.alive === false || ch.dead === true || isPlayerChar(G, ch)) return;
+      if (ch._imprisoned || ch.imprisoned || ch._captured || ch.captured) return;   // 在押、被俘的不当首领（民2d-1：剿破被擒的下狱）
       if (num(ch.age, 30) < CFG.minLeaderAge) return;
       var fac = str(ch.faction || ch.factionId);
       var rebel = !!rebels[fac];
@@ -298,6 +301,10 @@
     c.revoltId = revolt.id;
     c.leaderId = leader.id;
     c.followers = got.n;
+    // 起事即立一支军（民2d-1，同志 11-14 定）：军册里「某某部」，首领领兵，驻本州；剿走军事系统（tm-revolt-suppress.js）
+    if (TM.RevoltSuppress && typeof TM.RevoltSuppress.ensureArmy === 'function') {
+      try { TM.RevoltSuppress.ensureArmy(G, revolt, L); } catch (_) {}
+    }
     if (typeof global.addEB === 'function') {
       try {
         global.addEB('民变', '【' + (c.province ? c.province + '·' : '') + revolt.region + '】' + revolt.leaderName +

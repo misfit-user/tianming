@@ -418,7 +418,16 @@
     body += _interventionButton('investigate', '派员查访', '遣御史/按察使查实情 · 5 万钱', revolt.id);
     body += _interventionButton('relief', '赈济绥民', '发帑赈粥抚怀 · 20 万钱 · 民心 +3', revolt.id);
     body += _interventionButton('pacify', '招安赦免', '许以官职或免罪 · 皇威 -2 但民心 +5', revolt.id);
-    body += _interventionButton('suppress', '强力镇压', '发兵剿灭 · 需兵力 · 民心 -6 但皇威 +4', revolt.id);
+    if (revolt.source === 'revolt-cases' && global.TM && global.TM.RevoltSuppress) {
+      // 民变案落地的民变（民2d-1）：选一支军发兵剿，到了那一州交战，由战斗引擎按兵力、地形结算
+      body += '<div style="font-size:calc(var(--text-xs) * 0.78);padding:10px;text-align:left;border:1px solid var(--color-border);border-radius:4px;">' +
+        '<div style="color:var(--gold-300);font-size:calc(var(--text-xs) * 0.84);">发兵进剿</div>' +
+        '<div style="color:var(--text-secondary);margin-top:2px;">选一支军 · 到了那一州交战，按兵力、地形结算</div>' +
+        '<div style="margin-top:4px;">' + global.TM.RevoltSuppress.panelHtml(G, revolt, { idPrefix: '_revSupD_', after: "this.closest('div[style*=position]').remove();" }) + '</div>' +
+      '</div>';
+    } else {
+      body += _interventionButton('suppress', '强力镇压', '发兵剿灭 · 需兵力 · 民心 -6 但皇威 +4', revolt.id);
+    }
     body += '</div>';
     body += '</div>';
     var ov = document.createElement('div');
@@ -457,6 +466,7 @@
       if (global._adjAuthority) global._adjAuthority('minxin', 3);
       r._suppressed = true;
       r.status = 'suppressed';
+      r.endedBy = 'relief'; r.endedTurn = G.turn || 0;   // 赈散的人回籍（民2d-1 善后认这个：tm-revolt-suppress.js）
       if (global.addEB) global.addEB('赈济', '赈 ' + (r.region || '某地') + ' 民变自散');
       _addFengwen({ type:'赈', text:(r.region||'某地') + '赈济既罢', credibility: 0.9, turn: G.turn });
       return { ok: true };
@@ -471,6 +481,8 @@
       return { ok: true };
     }
     if (action === 'suppress') {
+      // 民变案落地的民变（民2d-1）：要选一支军发兵剿，不按兵数直接判
+      if (r.source === 'revolt-cases') return { ok: false, reason: '这股要选一支军发兵剿' };
       // 需兵力估算
       var requiredTroops = (r.scale || 1000) * 2;
       // 调兵（简化）

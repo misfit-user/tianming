@@ -680,7 +680,7 @@ inst._imprisonedTurn = GM.turn||0;
                 });
               } else if (tc.name === 'record_revolt_events' && Array.isArray(tc.input.events)) {
                 tc.input.events.forEach(function(r) {
-                  if (r && r.action && r.region) _patch.revolt_events.push({ action: r.action, region: r.region, leader: r.leader||'', scale: Number(r.scale)||0, reason: r.reason||'' });
+                  if (r && r.action && r.region) _patch.revolt_events.push({ action: r.action, region: r.region, leader: r.leader||'', scale: Number(r.scale)||0, reason: r.reason||'', army: r.army||'' });
                 });
               } else if (tc.name === 'record_disaster_events' && Array.isArray(tc.input.events)) {
                 tc.input.events.forEach(function(d) {
@@ -844,6 +844,15 @@ inst._imprisonedTurn = GM.turn||0;
                     }
                   }
                 } else if (r.action === 'suppress' || r.action === 'appease') {
+                  // 民变重做·民2d-1（11-15）：说「镇压」的落到民变案的一股，不直接判平——照它说的派一支官军去剿
+                  //   （TM.RevoltSuppress.fromAI：点了军名用它点的，没点的派在途来此、本州、本省最先一支；本省无兵不剿），
+                  //   胜负下次过回合由战斗引擎结算。不是民变案的旧式民变、剧本没开战斗结算的，照旧判平。招抚在民2d-2。
+                  var _supR = null;
+                  if (r.action === 'suppress' && typeof TM !== 'undefined' && TM.RevoltSuppress && typeof TM.RevoltSuppress.fromAI === 'function') {
+                    try { _supR = TM.RevoltSuppress.fromAI(GM, { by: 'reconcile', region: r.region, leader: r.leader, army: r.army, reason: r.reason }); }
+                    catch (_supRE) { _supR = null; (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_supRE, 'reconcile revolt fromAI:') : console.warn('[Reconcile] revolt fromAI failed:', _supRE); }
+                  }
+                  if (_supR && _supR.handled) return;   // 派兵是剿令，不是民变数目的增减：不记进本回合变量
                   var openR = GM.minxin.revolts.find(function(x){return x && x.status === 'ongoing' && x.region === r.region;});
                   if (openR) {
                     _revChanged = true;

@@ -569,7 +569,8 @@
                 region: { type: 'string', description: '发生地（如 陕西、山东）' },
                 leader: { type: 'string', description: '首领姓名（可选）' },
                 scale: { type: 'number', description: '规模（人数）' },
-                reason: { type: 'string', description: '原因（不超过30字）' }
+                reason: { type: 'string', description: '原因（不超过30字）' },
+                army: { type: 'string', description: '镇压时出兵的我方军队名（可选；民变案起事的各股按此派兵去剿，胜负由战斗结算）' }
               },
               required: ['action','region']
             }

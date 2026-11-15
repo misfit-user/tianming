@@ -208,7 +208,7 @@
   function _facName(G,key) { var f=(G.facs||G.factions||[]).find(function(x){return x && (x.id===key||x.name===key);});return f&&f.name||key; }
   function _stationed(G,leaf) {
     var id=String(leaf.mapRegionId||leaf.regionId||leaf.id||leaf.name||'');
-    return (G.armies||[]).filter(function(a){return a && !a.destroyed && (String(a.location||a.garrison||a.regionHint||'')===id);});
+    return (G.armies||[]).filter(function(a){return a && !a.destroyed && !a._revoltBand && (String(a.location||a.garrison||a.regionHint||'')===id);});   // 民变的军（民2d-1）不算本地守军
   }
   function _frontierThreat(G,P,leaf,hostiles,fallback) {
     var map=G.mapData||P.map||{}, regions=map.regions;
@@ -267,7 +267,7 @@
       return groups[key]={key:key,factionId:faction,regionId:regionId||null,leafIds:leafIds,regionalResources:budgetRows,capacity:resource,cost:{money:0,grain:0,cloth:0},missing:[],budget:budget};
     }
     var byStation={}, unresolvedArmies=[];
-    (G.armies||[]).filter(function(a){return a&&!a.destroyed;}).forEach(function(a){
+    (G.armies||[]).filter(function(a){return a&&!a.destroyed&&!a._revoltBand;}).forEach(function(a){   // 民变的军（民2d-1）无人发饷
       var station=rows.find(function(r){return String(a.location||a.garrison||a.regionHint||'')===r.id;}), funding=a.funding||{}, payer=_facName(G,funding.factionId||a.payingFactionId||a.factionId||a.faction);
       if(!station){unresolvedArmies.push(a.id||a.name);return;}
       var share=_num(funding.localShare);

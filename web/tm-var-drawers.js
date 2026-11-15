@@ -996,7 +996,10 @@
           var lvDef = LEVELS[(r.level||1) - 1] || { name:'L'+r.level };
           lh += '<div style="padding:6px 8px;background:rgba(192,64,48,0.08);border-left:3px solid var(--vermillion-400);border-radius:3px;margin-bottom:4px;font-size:0.74rem;">';
           lh += '<div><b style="color:var(--vermillion-300);">[' + _esc(lvDef.name) + ']</b> ' + _esc(r.region||'某地') + ' · 众 ' + _fmt(r.scale||5000) + (r.cause?' · 因 '+_esc(r.cause):'') + '</div>';
-          if (!r._suppressionOrder) {
+          var _supTxt = (r.source === 'revolt-cases' && global.TM && global.TM.RevoltSuppress) ? global.TM.RevoltSuppress.statusText(G, r) : '';
+          if (_supTxt) {
+            lh += '<div style="color:var(--amber-400);margin-top:2px;">' + _esc(_supTxt) + '</div>';   // 民2d-1：发兵剿的进展
+          } else if (!r._suppressionOrder) {
             // 干预策由大臣奏疏献策，玩家朱批
           } else {
             lh += '<div style="color:var(--amber-400);margin-top:2px;">官军 ' + _fmt(r._suppressionOrder.strength) + ' 讨伐中</div>';

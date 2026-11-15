@@ -587,15 +587,21 @@ function _openHujiPanel() {
         body += '<div style="padding:6px;margin:3px 0;background:var(--bg-2);border-left:3px solid var(--vermillion-400);border-radius:3px;font-size:0.72rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
         body += '<b style="color:var(--vermillion-300);">[' + (lv.name || ('L'+r.level)) + ']</b>';
         body += (r.region || '某地') + ' · 众 ' + (r.scale >= 10000 ? (r.scale/10000).toFixed(1)+'万' : r.scale);
+        if (r.source === 'revolt-cases' && window.TM && TM.RevoltSuppress) {
+          // 民变案落地的民变（民2d-1）：选一支军发兵剿，走行军与战斗引擎（tm-revolt-suppress.js）
+          body += TM.RevoltSuppress.panelHtml(GM, r, { idPrefix: '_revSupH_', after: "this.closest('div[style*=position]').remove();if(typeof _openHujiPanel==='function')_openHujiPanel();" });
+        } else {
         body += (r._suppressionOrder ? ' · <span style="color:var(--amber-400);">官军 ' + r._suppressionOrder.strength + ' 讨伐中</span>' : '');
         if (!r._suppressionOrder) {
           var suggestTroops = (r.scale || 5000) * 3;
           body += ' <input type="number" id="_revTroops_' + r.id + '" value="' + suggestTroops + '" style="width:80px;padding:1px 4px;font-size:0.7rem;">';
           body += ' <button class="btn" style="font-size:0.71rem;padding:2px 6px;" onclick="var v=parseInt(document.getElementById(\'_revTroops_' + r.id + '\').value)||0;var res=AuthorityComplete.suppressRevolt(\'' + r.id + '\',v);if(res.ok)toast(\'已调 \'+v+\' 兵镇压\');this.closest(\'div[style*=position]\').remove();if(typeof _openHujiPanel===\'function\')_openHujiPanel();">调兵镇压</button>';
         }
+        }
         body += '</div>';
       });
-      body += '<div style="font-size:0.71rem;color:var(--txt-d);margin-top:4px;">需调兵力约 3×民变规模方可速平；不足则拉锯。</div>';
+      if (ongoing.some(function(r) { return r.source !== 'revolt-cases'; })) body += '<div style="font-size:0.71rem;color:var(--txt-d);margin-top:4px;">需调兵力约 3×民变规模方可速平；不足则拉锯。</div>';
+      if (ongoing.some(function(r) { return r.source === 'revolt-cases'; })) body += '<div style="font-size:calc(var(--text-xs) * 0.75);color:var(--txt-d);margin-top:4px;">民变案起事的各股：选一支军发兵剿，不在那一州的先行军，到了交战，按兵力、士气、训练、主将、地形结算。</div>';
     }
   }
   // 军队调动 UI
@@ -1358,7 +1364,10 @@ function _renderMinxinFullPanel() {
         h += '<div style="padding:6px;margin:3px 0;background:var(--bg-2);border-left:3px solid var(--vermillion-400);border-radius:3px;font-size:0.74rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
         h += '<b style="color:var(--vermillion-300);">[' + (lv.name || ('L'+r.level)) + ']</b>';
         h += (r.region || '某地') + ' · ' + _barFmtNum(r.scale||5000);
-        if (!r._suppressionOrder) {
+        if (r.source === 'revolt-cases' && window.TM && TM.RevoltSuppress) {
+          // 民变案落地的民变（民2d-1）：选一支军发兵剿（tm-revolt-suppress.js）
+          h += TM.RevoltSuppress.panelHtml(GM, r, { idPrefix: '_revSupM_' });
+        } else if (!r._suppressionOrder) {
           h += ' <input type="number" id="_revT_' + r.id + '" value="' + ((r.scale||5000)*3) + '" style="width:80px;padding:1px 4px;font-size:0.7rem;">';
           h += ' <button class="btn" style="font-size:0.71rem;padding:2px 6px;" onclick="var v=parseInt(document.getElementById(\'_revT_' + r.id + '\').value)||0;var rr=AuthorityComplete.suppressRevolt(\'' + r.id + '\',v);if(rr.ok)toast(\'已调 \'+v+\' 兵\');">调兵镇压</button>';
         } else {

@@ -1316,8 +1316,8 @@ var BattleEngine = (function() {
          '比值' + result.adjustedRatio, '→', result.verdict,
          '损' + result.attackerLoss + '/' + result.defenderLoss);
 
-    // 兵燹·R3.5：战损定位到前线地域 → 人力/农政毁地（丁损/地力/水利损·仅已种子地域·全 no-op 安全）
-    try { if (typeof window !== 'undefined' && window.TM && TM.Renli && typeof TM.Renli.warScarFromBattle === 'function') TM.Renli.warScarFromBattle(G, null, br, result); } catch (_wsE) { (typeof window !== 'undefined' && window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_wsE, 'battle] renli warScar') : void 0; }
+    // 兵燹·R3.5：战损定位到前线地域 → 人力/农政毁地（丁损/地力/水利损·仅已种子地域·全 no-op 安全）。民2d-1 改：原先传未定义的 G、br，每结算一仗抛一次错进错误日志；本战果没有逐军伤亡细目，兵燹在这条路上仍不落（要接另定）
+    try { if (typeof window !== 'undefined' && window.TM && TM.Renli && typeof TM.Renli.warScarFromBattle === 'function') TM.Renli.warScarFromBattle(GM, null, { location: context.location || '' }, result); } catch (_wsE) { (typeof window !== 'undefined' && window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_wsE, 'battle] renli warScar') : void 0; }
 
     return result;
   }
@@ -1346,6 +1346,10 @@ var BattleEngine = (function() {
     return s;
   }
 
+  function _battleArmy(id, name, faction) {   // resolveAllBattles 认军（民2d-1）
+    var list = GM.armies || [], by = function(k, v) { return v != null && v !== '' ? list.find(function(a) { return a && a[k] === v; }) : null; };
+    return by('id', id) || by('name', name) || by('faction', faction) || null;
+  }
   /**
    * 批量结算本回合所有进行中的战斗
    * 从 GM.activeBattles 读取，结果写入 GM._turnBattleResults
@@ -1374,13 +1378,9 @@ var BattleEngine = (function() {
         return;
       }
 
-      // 查找对应军队
-      var attackerArmy = (GM.armies || []).find(function(a) {
-        return a.name === battle.attackerArmy || a.faction === battle.attackerFaction;
-      });
-      var defenderArmy = (GM.armies || []).find(function(a) {
-        return a.name === battle.defenderArmy || a.faction === battle.defenderFaction;
-      });
+      // 查找对应军队：先认编号、再认军名，都没有才按势力取一支（民2d-1：原先「军名或势力」一把抓，同势力排前头的别的军会被当成这一仗的军）
+      var attackerArmy = _battleArmy(battle.attackerArmyId, battle.attackerArmy, battle.attackerFaction);
+      var defenderArmy = _battleArmy(battle.defenderArmyId, battle.defenderArmy, battle.defenderFaction);
 
       if (!attackerArmy || !defenderArmy) return;
 

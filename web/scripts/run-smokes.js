@@ -9,6 +9,8 @@
 // 用法：
 //   node scripts/run-smokes.js --grep tinyi          # 只跑名字含 tinyi 的
 //   node scripts/run-smokes.js --grep tinyi --grep class   # 多个 grep = 并集
+//   node scripts/run-smokes.js --changed             # 只跑与改动有关的（相对与 origin/main 的分叉点，没提交的也算）
+//   node scripts/run-smokes.js --changed --list      # 只看会挑中哪些、各因为什么；--changed <引用> 可换基准
 //   node scripts/run-smokes.js --list                # 只列出会跑哪些，不执行
 //   node scripts/run-smokes.js --jobs 8 --timeout 90 # 并发数 / 单脚本秒数上限
 //   node scripts/run-smokes.js --all                 # 忽略 NORUN 标记和 skip 清单
@@ -44,6 +46,9 @@ const GREPS = [];
 args.forEach((a, i) => { if (a === '--grep' && args[i + 1]) GREPS.push(args[i + 1].toLowerCase()); });
 const LIST_ONLY = args.includes('--list');
 const RUN_ALL = args.includes('--all');
+// --changed [基准引用]：按改动挑选（lib-smoke-select.js）。是省时间的挑法，不是豁免——全量由 CI 兜底。
+const CHANGED = args.includes('--changed');
+const CHANGED_BASE = (() => { const value = flagVal('--changed', ''); return value && !value.startsWith('--') ? value : 'origin/main'; })();
 const JOBS = parseInt(flagVal('--jobs', ''), 10) || Math.min(8, Math.max(2, os.cpus().length - 2));
 const TIMEOUT_MS = (parseInt(flagVal('--timeout', ''), 10) || 120) * 1000;
 // These checks have their own wall-clock contracts. Run them without unrelated
@@ -56,6 +61,19 @@ let smokes = fs.readdirSync(SCRIPTS_DIR).filter(n => /^smoke-.*\.js$/.test(n)).s
 const totalFound = smokes.length;
 
 if (GREPS.length) smokes = smokes.filter(n => GREPS.some(g => n.toLowerCase().includes(g)));
+
+let changedSelection = null;
+if (CHANGED) {
+  const picker = require('./lib-smoke-select');
+  const changed = picker.changedFiles(CHANGED_BASE);
+  if (!changed) { console.error(`[run-smokes] FAIL：找不到与 ${CHANGED_BASE} 的分叉点，--changed 没法算`); process.exit(1); }
+  changedSelection = picker.select(picker.buildIndex(SCRIPTS_DIR), changed.files);
+  smokes = smokes.filter(n => changedSelection.selected.has(n));
+  console.log(`[run-smokes] 按改动挑选：相对 ${CHANGED_BASE} 的分叉点 ${changed.base.slice(0, 8)} 改了 ${changed.files.length} 个文件，牵涉 ${smokes.length} 支 smoke`);
+  if (changedSelection.unmatched.length) {
+    console.log(`[run-smokes] 这些代码文件没有任何 smoke 直接提到：${changedSelection.unmatched.slice(0, 8).join('、')}${changedSelection.unmatched.length > 8 ? ' …' : ''}`);
+  }
+}
 
 // NORUN 施工标记：_TALENT_NORUN.flag → 跳过名字含 talent 的
 const norunTokens = fs.readdirSync(SCRIPTS_DIR)
@@ -78,9 +96,10 @@ console.log(`[run-smokes] 共 ${totalFound} 个 smoke · 选中 ${smokes.length}
 if (skipped.length && !LIST_ONLY) skipped.slice(0, 10).forEach(s => console.log(`  跳过 ${s.name} — ${s.reason}`));
 
 if (LIST_ONLY) {
-  smokes.forEach(n => console.log('  ' + n));
+  smokes.forEach(n => console.log('  ' + n + (changedSelection ? '  ← ' + changedSelection.selected.get(n).join('；') : '')));
   process.exit(0);
 }
+if (!smokes.length && CHANGED) { console.log('[run-smokes] 改动没有牵涉到任何 smoke，没有可跑的（这不算一次回归通过）。'); process.exit(0); }
 if (!smokes.length) { console.error('[run-smokes] FAIL：没有匹配的 smoke，不能作为回归通过'); process.exit(1); }
 
 // ---- 执行 ----

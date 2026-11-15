@@ -37,7 +37,8 @@ gh release download ship-1.3.4.8 --repo <本仓> --pattern '1.3.4.8.zip'
 
 1. **开工前**：更新主干后新建 `codex/<主题>` 或 `<名字>/<主题>` 分支；一个分支只做一件事。
 2. **push 前**：pre-push hook 自动跑 `lint-arch-all.js` 各项守卫，并检查派生文件与已提交的内容对不对得上；自己再跑定向 smoke
-   `node scripts/run-smokes.js --grep <主题>`（在 `web/` 下）。
+   `node scripts/run-smokes.js --changed`（在 `web/` 下；按改了哪些文件挑出相关的几支，`--changed --list` 先看挑中哪些、各因为什么），
+   或按主题 `node scripts/run-smokes.js --grep <主题>`。全量冒烟由 CI 兜底。
 3. **所有改动走 PR**：等待 `guards` 与 `mobile-release-contracts` 通过；至少 1 名对方批准后 squash/rebase merge。
 4. PR 合并后删除分支。主干红灯时先修复，不继续叠新功能；禁止直接 push、force-push 或绕过检查。
 

@@ -16,6 +16,7 @@ const path = require('path');
 const crypto = require('crypto');
 const AdmZip = require('adm-zip');
 const RELEASE_TREE = require('../../scripts/lib/release-tree.js');
+const officialScenarioShape = require('../../main-official-scenario.js');
 
 // 2026-06-11·S7 测试缝·--web-root/--app-root 可注入合成树（验证脚本用）·默认不变
 const WEB_ROOT = (function () {
@@ -397,9 +398,14 @@ function main() {
   // 2026-05-22·bundled scenarios·热更也能 ship 官方剧本 JSON 改动
   const bundledScenarios = walkBundledScenarios();
   bundledScenarios.forEach(entry => {
-    const stat = fs.statSync(entry.abs);
-    if (zip) zip.addLocalFile(entry.abs, 'bundled-scenarios');
-    addManifestEntry(manifestEntries, entry.abs, stat.size, sha256File(entry.abs), entry.zipPath);
+    // 真源只存 map 一份；玩家端（含旧版主进程）读到的必须是 map、mapData 俱全的运行时形态。
+    const sourceBytes = fs.readFileSync(entry.abs);
+    const stored = JSON.parse(sourceBytes.toString('utf8'));
+    const bytes = officialScenarioShape.omitsMapData(stored)
+      ? Buffer.from(JSON.stringify(officialScenarioShape.withMapData(stored)) + '\n', 'utf8')
+      : sourceBytes;
+    if (zip) zip.addFile(entry.zipPath, bytes);
+    addManifestEntry(manifestEntries, entry.abs, bytes.length, sha256Buffer(bytes), entry.zipPath);
   });
   if (bundledScenarios.length) {
     console.log('[hot-update] bundled scenarios·' + bundledScenarios.length + ' file(s)·' + bundledScenarios.map(e => path.basename(e.abs)).join(', '));

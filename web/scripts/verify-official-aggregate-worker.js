@@ -6,6 +6,7 @@
 const fs = require('fs'), path = require('path'), vm = require('vm'), assert = require('assert/strict');
 const root = path.resolve(__dirname, '../..');
 const { ENTRIES, loadBuiltins } = require('./lib-official-builtins.js');
+const { readOfficialScenario } = require('./official-scenario-source.js');
 const mode = process.argv[2];
 assert(['builtin', 'game', 'preview'].includes(mode), 'aggregate mode required');
 const context = loadBuiltins({ seed: mode === 'game' ? { P: { scenarios: [] } } : null, timeout: 90000 });
@@ -18,7 +19,8 @@ if (mode === 'game') {
   assert.equal(context.P.scenarios.length, ENTRIES.length, 'every builtin registers into P.scenarios');checks++;
 }
 for (const entry of ENTRIES) {
-  const expected = JSON.parse(fs.readFileSync(path.join(root, 'scenarios', entry.filename), 'utf8'));
+  // 真源只存 map；内置脚本是补回 mapData 之后的运行时形态，拿同一形态来比。
+  const expected = readOfficialScenario(path.join(root, 'scenarios', entry.filename)).data;
   const actual = mode === 'builtin' ? context.TMOfficialScenarioBuiltins[entry.id]
     : mode === 'game' ? context.P.scenarios.find((scenario) => scenario && scenario.id === entry.id)
     : context.TM_OFFICIAL_SCENARIOS[entry.key];

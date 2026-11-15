@@ -69,10 +69,14 @@ function main() {
     const bundledPath = path.join(syncer.WEB_ROOT, 'bundled-scenarios', entry.filename);
     if (fs.existsSync(bundledPath)) {
       const bundled = fs.readFileSync(bundledPath);
-      ok(bundled.equals(Buffer.from(entry.raw, 'utf8')), entry.key + ' bundled JSON is byte-identical to root JSON');
+      ok(bundled.equals(Buffer.from(entry.runtimeJson, 'utf8')), entry.key + ' bundled JSON is the complete runtime form of the root JSON');
     } else {
-      ok(artifact('web/bundled-scenarios/' + entry.filename) === entry.raw, entry.key + ' bundled JSON is ready for release staging');
+      ok(artifact('web/bundled-scenarios/' + entry.filename) === entry.runtimeJson, entry.key + ' bundled JSON is ready for release staging');
     }
+    ok(entry.data.map && entry.data.mapData && entry.data.map !== entry.data.mapData
+      && JSON.stringify(entry.data.map) === JSON.stringify(entry.data.mapData),
+      entry.key + ' runtime form carries map and an independent identical mapData');
+    ok(!('mapData' in JSON.parse(entry.raw)), entry.key + ' root JSON stores the map once (no mapData)');
   });
 
   const manifestPath = path.join(syncer.WEB_ROOT, 'bundled-scenarios', 'manifest.json');

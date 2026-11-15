@@ -2901,13 +2901,13 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "72013752762f45dce7d90a38aaf6d20d2fc33b1471c1b7fb2728c491b07f4309",
-      "size": 508286
+      "sha256": "b750bf00fac12751994d04a8295684befffc7069ecfe24e73b6a47c577f64da9",
+      "size": 508285
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "c5f9563544590e99eaf2ee7b9064904001246ca557ec6aad109ee602c70562ce",
-      "size": 508689
+      "sha256": "c6ba6ffdf8d21e411e3298205ee5e5121f7da241f4d9ea7728c56b654e63c2e3",
+      "size": 508688
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
@@ -2916,7 +2916,7 @@
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
-      "sha256": "e1b60e602c81e466cc0d2845858d8d69411a5834f0e76375475e1c834a26fa1a",
+      "sha256": "1934a9592a7ce37b82da5c3248b8126997f1df7c4df0fea15bd85cd21a772109",
       "size": 53247384
     },
     {
@@ -2966,22 +2966,22 @@
     },
     {
       "path": "data/maps/scenario-library/index.json",
-      "sha256": "5f2dc5a367a6480ffc3f154e5634dcc6a6b414d23b675d65278c5703838c0027",
+      "sha256": "ea5bad11a8b98453ce2109c25efcfe657ffad3494c6d5dea6e165fc91de65a30",
       "size": 2410
     },
     {
       "path": "data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
-      "sha256": "e7679b244bf9ff28206d33770f0a063d519fc99cc988c682307d9c9d767ffe19",
+      "sha256": "2233925e6e7e72e664a9296c700c63980b37ea9baa9f2542d3f20aaf7820b9bc",
       "size": 11815292
     },
     {
       "path": "data/maps/scenario-library/sc-tang840-840.json",
-      "sha256": "f6f8d4c91e241e9423942f2ca961eef07d452bee87a95b9c4595c5dd7e57f2e7",
+      "sha256": "092703a4f6b1edec2a00f3506cc55cf1647e8a50e4be8eaab42b09653e6dc9d5",
       "size": 5202646
     },
     {
       "path": "data/maps/scenario-library/sc-tianqi7-1627.json",
-      "sha256": "b8bd918013e280581e9ecf03b23d9340f61992ca46e33f0b3b9f1d81d224adb1",
+      "sha256": "bd0b4c39174907b769ce595ab115161463f95202a8428f683bb4daa0c649f34d",
       "size": 1486190
     },
     {
@@ -4261,7 +4261,7 @@
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
-      "sha256": "7c3d1a37bd34c247e54c0cf7e7a7935cae20a1e54316420e6a635559f22bd171",
+      "sha256": "fbed788aa64afa35daf90c850a7741c2be0f91862560a283c5c4ae435746d7b9",
       "size": 16430969
     },
     {
@@ -4371,7 +4371,7 @@
     },
     {
       "path": "scenarios/tang840-840.js",
-      "sha256": "04408e8a60da28d94dab08dc2b95a416c83d6af276520ed3f3b0e68d931134f7",
+      "sha256": "f93480f605aed0c6da5eb15e4c1185a6e050fcfa3816f1ad77620aaec3842e6d",
       "size": 31914529
     },
     {
@@ -6586,7 +6586,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "c1fa7ad8c88ac02d3c8bcb8b8721f7063e77a6d5e093edf3edc619bc96a534a2",
+      "sha256": "05db9d47ce276deb7d5cf1fd4c9e1a3ce2cc3401405e90ddf5d0c97435fe025d",
       "size": 142848
     },
     {

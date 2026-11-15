@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert'),{performance}=require('perf_hooks');
-const web=path.resolve(__dirname,'..'),file=path.resolve(web,'../scenarios/晚唐·开成五年（官方）.json'),sc=JSON.parse(fs.readFileSync(file,'utf8')),copy=x=>JSON.parse(JSON.stringify(x));
+const web=path.resolve(__dirname,'..'),file=path.resolve(web,'../scenarios/晚唐·开成五年（官方）.json'),sc=require('./official-scenario-source.js').readOfficialScenario(file).data,copy=x=>JSON.parse(JSON.stringify(x));
 const RES=['money','grain','cloth'],timings={},counts={characters:sc.characters.length,factions:sc.factions.length},expected={},budgets=[];let checks=0;
 function ok(v,name){assert(v,name);checks++;}function near(a,b,name){ok(Math.abs(a-b)<.002,name+': '+a+' / '+b);}function timed(name,fn){const t=performance.now(),result=fn();timings[name]=+(performance.now()-t).toFixed(2);return result;}
 function box(n){return {stock:n,available:n,thisTurnIn:0,thisTurnOut:0,sources:{},sinks:{}};}function treasury(source){let a={ledgers:{}};for(const k of RES){a[k]=source['initial'+k[0].toUpperCase()+k.slice(1)]??source[k]??0;a.ledgers[k]=box(a[k]);}a.balance=a.money;return a;}

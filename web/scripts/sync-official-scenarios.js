@@ -12,12 +12,16 @@
 //   node web/scripts/sync-official-scenarios.js --check  # 只比较，不写文件
 //
 // 禁止反向从任何 bundle/内置 JS “导出”覆盖根 JSON。
+//
+// 真源里地图只存 map 一份，不写 mapData；派生物一律是 map、mapData 俱全的运行时形态，
+// 由 official-scenario-source.js 在读真源时补回。真源若又带上与 map 相同的 mapData，这里直接报错。
 'use strict';
 
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { serializeScenarioExpression } = require('./official-scenario-expression.js');
+const officialSource = require('./official-scenario-source.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const WEB_ROOT = path.join(REPO_ROOT, 'web');
@@ -50,8 +54,13 @@ function sha256(value) {
 function readSources() {
   return ENTRIES.map((entry) => {
     const sourcePath = path.join(SOURCE_DIR, entry.filename);
-    const raw = fs.readFileSync(sourcePath, 'utf8');
-    const data = JSON.parse(raw);
+    const source = officialSource.readOfficialScenario(sourcePath);
+    if (officialSource.hasRedundantMapData(source.stored)) {
+      throw new Error(officialSource.redundantMessage(sourcePath));
+    }
+    // raw 是真源原文（哈希、字节数认它）；data 是补回 mapData 后的运行时形态，派生物都从它生成。
+    const raw = source.raw;
+    const data = source.data;
     if (!data || data.id !== entry.id) {
       throw new Error(entry.filename + ' id 应为 ' + entry.id + '，实为 ' + (data && data.id));
     }
@@ -146,7 +155,9 @@ function buildArtifacts() {
     entry.builtinBytes = Buffer.byteLength(entry.builtinContent, 'utf8');
     entry.builtinHash = sha256(Buffer.from(entry.builtinContent, 'utf8'));
     files.set(path.join(WEB_ROOT, entry.builtin), entry.builtinContent);
-    files.set(path.join(WEB_ROOT, 'bundled-scenarios', entry.filename), entry.raw);
+    // 内置 JSON 副本给 Pages/安卓/热更在运行时取用，装的是运行时形态，不是真源原文。
+    entry.runtimeJson = officialSource.runtimeText(entry.data);
+    files.set(path.join(WEB_ROOT, 'bundled-scenarios', entry.filename), entry.runtimeJson);
   });
   files.set(path.join(WEB_ROOT, 'preview', 'official-scenarios-bundle.js'), serializePreview(entries));
   files.set(path.join(WEB_ROOT, 'preview', 'scenario-editor-reset-data.js'), serializeEditorResetData(tianqi.hash));

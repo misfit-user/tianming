@@ -70,7 +70,8 @@ function makeContext(sc) {
 }
 
 function main() {
-  const sc = JSON.parse(fs.readFileSync(scenarioPath, 'utf8'));
+  // 真源只存 map 一份；这里要的是游戏拿到的运行时形态（map、mapData 俱全）。
+  const sc = require('./official-scenario-source.js').readOfficialScenario(scenarioPath).data;
   assert(sc.map && Array.isArray(sc.map.regions), 'scenario.map.regions missing');
   assert(sc.mapData && Array.isArray(sc.mapData.regions), 'scenario.mapData.regions missing');
   assert(sc.map.regions.length === 307, `expected 307 prefecture/retained regional units, got ${sc.map.regions.length}`);

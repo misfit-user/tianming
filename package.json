@@ -45,6 +45,7 @@
       "main-impl.js",
       "main-json-file.js",
       "main-image-file.js",
+      "main-official-scenario.js",
       "main-artifact-export.js",
       "main-turn-data-commit.js",
       "main-workshop-transaction.js",

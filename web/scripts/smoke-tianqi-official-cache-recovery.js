@@ -32,7 +32,8 @@ function loadGeneratedScenario() {
   return materializeScenarioRows(global.P, SID);
 }
 
-const source = JSON.parse(fs.readFileSync(SOURCE, 'utf8'));
+// 内置脚本是补回 mapData 之后的运行时形态，拿同一形态来比。
+const source = require('./official-scenario-source.js').readOfficialScenario(SOURCE).data;
 const first = loadGeneratedScenario();
 assert.deepStrictEqual(first, source, 'generated full scenario must equal the root official JSON');
 assert.strictEqual(global.P.scenarios.filter((row) => row && row.id === SID).length, 1, 'stale cached scenario must be replaced');

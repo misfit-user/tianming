@@ -34,7 +34,8 @@ function collectScenarioKeyUniverse(primaryScenario) {
     const full = path.join(SCENARIO_DIR, name);
     if (!fs.existsSync(full)) return;
     try {
-      const data = JSON.parse(fs.readFileSync(full, 'utf8'));
+      // 键的全集按运行时形态算（真源不写 mapData，运行时有）。
+      const data = require('./official-scenario-source.js').readOfficialScenario(full).data;
       Object.keys(data || {}).forEach((k) => keys.add(k));
     } catch (err) {
       console.warn('[build-scenario-editor-reset-data] failed to widen with ' + name + ': ' + err.message);

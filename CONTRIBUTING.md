@@ -52,7 +52,7 @@ gh release download ship-1.3.4.8 --repo <本仓> --pattern '1.3.4.8.zip'
 | `web/scripts/arch-baselines/*.json` | **永不手工合并**。rebase 冲突时取任意一侧，然后重跑对应 lint 的 `--update` 重新生成（棘轮只许收紧）。 |
 | `web/index.html` 脚本区 | 只做行级小改；rebase 勤。拆分家族成员改动须整族 bump `?v=` 戳（守卫⑦会拦）。 |
 | `web/scripts/lint-split-contracts.js` | 只追加条目，按拆分编号序插入。 |
-| `scenarios/*（官方）.json` | 官方剧本唯一数据真源。修改后只运行 `npm run sync:official-scenarios`，禁止反向改 bundle/内置 JS。 |
+| `scenarios/*（官方）.json` | 官方剧本唯一数据真源。修改后只运行 `npm run sync:official-scenarios`，禁止反向改 bundle/内置 JS。真源里地图只存 `map` 一份、不写 `mapData`（运行时那份由构建与主进程补回）；脚本要 `map`、`mapData` 俱全的完整剧本，用 `web/scripts/official-scenario-source.js` 的 `readOfficialScenario`，写回用 `writeOfficialScenario`。 |
 
 ## 六、刀纪律精要（全文见 CLAUDE.md）
 

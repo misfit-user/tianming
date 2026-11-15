@@ -22,6 +22,7 @@ const { createWorkshopTransactions } = require('./main-workshop-transaction.js')
 const { createAccountRequests } = require('./main-account-requests.js');
 const { readJsonFileOffMainThread } = require('./main-json-file.js');
 const { readImageFile } = require('./main-image-file.js');
+const { withMapData: withOfficialMapData } = require('./main-official-scenario.js');
 
 // ============================================================
 //  基本配置
@@ -3601,7 +3602,9 @@ ipcMain.handle('load-scenario', async (event, filename) => {
   try {
     const resolved = resolveScenarioPath(filename);
     if (!resolved.path) return { success: false, error: 'Scenario file not found' };
-    const data = JSON.parse(fs.readFileSync(resolved.path, 'utf-8'));
+    let data = JSON.parse(fs.readFileSync(resolved.path, 'utf-8'));
+    // 随包的官方剧本真源只存 map 一份，交给页面前补回 mapData；玩家自己的剧本原样不动。
+    if (resolved.source === 'official' || resolved.source === 'hot-update') data = withOfficialMapData(data);
     return { success: true, data, source: resolved.source, path: resolved.path };
   } catch (e) {
     return { success: false, error: e.message };

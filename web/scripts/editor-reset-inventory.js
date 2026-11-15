@@ -411,7 +411,8 @@ function loadOfficialScenario(root) {
   // baseline: the exact official filename is the truth source.
   const official = path.join(desktopDir, '天启七年·九月（官方）.json');
   if (fs.existsSync(official)) {
-    const data = JSON.parse(readText(official));
+    // 真源只存 map；编辑器基线要的是 map、mapData 俱全的运行时形态。
+    const data = require('./official-scenario-source.js').withMapData(JSON.parse(readText(official)));
     if (!data || data.id !== SID) throw new Error('official Tianqi id mismatch: ' + official);
     return { scenario: data, source: official };
   }

@@ -150,7 +150,8 @@ function assertEthnicityClean(region, forbidden, label) {
 
 function loadScenario(label) {
   const scenarioPath = findScenarioFile(label);
-  const scenario = JSON.parse(fs.readFileSync(scenarioPath, 'utf8'));
+  // 官方真源只存 map 一份，读成运行时形态再查；草案两份都写着，原样。
+  const scenario = require('./official-scenario-source.js').readOfficialScenario(scenarioPath).data;
   assert(scenario.map?.id === 'shaosong-1127-182', `${label} map id mismatch`);
   assert(scenario.mapData?.id === 'shaosong-1127-182', `${label} mapData id mismatch`);
   assert(Array.isArray(scenario.map.regions), `${label} missing map regions`);
@@ -422,7 +423,7 @@ function checkScenario(label) {
 }
 
 checkScenario('182区草案');
-const official = JSON.parse(fs.readFileSync(findScenarioFile('官方'), 'utf8'));
+const official = require('./official-scenario-source.js').readOfficialScenario(findScenarioFile('官方')).data;
 if (official.map.id === 'shaosong-1127-182') checkScenario('官方');
 else {
   assert(official.map.id === 'shaosong-three-tiers-r6', 'unexpected official map revision');

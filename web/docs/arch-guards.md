@@ -193,6 +193,14 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
   按令牌定义不计入本守卫）。改了锚点跑 `node scripts/derive-theme-palette.js --write`；
   `smoke-derive-theme-palette.js` 核对源码与锚点一致、深浅次序照素纸、阴影不带色偏。
 
+### ⑩ 空 catch `lint-silent-catch.js`（2026-11-15）
+运行时代码里有两千七百多处 `catch (e) {}`：错被整个吞掉，不记日志、也没留一句为什么可以吞，出了事没有现场。
+旧账不在这里清，守卫只管不许再添——空 catch 的**总数**记在基线里，只许减不许增（按总数算，拆文件搬代码不会误伤）。
+- 算作「空」的两种写法：`catch (e) {}`（块里什么都没有）、`.catch(function () {})` / `.catch(() => {})`（空回调）。
+- 新写的 catch 要么真处理这个错，要么在块里写一句为什么可以不管——带一行注释就不算空，不需要别的豁免标记。
+- 顺手还掉几处后跑 `node scripts/lint-silent-catch.js --update` 收紧；`--top 15` 看空 catch 最多的文件。
+- 范围：`index.html` 脚本清单里的运行时代码，加上新前端 `web/ui/`（`dev/` 除外）。
+
 ### runner 附注：flake 自愈（2026-07-06）
 `run-smokes.js` 全量并行下 DOM-stub/AI 超时类假阳性反复出现——失败 ≤15 个时自动
 **串行重跑一次**，过了标 `flaky`（汇总/报告单列，不静默掩盖；反复上榜的去查真因）。
@@ -200,5 +208,5 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
 
 ## 基线文件（要进 git）
 
-`scripts/arch-baselines/{gm-writes,dep-dangling,file-size,smoke-skip,split-stamps,smoke-family-order,design-tokens}.json` —— 棘轮的账本，删了守卫就瞎。
+`scripts/arch-baselines/{gm-writes,dep-dangling,file-size,smoke-skip,split-stamps,smoke-family-order,design-tokens,silent-catch}.json` —— 棘轮的账本，删了守卫就瞎。
 `dev-tools/arch-guard/` 下是生成物（依赖清单/smoke报告），不进安装包，可随时重生成。

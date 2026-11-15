@@ -28,6 +28,7 @@ const CHECKS = [
   { name: 'lint-scenario-data', file: 'lint-scenario-data.js' },
   { name: 'lint-design-tokens', file: 'lint-design-tokens.js' },
   { name: 'lint-person-assembly', file: 'lint-person-assembly.js' },
+  { name: 'lint-silent-catch', file: 'lint-silent-catch.js' },
   { name: 'ref-check', file: 'ref-check.js' }
 ];
 

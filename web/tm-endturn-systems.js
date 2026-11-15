@@ -44,6 +44,8 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   // 旧引擎本阶段新产的会战也须在推进回合/财政结算前裁决；SC18已清空时为空操作。
   if (window.TMBattleTurn && window.TMBattleTurn.runPending) await window.TMBattleTurn.runPending(GM);
   if (window.GuokuEngine && window.GuokuEngine.syncBattleCasualtyBonus) window.GuokuEngine.syncBattleCasualtyBonus(GM);
+  // 3.0 续 胜仗主将记功（民2d-1 续，同志 11-15）：本回合打赢那一方领兵的主将记名望、贤能（tm-battle-contract.js honorBattleVictors）。判错只记、不拦过回合。
+  try { if (window.MilitarySystems && MilitarySystems.honorBattleVictors) MilitarySystems.honorBattleVictors(GM); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'battle] 胜仗记功失败:') : console.error('[battle] 胜仗记功失败:', e); }
 
   // 3. 通过子回合调度器执行分层结算（daily→monthly→perturn）
   showLoading("更新数据",92);

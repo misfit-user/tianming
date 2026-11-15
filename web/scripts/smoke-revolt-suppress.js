@@ -33,7 +33,7 @@ function part(name, fn) {
 }
 
 const FILES = ['tm-utils.js', 'tm-military.js', 'tm-battle-contract.js', 'tm-battle-adapter.js', 'tm-command-authority.js',
-  'tm-revolt-cases.js', 'tm-revolt-rising.js', 'tm-revolt-suppress.js', 'tm-authority-complete.js', 'tm-prophecy.js'];
+  'tm-revolt-cases.js', 'tm-revolt-rising.js', 'tm-revolt-suppress.js', 'tm-authority-complete.js', 'tm-prophecy.js', 'tm-char-economy-engine.js'];
 
 function sandbox() {
   const events = [], hw = [];
@@ -108,9 +108,10 @@ function setup(pExtra) {
   const r = rise(c, G, 'd-yanan', 6000);
   return { c, G, r, band: () => G.armies.filter((a) => a && a._revoltBand && a.sourceRevoltId === r.id)[0] };
 }
-// 过一回合：3.0 战斗 → 行军 → 回合推进 → 6.1455 剿
+// 过一回合：3.0 战斗 → 胜仗记功 → 行军 → 回合推进 → 6.1455 剿
 function endTurn(c, G) {
   c.BattleEngine.resolveAllBattles();
+  c.MilitarySystems.honorBattleVictors(G);
   c.MarchSystem.advanceAll();
   G.turn++;
   return c.TM.RevoltSuppress.tick(G, { turn: G.turn, monthRatio: 1 });
@@ -405,6 +406,8 @@ part('九·面板小件与接线', () => {
   const sys = read('tm-endturn-systems.js');
   const tC = sys.indexOf('TM.RevoltCases.tick('), tS = sys.indexOf('TM.RevoltSuppress.tick('), tG = sys.indexOf('TM.RevoltGuerrilla.tick(');
   ok(tC > 0 && tC < tS && tS < tG, '过回合：民变案判定 → 剿 → 游击连带');
+  const tB = sys.indexOf('BattleEngine.resolveAllBattles()'), tH = sys.indexOf('MilitarySystems.honorBattleVictors(GM)');
+  ok(tB > 0 && tB < tH && tH < tC, '过回合 3.0：结仗之后胜仗记功（在民变各步之前，民变的军还在）');
   const ap = read('tm-endturn-apply-stages.js');
   const aF = ap.indexOf('TM.RevoltSuppress.fromAI(GM, { by: \'reconcile\''), aO = ap.indexOf('var openR = GM.minxin.revolts.find');
   ok(aF > 0 && aF < aO && /army: r\.army\|\|''/.test(ap) && /if \(_supR && _supR\.handled\) return;/.test(ap), '一致性补录：说镇压先交 fromAI，带上军名');
@@ -418,7 +421,7 @@ part('九·面板小件与接线', () => {
   ok(/if \(a\._revoltBand\) return false;/.test(read('tm-revolt-rising.js')) && /TM\.RevoltSuppress\.ensureArmy\(G, revolt, L\)/.test(read('tm-revolt-rising.js')), '落地立军、首领领自己的股不算在任');
 });
 
-part('十·战报接皇威只算玩家这方的胜负：剿胜归平乱不另记、不当军败；我胜 +2（带 AI 量的取它）、我败扣、旁人的仗不碰', () => {
+part('十·战报接皇威只算玩家这方的胜负：剿胜归平乱不另记、不当军败；我方大胜 +5、小胜 +2（带 AI 量的取它）、我败扣、旁人的仗不碰', () => {
   // 原先战报没有「我方胜」一栏（b.win 从没人写），每一仗——不分胜负、连不关玩家的——都当军败扣皇威，剿胜一仗反扣 10
   const { c, G, r } = setup();
   G.huangwei = { index: 70 };
@@ -443,9 +446,51 @@ part('十·战报接皇威只算玩家这方的胜负：剿胜归平乱不另记
   ];
   c.AuthorityComplete.autoDetectHuangwei({ turn: G.turn }, 1);
   const got = c.__hw.map((h) => h[0] + ':' + h[1]).join(',');
-  ok(got === 'militaryVictory:2,militaryDefeat:-10,militaryDefeat:-10,militaryVictory:8,militaryDefeat:-10,militaryVictory:2', '各样战报按玩家胜负记（实得 ' + got + '）');
+  ok(got === 'militaryVictory:5,militaryDefeat:-10,militaryDefeat:-10,militaryVictory:8,militaryDefeat:-10,militaryVictory:2', '各样战报按玩家胜负记，大胜 +5、小胜与守住 +2（实得 ' + got + '）');
   c.AuthorityComplete.autoDetectHuangwei({ turn: G.turn }, 1);
   ok(c.__hw.length === 6, '同一批战报不重记');
+});
+
+part('十一·胜仗主将记功：名望（克捷、剿民变记平乱）、军功贤能，大胜足数小胜减半；民变的军、玩家本人、AI 报的仗不记；同一仗不重记', () => {
+  const { c, G, r } = setup();
+  const CE = c.CharEconEngine, MS = c.MilitarySystems;
+  const du = G.chars.filter((x) => x.id === 'c-du')[0];
+  CE.ensureCharResources(du);
+  const f0 = du.resources.fame || 0, m0 = du.resources.virtueMerit || 0;
+  c.TM.RevoltSuppress.order(G, r.id, 'a-yansui', {});
+  endTurn(c, G); endTurn(c, G);   // 真跑战斗引擎：剿破（大胜），3.0 结仗后记功
+  ok(r.status === 'suppressed', '剿破王二一股');
+  ok(du.resources.fame - f0 === 8 && du.resources.virtueMerit - m0 === 150, '杜文焕：名望 +8（平乱）、贤能 +150（大胜 10×15）（实得 ' + (du.resources.fame - f0) + '/' + (du.resources.virtueMerit - m0) + '）');
+  ok(du._fameHistory.slice(-1)[0].reason === 'suppress_revolt' && du._meritLog.slice(-1)[0].reason === '军功·大胜王二部' && G._meritLedger.slice(-1)[0].name === '杜文焕', '名望记「平乱」、功名近账记「军功·大胜王二部」');
+  ok(c.__events.some((e) => e === '功名|杜文焕（延绥镇军）大胜王二部，记军功：名望 +8，贤能 +150'), '事件流记我方主将军功');
+  ok(MS.honorBattleVictors(G).length === 0, '同一仗不重记');
+  // 各样战报
+  G.chars.push({ id: 'c-zuo', name: '左良玉', alive: true, faction: '明朝廷' }, { id: 'c-dai', name: '代善', alive: true, faction: '后金' });
+  G.armies.push({ id: 'a-band2', name: '李三部', faction: '民变', _revoltBand: true, soldiers: 2000, commander: '李三', commanderId: 'c-li', location: '西安府' },
+    { id: 'a-emp', name: '亲军', faction: '明朝廷', soldiers: 5000, commander: '朱由校', commanderId: 'c-emp', location: '西安府' });
+  const kf = G.armies.filter((a) => a.id === 'a-kf')[0], jin = G.armies.filter((a) => a.id === 'a-jin')[0];
+  Object.assign(kf, { commander: '左良玉', commanderId: 'c-zuo' }); Object.assign(jin, { commander: '代善', commanderId: 'c-dai' });
+  const eng = (v, a, d) => { const A = G.armies.filter((x) => x.id === a)[0], D = G.armies.filter((x) => x.id === d)[0];
+    return { battleId: 'h-' + v + a + d, verdict: v, attackerArmyId: a, defenderArmyId: d, attacker: A.name, defender: D.name, attackerFaction: A.faction, defenderFaction: D.faction }; };
+  c.__events.length = 0;
+  G._turnBattleResults = [
+    eng('小胜', 'a-kf', 'a-jin'),                     // 我方左良玉小胜：名望 +4、贤能 +60
+    eng('大胜', 'a-jin', 'a-xian'),                   // 后金代善大胜：照记（不进我方事件流）
+    eng('败北', 'a-jin', 'a-kf'),                     // 后金攻、左良玉守住：按小胜记
+    eng('大胜', 'a-band2', 'a-xian'),                 // 民变的军胜：不记
+    eng('大胜', 'a-emp', 'a-jin'),                    // 玩家本人领兵：不记（皇帝的威在皇威）
+    eng('僵持', 'a-kf', 'a-jin'),                     // 僵持：不记
+    { battleId: 's-ai', verdict: 'structured', winner: '明朝廷', loser: '后金', _applierAftermathDone: true,
+      affectedArmies: [{ armyId: 'a-kf', side: 'attacker', faction: '明朝廷' }] },          // AI 报的：功过由推演定，不记
+    { battleId: 's-qz', verdict: 'structured', winner: 'f-ming', loser: 'f-jin',
+      affectedArmies: [{ armyId: 'a-kf', side: 'attacker', faction: '明朝廷' }, { armyId: 'a-jin', side: 'defender', faction: '后金' }] }   // 亲征结的：按小胜记
+  ];
+  const got = MS.honorBattleVictors(G).map((h) => h.name + ':' + h.key + ':' + h.fame + '/' + h.merit).join(',');
+  ok(got === '左良玉:military_victory:4/60,代善:military_victory:8/150,左良玉:military_victory:4/60,左良玉:military_victory:4/60', '各样战报记功（实得 ' + got + '）');
+  const zuo = G.chars.filter((x) => x.id === 'c-zuo')[0], emp = G.chars.filter((x) => x.id === 'c-emp')[0], li = G.chars.filter((x) => x.id === 'c-li')[0];
+  ok(zuo.resources.fame === 12 && zuo.resources.virtueMerit === 180, '左良玉三胜：名望 12、贤能 180');
+  ok(!(emp.resources && emp.resources.fame) && !(li.resources && li.resources.fame), '玩家本人、民变首领不记');
+  ok(c.__events.filter((e) => /^功名\|左良玉/.test(e)).length === 3 && !c.__events.some((e) => /代善/.test(e)), '我方主将进事件流，后金的不进');
 });
 
 console.log('\n[smoke-revolt-suppress] ' + (failed.length ? 'FAIL' : 'PASS') + ' — ' + checks + ' 项过' + (failed.length ? '；败 ' + failed.length + ' 段：' + failed.join('、') : ''));

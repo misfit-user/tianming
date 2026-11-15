@@ -4556,8 +4556,8 @@
     },
     {
       "path": "tm-authority-complete.js",
-      "sha256": "e007ea84adfed8840530d77fbd1257b5d17579c2612c0421fcc61a95e9e74c4d",
-      "size": 97275
+      "sha256": "7e15a40cf8a35acbd1f52fb39b3d6c324aa8cebac9d327f047e527c8db8d3e57",
+      "size": 97500
     },
     {
       "path": "tm-authority-deep.js",
@@ -4581,8 +4581,8 @@
     },
     {
       "path": "tm-battle-contract.js",
-      "sha256": "dc88050d7358616e4790d576090e0e1ca993bf34a70217f96c43d06f6ac28531",
-      "size": 14567
+      "sha256": "153dcb2f30ac7a769c10ad857de5446226d0c13c1aa8aeddaf29a177f3a4f078",
+      "size": 19089
     },
     {
       "path": "tm-battle-embed.js",
@@ -5201,8 +5201,8 @@
     },
     {
       "path": "tm-endturn-systems.js",
-      "sha256": "06873b0fc772f766e8e6fc713ce3a8f80155eca508370e3e241f2e306ffbd7b2",
-      "size": 42575
+      "sha256": "0532b144014993f626907ecbeae20ed58b7e077d693ab72bb8c88c5ef6622fac",
+      "size": 43062
     },
     {
       "path": "tm-endturn-timing-ledger.js",
@@ -6026,8 +6026,8 @@
     },
     {
       "path": "tm-military.js",
-      "sha256": "91f52674639f7966bdce0cd800202bbd7933d44a81c71ec0a92a132124842f22",
-      "size": 145652
+      "sha256": "9444849121a64ad9b02e58fe8c6a26f2dbcabaffb6555a14f6ab26faa65a851f",
+      "size": 145810
     },
     {
       "path": "tm-minxin-commitment-tracker.js",
@@ -6586,7 +6586,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "8c6226e4e3f7a02e8749a9e4956433b1918152b0fbd6ccf6ac0d0a546e655f34",
+      "sha256": "c1fa7ad8c88ac02d3c8bcb8b8721f7063e77a6d5e093edf3edc619bc96a534a2",
       "size": 142848
     },
     {

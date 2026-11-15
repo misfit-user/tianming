@@ -1291,8 +1291,8 @@ var BattleEngine = (function() {
       turn: GM.turn,
       attacker: attackerArmy.name || attackerArmy.faction,
       defender: defenderArmy.name || defenderArmy.faction,
-      attackerFaction: attackerArmy.faction,
-      defenderFaction: defenderArmy.faction,
+      attackerFaction: attackerArmy.faction, attackerArmyId: attackerArmy.id || '',   // 民2d-1 续：带军编号，胜仗记功认得出是哪支军、谁领兵
+      defenderFaction: defenderArmy.faction, defenderArmyId: defenderArmy.id || '',
       attackerSoldiers: attackerSoldiers,
       defenderSoldiers: defenderSoldiers,
       terrain: terrain,

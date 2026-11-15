@@ -1040,9 +1040,10 @@
         if (outcome === 'lost') triggerHuangweiEvent('militaryDefeat', { reason: '军事失利' });
         else if (outcome === 'won' && !b._applierAftermathDone && !(bandFac && (b.attackerFaction === bandFac || b.defenderFaction === bandFac))) {
           // 胜仗：AI 报的战果在写回时已按 P-5TK 加过（_applierAftermathDone），不再记；剿民变的胜仗归平乱（那一股散了才记），不另记军胜。
-          //   引擎结的胜仗没有 AI 给的量，照 P-5TK「AI 没给量走保底」每场 +2；战报带了 huangweiDelta 的取它，单场封顶 8（同 P-5TK）。
+          //   引擎结的胜仗没有 AI 给的量，按战果取 P-5TK 提示词分档的上沿：大胜（击溃 3～5）+5、小胜（1～2）+2〔初值，同志 11-15「大胜的话皇威可以更多」〕；
+          //   引擎的「败北」是攻方败、守方守住，按小胜论。战报带了 huangweiDelta 的取它，单场封顶 8（同 P-5TK）。
           var gain = Number(b.huangweiDelta);
-          gain = isFinite(gain) && gain > 0 ? Math.min(gain, 8) : 2;
+          gain = isFinite(gain) && gain > 0 ? Math.min(gain, 8) : (b.verdict === '大胜' ? 5 : 2);
           if (global.AuthorityEngines && typeof global.AuthorityEngines.adjustHuangwei === 'function') {
             global.AuthorityEngines.adjustHuangwei('militaryVictory', gain, '军事捷报');
           }

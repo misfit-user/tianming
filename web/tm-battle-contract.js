@@ -149,9 +149,68 @@
     for (var i = 0; i < TERRAIN_WORDS.length; i++) if (TERRAIN_WORDS[i][1].test(t)) return TERRAIN_WORDS[i][0];
     return 'plains';
   }
+  // 一仗谁胜（民2d-1 续）：引擎的战果按攻方说——大胜、小胜是攻方胜，败北是守方胜（守住了，按小胜论）；
+  //   结构化战果（亲征结的、AI 报的）按胜败两方的势力认，参战各军从 affectedArmies 取，不分大小按小胜论。僵持、认不出胜方的给 null。
+  //   民变的军认军上的 _revoltBand（民变了结时军从军册撤掉，所以要在过回合 3.0 结仗之后、民变各步之前用）。
+  function battleVictors(br, G) {
+    G = G || _root();
+    if (!br || typeof br !== 'object') return null;
+    var v = br.verdict, scale, wf, lf, win = [], lose = [];
+    if (v === '大胜' || v === '小胜' || v === '败北') {
+      var atk = _findArmy(br.attackerArmyId || br.attacker, G), def = _findArmy(br.defenderArmyId || br.defender, G), defWon = v === '败北';
+      scale = defWon ? '小胜' : v;
+      wf = battleFactionName(defWon ? br.defenderFaction : br.attackerFaction, G); lf = battleFactionName(defWon ? br.attackerFaction : br.defenderFaction, G);
+      win = [defWon ? def : atk]; lose = [defWon ? atk : def];
+    } else if (v === 'structured') {
+      wf = battleFactionName(br.winner, G); lf = battleFactionName(br.loser, G);
+      if (!wf || wf === '僵持' || wf === lf) return null;
+      scale = '小胜';
+      (Array.isArray(br.affectedArmies) ? br.affectedArmies : []).forEach(function(e) {
+        if (!e) return;
+        var a = _findArmy(battleArmyRef(e), G), f = battleFactionName(e.faction || e.owner || (a && a.faction), G);
+        if (f === wf) win.push(a || e); else if (f === lf) lose.push(a || e);
+      });
+    } else return null;
+    function band(a) { return !!(a && a._revoltBand); }
+    win = win.filter(Boolean); lose = lose.filter(Boolean);
+    return { scale: scale, winnerFaction: wf, loserFaction: lf, winners: win, losers: lose, vsRevolt: lose.some(band), byRevolt: win.some(band) };
+  }
+  // 胜仗主将记功（民2d-1 续，同志 11-15「胜利的将军应该可以加威望和贤能」）：本回合每一仗，打赢那一方领兵的主将——
+  //   名望照名望事件表（CharEconEngine.FAME_EVENTS）的「克捷」，剿民变的记「平乱」，大胜足数、小胜减半〔初值〕；
+  //   贤能记军功，大胜 10×、小胜 4×升迁尺度（TMPromotion.SCALE，京察拔擢是 10×）〔初值〕，进功名近账；我方的主将事件流记一笔。
+  //   不记：AI 报的仗（写回时打了 _applierAftermathDone，功过由推演自己定）、僵持、玩家本人（皇帝的威在皇威）、民变的军、已死的、认不出主将的。
+  var HONOR = { fame: { '大胜': 1, '小胜': 0.5 }, merit: { '大胜': 10, '小胜': 4 } };
+  function honorBattleVictors(G) {
+    G = G || _root();
+    var CE = global.CharEconEngine, BA = global.TMBattleAdapter, out = [];
+    if (!CE || !BA || typeof BA.resolveCommander !== 'function' || !Array.isArray(G._turnBattleResults)) return out;
+    var SC = (global.TMPromotion && Number(global.TMPromotion.SCALE)) || 15, pf = battlePlayerFaction(G);
+    G._turnBattleResults.forEach(function(br) {
+      if (!br || br._honorChecked) return;
+      br._honorChecked = true;
+      if (br._applierAftermathDone) return;
+      var vic = battleVictors(br, G);
+      if (!vic || vic.byRevolt) return;
+      var foe = vic.losers[0] ? String(vic.losers[0].name || '') : '', seen = [];
+      vic.winners.forEach(function(a) {
+        var who = BA.resolveCommander(a.commander, G, a.commanderId).character;
+        if (!who || seen.indexOf(who) >= 0 || who.isPlayer || who.alive === false || who.dead === true) return;
+        seen.push(who);
+        var key = vic.vsRevolt ? 'suppress_revolt' : 'military_victory';
+        var fame = typeof CE.applyFameEvent === 'function' ? CE.applyFameEvent(who, key, HONOR.fame[vic.scale]) : 0;
+        var merit = typeof CE.adjustVirtueMerit === 'function' ? Math.round(HONOR.merit[vic.scale] * SC) : 0;
+        if (merit) CE.adjustVirtueMerit(who, merit, '军功·' + vic.scale + foe);
+        out.push({ battleId: br.battleId, name: who.name, key: key, fame: fame, merit: merit });
+        if (battleFactionName(a.faction, G) === pf && typeof global.addEB === 'function') {
+          global.addEB('功名', who.name + '（' + (a.name || '') + '）' + vic.scale + foe + '，记军功：名望 +' + fame + '，贤能 +' + merit);
+        }
+      });
+    });
+    return out;
+  }
   Object.assign(ms, { battleParticipants:battleParticipants, battleFactionName:battleFactionName, battlePlayerFaction:battlePlayerFaction,
     validateBattleResult:validateBattleResult, ensureBattleId:ensureBattleId, findSettledBattle:findSettledBattle, turnBattleCasualties:turnBattleCasualties, consumeBattleResults:consumeBattleResults, dispatchComputedBattle:dispatchComputedBattle,
-    battleTerrainKey:battleTerrainKey });
+    battleTerrainKey:battleTerrainKey, battleVictors:battleVictors, honorBattleVictors:honorBattleVictors, BATTLE_HONOR:HONOR });
 })(typeof window !== 'undefined' ? window : globalThis);
 
 // Shared strength implementation; the public military function is a lazy forwarder.

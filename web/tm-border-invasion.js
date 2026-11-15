@@ -8,7 +8,7 @@
 //  一支入侵军入 GM.armies(faction=敌方·驻该 leaf)——军事系统/junqing/AI 推演自然看见并接战。
 //  每势力同时至多一支·每回合至多新出一支(最险 leaf)·撤军=风险<40 连续2回合(饱掠而归)或
 //  军被打散(soldiers≤0)·撤后该势力 6 回合冷却。战斗归既有军事系统·本层只管「出现/撤走」。
-//  flag P.conf.borderInvasionEnabled === true(默认 OFF·设置可开)。
+//  flag P.conf.borderInvasionEnabled：默认开，只有显式设成 false 才停（设置里可关）。
 //  本文件是 _borderInvasion 军队的唯一写口(已登记 gm-writes owners)。
 // ============================================================
 (function (global) {

@@ -3206,7 +3206,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "7ab7b26e17431b205562851ba435d3e7900cf53958fe0d25e25dd84c50361c91",
+      "sha256": "423ee91f4439ee5977cc9e29843b45b0d5d39f47fbb0caba97485c3df589fe38",
       "size": 80613
     },
     {
@@ -4611,8 +4611,8 @@
     },
     {
       "path": "tm-border-invasion.js",
-      "sha256": "74adb02448d86d9f231106edb9481de611a367579d88598dd5cae6c20ce11b01",
-      "size": 21526
+      "sha256": "80a990468b0ad6b8bd62576f6506f2bd5ea3c0fdcbb317e366f0a4c6bad0d0cf",
+      "size": 21558
     },
     {
       "path": "tm-border-risk.js",
@@ -6586,7 +6586,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "05db9d47ce276deb7d5cf1fd4c9e1a3ce2cc3401405e90ddf5d0c97435fe025d",
+      "sha256": "848947bf0989969b381a973ef14007297ac703eae969e27ab13ae190f65390ea",
       "size": 142848
     },
     {

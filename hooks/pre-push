@@ -1,9 +1,19 @@
 #!/bin/sh
-# push 前守卫：8 项架构 lint（~12s）。
+# push 前守卫：架构 lint，加派生文件新鲜度（按已提交的内容算，工作区里没提交的改动不算数）。
 # 安装（每个 clone 一次）：git config core.hooksPath hooks
+#                        git config merge.tm-derived.driver true   （派生文件变基时不再报冲突，见 CONTRIBUTING 第五节）
 # 紧急跳过：git push --no-verify（事后必须补跑并 fix-forward）
 cd "$(git rev-parse --show-toplevel)/web" || exit 1
+# 没装依赖的工作区（git worktree 多半如此）借主检出的 node_modules，不必每次手工设 NODE_PATH
+if [ -z "$NODE_PATH" ] && [ ! -d ../node_modules ]; then
+  main_modules="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/node_modules"
+  [ -d "$main_modules" ] && export NODE_PATH="$main_modules"
+fi
 node scripts/lint-arch-all.js || {
   echo "[pre-push] 架构守卫红——修复后再推。"
+  exit 1
+}
+node ../scripts/regen-derived.js --check --head --after-lint || {
+  echo "[pre-push] 派生文件过期——照上面的修法重生成、提交后再推。"
   exit 1
 }

@@ -9,7 +9,8 @@
 git clone <本仓>
 cd tianming
 npm ci --ignore-scripts                  # 安装锁定依赖；AST 架构守卫需要 devDependency acorn
-git config core.hooksPath hooks        # 安装 pre-push 守卫（~12s 的 8 项架构 lint）
+git config core.hooksPath hooks        # 安装 pre-push 守卫（架构 lint + 派生文件新鲜度）
+git config merge.tm-derived.driver true  # 派生文件变基时不再报冲突（见第五节）
 ```
 
 **资产补全（必做）**：`web/assets/` 的大件（立绘 647MB/字体/音频等）不入 git，走 release 全量包：
@@ -35,7 +36,7 @@ gh release download ship-1.3.4.8 --repo <本仓> --pattern '1.3.4.8.zip'
 `main` 是受保护的集成分支。两人都使用**短命分支、小刀快合**（一把刀 = 数小时粒度）：
 
 1. **开工前**：更新主干后新建 `codex/<主题>` 或 `<名字>/<主题>` 分支；一个分支只做一件事。
-2. **push 前**：pre-push hook 自动跑 `lint-arch-all.js` 8 项守卫；自己再跑定向 smoke
+2. **push 前**：pre-push hook 自动跑 `lint-arch-all.js` 各项守卫，并检查派生文件与已提交的内容对不对得上；自己再跑定向 smoke
    `node scripts/run-smokes.js --grep <主题>`（在 `web/` 下）。
 3. **所有改动走 PR**：等待 `guards` 与 `mobile-release-contracts` 通过；至少 1 名对方批准后 squash/rebase merge。
 4. PR 合并后删除分支。主干红灯时先修复，不继续叠新功能；禁止直接 push、force-push 或绕过检查。
@@ -49,6 +50,7 @@ gh release download ship-1.3.4.8 --repo <本仓> --pattern '1.3.4.8.zip'
 
 | 文件 | 规矩 |
 |---|---|
+| `web/.hot-update-manifest.json`、`web/tm-start-runtime-manifest.json`、`web/startup-script-phases.json`，以及官方剧本的各份产物 | **派生文件：不手工改，也不手工合并。** 改完代码跑 `node scripts/regen-derived.js`（即 `npm run regen`），它按依赖顺序把该更新的都更新，并列出要 `git add` 的文件；只提交一部分改动时加 `--staged`，哈希就按暂存区的内容算。变基相撞不用解：装了合并驱动（见第一节）就不会停下，没装就任取一侧；变基完再跑一次即可，结果只取决于最终的文件内容。pre-push 按已提交的内容检查，漏了会拦下并给出修法。**不要用 `sync-hot-baseline.js --write`**：缺少未跟踪资产（立绘、模型）的检出里，它会把这些资产的条目从基线里抹掉；那是发版 prepare 在资产齐全的主检出里才用的。 |
 | `web/scripts/arch-baselines/*.json` | **永不手工合并**。rebase 冲突时取任意一侧，然后重跑对应 lint 的 `--update` 重新生成（棘轮只许收紧）。 |
 | `web/index.html` 脚本区 | 只做行级小改；rebase 勤。拆分家族成员改动须整族 bump `?v=` 戳（守卫⑦会拦）。 |
 | `web/scripts/lint-split-contracts.js` | 只追加条目，按拆分编号序插入。 |

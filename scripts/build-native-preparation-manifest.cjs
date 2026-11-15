@@ -3,14 +3,16 @@
 const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
 const EXTRA = ['tm-start-contracts.js', 'tm-start-compiler.js', 'tm-start-preparation-runtime.js'];
-function build(root) {
-  const web = path.resolve(root, 'web'), original = fs.readFileSync(path.join(web, 'index.html'));
+function build(root, readFile) {
+  // readFile 可选：按别处的内容（暂存区、已提交的版本）而不是磁盘来算，见 scripts/regen-derived.js
+  const read = readFile || (absolute => fs.readFileSync(absolute));
+  const web = path.resolve(root, 'web'), original = read(path.join(web, 'index.html'));
   const scripts = [], styles = [], inputs = new Map();
   function resource(ref) {
     if (!/^[a-zA-Z0-9_./-]+(?:\?[a-zA-Z0-9_=.-]+)?$/.test(ref) || ref.split(/[/?]/).includes('..') || ref.startsWith('/')) throw Error('Nonlocal native resource: ' + ref);
     const file = ref.split('?')[0], absolute = path.resolve(web, file), real = fs.realpathSync(absolute);
     if (!real.startsWith(fs.realpathSync(web) + path.sep)) throw Error('Native resource escaped root: ' + file);
-    const bytes = fs.readFileSync(absolute), row = { file, byteLength: bytes.length, sha256: sha(bytes) };
+    const bytes = read(absolute), row = { file, byteLength: bytes.length, sha256: sha(bytes) };
     if (inputs.has(file) && inputs.get(file).sha256 !== row.sha256) throw Error('Resource changed during inventory');
     inputs.set(file, row); return { ...row, request: ref };
   }
@@ -30,7 +32,7 @@ function build(root) {
     scripts, styles, totalResourceBytes: [...inputs.values()].reduce((sum, row) => sum + row.byteLength, 0) };
   // Report provenance for the host-side workbench, not additional sandbox scripts.
   result.workbenchSources = ['tm-map-workbench.js','tm-map-binding-workbench.js','tm-map-workbench-worker.js','tm-map-workbench-client.js','libs/polygon-clipping-0.15.7.min.js','tm-project-assets.js','tm-workbench-service.js','tm-workbench-artifacts.js','tm-map-asset-formats.js','tm-data-zip.js','tm-agent-kernel.js','editor-authoring-agent.js','editor-authoring-agent-provider.js'].map(file => {
-    const bytes=fs.readFileSync(path.join(web,file));return{file,byteLength:bytes.length,sha256:sha(bytes)};
+    const bytes=read(path.join(web,file));return{file,byteLength:bytes.length,sha256:sha(bytes)};
   });
   result.runtimeHash = sha(JSON.stringify(result));
   return result;

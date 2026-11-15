@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "regen": "node scripts/regen-derived.js",
     "sync:official-scenarios": "node web/scripts/sync-official-scenarios.js",
     "verify:official-scenarios": "node web/scripts/verify-official-scenario-parity.js",
     "verify:release-workflow": "node scripts/verify-release-workflow-contract.js",

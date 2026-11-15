@@ -26,6 +26,20 @@
 *.pdf binary
 *.save.json binary
 
+# 派生文件：内容完全由别的文件决定（脚本哈希清单、官方剧本的各份产物）。变基、合并时不逐行合并，直接留当前一侧，
+# 事后跑 node scripts/regen-derived.js 重生成——结果只取决于最终的文件内容，取哪一侧都一样。
+# 驱动每个克隆装一次（各工作区共用）：git config merge.tm-derived.driver true
+# 这份清单要与 scripts/regen-derived.js 的 DERIVED_OUTPUTS 对得上（smoke-regen-derived 会查）。
+web/.hot-update-manifest.json merge=tm-derived
+web/tm-start-runtime-manifest.json merge=tm-derived
+web/startup-script-phases.json merge=tm-derived
+web/scenarios/*.js merge=tm-derived
+web/bundled-scenarios/manifest.js merge=tm-derived
+web/bundled-scenarios/manifest.json merge=tm-derived
+web/preview/official-scenarios-bundle.js merge=tm-derived
+web/preview/scenario-editor-reset-data.js merge=tm-derived
+web/data/maps/scenario-library/*.json merge=tm-derived
+
 # 本文件历史契约为 CRLF；仍检查真正的行尾空格，但不把 CR 本身误报为 trailing whitespace。
 web/tm-endturn-prompt.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 

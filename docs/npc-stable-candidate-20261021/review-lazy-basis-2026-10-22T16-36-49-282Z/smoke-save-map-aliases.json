@@ -1,6 +1,0 @@
-{
-  "command": "node web/scripts/smoke-save-map-aliases.js",
-  "exitCode": 0,
-  "signal": null,
-  "elapsedMs": 247
-}

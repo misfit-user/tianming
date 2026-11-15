@@ -53,6 +53,7 @@ gh release download ship-1.3.4.8 --repo <本仓> --pattern '1.3.4.8.zip'
 | `web/index.html` 脚本区 | 只做行级小改；rebase 勤。拆分家族成员改动须整族 bump `?v=` 戳（守卫⑦会拦）。 |
 | `web/scripts/lint-split-contracts.js` | 只追加条目，按拆分编号序插入。 |
 | `scenarios/*（官方）.json` | 官方剧本唯一数据真源。修改后只运行 `npm run sync:official-scenarios`，禁止反向改 bundle/内置 JS。真源里地图只存 `map` 一份、不写 `mapData`（运行时那份由构建与主进程补回）；脚本要 `map`、`mapData` 俱全的完整剧本，用 `web/scripts/official-scenario-source.js` 的 `readOfficialScenario`，写回用 `writeOfficialScenario`。 |
+| `docs/<任务>/` 下的验收证据 | 结论与报告进库；原始运行记录（日志、逐回合时间线、截图、守卫与冒烟的整份输出）留在本机或 CI 产物里，不进主干。`docs/npc-stable-candidate-20261021/README.md` 是先例：66MB 原始记录撤出，只留文字报告。 |
 
 ## 六、刀纪律精要（全文见 CLAUDE.md）
 

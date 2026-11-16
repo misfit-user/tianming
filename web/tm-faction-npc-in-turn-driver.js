@@ -236,7 +236,7 @@
             _facName: fac.name
           });
           // cap 归 TM.Qiju.CAP 单一真相(2026-07-04 收口)·原地 200 trim 退役
-        } catch(_){}
+        } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'faction-npc:qiju-record'); } catch (__) {} }
       }
       try { console.log('[npc-in-turn] turn ' + turn + ' attempt ' + attempt + ' applied to ' + fac.name); } catch(_){}
     }

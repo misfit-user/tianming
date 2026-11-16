@@ -1246,7 +1246,7 @@ async function _ty2_decide(mode) {
         GM._chaoyiMemory.push(_dm);
         if (GM._chaoyiMemory.length > 8) GM._chaoyiMemory = GM._chaoyiMemory.slice(-8);
       }
-    } catch (_dmE) {}
+    } catch (_dmE) { try { window.TM && TM.errors && TM.errors.captureSilent(_dmE, 'tinyi:debate-memory'); } catch (_) {} }
   }
 
   // 经济改革廷议回调——若题目是经济改革（EconomyGapFill 提交的），根据皇帝裁决应用

@@ -278,7 +278,7 @@ function _shizhengConvene(issueId) {
         });
         if (GM._pendingTinyiTopics.length > 80) GM._pendingTinyiTopics = GM._pendingTinyiTopics.slice(0, 80);
       }
-    } catch(_szE){}
+    } catch(_szE){ try { window.TM && TM.errors && TM.errors.captureSilent(_szE, 'shizheng:queue-tinyi-topic'); } catch (_) {} }
   }
   if (typeof _ty2_openSetup === 'function') {
     // 统一入口先确保朝议宿主存在，再打开筹备；失败时保留原御案。
@@ -601,7 +601,7 @@ function _mzEndDialogue() {
       content: '独召密问·议「' + issueTitle + '」·召见' + d.chars.map(function(c){return c.name;}).join('、')
     });
     if (typeof addEB === 'function') addEB('问对', '独召密问·议' + issueTitle + '·' + d.chars.length + '臣奏对毕');
-  } catch(_){}
+  } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'shizheng:mizhao-confirm'); } catch (__) {} }
   var el = document.getElementById('mizhao-dialog'); if (el) el.remove();
   window._mzDlg = null;
 }

@@ -1322,7 +1322,7 @@ function _ty3_tickChronicleTracks() {
           if (GM._chronicleTickNarratives.length > 30) GM._chronicleTickNarratives = GM._chronicleTickNarratives.slice(-30);
         }
       }
-    } catch (_pteE) {}
+    } catch (_pteE) { try { window.TM && TM.errors && TM.errors.captureSilent(_pteE, 'tinyi-v3:chronicle-per-turn-effect'); } catch (_) {} }
     var startTurn = t.startTurn || GM.turn;
     var expectedEnd = t.expectedEndTurn || (startTurn + ((typeof turnsForMonths === 'function') ? turnsForMonths(12) : 12));
     var totalTurns = Math.max(1, expectedEnd - startTurn);

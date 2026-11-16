@@ -963,7 +963,7 @@
             GM._kjpPrivateAudienceLog.splice(0, GM._kjpPrivateAudienceLog.length - 50);
           }
         }
-      } catch(_){}
+      } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'keju-paradigm:private-audience-log'); } catch (__) {} }
       // 记录 in-modal
       if (!draft.privateAudiences) draft.privateAudiences = [];
       draft.privateAudiences.push({
@@ -1064,7 +1064,7 @@
         FiscalEngine.spendFromGuoku({ money: -guoku }, '科举范式之费');
         applied = true;
       }
-    } catch(_){}
+    } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'keju-paradigm:audience-cost'); } catch (__) {} }
     return applied;
   }
 
@@ -2024,7 +2024,7 @@
             }
           }
         }
-      } catch(_){}
+      } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'keju-paradigm:advisor-party-relation'); } catch (__) {} }
       // rerender panel
       try {
         var modal2 = (typeof document !== 'undefined') ? document.getElementById('kjp-reform-modal') : null;

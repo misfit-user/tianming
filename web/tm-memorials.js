@@ -978,7 +978,7 @@ function _stageMemorialDecision(m, action, reply, extra) {
       // 持久 lock·user 已批/驳/廷议·下次 L5 inject check 见 lock·skip
       GM._kjpL5UserActedCooldown[m.relatedTo + '_' + m.from] = (GM.turn || 0);
     }
-  } catch(_l5dE) {}
+  } catch(_l5dE) { try { window.TM && TM.errors && TM.errors.captureSilent(_l5dE, 'memorials:keju-l5-cooldown'); } catch (_) {} }
 }
 
 function _approveMemorial(idx) {
@@ -1078,7 +1078,7 @@ function _courtDebateMemorial(idx) {
       if (GM._pendingTinyiTopics.length > 80) GM._pendingTinyiTopics = GM._pendingTinyiTopics.slice(0, 80);
       m._tinyiQueuedId = _qid;
     }
-  } catch (_mctE) {}
+  } catch (_mctE) { try { window.TM && TM.errors && TM.errors.captureSilent(_mctE, 'memorials:queue-tinyi-topic'); } catch (_) {} }
   renderMemorials();
   toast('已发交廷议（过回合时提交）');
 }

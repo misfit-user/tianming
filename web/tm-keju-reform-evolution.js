@@ -401,7 +401,7 @@
         var ft = parseInt(GM._factionTension, 10) || 0;
         GM._factionTension = Math.max(-100, Math.min(100, ft + d.factionTension));
       }
-    } catch(_){}
+    } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'keju-reform:accum-effects'); } catch (__) {} }
   }
 
   // ════════════════════════════════════════════════════════════════
@@ -924,7 +924,7 @@
           var ft2 = parseInt(GM._factionTension, 10) || 0;
           GM._factionTension = Math.max(-100, Math.min(100, ft2 + d.factionTension));
         }
-      } catch(_){}
+      } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'keju-reform:event-dim-delta'); } catch (__) {} }
     }
 
     // 2.5·finance_diversion·真延 reform·set entry._extraDelay (severity 加成)·
@@ -988,7 +988,7 @@
           });
           if (sp) GM._kejuParadigm._l9SpawnCount = (GM._kejuParadigm._l9SpawnCount || 0) + 1;
         }
-      } catch(_){}
+      } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'keju-reform:l9-spawn-count'); } catch (__) {} }
     }
 
     // 4·push GM._chronicle 邸报可见

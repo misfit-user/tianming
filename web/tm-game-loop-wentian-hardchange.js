@@ -1244,7 +1244,7 @@ function _wtRunFulfillAudit() {
       var _faLine = '⚖︎ 兑现对账·T' + turn + '：' + stamps.join('；');
       GM._wentianHistory.push({ role: 'system', content: _faLine });  // arch-ok 问天历史行·与本文件既有 _wentianHistory push 同容器同性质(刀A对账戳)
     }
-  } catch (_wtFaErr) {}
+  } catch (_wtFaErr) { try { window.TM && TM.errors && TM.errors.captureSilent(_wtFaErr, 'wentian:fulfill-audit'); } catch (_) {} }
 }
 
 // ── 刀B·撤销快照窗口 + 一键回滚 ──
@@ -1276,5 +1276,5 @@ function _wtUndoHardChange(did) {
     GM._wentianHistory.push({ role: 'system', content: _udLine });  // arch-ok 问天历史行·与本文件既有 _wentianHistory push 同容器同性质(刀B撤销记录)
     if (typeof _wtRenderHistory === 'function') _wtRenderHistory();
     if (typeof toast === 'function') toast('已撤销 ' + okN + ' 笔直改');
-  } catch (_wtUndoErr) {}
+  } catch (_wtUndoErr) { try { window.TM && TM.errors && TM.errors.captureSilent(_wtUndoErr, 'wentian:undo'); } catch (_) {} }
 }

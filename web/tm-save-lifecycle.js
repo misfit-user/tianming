@@ -1548,7 +1548,7 @@ async function _fullLoadGameApplyImpl(data, loadOptions, _loadTxn){
   try {
     if (!P.conf) P.conf = {};
     Object.keys(_preservedConf).forEach(function(k) { P.conf[k] = _preservedConf[k]; });
-  } catch(_) {}
+  } catch(_) { try { window.TM && TM.errors && TM.errors.captureSilent(_, 'save-lifecycle:restore-preserved-conf'); } catch (__) {} }
 
   if(GM){
     GM.running=true;

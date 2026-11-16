@@ -661,7 +661,7 @@ async function _yq2_evaluateLeak() {
           if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
             NpcMemorySystem.remember(obj.leaker, '吾将御前密议「' + String(CY._yq2.topic || '').slice(0, 15) + '」泄于外·惴惴不安', '忧', 6);
           }
-        } catch (_lkCsqE) {}
+        } catch (_lkCsqE) { try { window.TM && TM.errors && TM.errors.captureSilent(_lkCsqE, 'yuqian:authority-effect'); } catch (_) {} }
         // 若之前密议选择"不录"，此时反而入纪事（丑闻）
         if (CY._yq2.record === 'secret') {
           _cy_jishiAdd('yuqian', CY._yq2.topic, obj.leaker, '【泄密】' + (obj.channel||'') + '：' + (obj.consequence||''), { secret: true, leaked: true });

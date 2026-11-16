@@ -1202,9 +1202,9 @@ function _offMenyin(officialName) {
   ch._menyinGranted = { son: sonName, turn: GM.turn || 0 };
   if (!Array.isArray(ch.children)) ch.children = [];
   ch.children.push(sonName);
-  try { if (GM.minxin && GM.minxin.byClass && GM.minxin.byClass.shi && typeof GM.minxin.byClass.shi.true === 'number') GM.minxin.byClass.shi.true = Math.max(0, GM.minxin.byClass.shi.true - 0.15); } catch (e) {}
+  try { if (GM.minxin && GM.minxin.byClass && GM.minxin.byClass.shi && typeof GM.minxin.byClass.shi.true === 'number') GM.minxin.byClass.shi.true = Math.max(0, GM.minxin.byClass.shi.true - 0.15); } catch (e) { try { window.TM && TM.errors && TM.errors.captureSilent(e, 'office-panel:menyin-minxin'); } catch (_) {} }
   if (typeof addEB === 'function') addEB('功名', ch.name + ' 荫一子 ' + sonName + ' 入仕（荫生·待铨)');
-  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行门荫·' + sonName + ' 以荫生入仕候铨（恩荫世禄）', tags: ['联动', '官制'] }); } catch (e) {}
+  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行门荫·' + sonName + ' 以荫生入仕候铨（恩荫世禄）', tags: ['联动', '官制'] }); } catch (e) { try { window.TM && TM.errors && TM.errors.captureSilent(e, 'office-panel:menyin-chronicle'); } catch (_) {} }
   if (typeof toast === 'function') toast('已荫 ' + ch.name + ' 之子 ' + sonName + '（荫生·入候选池·可于任命中授官）');
   if (typeof renderOfficeTree === 'function') renderOfficeTree(true);
 }
@@ -1242,7 +1242,7 @@ function _offJianbi(officialName) {
   if (typeof TMGongming !== 'undefined' && TMGongming.grant) { try { TMGongming.grant(person, { path: 'jianxuan', tier: '荐辟', source: 'edict', turn: GM.turn }, GM); } catch (e) {} }
   ch._jianbiGranted = { person: name, turn: GM.turn || 0 };
   if (typeof addEB === 'function') addEB('功名', ch.name + ' 荐布衣 ' + name + ' 入仕（荐辟·待铨)');
-  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行荐辟·布衣 ' + name + ' 以荐贤入仕候铨（野有遗贤·结知遇）', tags: ['联动', '官制'] }); } catch (e) {}
+  try { if (!Array.isArray(GM._chronicle)) GM._chronicle = []; if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({ turn: GM.turn || 0, date: GM._gameDate || '', type: '官制↔人才', text: ch.name + ' 行荐辟·布衣 ' + name + ' 以荐贤入仕候铨（野有遗贤·结知遇）', tags: ['联动', '官制'] }); } catch (e) { try { window.TM && TM.errors && TM.errors.captureSilent(e, 'office-panel:jianbi-chronicle'); } catch (_) {} }
   if (typeof toast === 'function') toast('已荐 ' + ch.name + ' 所举布衣 ' + name + '（荐辟·入候选池·可于任命中授官）');
   if (typeof renderOfficeTree === 'function') renderOfficeTree(true);
 }

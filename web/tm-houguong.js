@@ -390,7 +390,7 @@
       if (typeof window.toast === 'function' && (window.GM.uiSettings && GM.uiSettings.haremToast !== false)) {
         // 不主动 toast 每个，避免刷屏；仅诊断时
       }
-    } catch(_){}
+    } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'houguong:evtlog'); } catch (__) {} }
   }
   function toastSafe(msg) {
     try { if (typeof window.toast === 'function') window.toast(msg); } catch(_){}

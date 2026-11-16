@@ -4151,8 +4151,8 @@
     },
     {
       "path": "tm-battle-turn.js",
-      "sha256": "25b08c38635921429e8851d78e13032eb293e0bf185a1b4c63376ea4e5b1ee8c",
-      "size": 43030
+      "sha256": "3a55d307899c1c983bc6b6acdcb083365eebad05b5a6d9bc8710b55a791c1961",
+      "size": 43143
     },
     {
       "path": "tm-benji.js",
@@ -4246,13 +4246,13 @@
     },
     {
       "path": "tm-chaoyi-tinyi.js",
-      "sha256": "c3dedb9b8cc62014b7876ba3a5e2d143cfe1f566ed258ed501f23fba03c32a74",
-      "size": 91490
+      "sha256": "9a75c5d3bce0fe2c362d6e80de6e76f28f78d0dc1f95bcb9f13de20e369a8c45",
+      "size": 91592
     },
     {
       "path": "tm-chaoyi-yuqian.js",
-      "sha256": "b508261854cc4bde98fdc10f38830507406d85b7f102d2601dbf309a0ca3a117",
-      "size": 52735
+      "sha256": "635f5c7c9d6bf37d98d08e234ac17c97943ed67eaa4d2634e211bf567d24cf10",
+      "size": 52844
     },
     {
       "path": "tm-chaoyi.js",
@@ -4871,8 +4871,8 @@
     },
     {
       "path": "tm-faction-npc-in-turn-driver.js",
-      "sha256": "7a7c86e7e0e5c0c6fd0bc8bd682267eda24778217b4e20b7f6f0f8bf156bd1e8",
-      "size": 16528
+      "sha256": "aaef6c1a3ee2be334423f2c315ccc207f9fa34cb3f9b00098ed0fc8aec915890",
+      "size": 16632
     },
     {
       "path": "tm-faction-npc-intervention.js",
@@ -4981,8 +4981,8 @@
     },
     {
       "path": "tm-game-loop-wentian-hardchange.js",
-      "sha256": "537e72fdc6a61246184b171fd7cf08741b7a402a5d5bbb10cd16653338618ad7",
-      "size": 68863
+      "sha256": "9138622b2bfbe93d8d0aca16144c8ab8c4cbbe1667b06e7099e4844126389d04",
+      "size": 69072
     },
     {
       "path": "tm-game-loop.js",
@@ -5006,8 +5006,8 @@
     },
     {
       "path": "tm-guoku-engine.js",
-      "sha256": "a97ce308b48c5bf6e60d7d9eb258ffb84747ee3800a6e158773f36c20fe86ef7",
-      "size": 164373
+      "sha256": "55aae6c5a1d431f2e4b835f7fd33a93c8808bfa8fdabde4692bc9a7be4ac3dc2",
+      "size": 164474
     },
     {
       "path": "tm-guoku-panel.js",
@@ -5051,8 +5051,8 @@
     },
     {
       "path": "tm-hongyan-office.js",
-      "sha256": "7bb5427e819fc5b53a5c853d59602e9ac6b00d54856a68293091d55be357678d",
-      "size": 129170
+      "sha256": "ddb4a384e006106d54fb6698126d9e7e496d6f937c835aa8bf3cb64c1022ae14",
+      "size": 129272
     },
     {
       "path": "tm-hooks-tracker.js",
@@ -5061,8 +5061,8 @@
     },
     {
       "path": "tm-houguong.js",
-      "sha256": "b0fbee6ff751f5555e922e02cad6d6ad36df321327d6cd6a23b3bd9264051408",
-      "size": 33330
+      "sha256": "2893128fb99bab936b8c59ab9e1cc692988b07ff62f5f8ec5d89ae460fd13eb9",
+      "size": 33426
     },
     {
       "path": "tm-hover-fulltext.js",
@@ -5206,8 +5206,8 @@
     },
     {
       "path": "tm-keju-paradigm-panel.js",
-      "sha256": "21aa54e51d686f326a79f6bf949006a7aabd291fff362d2de9fd1b69c48a915b",
-      "size": 133000
+      "sha256": "c7a80ba6bab9e91b2b14b1519e57692f1a41cce277273614ec9e5eb08559d54e",
+      "size": 133340
     },
     {
       "path": "tm-keju-paradigm-presets.js",
@@ -5236,8 +5236,8 @@
     },
     {
       "path": "tm-keju-reform-evolution.js",
-      "sha256": "f9faa2bfad6ae1de850b335c3b634488513d45c08809306b4a9147c1b61ee477",
-      "size": 54018
+      "sha256": "7547aac755e8516d6958383d27a3a9760680abe0abaf772b026fe78a725bf951",
+      "size": 54339
     },
     {
       "path": "tm-keju-reform-llm.js",
@@ -5421,8 +5421,8 @@
     },
     {
       "path": "tm-mechanics-memory.js",
-      "sha256": "399bb06b4c13bc2f66e0aa7ceb69df3ceed623b5cc9e2b24e3cb203e80084ce6",
-      "size": 85817
+      "sha256": "9907a8795a8904faa24e38f7986cad724aa3df809d66ee0adf685726ec35daa6",
+      "size": 85933
     },
     {
       "path": "tm-mechanics-world.js",
@@ -5436,8 +5436,8 @@
     },
     {
       "path": "tm-memorials.js",
-      "sha256": "ddf01ccddd6b8bed9ffc7507a05d20c9ecfd5277395a985afa7e2d0beb70c887",
-      "size": 82607
+      "sha256": "fc3623727ae8705a87b799359c9b0c730eddafdb838050bae05f51b1a2095d98",
+      "size": 82828
     },
     {
       "path": "tm-memory-adapter.js",
@@ -5741,8 +5741,8 @@
     },
     {
       "path": "tm-office-panel.js",
-      "sha256": "5f722b12f2155f703a44be824e9fc215a0c0bd1f033a5d90ab8ca10c8b80ce41",
-      "size": 109330
+      "sha256": "508bc85c2dceaef5b5d1781f41e8a43e6e00f3736658b0a9ca63466ce25db4b9",
+      "size": 109654
     },
     {
       "path": "tm-office-powermap.js",
@@ -5771,8 +5771,8 @@
     },
     {
       "path": "tm-office-system.js",
-      "sha256": "aaf88a7302c1ceab2f2a6936e61c52d2a61e1433d355f4f6b890c1b870b348c3",
-      "size": 118828
+      "sha256": "bccb7bcfd48227daa62693de6a508848304506cf47871b0268029cd6c8cec48d",
+      "size": 118931
     },
     {
       "path": "tm-office-tenure.js",
@@ -6036,8 +6036,8 @@
     },
     {
       "path": "tm-save-lifecycle.js",
-      "sha256": "f5ab2fd0245e1e7efba1cf72461bc6b30f75d47fc7c8b46c70a32e68fdf2ae74",
-      "size": 157543
+      "sha256": "6cf14ccdffa8091cd8cc99d1faaad9d7476e511edf6e336fcb511319f4b42d87",
+      "size": 157661
     },
     {
       "path": "tm-save-manager.js",
@@ -6081,8 +6081,8 @@
     },
     {
       "path": "tm-shizheng-panel.js",
-      "sha256": "825bab32a66bf4723cb294b157f7e35af08bb952e74f168eb212688e8c374186",
-      "size": 67200
+      "sha256": "fe8354cf00345f6185b21c970f63b849ae2f344c2fd490956d20cbcb725df114",
+      "size": 67413
     },
     {
       "path": "tm-sidebar-ui.js",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "ac9a179a17b391b8b410489b81867a220a3723b7787f26b7638601250b45fa03",
+      "sha256": "2bcef6f0ccf9c0be3235014a58f72ea4189050fcff4230a255296a5b6b16a176",
       "size": 142847
     },
     {
@@ -6241,8 +6241,8 @@
     },
     {
       "path": "tm-tinyi-v3-parties.js",
-      "sha256": "312efbd5fe3fa93cf3a939836068481c57e4c28d49e8297a5a8088ff7c507a7c",
-      "size": 72152
+      "sha256": "02cdfbf8a69d011d92a02900c652409dc53400baba61070c642bb9c99eab660c",
+      "size": 72270
     },
     {
       "path": "tm-tinyi-v3-persona.js",

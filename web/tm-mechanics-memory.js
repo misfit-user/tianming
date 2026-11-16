@@ -272,7 +272,7 @@ function _tmRecordVitalConflictHint(npc, conflict, event) {
     GM._aiWeakWriteHints.push(hint);
     if (GM._aiWeakWriteHints.length > 20) GM._aiWeakWriteHints = GM._aiWeakWriteHints.slice(-20);
     try { console.warn("[记忆消毒·刀B] 拒写生死矛盾记忆·NPC=" + hint.npc + "·" + (conflict && conflict.claimType) + "「" + claimTarget + "」·以本局 GM 为准 · " + hint.textSlice); } catch (_) {}
-  } catch (_) {}
+  } catch (_) { try { window.TM && TM.errors && TM.errors.captureSilent(_, 'mechanics-memory:hist-conflict-hint'); } catch (__) {} }
 }
 if (typeof window !== "undefined") {
   window._tmDetectVitalConflict = _tmDetectVitalConflict;

@@ -54,7 +54,7 @@
     if (pending.some(function(item) { return item.game === GM && sameBattle(item.battleResult, br); })) return true;
     var prov = (pArmies[0] && (pArmies[0].location || pArmies[0].garrison)) || '';
     pending.push({ battleResult: br, playerArmies: pArmies, enemyArmies: eArmies, provinceName: prov, game: GM });
-    try { GM._pendingAbstractBattles = GM._pendingAbstractBattles || []; if (!GM._pendingAbstractBattles.some(function(old) { return sameBattle(old, br); })) GM._pendingAbstractBattles.push(br); } catch (e) {}   // ★持久化镜像(随存档)·会战阶段中断也不丢→recoverPending 抽象兜底
+    try { GM._pendingAbstractBattles = GM._pendingAbstractBattles || []; if (!GM._pendingAbstractBattles.some(function(old) { return sameBattle(old, br); })) GM._pendingAbstractBattles.push(br); } catch (e) { try { window.TM && TM.errors && TM.errors.captureSilent(e, 'battle-turn:queue-abstract-battle'); } catch (_) {} }   // ★持久化镜像(随存档)·会战阶段中断也不丢→recoverPending 抽象兜底
     return true;
   }
   function dropPersisted(GM, br) { try { var arr = GM && GM._pendingAbstractBattles; if (Array.isArray(arr)) { for (var i = arr.length - 1; i >= 0; i--) if (sameBattle(arr[i], br)) arr.splice(i, 1); } } catch (e) {} }

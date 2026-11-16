@@ -2146,7 +2146,7 @@ function letterDoctor() {
           _doctorFlushed: true
         });
         fixed.pendingFlushed++;
-      } catch(_){}
+      } catch(_){ try { window.TM && TM.errors && TM.errors.captureSilent(_, 'hongyan:npc-letter-in'); } catch (__) {} }
     });
   }
 

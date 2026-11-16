@@ -1439,7 +1439,7 @@
             _hj.mouths = (Number(_hj.mouths) || 0) + resettled; // 守恒回编户
           }
         }
-      } catch (_zhE) {}
+      } catch (_zhE) { try { window.TM && TM.errors && TM.errors.captureSilent(_zhE, 'guoku:relief-taohu'); } catch (_) {} }
       if (typeof addEB === 'function') addEB('朝代', '开仓赈济（' + scale + '）' + (relieved ? '·赈 ' + relieved + ' 处灾情' : '') + (resettled ? '·流民复业 ' + resettled : ''), { credibility: 'high' });
       return { success: true, relieved: relieved, resettled: resettled };
     },

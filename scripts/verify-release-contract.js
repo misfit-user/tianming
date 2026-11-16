@@ -41,6 +41,14 @@ function main() {
     'data/maps/tianqi-ming2/tianqi-ming2.preview-data.js', 'assets/ui/home/home-menu-imperial-study-v1-ambient.gif'
   ];
   ok(strayReleaseFiles.every((rel) => !sourcePaths.has(rel)), '发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF');
+  // 设计稿网页与地图中间数据不随包（2026-11-16 死代码普查：游戏从不读它们）。新添的设计稿没写进排除清单，会在这里红。
+  const keptPaths = Array.from(sourcePaths);
+  const rootMockups = keptPaths.filter((rel) => /^preview-[^/]*$/.test(rel) || rel === 'demo-guoshi.html');
+  ok(rootMockups.length === 0, '发布树不带网页根目录的设计稿（preview-*、demo-guoshi.html）：' + rootMockups.slice(0, 5).join(', '));
+  const previewPages = keptPaths.filter((rel) => /^preview\/[^/]+\.html$/.test(rel));
+  ok(previewPages.length === 1 && previewPages[0] === 'preview/scenario-editor-reset-preview.html', 'preview/ 下只有编辑器页随包，设计稿不随包：' + previewPages.join(', '));
+  const strayMapData = keptPaths.filter((rel) => rel.startsWith('data/maps/') && !rel.startsWith('data/maps/scenario-library/'));
+  ok(strayMapData.length === 0, 'data/maps 下只有 scenario-library 随包，地图草稿与生成原料不随包：' + strayMapData.slice(0, 5).join(', '));
   ['.claude/launch.json', 'output/playwright/shot.png', 'maps/asia-map.png', 'preview-launch-assets/hero-bg.png'].forEach((rel) => {
     ok(!!releaseTree.excludedReason(rel, config), '发布树明确排除本机开发产物:' + rel);
   });

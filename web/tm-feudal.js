@@ -18,7 +18,7 @@
 //   §A [L21]   AUTONOMY_TYPES 封建管辖层级 + PERMISSION_MATRIX (5 自治度·中国化)
 //   §B [L161]  封臣系统 (establishVassalage·breakVassalage·calculateTotalIncome·levyVassalArmies·updateVassalSystem)
 //   §C [L554]  头衔体系数据 (TITLE_LEVELS·OFFICIAL_RANKS·TITLE_CLASSES·inferTitleClass)
-//   §D [L656]  头衔操作 + Title 更新 (grantFief·grantTitle·inheritTitle·promoteTitle·hasPrivilege·assignOfficialRank·updateTitleSystem)
+//   §D [L656]  头衔操作 + Title 更新 (grantTitle·inheritTitle·promoteTitle·hasPrivilege·assignOfficialRank·updateTitleSystem)
 //   §E [L1183] 补给系统 (updateSupplySystem·produceSupplies·consumeSupplies·transportSupplies·createSupplyRoute·generateSupplyReport)
 //   §F [L1470] 铨选三层 (QuanxuanConfig·performQuanxuan·quanxuanInitialScreen·quanxuanRefinedSelection·quanxuanFinalDecision·autoQuanxuanAndAppoint)
 //   §G [L1744] 军事 + 地图 update (updateMilitary·updateMap)
@@ -638,44 +638,6 @@ function inferTitleClass(titleName) {
     }
   }
   return 'honorary';
-}
-
-/**
- * 授予封地——将某区划标记为某角色的封地
- * @param {string} characterName - 持爵者
- * @param {string} divisionName - 封地名
- * @param {string} titleType - 关联爵位key
- * @param {string} subtype - 'real' | 'nominal'（实封/虚封）
- */
-function grantFief(characterName, divisionName, titleType, subtype) {
-  if (!GM.adminHierarchy) return false;
-  var _found = null, _fh = null;
-  Object.keys(GM.adminHierarchy).forEach(function(fk) {
-    var fh = GM.adminHierarchy[fk];
-    if (!fh || !fh.divisions) return;
-    (function _walk(ds) {
-      ds.forEach(function(d) {
-        if (d.name === divisionName) { _found = d; _fh = fh; }
-        if (d.children) _walk(d.children);   // 府县挂在 children 下，旧只钻 divisions 只找得到省一级
-        if (d.divisions) _walk(d.divisions);
-      });
-    })(fh.divisions);
-  });
-  if (!_found) { toast('未找到区划 ' + divisionName); return false; }
-  // 设置 autonomy
-  _found.autonomy = {
-    type: 'fanguo',
-    subtype: subtype || 'nominal',
-    holder: characterName,
-    suzerain: (P.playerInfo && P.playerInfo.factionName) || '',
-    titleType: titleType || null,
-    loyalty: 80,
-    tributeRate: subtype === 'real' ? 0.5 : 0.15,
-    grantedTurn: GM.turn
-  };
-  addEB('册封', characterName + ' 受封 ' + divisionName + (subtype === 'real' ? '（实封）' : '（虚封/食邑）'));
-  toast(characterName + ' 受封 ' + divisionName);
-  return true;
 }
 
 // 为角色授予头衔（支持key查找或直接传名称）

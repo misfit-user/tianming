@@ -20,7 +20,7 @@
 // ============================================================
 
 /**
- * 初始化省级经济数据 — 优先从行政区划(P.adminHierarchy)创建，回退到territories
+ * 初始化省级经济数据 — 优先从游戏里那份行政区划(GM.adminHierarchy)创建，回退到territories
  */
 function initProvinceEconomy() {
   if (!GM.provinceStats) GM.provinceStats = {};
@@ -398,56 +398,6 @@ function updateProvinceEconomy() {
     if (!faction.militaryForce) faction.militaryForce = 0;
     faction.militaryForce = totalRecruits;
   });
-}
-
-function doAppointGovernor(provinceName, charName) {
-  var province = GM.provinceStats ? GM.provinceStats[provinceName] : null;
-  if (!province) return;
-
-  var oldGov = province.governor || '';
-  province.governor = charName;
-  addEB('\u4EFB\u547D', charName + '\u88AB\u4EFB\u547D\u4E3A' + provinceName + '\u4E3B\u5B98');
-
-  var ch = findCharByName(charName);
-  if (ch) {
-    if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(ch, 3, '\u4EFB\u547D\u4E3A' + provinceName + '\u4E3B\u5B98', { source:'province-governor-appointment' });
-    else ch.loyalty = Math.min(100, ((typeof ch.loyalty === 'number' && isFinite(ch.loyalty)) ? ch.loyalty : 50) + 3);
-  }
-
-  // 同步到行政区划
-  if (GM.adminHierarchy) {
-    var _aks = Object.keys(GM.adminHierarchy);
-    _aks.forEach(function(k) {
-      var ah = GM.adminHierarchy[k];
-      if (!ah || !ah.divisions) return;
-      (function _syncGov(divs) {
-        divs.forEach(function(d) {
-          if (d.name === provinceName) {
-            d.governor = charName;
-            // 同步到officeTree
-            if (d.officialPosition && GM.officeTree) {
-              (function _syncOff(nodes) {
-                nodes.forEach(function(nd) {
-                  if (nd.positions) nd.positions.forEach(function(p) {
-                    if (p.name === d.officialPosition && (!p.holder || p.holder === oldGov)) p.holder = charName;
-                  });
-                  if (nd.subs) _syncOff(nd.subs);
-                });
-              })(GM.officeTree);
-            }
-          }
-          if (d.children) _syncGov(d.children);
-        });
-      })(ah.divisions);
-    });
-  }
-
-  // 记录决策
-  if (typeof recordPlayerDecision === 'function') recordPlayerDecision('appointment', '\u4EFB\u547D' + charName + '\u4E3A' + provinceName + '\u4E3B\u5B98');
-
-  closeGenericModal();
-  _peRefreshContent();
-  toast(charName + '\u5DF2\u4EFB\u547D\u4E3A' + provinceName + '\u4E3B\u5B98');
 }
 
 /**
@@ -2026,7 +1976,7 @@ function _peBuiltContent() {
     if (_pf) playerFacName = _pf.name;
   }
 
-  // 优先读 GM.adminHierarchy（运行时 live 数据，CascadeTax/aggregate 写入处），回退到 P.adminHierarchy
+  // 读 GM.adminHierarchy（运行时 live 数据，CascadeTax/aggregate 写入处）
   var _adminSrc = (GM.adminHierarchy && Object.keys(GM.adminHierarchy).length > 0) ? GM.adminHierarchy : null;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
   var adminTree = null;
   if (_adminSrc) {

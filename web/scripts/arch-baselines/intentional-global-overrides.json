@@ -451,38 +451,6 @@
         "phase8-formal-bridge.js"
       ]
     },
-    "aiGenChr": {
-      "owner": "tm-launch.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-launch.js",
-        "tm-office-editor.js"
-      ]
-    },
-    "aiGenCivic": {
-      "owner": "tm-launch.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-launch.js",
-        "tm-office-editor.js"
-      ]
-    },
-    "aiGenFac": {
-      "owner": "tm-launch.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-launch.js",
-        "tm-office-editor.js"
-      ]
-    },
-    "aiGenFullScenario": {
-      "owner": "tm-launch.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-launch.js",
-        "tm-office-editor.js"
-      ]
-    },
     "aiGenItems": {
       "owner": "tm-office-editor.js",
       "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
@@ -499,28 +467,12 @@
         "editor-details.js"
       ]
     },
-    "aiGenVar": {
-      "owner": "tm-launch.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-launch.js",
-        "tm-office-editor.js"
-      ]
-    },
     "closeWenduiModal": {
       "owner": "tm-wendui.js",
       "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
       "expectedOrder": [
         "tm-wendui.js",
         "phase8-formal-bridge.js"
-      ]
-    },
-    "editChr": {
-      "owner": "tm-launch.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-launch.js",
-        "editor-details.js"
       ]
     },
     "execFullGen": {
@@ -583,14 +535,6 @@
         "tm-tinyi-v3-parties.js"
       ]
     },
-    "openCharRenwuPage": {
-      "owner": "tm-player-core.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-player-core.js",
-        "tm-renwu-tuzhi.js"
-      ]
-    },
     "openMilitaryDetailPanel": {
       "owner": "tm-sidebar-ui.js",
       "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
@@ -616,22 +560,6 @@
         "tm-content-manager.js"
       ]
     },
-    "renderEvtTab": {
-      "owner": "tm-office-editor.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-office-editor.js",
-        "editor-details.js"
-      ]
-    },
-    "renderFacTab": {
-      "owner": "tm-office-editor.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-office-editor.js",
-        "editor-details.js"
-      ]
-    },
     "renderGameState": {
       "owner": "tm-game-ui-shell.js",
       "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
@@ -655,22 +583,6 @@
       "expectedOrder": [
         "tm-renwu-ui.js",
         "phase8-formal-bridge.js"
-      ]
-    },
-    "renderRulTab": {
-      "owner": "tm-office-editor.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-office-editor.js",
-        "editor-details.js"
-      ]
-    },
-    "renderTechTab": {
-      "owner": "tm-office-editor.js",
-      "reason": "Pre-existing classic-script provider chain retained as an explicit load-order contract; later providers intentionally extend or replace the compatibility surface.",
-      "expectedOrder": [
-        "tm-office-editor.js",
-        "editor-details.js"
       ]
     },
     "showLoading": {

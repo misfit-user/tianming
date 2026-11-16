@@ -55,7 +55,6 @@
   function renderClarify() { return __aaU.renderClarify.apply(null, arguments); }
   function renderRemonstrance() { return __aaU.renderRemonstrance.apply(null, arguments); }
   function renderPlan() { return __aaU.renderPlan.apply(null, arguments); }
-  function _validationDelta() { return __aaU.validationDelta.apply(null, arguments); }
   function _supersedeDiff() { return __aaU.supersedeDiff.apply(null, arguments); }
   var MAX_CKPT = 15;   // 方向G · 检查点栈上限（session 内存态·满则淘汰最旧）
 

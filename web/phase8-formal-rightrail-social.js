@@ -61,18 +61,6 @@
   var _rightAdminRenderSeq = 0;
   var _rightOfficeRenderSeq = 0;
 
-  // ── late-bound wrappers for orchestration calls (bridge.X / window.X) ─
-  function openPanel(slot){ return bridge.openPanel(slot); }
-  function openModule(kind, opts){ return bridge.openModule(kind, opts); }
-  function openGuoku(){ return bridge.openGuoku(); }
-  function openOfficeStandalone(){ return bridge._openOfficeStandalone(); }
-  function openShiluPreviewPanel(){ return bridge._openShiluPreviewPanel(); }
-  function openHongyanPreviewPanel(){ return bridge._openHongyanPreviewPanel(); }
-  function closeModule(){ return bridge._closeModule(); }
-  function closeDeskOverlay(id){ return bridge._closeDeskOverlay(id); }
-  function closeRightDrawer(){ return bridge._closeRightDrawer(); }
-  function returnFormalHomeSoon(){ return bridge._returnFormalHomeSoon(); }
-  function saveFormalDraftsToGM(){ return bridge._saveFormalDraftsToGM(); }
   // ── reverse 捕获：origin body 函数(origin 装载期 PLUMBING-B 已导出·均函数声明) ──
   var rightArmyBar = __p8R.rightArmyBar, rightArmyRows = __p8R.rightArmyRows, rightClassDemandByName = __p8R.rightClassDemandByName, rightFindSocialActor = __p8R.rightFindSocialActor, rightIssueNum = __p8R.rightIssueNum;
   //>>P8RAIL-SPLIT24-BODY-START

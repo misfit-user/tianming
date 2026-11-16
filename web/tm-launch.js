@@ -758,50 +758,6 @@ function renderChrTab(em,sid){
     list.map(function(ch){var i=P.characters.indexOf(ch);return "<div class=\"cd\"><div style=\"display:flex;justify-content:space-between;\"><div><strong style=\"color:var(--gold-l);\">"+escHtml(ch.name)+"</strong> <span style=\"color:var(--txt-d);font-size:0.8rem;\">"+escHtml(ch.title)+"</span></div><div><button class=\"bs bsm\" onclick=\"editChr("+i+")\">\u7F16\u8F91</button> <button class=\"bd bsm\" onclick=\"P.characters.splice("+i+",1);renderEdTab('t-chr');\">\u2715</button></div></div><div style=\"font-size:0.78rem;color:var(--txt-s);\">"+escHtml(ch.desc)+"</div></div>";}).join("")||"<div style=\"color:var(--txt-d);\">\u6682\u65E0</div>";
 }
 function addChr(){P.characters.push({sid:editingScenarioId,name:"\u65B0\u89D2\u8272",title:"",desc:"",stats:{},stance:"",playable:false,personality:"",appearance:"",skills:[],loyalty:70,morale:70,ambition:50,benevolence:50,intelligence:50,valor:50,dialogues:[],secret:"",faction:"",aiPersonaText:"",behaviorMode:"",valueSystem:"",speechStyle:"",rels:[],isHistorical:false,age:30,gender:"\u7537"});renderEdTab("t-chr");}
-function editChr(i){
-  var ch=P.characters[i];
-  function sl(field,label,val,idx){
-    return '<div class="sl-g"><label style="width:60px;font-size:12px;">'+label+'</label>'+
-      '<input type="range" min="0" max="100" value="'+val+'" style="flex:1;" '+
-      'oninput="P.characters['+idx+'].'+field+'=+this.value;this.nextElementSibling.textContent=this.value">'+
-      '<span class="sl-v">'+val+'</span></div>';
-  }
-  var loyalty = ch.loyalty!=null?ch.loyalty:70;
-  var ambition = ch.ambition!=null?ch.ambition:50;
-  var benevolence = ch.benevolence!=null?ch.benevolence:50;
-  var intelligence = ch.intelligence!=null?ch.intelligence:50;
-  var valor = ch.valor!=null?ch.valor:50;
-  var morale = ch.morale!=null?ch.morale:70;
-  _$("em").innerHTML="<div class=\"cd\"><h4>\u7F16\u8F91\u89D2\u8272</h4>"+
-    "<div class=\"rw\"><div class=\"fd\"><label>\u540D\u79F0</label><input value=\""+escHtml(ch.name)+"\" onchange=\"P.characters["+i+"].name=this.value\"></div><div class=\"fd\"><label>\u5934\u8854</label><input value=\""+escHtml(ch.title)+"\" onchange=\"P.characters["+i+"].title=this.value\"></div></div>"+
-    "<div class=\"rw\"><div class=\"fd\"><label>\u7ACB\u573A</label><input value=\""+escHtml(ch.stance||"")+"\" onchange=\"P.characters["+i+"].stance=this.value\"></div><div class=\"fd\"><label>\u6D3E\u7CFB</label><input value=\""+escHtml(ch.faction||"")+"\" onchange=\"P.characters["+i+"].faction=this.value\"></div></div>"+
-    "<div class=\"fd full\"><label>\u63CF\u8FF0</label><textarea rows=\"2\" onchange=\"P.characters["+i+"].desc=this.value\">"+escHtml(ch.desc||"")+"</textarea></div>"+
-    "<div class=\"fd full\" style=\"margin-top:0.3rem;\"><label>\u6027\u683C</label><input value=\""+escHtml(ch.personality||"")+"\" onchange=\"P.characters["+i+"].personality=this.value\"></div>"+
-    "<div class=\"fd full\" style=\"margin-top:0.5rem;\"><label style=\"margin-bottom:4px;display:block;\">\u4E94\u7EF4\u5C5E\u6027</label>"+
-    sl('loyalty','\u5FE0\u8BDA',loyalty,i)+
-    sl('ambition','\u91CE\u5FC3',ambition,i)+
-    sl('benevolence','\u4EC1\u5FB7',benevolence,i)+
-    sl('intelligence','\u667A\u8C0B',intelligence,i)+
-    sl('valor','\u6B66\u52C7',valor,i)+
-    sl('morale','\u58EB\u6C14',morale,i)+
-    "</div>"+
-    "<div class=\"fd full\" style=\"margin-top:0.3rem;\"><label>AI\u4EBA\u8BBE\u6587\u672C</label><textarea rows=\"3\" onchange=\"P.characters["+i+"].aiPersonaText=this.value\" placeholder=\"\u8BE6\u7EC6\u63CF\u8FF0\u4F9BAI\u5224\u65AD\u89D2\u8272\u884C\u4E3A\">"+escHtml(ch.aiPersonaText||"")+"</textarea></div>"+
-    "<button class=\"bt bp\" onclick=\"renderEdTab('t-chr');toast('\u5DF2\u4FDD\u5B58')\" style=\"margin-top:0.5rem;\">\u5B8C\u6210</button></div>";
-}
-
-async function aiGenChr(){
-  showLoading("\u751F\u6210\u89D2\u8272\u4E2D...",20);
-  try{var ctx=findScenarioById(editingScenarioId);
-    var era=ctx?ctx.era:"";var scnName=ctx?ctx.name:"";
-    var histReq="\u3010\u8981\u6C42\u3011\u4EBA\u7269\u5FC5\u987B\u662F"+era+"\u65F6\u671F\u5B9E\u9645\u5B58\u5728\u7684\u5386\u53F2\u4EBA\u7269\uff0c\u4E0D\u5F97\u865A\u6784\u3002";
-    var existChr=P.characters.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNote1=existChr.length?"已有人物（不得重复）："+existChr.join("、")+"\n":"";var content=await callAISmart("你是中国历史专家。"+histReq+existNote1+"请为剧本《"+scnName+"》("+era+")生成5个新历史人物，严格按正史还原。返回JSON:\n[{\"name\":\"\",\"title\":\"\",\"desc\":\"\",\"personality\":\"\",\"stats\":{},\"loyalty\":70,\"ambition\":50,\"benevolence\":50,\"intelligence\":70,\"valor\":60,\"morale\":75,\"stance\":\"\",\"faction\":\"\",\"isHistorical\":true}]",2500,{minLength:200,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
-    var generatedChars=extractJSON(content);if(Array.isArray(generatedChars)){generatedChars.forEach(function(c){P.characters.push({sid:editingScenarioId,name:c.name||"",title:c.title||"",desc:c.desc||"",stats:c.stats||{},stance:c.stance||"",playable:false,personality:c.personality||"",appearance:"",skills:[],loyalty:c.loyalty!=null?c.loyalty:70,morale:c.morale!=null?c.morale:75,ambition:c.ambition!=null?c.ambition:50,benevolence:c.benevolence!=null?c.benevolence:50,intelligence:c.intelligence!=null?c.intelligence:70,valor:c.valor!=null?c.valor:60,dialogues:[],secret:"",faction:c.faction||"",aiPersonaText:"",behaviorMode:"",valueSystem:"",speechStyle:"",rels:[],isHistorical:c.isHistorical!==false,age:30,gender:"\u7537"});});renderEdTab("t-chr");toast("\u2705 \u5DF2\u751F\u6210");}
-  }catch(err){toast("\u5931\u8D25: "+err.message);}
-  finally{hideLoading();}
-}
-
-// renderFacTab 已在后面（约22128行）定义增强版本，此处不再重复
-async function aiGenFac(){showLoading("生成党派中...",20);try{var ctx=P.scenarios.find(function(s){return s.id===editingScenarioId;});var era=ctx?ctx.era:"";var scnName=ctx?ctx.name:"";var histReq="《要求》派系必须是"+era+"时期真实存在的历史派系、震营或政治集团，领袖人物必须是该时期实有其人，不得虚构。";var existFac=P.factions.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNote2=existFac.length?"已有势力（不得重复）："+existFac.join("、")+"\n":"";var c=await callAISmart("你是中国历史专家。"+histReq+existNote2+"请为剧本《"+scnName+"》("+era+")生成3-5个历史上实际存在的派系或政治集团，严格按正史还原。返回JSON:[{\"name\":\"\",\"leader\":\"\",\"desc\":\"\",\"strength\":50,\"ideology\":\"\",\"territory\":\"\",\"traits\":[]}]",2000,{minLength:150,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});var generatedFacs=extractJSON(c);if(Array.isArray(generatedFacs)){generatedFacs.forEach(function(f){P.factions.push({sid:editingScenarioId,name:f.name||"",leader:f.leader||"",desc:f.desc||"",color:"#"+Math.floor(random()*16777215).toString(16).padStart(6,"0"),traits:f.traits||[],strength:f.strength!=null?f.strength:50,territory:f.territory||"",ideology:f.ideology||""});});renderEdTab("t-fac");toast("历史派系已生成");}}catch(e){toast("失败: "+e.message);}finally{hideLoading();}}
 
 // --- 阶层 ---
 // --- 外部势力 ---
@@ -818,38 +774,6 @@ function renderVarTab(em,sid){
 }
 
 // --- 规则/事件/军事/科技/市政/时间/地图/世界/官制 ---
-// 简化版渲染（功能完整但精简）
-async function aiGenVar(){
-  var sid=editingScenarioId;
-  if(!sid){toast("\u8bf7\u5148\u9009\u62e9\u5267\u672c");return;}
-  var scn=findScenarioById(sid)||{};
-  var ctx=(scn.name||"")+(scn.era?","+scn.era:"")+(scn.background?","+scn.background:"");
-  var vc=6,rc=5;
-  var prompt="\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002"+
-    "\u5267\u672c\u80cc\u666f\uff1a"+ctx+
-    "\n\u8bf7\u751f\u6210"+vc+"\u4e2a\u5168\u5c40\u53d8\u91cf\u548c"+rc+"\u4e2a\u4eba\u7269\u5173\u7cfb\u3002"+
-    "\u53d8\u91cf\u5e94\u53cd\u6620\u8be5\u65f6\u671f\u771f\u5b9e\u653f\u6cbb\u3001\u519b\u4e8b\u3001\u7ecf\u6d4e\u3001\u6c11\u5fc3\u72b6\u51b5\u3002"+
-    "\n\u8fd4\u56deJSON: {\"variables\":[{\"name\":\"...\",\"value\":50,\"min\":0,\"max\":100,\"desc\":\"...\"},...],"+
-    "\"relations\":[{\"name\":\"...\",\"from\":\"...\",\"to\":\"...\",\"type\":\"...\",\"value\":50},...]}";
-  showLoading("\u751f\u6210\u53d8\u91cf\u4e0e\u5173\u7cfb...");
-  try{
-    var existVar=P.variables.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNoteV=existVar.length?"\u5df2\u6709\u53d8\u91cf\uff08\u4e0d\u5f97\u91cd\u590d\uff09\uff1a"+existVar.join("\u3001")+"\n":"";var raw=await callAISmart(prompt+existNoteV,2000,{minLength:100,maxRetries:3,validator:function(c){try{var j=JSON.parse(_stripJsonFence(c));return j.variables&&Array.isArray(j.variables)&&j.variables.length>=Math.min(vc,2);}catch(e){return false;}}});
-    var j=JSON.parse(_stripJsonFence(raw));
-    var added=0;
-    if(j.variables&&Array.isArray(j.variables))j.variables.forEach(function(v){
-      P.variables.push({id:uid(),sid:sid,name:v.name||"",value:v.value!=null?v.value:50,min:v.min!=null?v.min:0,max:v.max!=null?v.max:100,color:"#c9a84c",icon:"",cat:"",visible:true,desc:v.desc||""});
-      added++;
-    });
-    if(j.relations&&Array.isArray(j.relations))j.relations.forEach(function(r){
-      P.relations.push({id:uid(),sid:sid,name:r.name||(r.from+"\u2192"+r.to),from:r.from||"",to:r.to||"",type:r.type||"",value:r.value!=null?r.value:50,desc:""});
-      added++;
-    });
-    saveP();
-    renderEdTab("t-var");
-    toast("\u5df2\u751f\u6210\u53d8\u91cf/\u5173\u7cfb "+added+"\u4e2a");
-  }catch(e){toast("\u751f\u6210\u5931\u8d25:"+e.message);}
-  finally{hideLoading();}
-}
 
 function addMilItem(k){
   openGenericModal('\u6DFB\u52A0'+({'troops':'\u5175\u79CD','facilities':'\u8BBE\u65BD','organization':'\u7F16\u5236','campaigns':'\u6218\u5F79'}[k]||k),
@@ -904,19 +828,6 @@ function editCivic(i){
     }
   );
 }
-async function aiGenCivic(){
-  showLoading('生成市政中...',20);
-  try{
-    var ctx=findScenarioById(editingScenarioId);
-    var era=ctx?ctx.era:"";var scnName=ctx?ctx.name:"";
-    var existCiv=(P.civicTree&&P.civicTree.policies?P.civicTree.policies:[]).filter(function(x){return !x.sid||x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNoteC=existCiv.length?"已有政策（不得重复）："+existCiv.join("、")+"\n":"";var c=await callAISmart('你是中国历史专家。请为剧本《'+scnName+'》('+era+')生成3-5个市政正策或制度，必须是该时期历史上实际存在的。'+existNoteC+'返回JSON:[{"name":"","desc":"","era":"","prereqs":[],"effect":{},"costs":[]}]',2000,{minLength:100,maxRetries:3,validator:function(content){try{var arr=extractJSON(content);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
-    var generatedCivics=extractJSON(c);
-    if(Array.isArray(generatedCivics)){generatedCivics.forEach(function(v){
-      P.civicTree.push({sid:editingScenarioId,name:v.name||'',desc:v.desc||'',era:v.era||era,prereqs:v.prereqs||[],costs:v.costs||[],effect:v.effect||{},adopted:false});
-    });renderEdTab('t-civic');toast('市政已生成');}
-  }catch(e){toast('失败: '+e.message);}
-  finally{hideLoading();}
-}
 
 function renderTimTab(em,timeView){var t=timeView||P.time;var eraList=(t.eraNames||[]);var eraRows=eraList.map(function(e,i){return "<div style=\"display:flex;gap:6px;align-items:center;margin-bottom:3px;\">"+"<input id=\"t-era-n-"+i+"\" value=\""+e.name+"\" placeholder=\"\u5E74\u53F7\u540D\" style=\"width:80px\">"+"<input type=\"number\" id=\"t-era-y-"+i+"\" value=\""+e.startYear+"\" placeholder=\"\u5E74\" style=\"width:60px\">"+"<input type=\"number\" id=\"t-era-m-"+i+"\" value=\""+e.startMonth+"\" placeholder=\"\u6708\" style=\"width:44px\">"+"<button class=\"bd bsm\" onclick=\"_eraUpd("+i+")\">\u4FDD</button>"+"<button class=\"bd bsm\" onclick=\"_eraDel("+i+")\">\u5220</button>"+"</div>";}).join("");em.innerHTML="<h4 style=\"color:var(--gold);\">\u65F6\u95F4</h4>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u8D77\u59CB\u5E74</label>"+"<input type=\"number\" id=\"t-year\" value=\""+t.year+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u524D\u7F00</label>"+"<input id=\"t-prefix\" value=\""+( t.prefix||"")+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u540E\u7F00</label>"+"<input id=\"t-suffix\" value=\""+( t.suffix||"")+"\" onchange=\"saveT()\"></div>"+"</div>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u6BCF\u56DE\u5408</label>"+"<select id=\"t-per-turn\" onchange=\"saveT()\">"+"<option value=\"1s\" "+(t.perTurn==="1s"?"selected":"")+">\u5B63</option>"+"<option value=\"1m\" "+(t.perTurn==="1m"?"selected":"")+">\u6708</option>"+"<option value=\"1y\" "+(t.perTurn==="1y"?"selected":"")+">\u5E74</option>"+"</select></div>"+"<div class=\"fd\"><label>\u5B63\u8282(\u9017\u53F7)</label>"+"<input id=\"t-seasons\" value=\""+( t.seasons||[]).join(",")+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u8D77\u59CB\u5B63\u8282</label>"+"<input type=\"number\" id=\"t-start-s\" value=\""+( t.startS||0)+"\" onchange=\"saveT()\"></div>"+"</div>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u5E74\u53F7</label>"+"<input id=\"t-reign\" value=\""+( t.reign||"")+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u5E74\u53F7\u8D77\u59CB</label>"+"<input type=\"number\" id=\"t-reign-y\" value=\""+( t.reignY||1)+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u663E\u793A</label>"+"<select id=\"t-display\" onchange=\"saveT()\">"+"<option value=\"year_season\" "+(t.display==="year_season"?"selected":"")+">\u5E74+\u5B63</option>"+"<option value=\"reign\" "+(t.display==="reign"?"selected":"")+">\u5E74\u53F7</option>"+"</select></div>"+"</div>"+"<hr style=\"border-color:var(--bg-4);margin:8px 0;\">"+"<div class=\"rw\">"+"<div class=\"fd\"><label>\u8D77\u59CB\u6708</label>"+"<input type=\"number\" id=\"t-start-month\" min=\"1\" max=\"12\" value=\""+( t.startMonth||1)+"\" onchange=\"saveT()\"></div>"+"<div class=\"fd\"><label>\u8D77\u59CB\u65E5</label>"+"<input type=\"number\" id=\"t-start-day\" min=\"1\" max=\"30\" value=\""+( t.startDay||1)+"\" onchange=\"saveT()\"></div>"+"</div>"+"<div class=\"rw\">"+"<div class=\"fd\"><label>"+"<input type=\"checkbox\" id=\"t-enable-ganzhi\" "+(t.enableGanzhi?"checked":"")+" onchange=\"saveT()\">"+" \u5E72\u652F\u5E74\u4EFD</label></div>"+"<div class=\"fd\"><label>"+"<input type=\"checkbox\" id=\"t-enable-ganzhi-day\" "+(t.enableGanzhiDay?"checked":"")+" onchange=\"saveT()\">"+" \u5E72\u652F\u65E5\u671F</label></div>"+"<div class=\"fd\"><label>"+"<input type=\"checkbox\" id=\"t-enable-era-name\" "+(t.enableEraName?"checked":"")+" onchange=\"saveT()\">"+" \u6539\u5143\u5E74\u53F7</label></div>"+"</div>"+"<div style=\"margin-top:8px;\">"+"<strong style=\"color:var(--gold-dim);\">\u5E74\u53F7\u5217\u8868</strong>"+" <button class=\"bt bsm\" onclick=\"_eraAdd()\">+\u6DFB\u52A0</button>"+"<div id=\"t-era-list\" style=\"margin-top:6px;\">"+eraRows+"</div></div>";window._eraAdd=function(){if(!P.time.eraNames)P.time.eraNames=[];P.time.eraNames.push({name:"",startYear:P.time.year,startMonth:1,startDay:1});renderTimTab(document.getElementById("t-era-list").closest(".tab-panel")||document.getElementById("t-era-list").parentNode.parentNode);};window._eraDel=function(i){if(!P.time.eraNames)return;P.time.eraNames.splice(i,1);renderTimTab(document.getElementById("t-era-list").closest(".tab-panel")||document.getElementById("t-era-list").parentNode.parentNode);};window._eraUpd=function(i){var e=P.time.eraNames[i];if(!e)return;var n=document.getElementById("t-era-n-"+i);if(n)e.name=n.value;var y=document.getElementById("t-era-y-"+i);if(y)e.startYear=+y.value||P.time.year;var m=document.getElementById("t-era-m-"+i);if(m)e.startMonth=+m.value||1;saveT();};}
 // 历史单行模板保留兼容结构；调用前只给它临时的已转义视图，绝不改写 P.time 真值。
@@ -947,22 +858,6 @@ renderTimTab = function(em) {
 // ============================================================
 //  AI整体生成剧本
 // ============================================================
-function aiGenFullScenario(){
-  var panel=_$("ai-full-gen-panel");if(!panel)return;
-  if(panel.style.display==="block"){panel.style.display="none";return;}
-  panel.style.display="block";
-  panel.innerHTML='<div class="cd"><h4 style="color:var(--gold);">\uD83E\uDD16 AI\u751F\u6210\u5386\u53F2\u5267\u672C</h4>'+
-    '<div class="rw"><div class="fd full"><label>\u671D\u4EE3 / \u7687\u5E1D <span style="color:var(--txt-d);font-size:0.8rem;">\uff08\u5FC5\u586B\uff09</span></label>'+
-    '<input id="fg-dynasty" placeholder="如：明朝崇祯皇帝 / 唐朝李世民" style="width:100%;"></div></div>'+
-    '<div class="rw"><div class="fd full"><label>\u8865\u5145\u63CF\u8FF0 <span style="color:var(--txt-d);font-size:0.8rem;">\uff08\u53EF\u9009\uff0C\u6307\u5B9A\u80CC\u666F\u3001\u4E8B\u4EF6\uff09</span></label>'+
-    '<textarea id="fg-desc" rows="2" placeholder="如：崇祯十七年，李自成兵临城下，朝局动荡…"></textarea></div></div>'+
-    '<div class="rw"><div class="fd"><label>\u751F\u6210\u8BE6\u7EC6\u7A0B\u5EA6</label>'+
-    '<select id="fg-words"><option value="brief">\u7B80\u7565\uff08\u5FEB\u901F\uff09</option><option value="normal" selected>\u6807\u51C6\uff08\u63A8\u8350\uff09</option><option value="detailed">\u8BE6\u7EC6\uff08\u5185\u5BB9\u4E30\u5BCC\uff09</option><option value="full">\u5B8C\u6574\uff08\u6700\u8BE6\u5C3D\uff09</option></select></div>'+
-    '<div class="fd"><label>\u4E16\u754C\u7C7B\u578B</label>'+
-    '<select id="fg-worldkind"><option value="historical" selected>\u53F2\u5B9E\uff08\u6309\u6B63\u53F2\u8003\u636E\uff09</option><option value="fictional">\u865A\u6784\uff08\u67B6\u7A7A/\u5947\u5E7B/\u6B66\u4FA0/\u672A\u6765\u00B7\u539F\u521B\u4E16\u754C\u89C2\uff09</option></select></div></div>'+
-    '<button class="bai" onclick="execFullGen()" style="margin-top:0.8rem;width:100%;">\uD83D\uDE80 \u5F00\u59CB\u751F\u6210\u5267\u672C</button>'+
-    '<div id="fg-status" style="font-size:0.82rem;color:var(--txt-d);margin-top:0.3rem;"></div></div>';
-}
 var _fgAbortCtrl=null;
 function _fgShowProgress(step,total,stepName,done){
   var ov=_$("fg-progress-overlay");

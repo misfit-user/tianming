@@ -28,7 +28,6 @@
     return;
   }
 
-  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function safe(v, def) { return (v === undefined || v === null) ? (def || 0) : v; }
 
   // 民心走 MinxinLedger 总闸(2026-07-04 收口)·同 p1 的 _mxApply(多 IIFE 各一份·作用域隔离)

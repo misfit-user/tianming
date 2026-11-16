@@ -143,10 +143,6 @@
     return rightIssueFirst(p, ['officialTitle','office','title','role','position'], '未仕');
   }
 
-  function rightIssueFaction(p){
-    return rightIssueFirst(p, ['faction','party','class','group','camp'], '未录派系');
-  }
-
   function rightCleanFactionName(value){
     return String(value || '')
       .replace(/[\s·\-—_]/g, '')
@@ -303,23 +299,6 @@
       var bb = rightIssueNum(b, ['stress','ambition','influence'], 0);
       return bb - aa;
     });
-  }
-
-  function rightIssueRows(rows){
-    return '<div class="tmrp-rows">' + rows.map(function(r){
-      return '<div><span>' + esc(r[0]) + '</span><b>' + esc(r[1] == null || r[1] === '' ? '未录' : r[1]) + '</b></div>';
-    }).join('') + '</div>';
-  }
-
-  function rightIssuePersonButton(p, selectedKey){
-    var key = personKey(p);
-    var active = String(key) === String(selectedKey);
-    var sub = [rightIssuePersonTitle(p), rightIssueFaction(p), p.location || p.status || ''].filter(Boolean).join(' · ');
-    return '<button type="button" class="tmrp-person ' + (active ? 'active' : '') + '" data-right-action="wendui-select" data-id="' + attr(key) + '">' +
-      rightIssuePortrait(p) +
-      '<span><b>' + esc(p.name || key) + '</b><span>' + esc(sub) + '</span></span>' +
-      '<small>' + (rightIssueAtCourt(p) ? '可召' : '传书') + '</small>' +
-      '</button>';
   }
 
   function rightWenduiHistory(name){

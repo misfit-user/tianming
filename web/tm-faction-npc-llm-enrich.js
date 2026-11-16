@@ -18,7 +18,6 @@
 (function(global) {
   'use strict';
 
-  function _safeNum(v) { return (typeof v === 'number' && isFinite(v)) ? v : 0; }
   function _arr(v) { return Array.isArray(v) ? v : []; }
   function _normFactionName(v) { return String(v == null ? '' : v).replace(/\s+/g, '').trim(); }
   function _isMarkedPlayerFaction(f) {

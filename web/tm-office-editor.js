@@ -968,27 +968,6 @@ function editTech(i) {
   );
 }
 
-// ---- override renderTechTab with edit buttons ----
-function renderTechTab(em, sid) {
-  var list = P.techTree.filter(function(t){ return t.sid===sid; });
-  em.innerHTML =
-    '<h4 style="color:var(--gold);">\u79D1\u6280\u6811 (' + list.length + ')</h4>'+
-    '<div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">'+
-    '<button class="bt bp" onclick="openGenericModal(\u0027\u6DFB\u52A0\u79D1\u6280\u0027,'+
-    '\u0027<div class=\\"form-group\\"><label>\u540D\u79F0</label><input id=\\"ntk-name\\" placeholder=\"\u65B0\u79D1\u6280\"></div><div class=\\"form-group\\"><label>\u63CF\u8FF0</label><textarea id=\\"ntk-desc\\" rows=\\"2\\"></textarea></div><div class=\\"form-group\\"><label>\u65F6\u4EE3</label><select id=\\"ntk-era\\"><option value=\\"\u521D\u7EA7\\" selected>\u521D\u7EA7</option><option value=\\"\u4E2D\u7EA7\\">\u4E2D\u7EA7</option><option value=\\"\u9AD8\u7EA7\\">\u9AD8\u7EA7</option></select></div>\u0027,'+
-    'function(){P.techTree.push({sid:editingScenarioId,name:gv(\u0027ntk-name\u0027)||\u0027\u65B0\u79D1\u6280\u0027,desc:gv(\u0027ntk-desc\u0027),prereqs:[],costs:[],effect:{},era:gv(\u0027ntk-era\u0027),unlocked:false});renderEdTab(\u0027t-tech\u0027);});">\uFF0B</button>'+
-    '<button class="bai" onclick="aiGenTech()">\uD83E\uDD16 AI\u751F\u6210</button></div>'+
-    list.map(function(t) {
-      var i = P.techTree.indexOf(t);
-      return '<div class="cd"><div style="display:flex;justify-content:space-between;align-items:center;">'+
-        '<span><strong>' + _officeEditorEsc(t.name) + '</strong> <span class="tg">' + _officeEditorEsc(t.era||'') + '</span></span>'+
-        '<span><button class="bt bsm" onclick="editTech(' + i + ')">\u7F16\u8F91</button>'+
-        '<button class="bd bsm" onclick="P.techTree.splice(' + i + ',1);renderEdTab(\u0027t-tech\u0027);">\u2715</button></span></div>'+
-        (t.desc ? '<div style="font-size:0.82rem;color:var(--txt-d);margin-top:0.3rem;">' + _officeEditorEsc(t.desc) + '</div>' : '') +
-        '</div>';
-    }).join('') || '<div style="color:var(--txt-d);font-size:0.85rem;">\u6682\u65E0</div>';
-}
-
 // ---- editFac(i) ----
 function editFac(i) {
   var f = P.factions[i];
@@ -1013,25 +992,6 @@ function editFac(i) {
       renderEdTab('t-fac');
     }
   );
-}
-
-// ---- override renderFacTab with edit buttons ----
-function renderFacTab(em, sid) {
-  var list = P.factions.filter(function(f){ return f.sid===sid; });
-  em.innerHTML =
-    '<h4 style="color:var(--gold);">\uD83C\uDFDB \u6D3E\u7CFB (' + list.length + ')</h4>'+
-    '<div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">'+
-    '<button class="bt bp" onclick="P.factions.push({sid:editingScenarioId,name:\u0027\u65B0\u6D3E\u7CFB\u0027,leader:\u0027\u0027,desc:\u0027\u0027,color:\u0027#888\u0027,traits:[],strength:50,territory:\u0027\u0027,ideology:\u0027\u0027,courtInfluence:50,popularInfluence:30});renderEdTab(\u0027t-fac\u0027);">\uFF0B</button>'+
-    '<button class="bai" onclick="aiGenFac()">\uD83E\uDD16 AI\u751F\u6210</button></div>'+
-    list.map(function(f) {
-      var i = P.factions.indexOf(f);
-      return '<div class="cd"><div style="display:flex;justify-content:space-between;align-items:center;">'+
-        '<strong>' + _officeEditorEsc(f.name) + '</strong>'+
-        '<span><button class="bt bsm" onclick="editFac(' + i + ')">\u7F16\u8F91</button>'+
-        '<button class="bd bsm" onclick="P.factions.splice(' + i + ',1);renderEdTab(\u0027t-fac\u0027);">\u2715</button></span></div>'+
-        (f.desc ? '<div style="font-size:0.82rem;color:var(--txt-d);margin-top:0.2rem;">' + _officeEditorEsc(f.desc) + '</div>' : '') +
-        '</div>';
-    }).join('') || '<div style="color:var(--txt-d);font-size:0.85rem;">\u6682\u65E0</div>';
 }
 
 // ---- editRul(i) ----
@@ -1065,23 +1025,6 @@ function editRul(i) {
   );
 }
 
-// ---- override renderRulTab with edit buttons ----
-function renderRulTab(em, sid) {
-  var list = P.rules.filter(function(r){ return r.sid===sid; });
-  em.innerHTML =
-    '<h4 style="color:var(--gold);">\u89C4\u5219 (' + list.length + ')</h4>'+
-    '<button class="bt bp" style="margin-bottom:0.5rem;" onclick="P.rules.push({sid:editingScenarioId,name:\u0027\u65B0\u89C4\u5219\u0027,enabled:true,trigger:{type:\u0027threshold\u0027,variable:\u0027\u0027,op:\u0027<\u0027,value:20},effect:{narrative:\u0027\u0027,varChg:{},event:null}});renderEdTab(\u0027t-rul\u0027);">\uFF0B</button>'+
-    list.map(function(r) {
-      var i = P.rules.indexOf(r);
-      return '<div class="cd"><div style="display:flex;justify-content:space-between;align-items:center;">'+
-        '<strong>' + _officeEditorEsc(r.name) + '</strong>'+
-        '<span><button class="bt bsm" onclick="editRul(' + i + ')">\u7F16\u8F91</button>'+
-        '<button class="bd bsm" onclick="P.rules.splice(' + i + ',1);renderEdTab(\u0027t-rul\u0027);">\u2715</button></span></div>'+
-        '<div style="font-size:0.78rem;color:var(--txt-d);">' + _officeEditorEsc(r.trigger&&r.trigger.variable?r.trigger.variable+' '+r.trigger.op+' '+r.trigger.value:'') + '</div>'+
-        '</div>';
-    }).join('') || '<div style="color:var(--txt-d);font-size:0.85rem;">\u6682\u65E0</div>';
-}
-
 // ---- editEvt(i) ----
 function editEvt(i) {
   var ev = P.events[i];
@@ -1106,23 +1049,6 @@ function editEvt(i) {
       renderEdTab('t-evt');
     }
   );
-}
-
-// ---- override renderEvtTab with edit buttons ----
-function renderEvtTab(em, sid) {
-  var list = P.events.filter(function(ev){ return ev.sid===sid; });
-  em.innerHTML =
-    '<h4 style="color:var(--gold);">\u4E8B\u4EF6 (' + list.length + ')</h4>'+
-    '<button class="bt bp" style="margin-bottom:0.5rem;" onclick="P.events.push({sid:editingScenarioId,id:uid(),name:\u0027\u65B0\u4E8B\u4EF6\u0027,type:\u0027scripted\u0027,triggerTurn:0,oneTime:true,triggered:false,narrative:\u0027\u0027,choices:[]});renderEdTab(\u0027t-evt\u0027);">\uFF0B</button>'+
-    list.map(function(ev) {
-      var i = P.events.indexOf(ev);
-      return '<div class="cd"><div style="display:flex;justify-content:space-between;align-items:center;">'+
-        '<strong>' + _officeEditorEsc(ev.name) + '</strong>'+
-        '<span><button class="bt bsm" onclick="editEvt(' + i + ')">\u7F16\u8F91</button>'+
-        '<button class="bd bsm" onclick="P.events.splice(' + i + ',1);renderEdTab(\u0027t-evt\u0027);">\u2715</button></span></div>'+
-        '<div style="font-size:0.78rem;color:var(--txt-d);">\u7B2C ' + _officeEditorEsc(ev.triggerTurn||0) + ' \u56DE\u5408 | ' + _officeEditorEsc(ev.type||'scripted') + (ev.oneTime?' | \u5355\u6B21':'') + '</div>'+
-        '</div>';
-    }).join('') || '<div style="color:var(--txt-d);font-size:0.85rem;">\u6682\u65E0</div>';
 }
 
 // ---- Feature 7: Enhanced game modes — pre-turn prompt injection ----
@@ -2149,56 +2075,6 @@ function _osmFillOfficeHolder(nodes, a) {
     if (n.subs) _assigned += _osmFillOfficeHolder(n.subs, a);
   });
   return _assigned;
-}
-
-/** 编辑器：为某部门AI补充生成角色（阶段C） */
-function aiGenOfficeStaff(deptPath) {
-  var dept = _officeGetByPath(deptPath);
-  if (!dept) { toast('找不到部门'); return; }
-  var _scnBg = '';
-  if (typeof editingScenarioId !== 'undefined') {
-    var _sc = (typeof findScenarioById === 'function') ? findScenarioById(editingScenarioId) : null;
-    if (_sc) _scnBg = (_sc.era||'') + ' ' + (_sc.dynasty||'');
-  }
-  var _unfilled = (dept.positions||[]).filter(function(p) {
-    var m = (p.holder ? 1 : 0) + (p.additionalHolders ? p.additionalHolders.length : 0);
-    return (p.actualCount||0) > m; // 有未具象的在任者
-  });
-  if (_unfilled.length === 0) { toast('该部门所有在任者已具象'); return; }
-  (async function() {
-    try {
-      showLoading('为' + dept.name + '补充人员...', 30);
-      var _existChars = (P.characters||[]).map(function(c) { return c.name; });
-      var prompt = '背景：' + (_scnBg || '中国古代') + '。\n'
-        + '为' + dept.name + '的以下官职生成任职者角色。\n'
-        + '优先使用真实历史人物，找不到再虚构。\n'
-        + (_existChars.length > 0 ? '已有角色：' + _existChars.slice(0,20).join('、') + '\n' : '')
-        + _unfilled.map(function(p, i) {
-          var need = (p.actualCount||0) - ((p.holder?1:0) + (p.additionalHolders||[]).length);
-          return (i+1) + '. ' + p.name + '（' + (p.rank||'') + '），需补' + need + '人';
-        }).join('\n')
-        + '\n返回JSON：[{"pos":"官职名","name":"人名","personality":"性格","intelligence":60,"administration":60,"loyalty":60}]';
-      var c = await callAISmart(prompt, 4000, { minLength: 100, maxRetries: 2 });
-      var chars = extractJSON(c);
-      if (!Array.isArray(chars)) throw new Error('AI 返回的补员数据不是唯一 JSON 数组');
-      var added = 0;
-      chars.forEach(function(ch) {
-        if (!ch.name || !ch.pos) return;
-        var p = (dept.positions||[]).find(function(pp) { return pp.name === ch.pos; });
-        if (!p) return;
-        if (!p.additionalHolders) p.additionalHolders = [];
-        p.additionalHolders.push(ch.name);
-        if (!P.characters) P.characters = [];
-        if (!P.characters.find(function(c2) { return c2.name === ch.name; })) {
-          P.characters.push({ name: ch.name, title: ch.pos, role: dept.name + ch.pos, personality: ch.personality||'', intelligence: ch.intelligence||55, administration: ch.administration||55, loyalty: ch.loyalty||55, ambition: ch.ambition||45, officialTitle: ch.pos, alive: true });
-        }
-        added++;
-      });
-      hideLoading();
-      renderEdTab('t-office');
-      toast('已补充' + added + '名角色');
-    } catch(e) { hideLoading(); toast('失败: ' + (e.message||e)); }
-  })();
 }
 
 // ============================================================

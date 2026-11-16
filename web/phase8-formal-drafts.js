@@ -62,11 +62,9 @@
   // ── late-bound wrappers (orchestration calls into bridge) ──────────
   function openPanel(slot){ return bridge.openPanel(slot); }
   function openModule(kind, opts){ return bridge.openModule(kind, opts); }
-  function openGuoku(){ return bridge.openGuoku(); }
   function openChaoyiMode(mode){ return bridge._openChaoyiMode(mode); }
   function openShizhengPreviewPanel(){ return bridge._openShizhengPreviewPanel(); }
   function closeModule(){ return bridge._closeModule(); }
-  function returnFormalHomeSoon(){ return bridge._returnFormalHomeSoon(); }
   var deskDraftCaptureDepth = 0;
   function saveFormalDraftsToGM(captureOpen){
     if (deskDraftCaptureDepth) return;

@@ -54,7 +54,6 @@
   'use strict';
 
   function _safeNum(v) { return (typeof v === 'number' && isFinite(v)) ? v : 0; }
-  function _clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
   function _isEnabled() {
     if (!global.TM || !global.TM.FactionNpcSettings) return false;
@@ -1888,96 +1887,6 @@
       actions.push(_makeAction(decisionId, turn, fac, type, idx, _nativeActionPayload(a), 'native'));
     });
     return actions.filter(function(a){ return CANONICAL_ACTION_TYPES.indexOf(a.type) >= 0; });
-  }
-
-  function _pushFacTrajectory(fac, key, rec) {
-    if (!fac || !key || !rec) return;
-    if (!Array.isArray(fac[key])) fac[key] = [];
-    fac[key].push(rec);
-    if (fac[key].length > 30) fac[key] = fac[key].slice(-30);
-  }
-
-  function _findArmy(name) {
-    var G = global.GM || {};
-    var key = String(name || '').trim();
-    if (!key || !Array.isArray(G.armies)) return null;
-    return G.armies.find(function(a) {
-      if (!a) return false;
-      return [a.name, a.armyName, a.id, a.unitName, a.title].some(function(v){ return String(v || '').trim() === key; });
-    }) || null;
-  }
-
-  function _armyCommander(army) {
-    if (!army) return '';
-    return String(army.commander || army.commanderName || army.general || army.leader || '').trim();
-  }
-
-  function _syncArmyCommanderAliases(army, commander) {
-    if (!army) return false;
-    commander = String(commander || '').trim();
-    var changed = false;
-    ['commander','commanderName','commanderDisplayName','commander_name','general','generalName','leader','leaderName','chiefCommander','chiefGeneral','mainGeneral'].forEach(function(k) {
-      if (army[k] !== commander) {
-        army[k] = commander;
-        changed = true;
-      }
-    });
-    return changed;
-  }
-
-  function _findRelationRecord(from, to) {
-    var G = global.GM || {};
-    var list = Array.isArray(G.factionRelations) ? G.factionRelations : [];
-    return list.find(function(r){ return r && r.from === from && r.to === to; }) || null;
-  }
-
-  function _upsertRelationRecord(from, to, patch) {
-    var G = global.GM || {};
-    if (!Array.isArray(G.factionRelations)) G.factionRelations = [];
-    var rec = _findRelationRecord(from, to);
-    if (!rec) {
-      rec = { from: from, to: to, type: 'neutral', value: 0, desc: '' };
-      G.factionRelations.push(rec);
-    }
-    if (patch.type != null) rec.type = patch.type;
-    if (patch.value != null) rec.value = _clamp(_safeNum(patch.value), -100, 100);
-    if (patch.desc != null) rec.desc = patch.desc;
-    return rec;
-  }
-
-  function _applyDiplomacy(fac, action, turn) {
-    var p = action.payload || {};
-    var from = p.fromFaction || p.actorFaction || action.faction || (fac && fac.name) || '';
-    var to = p.targetFaction || p.toFaction || p.target || p.to || '';
-    if (!from || !to || from === to) return { ok: false, reason: 'missing faction target' };
-    var delta = _safeNum(p.relationDelta != null ? p.relationDelta : p.delta);
-    var oldRec = _findRelationRecord(from, to) || _findRelationRecord(to, from);
-    var oldValue = oldRec && oldRec.value != null ? _safeNum(oldRec.value) : 0;
-    var nextValue = (p.value != null) ? _clamp(_safeNum(p.value), -100, 100) : _clamp(oldValue + delta, -100, 100);
-    var relType = p.relationType || p.newType || p.status || (oldRec && oldRec.type) || 'neutral';
-    var desc = p.reason || p.event || p.desc || '';
-    if (typeof global.setFactionRelation === 'function') {
-      try { global.setFactionRelation(from, to, { value: nextValue, type: relType, desc: desc }, { mirror: true }); } catch(_){}
-    } else {
-      _upsertRelationRecord(from, to, { value: nextValue, type: relType, desc: desc });
-      _upsertRelationRecord(to, from, { value: nextValue, type: relType, desc: desc });
-    }
-    var rec = {
-      id: action.actionId,
-      turn: turn,
-      from: from,
-      to: to,
-      relationFrom: oldValue,
-      relationTo: nextValue,
-      relationType: relType,
-      reason: desc,
-      _generatedByLlm: true,
-      _decisionId: action.decisionId,
-      _actionId: action.actionId,
-      _actionType: action.type
-    };
-    _pushFacTrajectory(fac, 'npcDiplomacyActions', rec);
-    return { ok: true, detail: { from: from, to: to, relationFrom: oldValue, relationTo: nextValue } };
   }
 
   // ──────────────────────────────────────────────────────────

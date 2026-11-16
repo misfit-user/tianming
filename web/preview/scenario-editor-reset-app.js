@@ -94,10 +94,6 @@
       .replace(/"/g, '&quot;');
   }
 
-  function isDomFile(value) {
-    return typeof File !== 'undefined' && value instanceof File;
-  }
-
   function labelOf(item, index) {
     if (!item || typeof item !== 'object') return '#' + (index + 1);
     return item.name || item.title || item.id || item.sid || item.key || item.ownerKey || ('#' + (index + 1));
@@ -15178,7 +15174,6 @@
     }
     walk(divs, '', 0); return rows;
   }
-  function adminWalkFind(divs, id) { var rows = adminDivisionEntries(divs).filter(function(r) { return r.node.id === id; }); return rows.length === 1 ? rows[0].node : null; }
   function adminActiveRoot() {
     var ah = state.scenario.adminHierarchy;
     if (!isObject(ah)) return null;

@@ -17,7 +17,6 @@
   function version(p,n){return A(p.versions).find(function(v){return v.version===(n==null?p.version:n);});}
   function terminal(p){return /^(accepted|rejected|cancelled|lapsed)$/.test(p.status);}
   function log(row){var g=G();if(!Array.isArray(g._factionDiplomacyLog))g._factionDiplomacyLog=[];g._factionDiplomacyLog.push(row);if(g._factionDiplomacyLog.length>80)g._factionDiplomacyLog.splice(0,g._factionDiplomacyLog.length-80);}
-  function notice(text){try{if(typeof global.addEB==='function')global.addEB('外交',text);}catch(e){if(global.console)console.warn('[diplomacy notification]',e.message);}}
   function terms(raw){
     var text=S(raw.terms!=null?raw.terms:raw.treaty||raw.treatyName||raw.content),n=raw.durationTurns;
     if(!text.trim()||text.length>12000||raw.obligations!=null&&!Array.isArray(raw.obligations)||A(raw.obligations).length>20||n!=null&&(!Number.isInteger(n)||n<0||n>1200))return null;

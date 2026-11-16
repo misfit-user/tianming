@@ -1529,18 +1529,6 @@
     return ctx;
   }
 
-  function _collectDivisionNames(divs, prefix) {
-    var names = [];
-    for (var i = 0; i < divs.length; i++) {
-      var d = divs[i];
-      names.push(prefix + d.name + '（' + (d.level || '') + (d.population ? ' 人口' + d.population : '') + '）');
-      if (d.children && d.children.length > 0) {
-        names = names.concat(_collectDivisionNames(d.children, prefix + '  '));
-      }
-    }
-    return names;
-  }
-
   function _adminAssignIds(divs) {
     for (var i = 0; i < divs.length; i++) {
       if (!divs[i].id) divs[i].id = 'div_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);

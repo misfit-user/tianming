@@ -1126,10 +1126,6 @@
     });
   }
 
-  function hitMatchesNode(hit, node) {
-    return _nodesMatchTarget(hitNodes(hit), node);
-  }
-
   function _collectRelationEdges(GM) {
     var edges = [];
     if (!GM) return edges;

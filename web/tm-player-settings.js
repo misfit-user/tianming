@@ -442,24 +442,6 @@ function _renderMemoryDiagnosticsButton() {
   return "<button class=\"bt bs bsm\" onclick=\"if(window.TM&&TM.ai&&TM.ai.openMemoryDiagnostics){TM.ai.openMemoryDiagnostics();}else if(typeof openMemoryDiagnostics==='function'){openMemoryDiagnostics();}else{toast('记忆诊断未加载');}\">记忆诊断</button>";
 }
 
-async function _testSecondaryAPI() {
-  if (!(P.ai && P.ai.secondary && P.ai.secondary.key)) { toast('\u8BF7\u5148\u4FDD\u5B58\u6B21 API \u914D\u7F6E'); return; }
-  if (typeof callAIMessages !== 'function') { toast('\u6D4B\u8BD5\u51FD\u6570\u672A\u52A0\u8F7D'); return; }
-  if (typeof showLoading === 'function') showLoading('\u6B63\u5728\u6D4B\u8BD5\u6B21 API\u8FDE\u63A5\u2026', 20);
-  var t0 = Date.now();
-  try {
-    // callAIMessages(messages, maxTok, signal, tier)
-    var res = await callAIMessages([{ role:'user', content: '\u7528\u4E00\u4E2A\u6C49\u5B57\u56DE\u590D\uFF1A\u597D' }], 10, null, 'secondary');
-    if (typeof hideLoading === 'function') hideLoading();
-    var dt = Date.now() - t0;
-    var text = typeof res === 'string' ? res : ((res && (res.content || res.text)) || '');
-    toast('\u2713 \u6B21 API \u901A\u00B7' + dt + 'ms\u00B7\u6A21\u578B\u56DE\uFF1A' + (text||'').trim().slice(0,24));
-  } catch(e) {
-    if (typeof hideLoading === 'function') hideLoading();
-    toast('\u2717 \u6B21 API \u6D4B\u8BD5\u5931\u8D25\uFF1A' + ((e && e.message)||e));
-  }
-}
-
 function _probeClearCache() {
   if (!confirm('\u6E05\u9664\u6240\u6709\u63A2\u6D4B\u7F13\u5B58\uFF1F\u4E0B\u6B21\u5C06\u91CD\u65B0\u63A2\u6D4B\u3002')) return;
   delete P.conf._detectedContextK;
@@ -485,8 +467,3 @@ function tmApplyInsecureTlsConfig() {
   return { enabled: false, hosts: [] };
 }
 
-function sToggleInsecureTlsRelay() {
-  tmApplyInsecureTlsConfig();
-  if (typeof saveP === 'function') saveP();
-  if (typeof toast === 'function') toast('\u5B89\u5168\u8BBE\u5B9A\uFF1A\u8BC1\u4E66\u6821\u9A8C\u59CB\u7EC8\u4E25\u683C\u542F\u7528');
-}

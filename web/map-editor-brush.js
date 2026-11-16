@@ -260,19 +260,6 @@
 
   function rdp(points, eps){
     if (points.length < 3) return points.slice();
-    function recur(pts, lo, hi, out){
-      var maxDist = 0, idx = -1;
-      var a = pts[lo], b = pts[hi];
-      for (var i = lo + 1; i < hi; i++){
-        var d = pointSegDist(pts[i], a, b);
-        if (d > maxDist){ maxDist = d; idx = i; }
-      }
-      if (maxDist > eps && idx > 0){
-        recur(pts, lo, idx, out);
-        out.push(pts[idx]);
-        recur(pts, idx, hi, out);
-      }
-    }
     var out = [points[0]];
     var stack = [[0, points.length - 1]];
     // 迭代式·避深递

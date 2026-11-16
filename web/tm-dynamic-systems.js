@@ -78,12 +78,6 @@
 //   status: string             // 状态：'active', 'vacant', 'suspended'
 // }
 
-// 计算俸禄（根据品级）
-function calculateSalary(rank) {
-  var salaries = [5000, 3000, 2000, 1500, 1000, 800, 600, 400, 200];
-  return salaries[rank - 1] || 500;
-}
-
 /** @param {string} postId @param {string} characterName @returns {{success:boolean, message:string}} */
 function appointToPost(postId, characterName) {
   var post = findPostById(postId);

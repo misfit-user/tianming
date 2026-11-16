@@ -48,14 +48,11 @@ assert(renwuUi.includes('function _rwAppendCardsChunked'), 'old renwu roster mus
 assert(renwuUi.includes('_rwRenderInitialLimit'), 'old renwu roster must cap initial synchronous cards');
 assert(/requestIdleCallback|requestAnimationFrame/.test(renwuUi), 'old renwu roster chunking must yield between batches');
 
-const openDetailUntilPaint = sliceBetween(
-  playerCore,
-  'function openCharRenwuPage',
-  'panel.innerHTML = h;'
-);
-assert(playerCore.includes('function _rwpLoadLazyTab'), 'full character detail must have lazy tab loader');
-assert(playerCore.includes('data-rwp-lazy-tab'), 'full character detail must mark deferred tab content');
-assert(!/_rwpOlderMem\.forEach/.test(openDetailUntilPaint), 'full character detail must not build all old memories before first paint');
+// 原先这里有三条守「人物详情页首屏不一次画完」的断言，对着的是 tm-player-core.js 里的旧 openCharRenwuPage。
+// 那一页从来没被打开过：tm-renwu-tuzhi.js 后装载，把入口整个换掉。旧页 2026-11-16 已删，这三条跟着撤。
+// 现行人物图志页目前没有对应的防卡守卫。
+assert(!/function\s+openCharRenwuPage\s*\(/.test(playerCore), 'tm-player-core.js 不再带作废的旧人物志页');
+assert(/window\.openCharRenwuPage\s*=\s*function/.test(read('tm-renwu-tuzhi.js')), '人物志入口由 tm-renwu-tuzhi.js 提供');
 
 assert(formalModules.includes('function shouldCalibrateUiAction'), 'formal module UI action calibration must be gated');
 assert(/shouldCalibrateUiAction\s*\(\s*action\s*,\s*data/.test(formalModules), 'recordUiActionSignal must consult the calibration gate');

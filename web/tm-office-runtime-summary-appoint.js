@@ -377,30 +377,6 @@ function _offFilterCandidates(keyword) {
   });
 }
 
-/** 有司自动递补（不具象——只增actualCount） */
-function _offAutoFill(deptName, posName) {
-  var _found = false;
-  (function _f(ns) {
-    ns.forEach(function(n) {
-      // 在所有层级搜索部门名
-      if (n.name === deptName) {
-        (n.positions||[]).forEach(function(p) {
-          if (p.name === posName && !_found) {
-            if (typeof _offMigratePosition === 'function') _offMigratePosition(p);
-            if ((p.actualCount||0) < (p.headCount||1)) {
-              p.actualCount = (p.actualCount||0) + 1;
-              _found = true;
-              toast(deptName + posName + '有司递补1人（未具象）');
-              if (typeof renderOfficeTree === 'function') renderOfficeTree();
-            } else { toast('此职已满编'); }
-          }
-        });
-      }
-      if (n.subs) _f(n.subs);
-    });
-  })(GM.officeTree||[]);
-}
-
 /** 选择候选人→写入诏令建议库 */
 function _offSelectCandidate(charName, deptName, posName) {
   var candidate = typeof findCharByName === 'function' ? findCharByName(charName) : null;

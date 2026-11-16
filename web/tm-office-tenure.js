@@ -114,7 +114,6 @@
   }
   function leavePlan(g, leave) { return A(g && g._npcPlans).find(function (p) { return p && p.officeTenure && p.officeTenure.leaveId === leave.id; }) || null; }
   function player(g) { var rows = chars(g).filter(function (c) { return c && (c.isPlayer || c.playerControlled || c.controlledBy === 'player'); }); return rows.length === 1 ? rows[0] : null; }
-  function controlled(ch, g) { return TM.PoliticalActions && TM.PoliticalActions.controlled ? TM.PoliticalActions.controlled(ch, g) : !!(ch && ch.isPlayer); }
   function ensurePlans(g) { if (!Array.isArray(g._npcPlans)) g._npcPlans = []; return g._npcPlans; }
   // A delivered office notice is the knowledge source for direction
   // planning.  It is a normal ActionLedger matter, so transport, save/load

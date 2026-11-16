@@ -1639,20 +1639,6 @@
     scheduleFitTopbar();   // 值/文案更新后按舞台宽重算紧凑级（每回合值变宽→可能跨阈值）
   }
 
-  function topbarBannerText(){
-    var scenarioName = '';
-    try {
-      if (typeof findScenarioById === 'function' && window.GM && GM.sid) {
-        var sc = findScenarioById(GM.sid);
-        scenarioName = sc && (sc.name || sc.era) ? (sc.name || sc.era) : '';
-      }
-    } catch(_) {}
-    scenarioName = String(scenarioName || '天命').replace(/（官方）|\(官方\)/g, '').split(/[—\-]/)[0].trim();
-    if (scenarioName.length > 10) scenarioName = scenarioName.slice(0, 10);
-    var turn = (window.GM && GM.turn) ? ('第' + GM.turn + '回') : '';
-    return ['天命 shell v2', scenarioName, turn].filter(Boolean).join(' · ');
-  }
-
   function ensureTopbarBanner(){
     var banner = document.getElementById('banner');
     if (banner) banner.remove();
@@ -1925,10 +1911,6 @@
         raw: x
       };
     });
-  }
-
-  function getFactions(){
-    return firstArray(window.GM && GM.facs, window.P && P.factions, window.P && P.facs);
   }
 
   function getParties(){

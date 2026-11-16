@@ -100,25 +100,6 @@ function _normalizeNpcDecision(raw, fallbackName, context) {
   return decision;
 }
 
-function _getNpcDecisionHandledNames() {
-  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.getHandledNames) {
-    return TM.NPC.ActionLedger.getHandledNames(GM);
-  }
-  if (!GM._turnContext) GM._turnContext = {};
-  if (!Array.isArray(GM._turnContext.npcActionsThisTurn)) GM._turnContext.npcActionsThisTurn = [];
-  return GM._turnContext.npcActionsThisTurn;
-}
-
-function _markNpcDecisionHandled(name) {
-  if (!name) return;
-  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.markHandled) {
-    TM.NPC.ActionLedger.markHandled(name, GM);
-    return;
-  }
-  var handled = _getNpcDecisionHandledNames();
-  if (handled.indexOf(name) < 0) handled.push(name);
-}
-
 function _recordNpcDecisionDiagnostic(raw, status, reason) {
   raw = raw || {};
   if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.recordConsideration) {
@@ -468,33 +449,6 @@ function _npcPlanningStepResult(actorId, sourceGoalId, receipt) {
 
 if (typeof window !== 'undefined') window._npcPlanningStepResult = _npcPlanningStepResult;
 
-function _isNpcIdleBehaviorAllowed(type) {
-  var allowed = {
-    petition: true,
-    recommend: true,
-    impeach: true,
-    conspire: true,
-    build_network: true,
-    train_troops: true,
-    patrol: true,
-    fortify: true,
-    send_letter: true,
-    private_correspondence: true,
-    seek_audience: true,
-    request_funds: true,
-    develop_local: true,
-    relief: true,
-    office_duty: true,
-    private_life: true,
-    palace_intrigue: true,
-    court_politics: true,
-    obstruct: true,
-    slander: true,
-    none: true
-  };
-  return !!allowed[type];
-}
-
 function _npcPlanningDay() {
   if (TM.SimTime && typeof TM.SimTime.now === 'function') return Number(TM.SimTime.now(GM)) || 0;
   return typeof getCurrentGameDay === 'function' ? Number(getCurrentGameDay()) || 0 : Number(GM && GM.turn || 0);
@@ -578,12 +532,6 @@ function _applyNpcPlanningProposal(actor, request, proposal, lease) {
     return result;
   });
   return committed && committed.ok === true ? committed : result;
-}
-
-function _npcApplyPlanningOutput(actor, request, decision, lease) {
-  var proposal = decision && (decision.planning || decision.planDirection || decision.direction || decision.plan);
-  if (!proposal) return { ok: false, reason: 'planning_proposal_missing' };
-  return _applyNpcPlanningProposal(actor, request, proposal, lease);
 }
 
 function _executeNormalizedNpcDecision(rawDecision, fallbackNpc, context, options) {
@@ -953,30 +901,6 @@ function _npcBuildCharacterEconomySnapshot(npc, options) {
       net: _npcEconomyNum(npc._lastTickNet)
     }
   };
-}
-
-function _npcCharacterEconomyScore(row) {
-  if (!row) return 0;
-  var score = 0;
-  if (row.title) score += 20;
-  if (row.publicPurse) score += 12;
-  if (row.publicTreasury) score += 12;
-  score += Math.min(18, Math.abs(row.privateWealth.money || 0) / 500);
-  score += Math.min(12, Math.abs(row.hiddenWealth || 0) / 400);
-  score += Math.min(10, Math.abs(row.fame || 0) / 5);
-  score += Math.min(10, Math.abs(row.virtueMerit || 0) / 60);
-  score += Math.min(10, Math.abs(row.lastTick.net || 0) / 30);
-  score += Math.min(10, row.debt / 120);
-  if (row.stress >= 60) score += 5;
-  return score;
-}
-
-function _npcBuildCharacterEconomyContext(limit) {
-  var rows = (GM.chars || []).map(_npcBuildCharacterEconomySnapshot).filter(Boolean);
-  rows.sort(function(a, b) {
-    return _npcCharacterEconomyScore(b) - _npcCharacterEconomyScore(a);
-  });
-  return rows.slice(0, limit || 12);
 }
 
 function buildNpcBehaviorContext(npc, options) {

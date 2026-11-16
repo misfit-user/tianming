@@ -249,55 +249,10 @@
     return false;
   }
 
-  function categoryHits(cls, ch) {
-    var ct = classText(cls);
-    var ht = charText(ch);
-    var out = [];
-    Object.keys(CATEGORY).forEach(function(k) {
-      var row = CATEGORY[k];
-      if (hasAny(ct, row.classTokens) && hasAny(ht, row.charTokens)) out.push(k);
-    });
-    var military = Number(ch && ch.military) || 0;
-    var valor = Number(ch && ch.valor) || 0;
-    if (hasAny(ct, CATEGORY.military.classTokens) && (military >= 75 || valor >= 80)) uniquePush(out, 'military');
-    if (hasAny(ct, CATEGORY.gentry.classTokens) && /gentry|noble|imperial|士|绅|进士|举人/i.test(String((ch && ch.familyTier) || '') + ' ' + String((ch && ch.learning) || ''))) uniquePush(out, 'gentry');
-    return out;
-  }
-
   function entryName(entry) {
     if (typeof entry === 'string') return entry.trim();
     if (!entry || typeof entry !== 'object') return '';
     return String(entry.name || entry.characterName || entry.person || entry.npc || entry.id || entry.party || entry.partyName || entry.class || entry.className || '').trim();
-  }
-
-  function classHasRepresentative(cls, ch) {
-    var cname = normalizeName(characterNameOf(ch));
-    var cid = normalizeName(characterIdOf(ch));
-    var found = false;
-    [cls && cls.representativeNpcs, cls && cls.leaders, cls && cls.representatives].forEach(function(list) {
-      toArray(list).forEach(function(entry) {
-        var n = normalizeName(entryName(entry));
-        if (n && (n === cname || (cid && n === cid))) found = true;
-      });
-    });
-    return found;
-  }
-
-  function partySupportsClass(root, partyName, cls) {
-    var pn = normalizeName(partyName);
-    var cn = normalizeName(classNameOf(cls));
-    if (!pn || !cn) return false;
-    var ok = false;
-    toArray(cls && (cls.supportingParties || cls.supporting_parties || cls.parties || cls.linkedParties)).forEach(function(entry) {
-      if (normalizeName(entryName(entry)) === pn) ok = true;
-    });
-    getParties(root).forEach(function(party) {
-      if (normalizeName(partyNameOf(party)) !== pn) return;
-      toArray(party.socialBase || party.social_base || party.baseClasses || party.supportBase).forEach(function(entry) {
-        if (normalizeName(entryName(entry)) === cn) ok = true;
-      });
-    });
-    return ok;
   }
 
   function inferRole(cls, ch, evidence, precomputedText) {
@@ -310,42 +265,6 @@
     if (/进士|翰林|士林|宗室|皇亲|symbol/.test(text)) return 'symbol';
     if (evidence.some(function(e) { return /party/i.test(e); })) return 'broker';
     return 'spokesperson';
-  }
-
-  function scorePair(root, cls, ch) {
-    var evidence = [];
-    var score = 0;
-    var source = [];
-    if (classHasRepresentative(cls, ch)) {
-      score += 0.48;
-      uniquePush(source, 'representative');
-      uniquePush(evidence, 'representativeNpcs matched ' + characterNameOf(ch));
-    }
-    if (partySupportsClass(root, ch && ch.party, cls)) {
-      score += 0.24;
-      uniquePush(source, 'party');
-      uniquePush(evidence, 'party social base matched ' + (ch && ch.party));
-    }
-    var hits = categoryHits(cls, ch);
-    hits.forEach(function(hit) {
-      score += hit === 'military' ? 0.28 : 0.22;
-      uniquePush(source, 'category:' + hit);
-      uniquePush(evidence, 'category matched ' + hit);
-    });
-    var demand = String(cls && (cls.demands || cls.currentDemand) || '');
-    var stance = String(ch && (ch.stance || ch.personalGoal || ch.officeDuties || '') || '');
-    if (demand && stance && normalizeName(demand).length >= 2 && normalizeName(stance).length >= 2) {
-      var shared = demand.split(/[\s,.;:!?，。；、]+/).some(function(token) {
-        token = normalizeName(token);
-        return token.length >= 2 && normalizeName(stance).indexOf(token) >= 0;
-      });
-      if (shared) {
-        score += 0.12;
-        uniquePush(source, 'stance');
-        uniquePush(evidence, 'stance echoes class demand');
-      }
-    }
-    return { score: score, source: source, evidence: evidence };
   }
 
   function history(root, entry) {

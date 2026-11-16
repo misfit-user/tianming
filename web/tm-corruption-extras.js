@@ -35,7 +35,6 @@
   }
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-  function safe(v, d) { return (v === undefined || v === null) ? (d || 0) : v; }
 
   // ═════════════════════════════════════════════════════════════
   // §9.6 游戏模式调节

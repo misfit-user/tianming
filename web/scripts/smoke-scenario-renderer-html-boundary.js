@@ -132,10 +132,10 @@ vm.runInContext(officeSource.slice(phase6Start, phase6End), officeContext, { fil
   officeContext[name](0);
   assertEscapedHtml(officeContext.__modal.html, name);
 });
+// renderTechTab / renderFacTab / renderRulTab / renderEvtTab：tm-office-editor.js 里的旧版从来没被用到
+// （editor-details.js 后装载，整个换掉），2026-11-16 已删。现行版在上面 editorContext 那一段验过。
 ['renderTechTab', 'renderFacTab', 'renderRulTab', 'renderEvtTab'].forEach((name) => {
-  officeContext.__em.innerHTML = '';
-  officeContext[name](officeContext.__em, 'scenario-1');
-  assertEscapedHtml(officeContext.__em.innerHTML, name);
+  check(typeof officeContext[name] !== 'function', 'tm-office-editor.js 不再带作废的 ' + name);
 });
 
 const civicStart = officeSource.indexOf('function renderCivicTab');

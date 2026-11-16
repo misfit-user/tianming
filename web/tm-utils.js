@@ -590,32 +590,6 @@ function toast(m) { NotificationSystem.flash(m); }
 function notifyPersist(msg, icon) { NotificationSystem.persist(msg, icon); }
 function notifyUrgent(title, detail, onConfirm) { NotificationSystem.urgent(title, detail, onConfirm); }
 
-/** 显示通知历史面板 */
-function showNotificationHistory() {
-  var hist = NotificationSystem.getHistory();
-  var html = '<div style="max-height:400px;overflow-y:auto;">';
-  if (hist.length === 0) {
-    html += '<div style="text-align:center;color:var(--color-foreground-muted);padding:2rem;">\u6682\u65E0\u901A\u77E5</div>';
-  } else {
-    hist.slice().reverse().forEach(function(n) {
-      var levelLabel = n.level === 'urgent' ? '\u2757' : n.level === 'persist' ? '\u2139' : '\u00B7';
-      var levelColor = n.level === 'urgent' ? 'var(--vermillion-400)' : n.level === 'persist' ? 'var(--gold-400)' : 'var(--color-foreground-muted)';
-      var timeStr = new Date(n.time).toLocaleTimeString();
-      html += '<div style="padding:0.3rem 0;border-bottom:1px solid var(--color-border-subtle);font-size:0.78rem;">';
-      html += '<span style="color:' + levelColor + ';">' + levelLabel + '</span> ';
-      html += '<span style="color:var(--color-foreground-muted);font-size:0.71rem;">T' + n.turn + ' ' + timeStr + '</span> ';
-      html += (typeof escHtml==='function'?escHtml(n.msg):n.msg);
-      html += '</div>';
-    });
-  }
-  html += '</div>';
-  if (typeof openGenericModal === 'function') {
-    openGenericModal('\u901A\u77E5\u5386\u53F2', html);
-  } else {
-    showTurnResult(html);
-  }
-}
-
 // 通用输入框（替代 prompt）
 function showPrompt(message, defaultValue, callback) {
   var overlay = document.createElement('div');
@@ -1284,21 +1258,6 @@ function _aiDialogueTok(category, speakerCount) {
   return tok;
 }
 
-/** 开关对话字数 debug 日志——在浏览器控制台执行 _toggleDialogueDebug() 开启 */
-function _toggleDialogueDebug() {
-  window._dbgDialogueWC = !window._dbgDialogueWC;
-  console.log('[对话字数 debug]', window._dbgDialogueWC ? '✅ 已开启' : '❌ 已关闭');
-  if (window._dbgDialogueWC) {
-    console.log('当前档位 verbosity =', P.conf.verbosity);
-    console.log('问对自定义值 wdMin/wdMax =', P.conf.wdMin, '/', P.conf.wdMax);
-    console.log('朝议自定义值 cyMin/cyMax =', P.conf.cyMin, '/', P.conf.cyMax);
-    console.log('生效范围:');
-    console.log('  问对 _getCharRange(wd) =', _getCharRange('wd'));
-    console.log('  朝议 _getCharRange(cy) =', _getCharRange('cy'));
-  }
-  return window._dbgDialogueWC;
-}
-
 /** 显示数字——保留 1 位小数，四舍五入；整数不显示小数（AI 读取不变，仅 UI 用） */
 function _fmtNum1(v){
   if (v === undefined || v === null || v === '') return '0';
@@ -1893,7 +1852,6 @@ function extractJSONMatch(text, expectedType) {
 }
 /** 调试日志：仅在 P.conf.debugLog 为 true 时输出（兼容旧调用，新代码用 DebugLog.log） */
 function _dbg(){if(P&&P.conf&&P.conf.debugLog)console.log.apply(console,arguments);}
-function gSid(s){var el=_$(s);return el?el.value:(P.scenarios[0]?P.scenarios[0].id:"");}
 var _aiProgressTimer=null;
 var _LOADING_HINTS=['运筹帷幄之中','决胜千里之外','天下大势，分合有时','时来天地皆同力','万事俱备','风云际会','暗潮涌动','大势将至','变局已生','棋局已布'];
 var _loadingMaxPct = 0;  // 单调递增的最大值·防止进度条倒退

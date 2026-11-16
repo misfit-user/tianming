@@ -47,11 +47,6 @@
       return { hit: doc.hit, score: score };
     }).filter(function(row) { return row.score > 0; }).sort(function(a, b) { return b.score - a.score || key(a.hit).localeCompare(key(b.hit)); }).slice(0, limit || 60);
   }
-  function overlap(a, b) {
-    var aa = new Set(tokens(body(a))), bb = new Set(tokens(body(b))), count = 0;
-    aa.forEach(function(word) { if (bb.has(word)) count++; });
-    return count / Math.max(1, aa.size + bb.size - count);
-  }
   function fuse(lexicalRows, vectors, topK) {
     var pool = Object.create(null);
     [lexicalRows.map(function(r) { return r.hit; }), vectors].forEach(function(rows, channel) {

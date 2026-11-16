@@ -427,4 +427,70 @@ assert(!/_buildWindowRefGroup\('NPC\.legacy'/.test(read('tm-namespaces.js')), 'd
   });
 });
 
+// ---------- 2026-11-16 死代码普查（名单存 E:\\tianming-archive\\deadscan-20261116）----------
+// 一、被后面装载的脚本整个换掉的旧函数：旧的删了，接手的那一个必须还在。
+assert(/window\.openCharRenwuPage\s*=\s*function/.test(read('tm-renwu-tuzhi.js')), '人物志入口由 tm-renwu-tuzhi.js 接管');
+['aiGenChr', 'aiGenFac', 'aiGenVar', 'aiGenCivic', 'aiGenFullScenario'].forEach((name) => {
+  assert(new RegExp('window\\.' + name + '\\s*=').test(officeEditor), name + ' 由 tm-office-editor.js 接管');
+});
+['editChr', 'renderRulTab', 'renderEvtTab', 'renderFacTab', 'renderTechTab'].forEach((name) => {
+  assert(new RegExp('window\\.' + name + '\\s*=').test(editorDetails), name + ' 由 editor-details.js 接管');
+});
+// 二、定义之后再没有任何地方提到的函数声明（含上面被换掉的旧函数）：保持删除。
+[
+  ['editor-authoring-agent-ui.js', ['_validationDelta']],
+  ['editor.js', ['_collectDivisionNames']],
+  ['map-editor-brush.js', ['recur']],
+  ['phase8-formal-bridge.js', ['getFactions', 'topbarBannerText']],
+  ['phase8-formal-drafts.js', ['openGuoku', 'returnFormalHomeSoon']],
+  ['phase8-formal-map.js', ['closeModule', 'moduleShell', 'openGuoku', 'openModule', 'regionChildIndex', 'riskClass']],
+  ['phase8-formal-rightrail.js', ['rightIssueFaction', 'rightIssuePersonButton', 'rightIssueRows']],
+  ['phase8-formal-rightrail-social.js', ['closeDeskOverlay', 'closeModule', 'closeRightDrawer', 'openGuoku', 'openHongyanPreviewPanel', 'openModule', 'openOfficeStandalone', 'openPanel', 'openShiluPreviewPanel', 'returnFormalHomeSoon', 'saveFormalDraftsToGM']],
+  ['preview/scenario-editor-reset-app.js', ['adminWalkFind', 'isDomFile']],
+  ['tm-chaoyi-changchao.js', ['getAIConfig', 'saveAIConfig', 'showAIConfigModal']],
+  ['tm-class-character-relations.js', ['categoryHits', 'classHasRepresentative', 'partySupportsClass', 'scorePair']],
+  ['tm-content-manager.js', ['changelogSummary', 'resetAccountRemoteState']],
+  ['tm-corruption-cases.js', ['clamp']],
+  ['tm-corruption-extras.js', ['safe']],
+  ['tm-desktop-update.js', ['checkWhenClear', 'modalInWay']],
+  ['tm-dynamic-systems.js', ['calculateSalary']],
+  ['tm-faction-diplomacy.js', ['notice']],
+  ['tm-faction-npc-chaoyi.js', ['_arr', '_isAlive', '_isMarkedPlayerFaction', '_isPlayerFaction', '_normFactionName', '_resolvePlayerFactionNames']],
+  ['tm-faction-npc-edict.js', ['_applyEffects', '_arr', '_clampLoyalty', '_classifyChar', '_isAlive', '_isMarkedPlayerFaction', '_isPlayerFaction', '_normFactionName', '_resolvePlayerFactionNames']],
+  ['tm-faction-npc-llm-decision.js', ['_applyDiplomacy', '_armyCommander', '_clamp', '_findArmy', '_findRelationRecord', '_pushFacTrajectory', '_syncArmyCommanderAliases', '_upsertRelationRecord']],
+  ['tm-faction-npc-llm-enrich.js', ['_safeNum']],
+  ['tm-faction-npc-memorial.js', ['_isAlive', '_isMarkedPlayerFaction', '_isPlayerFaction', '_normFactionName', '_resolvePlayerFactionNames']],
+  ['tm-faction-npc-office.js', ['_arr', '_clamp', '_isAlive', '_isMarkedPlayerFaction', '_isPlayerFaction', '_normFactionName', '_resolvePlayerFactionNames']],
+  ['tm-feudal.js', ['autoQuanxuanAndAppoint', 'createSupplyRoute', 'generateQuanxuanReport', 'generateSupplyReport', 'getAllVassals', 'levyVassalArmies', 'performQuanxuan', 'promoteTitle', 'quanxuanFinalDecision', 'quanxuanRefinedSelection']],
+  ['tm-launch.js', ['aiGenChr', 'aiGenCivic', 'aiGenFac', 'aiGenFullScenario', 'aiGenVar', 'editChr']],
+  ['tm-lizhi-panel.js', ['_lizhi_applyHandling', '_lizhi_handleActiveCase']],
+  ['tm-map-system.js', ['_mapSourceIsTemplate', 'calculateCircumcenter', 'closeInteractiveMap', 'computeIntersection', 'edgesEqual', 'findCityByName', 'isInsideBoundary', 'migrateLegacyRuntimeMap', 'openInteractiveMap', 'pointInCircumcircle']],
+  ['tm-matters.js', ['has']],
+  ['tm-mechanics-world.js', ['getFamilyOf']],
+  ['tm-memory-hybrid.js', ['overlap']],
+  ['tm-memory-retrieval.js', ['hitMatchesNode']],
+  ['tm-minxin-hard-link-consumers.js', ['ensureObject']],
+  ['tm-npc-action-ledger.js', ['bumpRevision']],
+  ['tm-npc-decision.js', ['_getNpcActionLedger', '_getNpcDecisionBatchPersonaMaxLen', '_npcActionCooldownTurns', '_npcAdjustFamilySharedWealth', '_npcAdjustGuoku', '_npcAdjustPrivateWealth', '_npcAdjustProvinceStat', '_npcAdjustPublicPurse', '_npcApplyPublicGrant', '_npcEnsureCharResources', '_npcEnsureProvinceStats', '_npcFindFamilyRecord', '_npcHistoryKindForAction', '_npcLiveCharacters', '_npcProvinceKeyFor', '_npcPushExecutionResult', '_npcRecentTargetPenalty', '_npcRecordMoneyAction', '_npcRound', '_npcSameFaction', '_npcTargetSort', '_recordNpcActionLedger']],
+  ['tm-npc-decision-ai-driven.js', ['_getNpcDecisionHandledNames', '_isNpcIdleBehaviorAllowed', '_markNpcDecisionHandled', '_npcApplyPlanningOutput', '_npcBuildCharacterEconomyContext', '_npcCharacterEconomyScore']],
+  ['tm-npc-travel.js', ['inferredOfficeConstraint']],
+  ['tm-office-editor.js', ['aiGenOfficeStaff', 'renderEvtTab', 'renderFacTab', 'renderRulTab', 'renderTechTab']],
+  ['tm-office-runtime-summary-appoint.js', ['_offAutoFill']],
+  ['tm-office-tenure.js', ['controlled']],
+  ['tm-player-core.js', ['_dfBar', '_rwpAbilityRankLabel', '_rwpAmbitionTag', '_rwpHeartVerdict', '_rwpLoyaltyTag', '_rwpRenderFamilyTree', '_rwpResItem', '_rwpSwitchTab', '_rwpXianPct', 'openCharRenwuPage']],
+  ['tm-player-settings.js', ['_testSecondaryAPI', 'sToggleInsecureTlsRelay']],
+  ['tm-state.js', ['_safeClone']],
+  ['tm-utils.js', ['_toggleDialogueDebug', 'gSid', 'showNotificationHistory']],
+  ['tm-world-view.js', ['closeEraTrends', 'closeHistoricalEvents']],
+  ['tm-world.js', ['_sl', '_sn']]
+].forEach((entry) => {
+  const src = read(entry[0]);
+  entry[1].forEach((name) => {
+    assert(
+      !new RegExp('function\\s+' + name.replace(/[$]/g, '\\$&') + '\\s*\\(').test(src),
+      '[死代码清除2026-11-16] ' + entry[0] + ' 的作废函数应保持删除: ' + name
+    );
+  });
+});
+
 console.log('smoke-dead-code-removal-guards ok');

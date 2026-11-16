@@ -58,5 +58,6 @@ assert(zhi.includes('getCharacterRankLabel(c,_g())'));
 assert(shell.includes('getCharacterRankLabel(c,GM)'));
 assert(!shell.includes("c.rankLevel<=3?'正一品'"));
 assert(!formal.includes("['品秩', p.rank || p.role"));
-assert(player.includes('getCharacterRankLabel(ch,GM)') && player.includes('getCharacterRankLabel(cc,GM)'));
+// (cc,GM) 那一处原在 tm-player-core.js 的旧人物志页里（被 tm-renwu-tuzhi.js 整个换掉，2026-11-16 已删）；现行页由上面 zhi 那条守着。
+assert(player.includes('getCharacterRankLabel(ch,GM)'));
 console.log('[smoke-character-rank-label] PASS: 空值、普通人、外臣、实官、多员官、加衔、本朝秩禄及晚唐样本');

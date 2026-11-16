@@ -116,10 +116,6 @@ function hasRuntimeMapContent(mapData) {
   });
 }
 
-function migrateLegacyRuntimeMap(legacyMap) {
-  return ensureWritableRuntimeMap({ sourceMap: legacyMap, forceClone: true });
-}
-
 function _scenarioMapSource() {
   if (typeof GM === 'undefined' || !GM || !GM.sid || typeof findScenarioById !== 'function') return null;
   var scenario = findScenarioById(GM.sid);
@@ -149,12 +145,6 @@ function peekMapSource() {
     if (P.map && typeof P.map === 'object') return P.map;
   }
   return _scenarioMapSource();
-}
-
-function _mapSourceIsTemplate(sourceMap) {
-  if (!sourceMap || typeof sourceMap !== 'object') return false;
-  if (typeof P !== 'undefined' && P && (sourceMap === P.map || sourceMap === P.mapData)) return true;
-  return sourceMap === _scenarioMapSource();
 }
 
 /**
@@ -1220,84 +1210,6 @@ function findCapitalCity(faction) {
 // ==================== Voronoi图生成系统 ====================
 
 /**
- * 判断点是否在三角形外接圆内
- */
-function pointInCircumcircle(point, triangle) {
-  var ax = triangle[0].x - point.x;
-  var ay = triangle[0].y - point.y;
-  var bx = triangle[1].x - point.x;
-  var by = triangle[1].y - point.y;
-  var cx = triangle[2].x - point.x;
-  var cy = triangle[2].y - point.y;
-
-  var det = (ax * ax + ay * ay) * (bx * cy - cx * by) -
-            (bx * bx + by * by) * (ax * cy - cx * ay) +
-            (cx * cx + cy * cy) * (ax * by - bx * ay);
-
-  return det > 0;
-}
-
-/**
- * 判断两条边是否相等
- */
-function edgesEqual(edge1, edge2) {
-  return (edge1[0] === edge2[0] && edge1[1] === edge2[1]) ||
-         (edge1[0] === edge2[1] && edge1[1] === edge2[0]);
-}
-
-/**
- * 计算三角形外接圆圆心
- */
-function calculateCircumcenter(triangle) {
-  var ax = triangle[0].x, ay = triangle[0].y;
-  var bx = triangle[1].x, by = triangle[1].y;
-  var cx = triangle[2].x, cy = triangle[2].y;
-
-  var d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
-  var ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d;
-  var uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d;
-
-  return { x: ux, y: uy };
-}
-
-/**
- * 判断点是否在边界内侧
- */
-function isInsideBoundary(point, edge, bounds) {
-  if (edge.dx === 0 && edge.dy === 1) return point.x >= bounds.minX;
-  if (edge.dx === 1 && edge.dy === 0) return point.y <= bounds.maxY;
-  if (edge.dx === 0 && edge.dy === -1) return point.x <= bounds.maxX;
-  if (edge.dx === -1 && edge.dy === 0) return point.y >= bounds.minY;
-  return true;
-}
-
-/**
- * 计算线段与边界的交点
- */
-function computeIntersection(p1, p2, edge, bounds) {
-  var x1 = p1.x, y1 = p1.y;
-  var x2 = p2.x, y2 = p2.y;
-
-  if (edge.dx === 0 && edge.dy === 1) {
-    var t = (bounds.minX - x1) / (x2 - x1);
-    return { x: bounds.minX, y: y1 + t * (y2 - y1) };
-  }
-  if (edge.dx === 1 && edge.dy === 0) {
-    var t = (bounds.maxY - y1) / (y2 - y1);
-    return { x: x1 + t * (x2 - x1), y: bounds.maxY };
-  }
-  if (edge.dx === 0 && edge.dy === -1) {
-    var t = (bounds.maxX - x1) / (x2 - x1);
-    return { x: bounds.maxX, y: y1 + t * (y2 - y1) };
-  }
-  if (edge.dx === -1 && edge.dy === 0) {
-    var t = (bounds.minY - y1) / (y2 - y1);
-    return { x: x1 + t * (x2 - x1), y: bounds.minY };
-  }
-  return null;
-}
-
-/**
  * 渲染高亮效果
  */
 function renderHighlights(ctx) {
@@ -2152,21 +2064,6 @@ function updateArmyMovement() {
 }
 
 /**
- * 根据名字查找城市
- */
-function findCityByName(name) {
-  if (!GM.mapData || !GM.mapData.cities) return null;
-
-  for (var id in GM.mapData.cities) {
-    var city = GM.mapData.cities[id];
-    if (city.name === name) {
-      return city;
-    }
-  }
-  return null;
-}
-
-/**
  * 打开地图查看器
  * R107·AI 地理志模式兜底：若玩家选了 AI 地理志（P.map.enabled=false 或 GM._useAIGeo=true），
  *      则不显示空白地图弹窗·改为展示"AI 地理志"说明
@@ -2776,50 +2673,3 @@ var InteractiveMap = {
   }
 };
 
-// 打开交互式地图
-function openInteractiveMap() {
-  var runtimeMap = getLiveMapData();
-  if (!runtimeMap || !runtimeMap.regions || runtimeMap.regions.length === 0) {
-    toast('❌ 当前剧本没有地图数据');
-    return;
-  }
-
-  var ov = document.createElement('div');
-  ov.className = 'generic-modal-overlay';
-  ov.id = 'interactive-map-overlay';
-
-  var html = '<div class="generic-modal" style="max-width:90vw;max-height:90vh;width:1200px;display:flex;flex-direction:column;">';
-  html += '<div class="generic-modal-header">';
-  html += '<h3>🗺️ 交互式地图</h3>';
-  html += '<button onclick="closeInteractiveMap()">✕</button>';
-  html += '</div>';
-
-  html += '<div style="flex:1;display:flex;overflow:hidden;">';
-
-  // 左侧地图画布
-  html += '<div style="flex:1;position:relative;">';
-  html += '<canvas id="interactive-map-canvas" width="900" height="600" style="width:100%;height:100%;cursor:grab;"></canvas>';
-  html += '</div>';
-
-  // 右侧信息面板
-  html += '<div style="width:280px;border-left:1px solid var(--bg-3);padding:1rem;overflow-y:auto;">';
-  html += '<div id="map-region-info" style="color:var(--txt-d);font-size:0.9rem;">点击地图区域查看详情</div>';
-  html += '</div>';
-
-  html += '</div>';
-  html += '</div>';
-
-  ov.innerHTML = html;
-  document.body.appendChild(ov);
-
-  // 初始化交互式地图
-  var canvas = document.getElementById('interactive-map-canvas');
-  if (canvas) {
-    InteractiveMap.init(canvas);
-  }
-}
-
-function closeInteractiveMap() {
-  var ov = document.getElementById('interactive-map-overlay');
-  if (ov) ov.remove();
-}

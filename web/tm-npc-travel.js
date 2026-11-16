@@ -100,12 +100,6 @@
     return { status: constraints.length ? 'constrained' : read.rows.some(function (r) { return r.configurationStatus === 'legacy_unspecified'; }) ? 'legacy_unspecified' : 'unconstrained', constraints: constraints, rows: read.rows };
   }
 
-  // Kept as a small compatibility projection for diagnostics and older callers.
-  function inferredOfficeConstraint(ch, m) {
-    var found = inferredOfficeConstraints(ch, m);
-    return found.constraints.length === 1 ? found.constraints[0] : null;
-  }
-
   function routeDays(from, to, mode) {
     if (!from || !to || String(from) === String(to)) return 0;
     var r = route(from, to, mode);

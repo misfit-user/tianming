@@ -1490,14 +1490,6 @@ function generateNpcReplyMock(name, item, playerText, stance, intent, isMentione
 // ═══════════════════════════════════════════════
 // AI 接入·OpenAI 兼容协议·复用主项目 localStorage.tm_api
 // ═══════════════════════════════════════════════
-function getAIConfig() {
-  let cfg = {};
-  try { cfg = JSON.parse(localStorage.getItem('tm_api') || '{}'); } catch(_){}
-  return { key: cfg.key || '', url: cfg.url || '', model: cfg.model || '' };
-}
-function saveAIConfig(cfg) {
-  try { localStorage.setItem('tm_api', JSON.stringify(cfg)); } catch(_){}
-}
 // v3 重写：aiEnabled 直接看 P.ai（v2 主项目已配 API）
 function aiEnabled() {
   return _cc3_aiEnabled();
@@ -1671,60 +1663,6 @@ function buildNpcPrompt(name, item, playerText, stance, intent, isMentioned) {
   }
 
   return p;
-}
-
-function showAIConfigModal() {
-  const cfg = getAIConfig();
-  const m = document.createElement('div');
-  m.className = 'cy-input-modal';
-  m.innerHTML = `
-    <div class="cy-input-modal-card" style="width:min(520px,90vw);">
-      <h3>AI 配置 · OpenAI 兼容协议（与主游戏共享）</h3>
-      <div class="hint">配置存于 localStorage.tm_api · 主游戏配过此处自动读出 · 改动也会回写</div>
-      <div style="font-size:12px;color:var(--ink-500);margin-bottom:4px;">API URL（如 https://api.openai.com/v1·或自定义代理）</div>
-      <input id="ai-cfg-url" type="text" value="${_ccEscHtml(cfg.url)}" placeholder="https://api.openai.com/v1" />
-      <div style="font-size:12px;color:var(--ink-500);margin-bottom:4px;">API Key</div>
-      <input id="ai-cfg-key" type="password" value="${_ccEscHtml(cfg.key)}" placeholder="sk-..." />
-      <div style="font-size:12px;color:var(--ink-500);margin-bottom:4px;">模型名（如 gpt-4o-mini / claude-sonnet-4-5 / deepseek-chat 等）</div>
-      <input id="ai-cfg-model" type="text" value="${_ccEscHtml(cfg.model || 'gpt-4o-mini')}" placeholder="gpt-4o-mini" />
-      <div style="font-size:12px;color:var(--ink-300);margin:8px 0;">注：CORS 限制下·部分官方端点（含 Anthropic）需经代理。已知可直连：兼容 OpenAI 协议的国产 API（DeepSeek/智谱/月之暗面等）和大多数代理端点。</div>
-      <div class="row">
-        <button class="cy-btn muted" id="ai-cfg-cancel">取消</button>
-        <button class="cy-btn" id="ai-cfg-test">⚡ 测试调用</button>
-        <button class="cy-btn primary" id="ai-cfg-save">保存</button>
-      </div>
-      <div id="ai-cfg-result" style="font-size:12px;color:var(--ink-500);margin-top:8px;min-height:18px;"></div>
-    </div>
-  `;
-  $('cy-stage').appendChild(m);
-  $('ai-cfg-cancel').onclick = () => m.remove();
-  $('ai-cfg-save').onclick = () => {
-    saveAIConfig({
-      url: $('ai-cfg-url').value.trim(),
-      key: $('ai-cfg-key').value.trim(),
-      model: $('ai-cfg-model').value.trim() || 'gpt-4o-mini'
-    });
-    setAiStatus('已保存');
-    m.remove();
-  };
-  $('ai-cfg-test').onclick = async () => {
-    const tmpCfg = {
-      url: $('ai-cfg-url').value.trim(),
-      key: $('ai-cfg-key').value.trim(),
-      model: $('ai-cfg-model').value.trim() || 'gpt-4o-mini'
-    };
-    saveAIConfig(tmpCfg);
-    $('ai-cfg-result').textContent = '调用中…';
-    $('ai-cfg-result').style.color = 'var(--ink-500)';
-    try {
-      const r = await callAIPreview('请用半文言一句话（不超过 30 字）回答：「君何以治国？」');
-      $('ai-cfg-result').style.color = 'var(--celadon-400)';
-      $('ai-cfg-result').textContent = '✓ 调用成功：' + (r || '').slice(0, 100);
-    } catch (e) {
-      $('ai-cfg-result').style.color = 'var(--vermillion-300)';
-      $('ai-cfg-result').textContent = '✗ 失败：' + (e.message || e).slice(0, 200);
-    }
-  };
 }
 
 function pickResponder(item, exclude) {

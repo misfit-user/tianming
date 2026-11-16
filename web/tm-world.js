@@ -530,8 +530,6 @@ function buildAIContext(deepMode) {
   // 非deepMode时：根据模型实际上下文窗口动态调整截断值（通过探测系统，无写死）
   var _ctxF = (typeof getCompressionParams === 'function') ? getCompressionParams().contextTruncFactor : 1.0;
   var _M = deepMode ? 5 : _ctxF;
-  function _sl(str, base) { return str ? String(str).slice(0, Math.round(base * _M)) : ''; }
-  function _sn(arr, base) { return arr ? arr.slice(0, Math.round(base * (deepMode ? 3 : _ctxF))) : []; }
   function _memText(entry) {
     if (typeof memoryEntryText === 'function') return memoryEntryText(entry);
     if (entry == null) return '';

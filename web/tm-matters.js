@@ -78,7 +78,6 @@
   function arr(x) { return Array.isArray(x) ? x : []; }
   function num(x, d) { var n = Number(x); return isFinite(n) ? n : (d == null ? 0 : d); }
   function clip(s, n) { s = str(s).replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n) : s; }
-  function has(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
 
   // 32 位 FNV-1a，转 36 进制补足 7 位；只用来给 id 去重，不作安全用途
   function shortHash(s) {

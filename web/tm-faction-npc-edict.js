@@ -34,50 +34,6 @@
   'use strict';
 
   function _safeNum(v) { return (typeof v === 'number' && isFinite(v)) ? v : 0; }
-  function _arr(v) { return Array.isArray(v) ? v : []; }
-  function _normFactionName(v) { return String(v == null ? '' : v).replace(/\s+/g, '').trim(); }
-  function _isMarkedPlayerFaction(f) {
-    return !!(f && (f.isPlayer || f.playerControlled || f.controlledBy === 'player' || f.controller === 'player' || f.controlType === 'player'));
-  }
-  function _resolvePlayerFactionNames() {
-    var G = global.GM || {};
-    var P0 = global.P || {};
-    var names = [];
-    function push(v) {
-      var s = String(v == null ? '' : v).trim();
-      var k = _normFactionName(s);
-      if (s && names.map(_normFactionName).indexOf(k) < 0) names.push(s);
-    }
-    var pi = P0.playerInfo || {};
-    push(pi.factionName);
-    push(P0.playerFactionName);
-    push(P0.playerFaction);
-    push(G.playerFactionName);
-    push(G.playerFaction);
-    if (G.playerInfo) push(G.playerInfo.factionName);
-    _arr(G.facs).forEach(function(f){ if (_isMarkedPlayerFaction(f)) push(f.name); });
-    _arr(G.chars).forEach(function(c){ if (c && (c.isPlayer || c.playerControlled || c.controlledBy === 'player')) push(c.faction || c.factionName || c.ownerFaction); });
-    return names;
-  }
-  function _isPlayerFaction(f, playerFactionNames) {
-    if (!f) return false;
-    if (_isMarkedPlayerFaction(f)) return true;
-    var k = _normFactionName(f.name);
-    return !!k && _arr(playerFactionNames).some(function(n){ return _normFactionName(n) === k; });
-  }
-  function _isAlive(c) {
-    if (!c) return false;
-    if (c.alive === false) return false;
-    if (c.dead === true) return false;
-    return true;
-  }
-  function _classifyChar(c) {
-    if (global.TM && global.TM.FactionNpcMemorial && global.TM.FactionNpcMemorial._classifyChar) {
-      return global.TM.FactionNpcMemorial._classifyChar(c);
-    }
-    return 'other';
-  }
-  function _clampLoyalty(v) { return Math.max(0, Math.min(100, v)); }
 
   // 诏令模板·每个 (type) 对应 trigger / 文 / effects
   var EDICT_TEMPLATES = {
@@ -168,34 +124,6 @@
     if (rh && rh.generosity > 0.6) return '赏赐';        // 慷慨 ruler 多赏
     if (rh && rh.conservatism > 0.6) return '巡抚';       // 保守 ruler 多巡
     return ['赏赐', '巡抚', '巡抚'][Math.floor(Math.random() * 3)];
-  }
-
-  function _applyEffects(fac, edict, allCharsInFac) {
-    var eff = edict.effects || {};
-    // treasury
-    if (eff.treasuryDelta && fac.treasury && typeof fac.treasury === 'object') {
-      var newM = _safeNum(fac.treasury.money) + eff.treasuryDelta;
-      fac.treasury.money = Math.max(0, newM);
-    }
-    // loyalty by role
-    var roleKeys = ['court', 'general', 'clan', 'other', 'ruler'];
-    roleKeys.forEach(function(r) {
-      var key = 'loyaltyDelta_' + r;
-      if (typeof eff[key] !== 'number') return;
-      allCharsInFac.forEach(function(c) {
-        var role = _classifyChar(c);
-        if (role !== r) return;
-        if (typeof c.loyalty !== 'number') c.loyalty = 50;
-        c.loyalty = _clampLoyalty(c.loyalty + eff[key]);
-      });
-    });
-    // fiscalStress·写到 fac._fiscalStressOverride·下 derived 重算时混
-    // (实际 derived recompute 会重新算·此 override 仅为本回合 reflect)
-    if (typeof eff.fiscalStressDelta === 'number' && fac.derivedEconomy) {
-      fac.derivedEconomy.fiscalStress = Math.max(0, Math.min(100, _safeNum(fac.derivedEconomy.fiscalStress) - eff.fiscalStressDelta));
-      fac.derivedEconomy.economyHealth = 100 - fac.derivedEconomy.fiscalStress;
-    }
-    edict.applied = true;
   }
 
   function _triggerLabel(type) {

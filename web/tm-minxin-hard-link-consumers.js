@@ -55,11 +55,6 @@
     return text.length > maxLen ? text.slice(0, maxLen) : text;
   }
 
-  function ensureObject(parent, key) {
-    if (!parent[key] || typeof parent[key] !== 'object' || Array.isArray(parent[key])) parent[key] = {};
-    return parent[key];
-  }
-
   function ensureStore(root) {
     root = pickRoot(root);
     if (!root._minxinHardLinkConsumers || typeof root._minxinHardLinkConsumers !== 'object' || Array.isArray(root._minxinHardLinkConsumers)) {

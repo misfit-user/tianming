@@ -473,13 +473,6 @@
     var pct = Math.max(0, Math.min(100, (value / (max||100)) * 100));
     return '<div style="height:5px;background:var(--bg-3);border-radius:3px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + (color||'var(--gold-400)') + ';"></div></div>';
   }
-  function _wrap(label, innerHtml, closeExpr) {
-    return '<section class="vd-section" style="background:linear-gradient(180deg,rgba(184,154,83,0.08),transparent);border:1px solid var(--gold-d);border-radius:6px;padding:0.8rem 1rem;">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px dashed var(--color-border-subtle);">' +
-        '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;letter-spacing:0.08em;">' + _esc(label) + '</div>' +
-        '<button style="background:none;border:none;color:var(--txt-d);cursor:pointer;font-size:1rem;" onclick="' + closeExpr + '">×</button>' +
-      '</div>' + innerHtml + '</section>';
-  }
 
   // ═══════════════════════════════════════════════════════════════════
   //  皇威抽屉 · 详尽版

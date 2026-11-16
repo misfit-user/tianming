@@ -34,42 +34,6 @@
 
   function _safeNum(v) { return (typeof v === 'number' && isFinite(v)) ? v : 0; }
   function _arr(v) { return Array.isArray(v) ? v : []; }
-  function _normFactionName(v) { return String(v == null ? '' : v).replace(/\s+/g, '').trim(); }
-  function _isMarkedPlayerFaction(f) {
-    return !!(f && (f.isPlayer || f.playerControlled || f.controlledBy === 'player' || f.controller === 'player' || f.controlType === 'player'));
-  }
-  function _resolvePlayerFactionNames() {
-    var G = global.GM || {};
-    var P0 = global.P || {};
-    var names = [];
-    function push(v) {
-      var s = String(v == null ? '' : v).trim();
-      var k = _normFactionName(s);
-      if (s && names.map(_normFactionName).indexOf(k) < 0) names.push(s);
-    }
-    var pi = P0.playerInfo || {};
-    push(pi.factionName);
-    push(P0.playerFactionName);
-    push(P0.playerFaction);
-    push(G.playerFactionName);
-    push(G.playerFaction);
-    if (G.playerInfo) push(G.playerInfo.factionName);
-    _arr(G.facs).forEach(function(f){ if (_isMarkedPlayerFaction(f)) push(f.name); });
-    _arr(G.chars).forEach(function(c){ if (c && (c.isPlayer || c.playerControlled || c.controlledBy === 'player')) push(c.faction || c.factionName || c.ownerFaction); });
-    return names;
-  }
-  function _isPlayerFaction(f, playerFactionNames) {
-    if (!f) return false;
-    if (_isMarkedPlayerFaction(f)) return true;
-    var k = _normFactionName(f.name);
-    return !!k && _arr(playerFactionNames).some(function(n){ return _normFactionName(n) === k; });
-  }
-  function _isAlive(c) {
-    if (!c) return false;
-    if (c.alive === false) return false;
-    if (c.dead === true) return false;
-    return true;
-  }
   function _classifyChar(c) {
     if (!c) return 'other';
     var s = String(c.position || c.role || c.title || '');

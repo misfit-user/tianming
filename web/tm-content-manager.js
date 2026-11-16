@@ -157,7 +157,6 @@
   function accountLogout(){ return __cmP.accountLogout.apply(this, arguments); }
   function refreshAccountSession(){ return __cmP.refreshAccountSession.apply(this, arguments); }
   function replaceAccountSession(){ return __cmP.replaceAccountSession.apply(this, arguments); }
-  function resetAccountRemoteState(){ return __cmP.resetAccountRemoteState.apply(this, arguments); }
   //>>CM-SPLIT20-PLUMBING-A-END
 
   function desktop() {
@@ -235,21 +234,6 @@
     if (Number(info.size) > 0) return Number(info.size);
     var files = Array.isArray(info.files) ? info.files : [];
     return files.reduce(function(sum, f){ return sum + (Number(f && f.size) || 0); }, 0);
-  }
-
-  function changelogSummary(limit) {
-    var entries = state.changelogEntries || [];
-    if (!entries.length) return '<div class="tm-empty">尚未读取游戏公告。</div>';
-    return entries.slice(0, limit || 4).map(function(entry){
-      var items = Array.isArray(entry.items) ? entry.items.slice(0, 3).map(function(item){
-        return typeof item === 'string' ? item : (item && item.what) || '';
-      }).filter(Boolean) : [];
-      return '<div class="tm-card">' +
-        '<div style="color:#f2d487;font-weight:800;">' + esc(entry.title || entry.module || '更新') + '</div>' +
-        '<div class="tm-pack-meta">' + esc((entry.date || '') + (entry.module ? ' / ' + entry.module : '')) + '</div>' +
-        (items.length ? '<div class="tm-copy" style="margin-top:.45rem;">' + items.map(function(x){ return '· ' + esc(x); }).join('<br>') + '</div>' : '') +
-      '</div>';
-    }).join('');
   }
 
   async function loadChangelog() {

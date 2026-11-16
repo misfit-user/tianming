@@ -41,11 +41,6 @@
   var orderList = [];
   var MAX_MEMORY = 20;
 
-  function _safeClone(v) {
-    try { return JSON.parse(JSON.stringify(v)); }
-    catch(e) { return null; }
-  }
-
   function _metricValue(v, keys, fallback) {
     if (typeof v === 'number' && isFinite(v)) return v;
     if (v && typeof v === 'object') {

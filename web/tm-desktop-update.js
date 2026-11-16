@@ -57,12 +57,6 @@
     var dt = (z.t - a.t) / 1000;
     return dt > 0 ? Math.max(0, (z.b - a.b) / dt) : 0;
   }
-  function modalInWay() {
-    try {
-      return !!(document.getElementById('tm-changelog-ov')
-        || document.querySelector('.tm-update-ritual.show'));
-    } catch (_) { return false; }
-  }
 
   // ── 自愈一次性提示 ──────────────────────────────────────────────────────
   function maybeShowRepairNotice(status) {
@@ -319,17 +313,6 @@
       try { console.warn('[tm-desktop-update] 检查失败', e); } catch (_) {}
       if (_verbose) { var c = card(); if (c) c.fail('网络异常，稍后自动重试'); }
     });
-  }
-
-  // 弹窗避让·邸报/联网中枢仪式开着就等
-  function checkWhenClear(verbose, waitedMs) {
-    waitedMs = waitedMs || 0;
-    if (modalInWay()) {
-      if (waitedMs >= AVOID_MAX_MS) return;
-      setTimeout(function () { checkWhenClear(verbose, waitedMs + AVOID_POLL_MS); }, AVOID_POLL_MS);
-      return;
-    }
-    runCheck(verbose);
   }
 
   function init() {

@@ -19,7 +19,7 @@ function sliceBetween(start, end) {
 }
 
 const issueCheck = sliceBetween('function rightIssueIsPlayerFactionPerson', 'function rightIssueTopic');
-const issuePeople = sliceBetween('function rightIssuePeople()', 'function rightIssueRows');
+const issuePeople = sliceBetween('function rightIssuePeople()', 'function rightWenduiHistory');
 const renderMap = sliceBetween('function renderMapPanelRich()', 'function rightFinanceRoot');
 const renderArchive = sliceBetween('function renderZhiRich()', 'var renderers =');
 

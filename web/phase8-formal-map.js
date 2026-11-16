@@ -61,10 +61,6 @@
 
   // ── late-bound wrappers (orchestration into bridge / window) ───────
   function openPanel(slot){ return bridge.openPanel(slot); }
-  function openModule(kind, options){ return bridge.openModule(kind, options); }
-  function openGuoku(){ return bridge.openGuoku(); }
-  function closeModule(){ return bridge._closeModule && bridge._closeModule(); }
-  function moduleShell(kind, title, sub, left, main, right){ return bridge._moduleShell ? bridge._moduleShell(kind, title, sub, left, main, right) : ''; }
 
   // ── module body (P3 Wave 6 迁入·2606 行·body 0 改动) ─────────────
 
@@ -741,19 +737,6 @@
   // region 几何级父子索引(按 region.parentId)·阶段2分级渲染用:省 region→其府县 children regions·
   //   省级显示 merge 府县轮廓 / 点省聚焦下辖府县。按 map 引用失效。
   var _regionChildIdxCache = { ref: null, byParent: null, byId: null };
-  function regionChildIndex(map){
-    if (_regionChildIdxCache.ref === map && _regionChildIdxCache.byParent) return _regionChildIdxCache;
-    var byParent = {}, byId = {};
-    var regions = (map && map.regions) || [];
-    regions.forEach(function(r){
-      if (!r) return;
-      var rid = r.id || r.name;
-      if (rid) byId[rid] = r;
-      if (r.parentId){ (byParent[r.parentId] = byParent[r.parentId] || []).push(r); }
-    });
-    _regionChildIdxCache = { ref: map, byParent: byParent, byId: byId };
-    return _regionChildIdxCache;
-  }
 
   // perf round7: 原版每地块全扫 GM._provinceToFaction 的 Object.keys·逐省 = renderFormalMap 主峰之一(111ms)。
   // 同法:Phase2 一次建 normKey->{key,seq} 索引(首现胜)·取 seq 最小(=Object.keys 序首个 normKey∈wanted 的键)·
@@ -2723,19 +2706,6 @@
     if (mode === 'yizheng') return yizhengViewScore(r);
     if (mode === 'owner') return ownerName(r) ? 80 : 50;
     return 60;
-  }
-
-  function riskClass(score, inverse){
-    var n = Number(score);
-    if (!isFinite(n)) return 'risk-mid';
-    if (inverse) {
-      if (n >= 66) return 'risk-low';
-      if (n >= 38) return 'risk-mid';
-      return 'risk-high';
-    }
-    if (n >= 66) return 'risk-high';
-    if (n >= 38) return 'risk-mid';
-    return 'risk-low';
   }
 
   function ppTagNames(tags){

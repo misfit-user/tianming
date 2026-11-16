@@ -253,18 +253,6 @@ function _buildNpcDecisionComposerAddon(npc, options) {
   return out;
 }
 
-function _getNpcDecisionBatchPersonaMaxLen() {
-  var composer = (typeof TM !== 'undefined' && TM.PromptComposer) ? TM.PromptComposer : null;
-  var sc = null;
-  try {
-    sc = (typeof findScenarioById === 'function' && typeof GM !== 'undefined' && GM && GM.sid) ? findScenarioById(GM.sid) : null;
-  } catch (_) {}
-  if (composer && typeof composer.getBatchPersonaMaxLen === 'function') return composer.getBatchPersonaMaxLen(sc, 200);
-  var req = sc && sc.modelRequirements;
-  var v = req && Number(req.batchPersonaMaxLen);
-  return isFinite(v) && v >= 0 ? v : 200;
-}
-
 async function npcDecisionLayer(npc, context) {
   var ledger=TM.NPC.ActionLedger, lease=ledger.capture(), budget=ledger.state(GM);
   if(!npc || npc.isPlayer || !P.ai || !P.ai.key)return null;
@@ -822,21 +810,9 @@ function _makeNpcActionCandidate(npc, type, target, intent, baseScore, context) 
   return candidate;
 }
 
-function _npcLiveCharacters() {
-  return Array.isArray(GM.chars) ? GM.chars.filter(function(ch) {
-    return ch && ch.alive !== false && ch.name;
-  }) : [];
-}
-
 function _npcHasRealParty(npc) {
   var party = String(npc && npc.party || '').trim();
   return !!party && party !== '\u65E0\u515A\u6D3E' && party.toLowerCase() !== 'none';
-}
-
-function _npcSameFaction(a, b) {
-  var af = String(a && (a.faction || a.factionName) || '').trim();
-  var bf = String(b && (b.faction || b.factionName) || '').trim();
-  return !!af && af === bf;
 }
 
 function _npcCleanIdentityName(value) {
@@ -882,50 +858,6 @@ function _npcIsAtPlayerLocation(npc) {
   return (typeof _isSameLocation === 'function') ? _isSameLocation(loc, playerLoc) : (_npcCleanIdentityName(loc) === _npcCleanIdentityName(playerLoc));
 }
 
-function _npcTargetSort(a, b) {
-  return (b.score || 0) - (a.score || 0) || String(a.ch.name).localeCompare(String(b.ch.name));
-}
-
-function _npcHistoryKindForAction(type) {
-  if (type === 'conspire') return 'conspiracy';
-  if (type === 'private_correspondence') return 'private_correspondence';
-  if (type === 'obstruct' || type === 'slander') return 'hidden_move';
-  if (type === 'palace_intrigue') return 'palace_intrigue';
-  if (type === 'court_politics') return 'court_politics';
-  return type || '';
-}
-
-function _npcRecentTargetPenalty(npc, type, target) {
-  if (!npc || !npc.name || !target || typeof GM === 'undefined' || !GM) return 0;
-  var kind = _npcHistoryKindForAction(type);
-  var turn = Number(GM.turn || 0);
-  var maxPenalty = 0;
-  function inspect(item, itemKind) {
-    if (!item) return;
-    var effectiveKind = item.kind || itemKind || '';
-    if (kind && effectiveKind && effectiveKind !== kind) return;
-    var from = item.from || item.actor || item.name || '';
-    var to = item.to || item.target || '';
-    if (from !== npc.name || to !== target) return;
-    var age = turn - Number(item.turn || turn);
-    if (age < 0 || age > 4) return;
-    maxPenalty = Math.max(maxPenalty, Math.max(20, 48 - age * 6));
-  }
-  (Array.isArray(GM._npcInternalActionHistory) ? GM._npcInternalActionHistory : []).forEach(function(item) {
-    inspect(item, item && item.kind);
-  });
-  (Array.isArray(GM._pendingNpcCorrespondence) ? GM._pendingNpcCorrespondence : []).forEach(function(item) {
-    inspect(item, 'private_correspondence');
-  });
-  (Array.isArray(GM._pendingNpcConspiracies) ? GM._pendingNpcConspiracies : []).forEach(function(item) {
-    inspect(item, 'conspiracy');
-  });
-  (Array.isArray(GM._npcHiddenMoves) ? GM._npcHiddenMoves : []).forEach(function(item) {
-    inspect(item, 'hidden_move');
-  });
-  return maxPenalty;
-}
-
 // ★2026-07-01 W2a·NPC自主决策纳入记忆链条:此前 _selectNpcActionTarget 只按党派/野心/忠诚/才干打分选对象·
 //   完全不读「此人对目标的印象/好感」(记忆底座 _impressions)——W1汇流审计坐实的缺口。此助手读好感(-100..100)·
 //   令 NPC 更倾向与亲近信任者密谋通书、构陷素所记恨者·把记忆真正接进自主推演的对象选择(确定性·无好感回退0=旧行为)。
@@ -954,50 +886,10 @@ function _selectNpcActionTarget(npc, type, context) {
   }).filter(function(r){return r.score>-1000;}).sort(function(a,b){return b.score-a.score||String(a.c.id).localeCompare(String(b.c.id));}).map(function(r){return r.c.name;})[0]||'';
 }
 
-function _npcActionCooldownTurns(type) {
-  var map = {
-    petition: 2,
-    conspire: 2,
-    train_troops: 1,
-    send_letter: 2,
-    private_correspondence: 2,
-    seek_audience: 2,
-    request_funds: 3,
-    obstruct: 2,
-    slander: 2,
-    recommend: 3,
-    impeach: 3,
-    patrol: 1,
-    fortify: 2,
-    develop_local: 2,
-    relief: 2,
-    build_network: 4,
-    office_duty: 1,
-    private_life: 1,
-    palace_intrigue: 2,
-    court_politics: 2
-  };
-  return map[type] || 1;
-}
-
-function _getNpcActionLedger() {
-  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.ensureLedger) {
-    return TM.NPC.ActionLedger.ensureLedger(GM);
-  }
-  if (!Array.isArray(GM._npcActionLedger)) GM._npcActionLedger = [];
-  return GM._npcActionLedger;
-}
-
 function _isNpcActionCoolingDown(npc, type, target, context, actionId) {
   if (!actionId || /^npcact:|^npccard:/.test(actionId)) return false;
   var receipts=TM.NPC.ActionLedger.state(GM).receipts;
   return !!receipts[JSON.stringify([actionId,'execute'])];
-}
-
-function _recordNpcActionLedger(npc, decision) {
-  var receipt=decision&&decision._executionResult;
-  if(!npc||!receipt||!receipt.actionId)return null;
-  return TM.NPC.ActionLedger.record(Object.assign({},receipt,{characterId:npc.id,status:receipt.outcome}),{markHandled:false});
 }
 
 function _npcPendingMemorialCount() {
@@ -1278,45 +1170,6 @@ function executeSeekAudienceBehavior(npc, target, decision, context) {
   return _npcResult('submitted', '求见已登记，待接见', [{ kind: 'audience', id: decision.actionId }]);
 }
 
-function _npcProvinceKeyFor(npc, target) {
-  var key = target || (npc && (npc.jurisdiction || npc.location || npc.province)) || '';
-  if (key && GM.provinceStats && GM.provinceStats[key]) return key;
-  if (npc && npc.location && GM.provinceStats && GM.provinceStats[npc.location]) return npc.location;
-  if (GM.provinceStats) {
-    var keys = Object.keys(GM.provinceStats);
-    if (keys.length) return keys[0];
-  }
-  return key || '';
-}
-
-function _npcEnsureProvinceStats(key) {
-  if (!key) return null;
-  if (!GM.provinceStats) GM.provinceStats = {};
-  if (!GM.provinceStats[key]) GM.provinceStats[key] = { prosperity: 50, unrest: 20, security: 50 };
-  return GM.provinceStats[key];
-}
-
-function _npcAdjustProvinceStat(key, field, delta, min, max) {
-  var stats = _npcEnsureProvinceStats(key);
-  if (!stats) return null;
-  var old = Number(stats[field] == null ? 0 : stats[field]);
-  var lo = min == null ? 0 : min;
-  var hi = max == null ? 100 : max;
-  stats[field] = Math.max(lo, Math.min(hi, old + delta));
-  return stats[field];
-}
-
-function _npcEnsureCharResources(npc) {
-  if (!npc.resources) npc.resources = {};
-  if (!npc.resources.privateWealth) npc.resources.privateWealth = { money: 0, grain: 0, cloth: 0 };
-  if (!npc.resources.publicPurse && !npc.resources.publicTreasury) npc.resources.publicPurse = { money: 0, grain: 0, cloth: 0 };
-  return npc.resources;
-}
-
-function _npcAdjustPrivateWealth(npc, delta, reason) { return _npcResult('blocked','counterparty_operation_required'); }
-
-function _npcAdjustGuoku(delta) { return _npcResult('blocked','source_account_operation_required'); }
-
 function _npcWuchangScore(npc, key, fallback) {
   var w = (npc && (npc.wuchangOverride || npc.wuchang || npc.fiveConstants)) || {};
   var value = w[key];
@@ -1327,28 +1180,6 @@ function _npcWuchangScore(npc, key, fallback) {
   if (value == null && key === '礼') value = npc && npc.charisma;
   value = Number(value);
   return isFinite(value) ? value : (fallback == null ? 50 : fallback);
-}
-
-function _npcRecordMoneyAction(kind, npc, target, intent, amount, visibility) {
-  var meta = arguments.length > 6 && arguments[6] ? arguments[6] : null;
-  var rec = {
-    from: npc.name,
-    to: target || '',
-    intent: intent || '',
-    amount: Math.round(amount || 0),
-    turn: GM.turn,
-    visibility: visibility || 'public'
-  };
-  if (meta) {
-    rec.abilityFit = meta.abilityFit;
-    rec.wuchangFit = meta.wuchangFit;
-    rec.economyFit = meta.economyFit;
-    rec.familyFit = meta.familyFit;
-    rec.tierFit = meta.tierFit;
-    rec.resultType = meta.resultType || meta.outcome || '';
-    rec.effects = meta.effects || null;
-  }
-  _recordNpcInternalAction(kind, rec);
 }
 
 function _npcEnsureExecutionFactors(npc, type, context, decision) {
@@ -1380,68 +1211,6 @@ function _npcEnsureExecutionFactors(npc, type, context, decision) {
   decision.tierFit = factors.tierFit;
   decision._executionFactors = factors;
   return factors;
-}
-
-function _npcRound(v) {
-  var n = Number(v || 0);
-  return isFinite(n) ? Math.round(n) : 0;
-}
-
-function _npcAdjustPublicPurse(npc, delta, reason) {
-  return _npcResult('blocked', 'public_account_operation_required');
-}
-
-function _npcApplyPublicGrant(npc, amount, reason, decision) {
-  if (!decision) return _npcResult('blocked', 'authorization_and_accounts_required');
-  return _npcTransferPublic(npc, decision);
-}
-
-function _npcFindFamilyRecord(npc, familyEconomy) {
-  var fam = familyEconomy || _npcFamilyEconomyFor(npc, null);
-  if (!fam) return null;
-  var ids = [fam.clanId, fam.id, fam.clanName, fam.name].filter(Boolean).map(String);
-  var containers = [GM && GM.clans, GM && GM.families];
-  for (var c = 0; c < containers.length; c++) {
-    var src = containers[c];
-    if (!src) continue;
-    if (Array.isArray(src)) {
-      for (var i = 0; i < src.length; i++) {
-        var rec = src[i];
-        if (rec && ids.indexOf(String(rec.id || rec.key || rec.name || '')) >= 0) return rec;
-      }
-    } else {
-      for (var k in src) {
-        if (!Object.prototype.hasOwnProperty.call(src, k)) continue;
-        var item = src[k];
-        if (!item) continue;
-        if (ids.indexOf(String(k)) >= 0 || ids.indexOf(String(item.id || item.key || item.name || '')) >= 0) return item;
-      }
-    }
-  }
-  return null;
-}
-
-function _npcAdjustFamilySharedWealth(npc, delta, familyEconomy, reason) {
-  var rec = _npcFindFamilyRecord(npc, familyEconomy);
-  if (!rec) return { reason: reason || '', delta: 0, before: 0, after: 0, spent: 0 };
-  var key = rec.sharedWealth != null ? 'sharedWealth' : (rec.commonWealth != null ? 'commonWealth' : 'sharedWealth');
-  var before = Number(rec[key] || 0);
-  var amount = _npcRound(delta);
-  rec[key] = Math.max(0, before + amount);
-  return {
-    reason: reason || '',
-    clanId: rec.id || rec.key || familyEconomy && familyEconomy.clanId || '',
-    clanName: rec.name || familyEconomy && familyEconomy.clanName || '',
-    delta: amount,
-    before: before,
-    after: rec[key],
-    spent: amount < 0 ? before - rec[key] : 0
-  };
-}
-
-function _npcPushExecutionResult(npc, decision, result) {
-  decision._executionResult = result;
-  return result;
 }
 
 function executePalaceIntrigueBehavior(npc, target, decision, context) {

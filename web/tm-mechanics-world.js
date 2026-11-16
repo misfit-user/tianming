@@ -387,13 +387,6 @@ function initFamilyRegistry() {
   _dbg('[Family] Registry built:', Object.keys(GM.families).length, 'families');
 }
 
-/** 获取角色所属家族对象 */
-function getFamilyOf(charName) {
-  var ch = findCharByName(charName);
-  if (!ch || !ch.family || !GM.families) return null;
-  return GM.families[ch.family] || null;
-}
-
 /** 设置家族内血缘关系 */
 function setFamilyRelation(familyName, nameA, nameB, relType) {
   if (!GM.families || !GM.families[familyName] || !nameA || !nameB || nameA === nameB) return;

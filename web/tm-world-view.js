@@ -133,8 +133,6 @@ function closeWorldSituation(){
 // 兼容旧调用
 function openHistoricalEvents(){ openWorldSituation(); }
 function openEraTrends(){ openWorldSituation(); }
-function closeHistoricalEvents(){ closeWorldSituation(); }
-function closeEraTrends(){ closeWorldSituation(); }
 
 // 绘制时代趋势图表
 function drawEraTrendsChart(canvas,history,dimensions){

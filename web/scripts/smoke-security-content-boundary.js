@@ -127,7 +127,7 @@ function runInteractiveMapProbe() {
     createTextNode(text) { return makeNode('', text); }
   };
   const start = interactiveMapSource.indexOf('var InteractiveMap = {');
-  const end = interactiveMapSource.indexOf('\n};\n\n// 打开交互式地图', start);
+  const end = interactiveMapSource.indexOf('\n};\n', start); // 对象字面量之后第一个顶格的 };
   ok(start >= 0 && end > start, '交互地图对象可定位');
   const ctx = { document, getLiveMapData: () => ({ regions: [] }), Math, String };
   vm.runInNewContext(interactiveMapSource.slice(start, end + 3), ctx);

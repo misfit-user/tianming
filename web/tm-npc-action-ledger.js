@@ -548,11 +548,6 @@
   function revisionMatches(p, d) {
     return d.expectedRevision == null || Number(d.expectedRevision) === Number(p && p.revision || 1);
   }
-  function bumpRevision(p, terms) {
-    p.revision = Number(p.revision || 1) + 1;
-    if (terms) p.termsVersion = Number(p.termsVersion || 1) + 1;
-    return p.revision;
-  }
   function social(npc,d) {
     var g=_gm(), p=d.planId ? planById(d.planId,g) : null, who, legacy=null;
     if(d.activityKind||p&&p.localActivity)return TM.NPC.DailyActivities?TM.NPC.DailyActivities.commit(npc,null,d):result('blocked','local_activity_domain_unavailable');

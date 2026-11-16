@@ -70,17 +70,25 @@
   }
 
   // ── 叶子枚举 / 人口对象 ────────────────────────────────────────────────
+  // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）：人力读写区划一律取 GM 那份——
+  //   原先读的是剧本库那份，在册、隐匿、逃亡、优免诸丁都记在死拷贝上，从没进过户口真账。
+  //   GM 尚无区划（单测只给 P 时）才退回传进来的那份。
+  function _liveAH(Pp) {
+    var g = (typeof GM !== 'undefined' && GM) || (typeof window !== 'undefined' && window.GM) || (typeof global !== 'undefined' && global.GM) || null;
+    if (g && g.adminHierarchy && typeof g.adminHierarchy === 'object' && Object.keys(g.adminHierarchy).length) return g.adminHierarchy;
+    return (Pp && Pp.adminHierarchy) || null;
+  }
   function leaves(Pp) {
     Pp = Pp || _P();
-    if (!Pp || !Pp.adminHierarchy) return [];
+    var _ah0 = _liveAH(Pp); if (!_ah0) return [];
     var IB = (typeof IntegrationBridge !== 'undefined' && IntegrationBridge)
       || (typeof window !== 'undefined' && window.IntegrationBridge)
       || (typeof global !== 'undefined' && global.IntegrationBridge) || null;
     if (IB && typeof IB.getLeafDivisions === 'function') {
-      try { var r = IB.getLeafDivisions(Pp.adminHierarchy, 'player'); if (r && r.length) return r; } catch (_) {}
+      try { var r = IB.getLeafDivisions(_ah0, 'player'); if (r && r.length) return r; } catch (_) {}
     }
     var out = [];
-    var fac = Pp.adminHierarchy.player || Pp.adminHierarchy[Object.keys(Pp.adminHierarchy)[0]];
+    var fac = _ah0.player || _ah0[Object.keys(_ah0)[0]];
     (function walk(nodes) {
       if (!Array.isArray(nodes)) return;
       nodes.forEach(function (n) {
@@ -541,7 +549,7 @@
   // 找名为 name 的 division（任意层·id 或 name）→ 返回其叶子后代（省→府展开·真天启叶=府级）
   function _leavesUnderDivision(Pp, name) {
     Pp = Pp || _P();
-    var ah = Pp && Pp.adminHierarchy; if (!ah) return [];
+    var ah = _liveAH(Pp); if (!ah) return [];
     var fac = ah.player || ah[Object.keys(ah)[0]];
     var found = null;
     (function find(ns) { if (found || !Array.isArray(ns)) return; ns.forEach(function (n) { if (found || !n) return; if (String(n.id || '') === String(name) || String(n.name || '') === String(name)) { found = n; return; } find(n.children || n.divisions); }); })(fac && fac.divisions);
@@ -700,7 +708,7 @@
     return clamp(days/360,1/360,1);
   }
   function _allAdminLeaves(GM,Pp) {
-    var ah=GM && GM.adminHierarchy || Pp && Pp.adminHierarchy || {}, out=[];
+    var ah=(GM && GM.adminHierarchy) || _liveAH(Pp) || {}, out=[];
     var branches=Array.isArray(ah.divisions)?[ah]:Object.keys(ah).map(function(k){return ah[k];});
     function walk(ns){(ns||[]).forEach(function(n){var kids=n && (n.children||n.divisions);if(kids&&kids.length)walk(kids);else if(n)out.push(n);});}
     branches.forEach(function(b){walk(Array.isArray(b)?b:b&&b.divisions);});return out;
@@ -939,7 +947,7 @@
       if (all) addKeys(node);
       return all;
     }
-    var ah = Pp && Pp.adminHierarchy;
+    var ah = _liveAH(Pp);
     var fac = ah && (ah.player || ah[Object.keys(ah)[0]]);
     (fac && fac.divisions || []).forEach(walk);
     return set;
@@ -1015,7 +1023,7 @@
   // 区域→主官名（子区继承最近上级 governor·治所/省主官覆盖府县）
   function _governorMap(Pp) {
     Pp = Pp || _P(); var map = {};
-    var ah = Pp && Pp.adminHierarchy; if (!ah) return map;
+    var ah = _liveAH(Pp); if (!ah) return map;
     var fac = ah.player || ah[Object.keys(ah)[0]];
     (function walk(nodes, inherited) {
       if (!Array.isArray(nodes)) return;

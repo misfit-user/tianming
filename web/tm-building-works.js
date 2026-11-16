@@ -565,13 +565,9 @@
   function tick(GM, P) {
     if (!GM || !P) return { completed: 0, building: 0, neglected: 0, upkeepPaid: 0, damaged: 0, repaired: 0 };
     var stat = { completed: 0, building: 0, neglected: 0, upkeepPaid: 0, damaged: 0, repaired: 0 };
-    // 2026-07-03·工期不推进根治：历史 P/GM 双 admin 树并存(开局 GM.adminHierarchy=deepClone(P)·独立对象·
-    //   运行时活树多为 GM·P 树可能为空{})。自拟营建/写工具经 _adminSources 双源搜索落库·P 树空时工程落 GM 树·
-    //   而本 tick 旧只扫 P.adminHierarchy 单树→落 GM 树的在建工程 remainingTurns 永不递减「永远工役中」。
-    //   修：遍历 P+GM 双源(镜像 _adminSources 范式)·按 div 对象引用去重(防同一 div 被递减两次)。
+    // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）：营造只落、只扫游戏那份（07-03 起两份都扫的补丁撤去）。P 仍传进来，只为读建筑类型表 P.buildingSystem。
     var _roots = [];
-    if (P.adminHierarchy && typeof P.adminHierarchy === 'object') _roots.push(P.adminHierarchy);
-    if (GM.adminHierarchy && typeof GM.adminHierarchy === 'object' && GM.adminHierarchy !== P.adminHierarchy) _roots.push(GM.adminHierarchy);
+    if (GM.adminHierarchy && typeof GM.adminHierarchy === 'object') _roots.push(GM.adminHierarchy);
     var _seenDiv = (typeof Set !== 'undefined') ? new Set() : null;
     function _divSeen(d) { if (!_seenDiv) return false; if (_seenDiv.has(d)) return true; _seenDiv.add(d); return false; }
     _roots.forEach(function (ah) {
@@ -598,6 +594,22 @@
     return stat;
   }
 
+  // 旧档并区划（2026-11-15·区划只留游戏里那份）：完工建筑的效果当年加在了剧本库那份区划上，游戏那份没有。
+  //   读档把建筑并进游戏那份时，按 appliedDelta 把长期效果（白名单里的税基、城防、兵源等）补加一次；
+  //   完工那一下的民心、腐败小幅波动是一次性的，时过境迁不补。返回是否补了。
+  function reapplyCompletedDelta(div, bld) {
+    if (!div || !bld || !bld.appliedDelta || bld.appliedTurn == null) return false;
+    var any = false;
+    Object.keys(bld.appliedDelta).forEach(function (k) {
+      if (k.charAt(0) === '_' || !WHITELIST[k]) return;
+      var v = num(bld.appliedDelta[k], 0);
+      if (!v) return;
+      addPath(div, k, v);
+      any = true;
+    });
+    return any;
+  }
+
   var api = {
     WHITELIST: WHITELIST,
     typeDefFor: typeDefFor,
@@ -607,6 +619,7 @@
     upkeepFor: upkeepFor,
     applyCompletion: applyCompletion,
     revertBuilding: revertBuilding,
+    reapplyCompletedDelta: reapplyCompletedDelta,   // 旧档并区划时补完工效果（2026-11-15）
     damageBuilding: damageBuilding,            // S6·灾损(半损·效用减半)
     repairBuilding: repairBuilding,            // S6·修缮(复完)
     buildingLedger: buildingLedger,            // S7·营造可观测账(实入账+维护+工成之利)

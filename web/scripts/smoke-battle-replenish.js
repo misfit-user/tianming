@@ -22,9 +22,10 @@ global.window.GM = {
   armies: [{ id: 'pa', faction: '宋', name: '背嵬军', soldiers: 2000, size: 2000, strength: 2000, morale: 75, quality: '精锐', veterancy: 20, type: '步军', location: '鄂州', composition: [{ type: '长枪兵', count: 1400 }, { type: '刀盾兵', count: 600 }] }]
 };
 global.window.P = {
-  playerInfo: { factionName: '宋' },
-  adminHierarchy: { song: { divisions: [{ name: '鄂州', minxin: 62, populationDetail: { ding: 40000 }, militaryDetail: { availableRecruits: 300 } }] } }
+  playerInfo: { factionName: '宋' }
 };
+// 区划只留游戏里那份（GM·2026-11-15）：驻地、征兵池都读 GM 的区划，P 只给开局与编辑器
+global.window.GM.adminHierarchy = { song: { divisions: [{ name: '鄂州', minxin: 62, populationDetail: { ding: 40000 }, militaryDetail: { availableRecruits: 300 } }] } };
 global.window.TM = { FieldPipes: require(path.resolve(__dirname, '..', 'tm-field-pipelines.js')) };
 global.window.TMArmyUnits = require(path.resolve(__dirname, '..', 'tm-army-units.js'));
 global.window.TM.AIChange = { Army: {
@@ -57,8 +58,8 @@ const vetBefore = AU.effectiveVet(army);
 let r = TURN.applyReplenish(GM, army, 300, 'ding');
 ok(r.added === 300, '② 丁口补员落地300');
 ok(army.soldiers === 2300 && army.size === 2300 && army.strength === 2300, '② soldiers/size/strength 三标量=2300');
-ok(P.adminHierarchy.song.divisions[0].militaryDetail.availableRecruits === 0, '② 征兵池 300→0(真 capRecruitDelta 扣池)');
-ok(P.adminHierarchy.song.divisions[0].minxin === 62, '② 报价预夹→无强征过池·民心不扣');
+ok(GM.adminHierarchy.song.divisions[0].militaryDetail.availableRecruits === 0, '② 征兵池 300→0(真 capRecruitDelta 扣池)');
+ok(GM.adminHierarchy.song.divisions[0].minxin === 62, '② 报价预夹→无强征过池·民心不扣');
 const vetAfter = AU.effectiveVet(army);
 ok(vetAfter < vetBefore, '② 新兵稀释历练 ' + vetBefore + '→' + vetAfter);
 AU.ensureArmyUnits(army);

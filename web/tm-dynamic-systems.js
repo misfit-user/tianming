@@ -223,9 +223,9 @@ var PostTransfer = {
       })(GM.officeTree);
     }
     // 清理 adminHierarchy（行政区划的governor，递归子层级）
-    if (P.adminHierarchy) {
-      Object.keys(P.adminHierarchy).forEach(function(k) {
-        var ah = P.adminHierarchy[k];
+    if (GM.adminHierarchy) {   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
+      Object.keys(GM.adminHierarchy).forEach(function(k) {
+        var ah = GM.adminHierarchy[k];
         if (ah && ah.divisions) {
           (function _clearGov(divs) {
             divs.forEach(function(d) {

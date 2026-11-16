@@ -12,7 +12,8 @@
   function ordersById(game, key) { var matches = book(game).filter(function(o) { return o && o.id === key; }); return matches.length === 1 ? matches[0] : null; }
   function regionEntries(game, project, mirrors) {
     var entries = [], objects = new Set(), keys = new Set();
-    [project && project.adminHierarchy, game && game.adminHierarchy].forEach(function(tree) {
+    // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）：营造订单只认 GM 的区划（旧先找 P 那份，建筑落进死拷贝）
+    [game && game.adminHierarchy].forEach(function(tree) {
       Object.keys(tree || {}).forEach(function(faction) {
         function walk(nodes, names) {
           (Array.isArray(nodes) ? nodes : []).forEach(function(d) {

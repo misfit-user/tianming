@@ -305,7 +305,7 @@
   var _regionIndex = {root:null,ah:null,turn:null,entries:null,queries:new Map()};
   function regionEntries(root) {
     root = pickRoot(root);
-    var ah = root.adminHierarchy || (global.P && global.P.adminHierarchy) || {};
+    var ah = root.adminHierarchy || {};
     var turn=Number(root.turn)||0;
     if (_regionIndex.root===root && _regionIndex.ah===ah && _regionIndex.turn===turn && _regionIndex.entries) return _regionIndex.entries;
     _regionIndex={root:root,ah:ah,turn:turn,entries:null,queries:new Map()};

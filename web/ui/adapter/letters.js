@@ -51,7 +51,7 @@ function places() {
   const map = (typeof w.peekMapSource === 'function' && w.peekMapSource()) || g.mapData || (w.P && (w.P.mapData || w.P.map)) || null;
   for (const r of (map && map.regions) || []) if (r && r.id && r.circuitName) circuit.set(String(r.id), r.circuitName);
   // 区划树：每个节点记下顶层名；顶层若有地图块能给出简称，就用简称
-  const ah = g.adminHierarchy || (w.P && w.P.adminHierarchy) || {};
+  const ah = g.adminHierarchy || {};
   const nodes = [];
   const short = new Map();
   const walk = (list, top) => {

@@ -112,7 +112,7 @@
     var bridge = global.IntegrationBridge, G = global.GM;
     if (!bridge || typeof bridge.getLeafDivisions !== 'function') return fallback;
     var sum = 0, total = 0;
-    bridge.getLeafDivisions(G.adminHierarchy || (global.P && global.P.adminHierarchy), 'player').forEach(function(d) {
+    bridge.getLeafDivisions(G.adminHierarchy || {}, 'player').forEach(function(d) {
       var value = typeof d.minxin === 'number' ? d.minxin : d.minxinLocal;
       var pd = d.populationDetail || d.population || {};
       var weight = typeof pd.actualMouths === 'number' ? pd.actualMouths : pd.mouths;

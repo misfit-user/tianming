@@ -12,7 +12,7 @@
   function conf(P){return (P&&P.conf)||(root.P&&root.P.conf)||{};}
   // 遍历 adminHierarchy 聚合全国 economyBase + 人口 + 政区数 + 驻军(一次·缓存进 ctx)
   function aggregate(GM,P){
-    var ah=(P&&P.adminHierarchy)||(root.GM&&root.GM.adminHierarchy)||(GM&&GM.adminHierarchy)||{};
+    var ah=(GM&&GM.adminHierarchy)||(root.GM&&root.GM.adminHierarchy)||{};   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
     var t={mineral:0,commerce:0,maritime:0,farmland:0,salt:0,mouths:0,divs:0,recruits:0};
     Object.keys(ah).forEach(function(fk){
       var fh=ah[fk]; var ds=fh&&(fh.divisions||fh.children); if(!ds||!ds.length)return;

@@ -167,12 +167,10 @@
 
   /* ── 战场环境解析(Phase4 收尾:军队所在省 → 地形标签 / 全局回合 → 天候·喂 buildBattleConfig)── */
 
-  /* adminHierarchy(GM 优先·回退 P)·运行时形状 {side:{divisions:[{name,terrain,children,mapRegionId}]}} */
+  /* adminHierarchy（只读游戏里那份 GM，剧本库那份只给开局与编辑器·2026-11-15）·运行时形状 {side:{divisions:[{name,terrain,children,mapRegionId}]}} */
   function _ahOf(GMref) {
     var g = GMref || (typeof window !== 'undefined' && window.GM) || (typeof GM !== 'undefined' ? GM : null);
     if (g && g.adminHierarchy && typeof g.adminHierarchy === 'object' && Object.keys(g.adminHierarchy).length) return g.adminHierarchy;
-    var p = (typeof window !== 'undefined' && window.P) || (typeof P !== 'undefined' ? P : null);
-    if (p && p.adminHierarchy && typeof p.adminHierarchy === 'object') return p.adminHierarchy;
     return null;
   }
   /* 递归收集所有 division 节点(各方 .divisions → 每节点 .children 下钻)·扁平数组·永不崩。

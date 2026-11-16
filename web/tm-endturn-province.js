@@ -97,10 +97,10 @@ function initProvinceEconomy() {
 
   // 尝试从行政区划加载
   var _adminUsed = false;
-  if (P.adminHierarchy) {
-    var _adminKeys = Object.keys(P.adminHierarchy);
+  if (GM.adminHierarchy) {   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
+    var _adminKeys = Object.keys(GM.adminHierarchy);
     _adminKeys.forEach(function(fk) {
-      var ah = P.adminHierarchy[fk];
+      var ah = GM.adminHierarchy[fk];
       if (!ah || !ah.divisions || ah.divisions.length === 0) return;
 
       // 推断势力名称
@@ -415,10 +415,10 @@ function doAppointGovernor(provinceName, charName) {
   }
 
   // 同步到行政区划
-  if (P.adminHierarchy) {
-    var _aks = Object.keys(P.adminHierarchy);
+  if (GM.adminHierarchy) {
+    var _aks = Object.keys(GM.adminHierarchy);
     _aks.forEach(function(k) {
-      var ah = P.adminHierarchy[k];
+      var ah = GM.adminHierarchy[k];
       if (!ah || !ah.divisions) return;
       (function _syncGov(divs) {
         divs.forEach(function(d) {
@@ -2027,7 +2027,7 @@ function _peBuiltContent() {
   }
 
   // 优先读 GM.adminHierarchy（运行时 live 数据，CascadeTax/aggregate 写入处），回退到 P.adminHierarchy
-  var _adminSrc = (GM.adminHierarchy && Object.keys(GM.adminHierarchy).length > 0) ? GM.adminHierarchy : P.adminHierarchy;
+  var _adminSrc = (GM.adminHierarchy && Object.keys(GM.adminHierarchy).length > 0) ? GM.adminHierarchy : null;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
   var adminTree = null;
   if (_adminSrc) {
     adminTree = _adminSrc.player || null;

@@ -37,7 +37,7 @@
         else walk(kids);
       });
     }
-    [P && P.adminHierarchy, GM && GM.adminHierarchy].forEach(function(ah) {
+    [GM && GM.adminHierarchy].forEach(function(ah) {
       if (!ah || typeof ah !== 'object' || leaves.length) return;
       if (Array.isArray(ah.divisions)) walk(ah.divisions);
       else Object.keys(ah).forEach(function(k) {
@@ -419,7 +419,7 @@
     if (GM._socialLocalInputs.byRegion[key] !== undefined) return GM._socialLocalInputs.byRegion[key];
     // 找顶级区划：名字双向包含（剧本 variant.region 常是「陕西」「江南苏松」类泛称）
     var root = null;
-    [P && P.adminHierarchy, GM && GM.adminHierarchy].forEach(function(ah) {
+    [GM && GM.adminHierarchy].forEach(function(ah) {
       if (root || !ah || typeof ah !== 'object') return;
       var tops = [];
       if (Array.isArray(ah.divisions)) tops = ah.divisions;

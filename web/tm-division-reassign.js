@@ -90,7 +90,7 @@
   // ── 行政树 ──
   function adminSources(gm) {
     var out = [];
-    [root.P && root.P.adminHierarchy, gm && gm.adminHierarchy].forEach(function (ah) {
+    [gm && gm.adminHierarchy].forEach(function (ah) {   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
       if (ah && typeof ah === 'object' && Object.keys(ah).length && out.indexOf(ah) < 0) out.push(ah);
     });
     return out;

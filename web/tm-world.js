@@ -1508,13 +1508,13 @@ function buildAIContext(deepMode) {
   }
 
   // 行政区划概况（含主官、经济、建筑 + 深化字段：户口/民心/腐败/公库/承载力）
-  if (P.adminHierarchy) {
-    var adminFactions = Object.keys(P.adminHierarchy).filter(function(k) { return P.adminHierarchy[k] && P.adminHierarchy[k].divisions && P.adminHierarchy[k].divisions.length > 0; });
+  if (GM.adminHierarchy) {   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
+    var adminFactions = Object.keys(GM.adminHierarchy).filter(function(k) { return GM.adminHierarchy[k] && GM.adminHierarchy[k].divisions && GM.adminHierarchy[k].divisions.length > 0; });
     if (adminFactions.length > 0) {
       ctx += '\u3010\u884C\u653F\u533A\u5212\u3011\n';
       ctx += '  \u203B \u7528admin_changes\u4EFB\u547D/\u64A4\u6362\u5730\u65B9\u5B98\u3001\u8C03\u6574\u7E41\u8363\u5EA6\uFF1B\u7528 changes[] \u4FEE\u6539 divisions.X.{population,fiscal,publicTreasury,minxin,corruption} \u7B49\u6DF1\u5316\u5B57\u6BB5\u3002\n';
       adminFactions.forEach(function(fk) {
-        var divs = P.adminHierarchy[fk].divisions;
+        var divs = GM.adminHierarchy[fk].divisions;
         divs.slice(0, 10).forEach(function(d) {
           ctx += '  ' + d.name + (d.level ? '(' + d.level + ')' : '');
           if (d.governor) ctx += ' \u5B98:' + d.governor;

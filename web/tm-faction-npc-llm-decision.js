@@ -611,7 +611,7 @@
     var P0 = global.P || {};
     var out = [];
     if (G.adminHierarchy && typeof G.adminHierarchy === 'object') out.push({ name: 'GM.adminHierarchy', data: G.adminHierarchy });
-    if (P0.adminHierarchy && typeof P0.adminHierarchy === 'object') out.push({ name: 'P.adminHierarchy', data: P0.adminHierarchy });
+    // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15），剧本库那份不再并读
     return out;
   }
 

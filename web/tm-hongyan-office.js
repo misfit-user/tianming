@@ -412,9 +412,7 @@ function calcLetterDays(fromLoc, toLoc, urgency) {
  *    回退 P.adminHierarchy（剧本静态）·与 _renderDifangPanel 等模块一致
  */
 function _ltCheckSameProvince(loc1, loc2) {
-  var src = (typeof GM !== 'undefined' && GM.adminHierarchy) ? GM.adminHierarchy
-          : (typeof P !== 'undefined' && P.adminHierarchy) ? P.adminHierarchy
-          : null;
+  var src = (typeof GM !== 'undefined' && GM.adminHierarchy) ? GM.adminHierarchy : null;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
   if (!src) return false;
   var ah = src.player ? src.player : src[Object.keys(src)[0]];
   if (!ah || !ah.divisions) return false;

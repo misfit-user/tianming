@@ -30,8 +30,11 @@ function mkSave() {
     populationDetail: { mouths: 200000, ding: 50000 },
     coastalDefense: 1, fortLevel: 1, borderRisk: 10, troops: 1500, officeVacancy: 0
   };
+  var ah = { player: { divisions: [div, coastalDiv] } };
+  // 区划只留游戏里那份（GM·2026-11-15）：营造 agent 读 GM 的区划；这里让 GM 与 P 共用这棵树，同正式游戏
+  global.GM = Object.assign({}, global.GM || {}, { adminHierarchy: ah });
   return {
-    adminHierarchy: { player: { divisions: [div, coastalDiv] } },
+    adminHierarchy: ah,
     ai: { key: 'sk-test' },
     conf: {}
   };

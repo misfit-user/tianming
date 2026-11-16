@@ -1919,9 +1919,9 @@ async function _logicAuditOnStart(sc, options) {
   // 行政区划
   var adminInfo = '';
   var adminPlaces = []; // 收集所有已知地名供AI参考
-  if (P.adminHierarchy) {
-    Object.keys(P.adminHierarchy).forEach(function(k) {
-      var ah = P.adminHierarchy[k];
+  if (GM.adminHierarchy) {
+    Object.keys(GM.adminHierarchy).forEach(function(k) {
+      var ah = GM.adminHierarchy[k];
       if (ah && ah.divisions) {
         adminInfo += k + '辖下：';
         adminInfo += ah.divisions.map(function(d) {

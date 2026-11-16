@@ -105,7 +105,7 @@ function postsOf(g, ch) {
 function governedBy(g, ch) {
   const out = [];
   if (!ch) return out;
-  const ah = g.adminHierarchy || (w.P && w.P.adminHierarchy) || {};
+  const ah = g.adminHierarchy || {};
   const walk = (list, depth) => {
     for (const d of list || []) {
       if (!d) continue;
@@ -229,7 +229,7 @@ export function person(ref) {
 
 // 辖区读数：所辖首块区划的户口（据册）、民心、吏治（100−地方浊度）
 export function jurisdiction(divisionId) {
-  const ah = G().adminHierarchy || (w.P && w.P.adminHierarchy) || {};
+  const ah = G().adminHierarchy || {};
   let hit = null;
   const walk = (list) => { for (const d of list || []) { if (hit) return; if (d && d.id === divisionId) hit = d; else if (d) walk(d.children || d.divisions); } };
   for (const k of Object.keys(ah)) walk(ah[k] && ah[k].divisions);
@@ -508,7 +508,7 @@ export function qiaozhi(name) {
   const lost = (g._lostTerritories || {})[name];
   if (!lost) return null;
   const node = lost.node || {};
-  const ah = w.P && w.P.adminHierarchy;
+  const ah = g.adminHierarchy;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
   const key = ah ? (ah.player ? 'player' : Object.keys(ah)[0]) : null;
   const divs = key && ah[key] && Array.isArray(ah[key].divisions) ? ah[key].divisions : [];
   return { name, population: Number(node.population) || 0, prosperity: Number(node.prosperity) || 0, lostTo: lost.lostTo || '敌方', turn: lost.turn,
@@ -819,7 +819,7 @@ export function mapSeats() {
   const capOf = (n) => { const id = n && n.capitalChildId; const c = id ? kids(n).find((x) => String(x.id) === String(id)) : null; return c && c.name ? String(c.name) : ''; };
   const segs = (t) => String(t || '').split(/[·・（）()\/\s，,、]+/).filter((x) => x && /[一-鿿]/.test(x) && !/^今/.test(x));
   const seats = new Set(), capitals = [];
-  const roots = g.adminHierarchy || P.adminHierarchy || {};
+  const roots = g.adminHierarchy || {};
   const facs = g.facs || [];
   for (const k of Object.keys(roots)) {
     const root = roots[k];

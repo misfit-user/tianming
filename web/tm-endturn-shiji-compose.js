@@ -137,10 +137,10 @@
     ];
     // 高亮资源提前构建（旧版每段重建·O(段落×实体) 白耗）
     var placeRe = null;
-    if (P.adminHierarchy) {
+    if (GM.adminHierarchy) {
       var placeNames = [];
-      Object.keys(P.adminHierarchy).forEach(function(fk) {
-        var fh = P.adminHierarchy[fk];
+      Object.keys(GM.adminHierarchy).forEach(function(fk) {
+        var fh = GM.adminHierarchy[fk];
         if (fh && fh.divisions) (function _walk(divs) {
           divs.forEach(function(d) { if (d.name && d.name.length >= 2) placeNames.push(d.name); if (d.divisions) _walk(d.divisions); });
         })(fh.divisions);

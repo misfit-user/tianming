@@ -26,7 +26,7 @@ function charOf(g, ref) {
 
 // 区划树：带父链走一遍，按 id、名字都能找
 function divisions(g) {
-  const ah = g.adminHierarchy || (w.P && w.P.adminHierarchy) || {};
+  const ah = g.adminHierarchy || {};
   const out = [];
   const walk = (list, parents) => {
     for (const d of list || []) {

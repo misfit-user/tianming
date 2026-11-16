@@ -33,7 +33,9 @@ function mkWorld(opts) {
     });
   }
   const GM = { turn: opts.turn != null ? opts.turn : 10, classes: opts.classes || [], parties: opts.parties, partyState: opts.partyState, armies: opts.armies || [] };
-  const P = { adminHierarchy: { player: { divisions: [{ name: '某省', children: leaves }] } } };
+  // 区划只留游戏里那份（GM·2026-11-15）：结构输入读 GM 的区划，P 只给开局与编辑器
+  GM.adminHierarchy = { player: { divisions: [{ name: '某省', children: leaves }] } };
+  const P = {};
   return { GM, P, leaves };
 }
 
@@ -149,11 +151,11 @@ const regLeaves = (tax, dis, mx, prefix) => Array.from({ length: 5 }, (_, i) => 
   name: prefix + i, taxRate: tax, minxin: mx, statusEffects: dis > i ? [{ kind: 'disaster' }] : [], warZone: false
 }));
 const wReg = {
-  GM: { turn: 40, classes: [clsReg], armies: [] },
-  P: { adminHierarchy: { player: { divisions: [
+  GM: { turn: 40, classes: [clsReg], armies: [], adminHierarchy: { player: { divisions: [
     { name: '陕西', children: regLeaves(1.3, 4, 25, '陕县') },
     { name: '江南', children: regLeaves(1.0, 0, 62, '吴县') }
-  ] } } }
+  ] } } },
+  P: {}   // 区划只留游戏里那份（GM·2026-11-15）：地域输入读 GM 的区划
 };
 const liShan = SF.localInputsFor(wReg.GM, wReg.P, '陕西');
 const liWu = SF.localInputsFor(wReg.GM, wReg.P, '江南');

@@ -169,7 +169,6 @@ function _tmAdminBuildingSources() {
     if (srcs.indexOf(ah) >= 0) return;
     srcs.push(ah);
   }
-  try { if (typeof P !== 'undefined' && P) add(P.adminHierarchy); } catch (_) {}
   try { if (typeof GM !== 'undefined' && GM) add(GM.adminHierarchy); } catch (_) {}
   return srcs;
 }

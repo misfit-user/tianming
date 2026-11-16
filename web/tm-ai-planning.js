@@ -955,13 +955,21 @@ async function aiDeepReadScenario(options) {
       if (n.subs) _gd(n.subs, d+1);
     }); })(GM.officeTree, 1);
   }
-  if (P.adminHierarchy) {
-    Object.keys(P.adminHierarchy).forEach(function(k) {
-      var ah = P.adminHierarchy[k];
+  // 人口按户口账取口数：游戏那份府级 population 是数、省级是对象，细账在 populationDetail（2026-11-15）
+  var _tmPlanMouths = function(dv) {
+    var pd = dv && dv.populationDetail;
+    if (pd && isFinite(Number(pd.mouths)) && Number(pd.mouths) > 0) return Math.round(Number(pd.mouths));
+    if (dv && typeof dv.population === 'number') return dv.population;
+    var po = dv && dv.population;
+    return (po && typeof po === 'object') ? (Number(po.mouths) || Number(po.total) || 0) : 0;
+  };
+  if (GM.adminHierarchy) {   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
+    Object.keys(GM.adminHierarchy).forEach(function(k) {
+      var ah = GM.adminHierarchy[k];
       if (!ah || !ah.divisions || ah.divisions.length === 0) return;
       blockE += '【行政区划——完整树】\n';
       (function _ad(divs, d) { divs.forEach(function(dv) {
-        blockE += '  '.repeat(d) + dv.name + (dv.level?'('+dv.level+')':'') + (dv.governor?' 官:'+dv.governor:'') + (dv.population?' 人口'+dv.population:'') + (dv.prosperity?' 繁荣'+dv.prosperity:'') + (dv.terrain?' '+dv.terrain:'') + (dv.specialResources?' 产:'+dv.specialResources:'') + '\n';
+        blockE += '  '.repeat(d) + dv.name + (dv.level?'('+dv.level+')':'') + (dv.governor?' 官:'+dv.governor:'') + (_tmPlanMouths(dv)?' 人口'+_tmPlanMouths(dv):'') + (dv.prosperity?' 繁荣'+dv.prosperity:'') + (dv.terrain?' '+dv.terrain:'') + (dv.specialResources?' 产:'+dv.specialResources:'') + '\n';
         if (dv.children) _ad(dv.children, d+1);
       }); })(ah.divisions, 1);
     });
@@ -1090,8 +1098,8 @@ async function aiDeepReadScenario(options) {
     blockH += '  ※ 推演原则：建筑效果(收入/征兵/防御/文化/繁荣等)由AI根据上述描述+所在地形/经济/民心自行综合判定，不存在固定数值表\n';
     // 注入已建成的建筑状态（territory.buildings）
     var _builtBuildings = [];
-    (P.adminHierarchy && Object.keys(P.adminHierarchy)).forEach && Object.keys(P.adminHierarchy||{}).forEach(function(fk) {
-      var fh = P.adminHierarchy[fk]; if (!fh || !fh.divisions) return;
+    Object.keys(GM.adminHierarchy||{}).forEach(function(fk) {
+      var fh = GM.adminHierarchy[fk]; if (!fh || !fh.divisions) return;
       (function _walk(ds) {
         ds.forEach(function(d) {
           if (d.buildings && d.buildings.length) {

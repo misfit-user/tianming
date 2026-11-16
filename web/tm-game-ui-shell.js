@@ -494,7 +494,7 @@ function renderGameState(options){
   gc.appendChild(_rwP);
 
   // P3: 省份民情面板（地方舆情）
-  if (P.adminHierarchy) {
+  if (GM.adminHierarchy) {
     var _dfBtn=document.createElement("button");_dfBtn.className="g-tab-btn";_dfBtn.innerHTML=_ti('faction',13)+' \u5730\u65B9';
     _dfBtn.onclick=function(){switchGTab(_dfBtn,"gt-difang");};tabBar.appendChild(_dfBtn);
     var _dfP=document.createElement("div");_dfP.className="g-tab-panel";_dfP.id="gt-difang";_dfP.style.cssText="flex:1;overflow-y:auto;padding:0;";
@@ -622,7 +622,7 @@ function renderGameState(options){
   // 渲染子组件
   renderWenduiChars();renderMemorials();renderBiannian();renderOfficeTree();renderShijiList();renderJishi();
   // 地方舆情每回合同步刷新（接新 adminHierarchy 深化字段）
-  if (typeof _renderDifangPanel === 'function' && P.adminHierarchy) {
+  if (typeof _renderDifangPanel === 'function' && GM.adminHierarchy) {
     try { _renderDifangPanel(); } catch(_dfRefE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_dfRefE, 'difang refresh') : console.warn('[difang refresh]', _dfRefE); }
   }
   if(typeof renderGameTech==='function')renderGameTech();

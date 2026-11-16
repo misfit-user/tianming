@@ -8,6 +8,7 @@ const sources=['tm-fiscal-engine.js','tm-building-works.js','tm-custom-build-age
 function fixture(){
   const div={id:'region-1',name:'测试府',buildings:[],economyBase:{commerceVolume:10000},publicTreasury:{money:{stock:100000}}};
   const P={conf:{},ai:{},adminHierarchy:{player:{divisions:[div]}}},GM={turn:2,_campaignId:'campaign',_timelineId:'timeline',guoku:{money:100000,balance:100000},_edictSuggestions:[],_edictTracker:[]};
+  GM.adminHierarchy=P.adminHierarchy; // 区划只留游戏里那份（GM·2026-11-15）：订单只认 GM 的区划；这里两边共用一棵树，下面改树两边都看得见
   const c={P,GM,console,Date,Math,Map,Set,WeakMap,crypto:require('crypto').webcrypto,TM:{},addEB(){}};c.window=c;vm.createContext(c);
   sources.forEach(([f,s])=>vm.runInContext(s,c,{filename:f}));
   const BO=c.TM.BuildingOrders;
@@ -149,7 +150,7 @@ let pass=0,fail=0;async function test(name,fn){try{await fn();pass++;console.log
   await test('main-applier failure rolls back preliminary order, even after P/GM tree clones were restored',()=>{
     const f=fixture(),tx=f.BO.begin(f.GM,f.P,f.batch);f.apply({building_decisions:[f.decision()]});assert.equal(f.GM.guoku.money,95000);
     assert(!f.GM._turnReport);f.P.adminHierarchy=JSON.parse(JSON.stringify(f.P.adminHierarchy));f.GM.adminHierarchy=JSON.parse(JSON.stringify(f.P.adminHierarchy));
-    tx.rollback();assert.equal(f.GM.guoku.money,100000);assert.equal(f.P.adminHierarchy.player.divisions[0].buildings.length,0);assert.equal(f.GM.adminHierarchy.player.divisions[0].buildings.length,0);assert.equal(f.BO.list(f.GM)[0].status,'submitted');
+    tx.rollback();assert.equal(f.GM.guoku.money,100000);assert.equal(f.GM.adminHierarchy.player.divisions[0].buildings.length,0); // 只撤游戏里那份（剧本库那份不再落建筑）assert.equal(f.BO.list(f.GM)[0].status,'submitted');
     const tx2=f.BO.begin(f.GM,f.P,f.batch);tx2.rollback();
   });
   await test('same-world concurrent preliminary write is rejected and release permits retry',()=>{

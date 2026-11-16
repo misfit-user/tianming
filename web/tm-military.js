@@ -2812,11 +2812,11 @@ function calculateSiegeProgress(siege) {
 // 行政区划更新（每回合）— governor能力影响省份
 // ============================================================
 function updateAdminHierarchy() {
-  if (!P.adminHierarchy || !GM.provinceStats) return;
+  if (!GM.adminHierarchy || !GM.provinceStats) return;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
 
-  var _adminKeys = Object.keys(P.adminHierarchy);
+  var _adminKeys = Object.keys(GM.adminHierarchy);
   _adminKeys.forEach(function(k) {
-    var ah = P.adminHierarchy[k];
+    var ah = GM.adminHierarchy[k];
     if (!ah || !ah.divisions) return;
 
     function _updateDiv(divs) {
@@ -2842,12 +2842,10 @@ function updateAdminHierarchy() {
             var _gms2 = (typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30) / 30;
             ps.corruption = Math.min(100, ps.corruption + 0.5 * _gms2);
           }
-          // 双向同步 prosperity ↔ wealth, population
-          d.prosperity = ps.wealth;
-          if (ps.population && d.population) {
-            // 省份人口变化回写到行政区划
-            d.population = ps.population;
-          }
+          // 2026-11-15 区划只留游戏里那份（GM）：繁荣、人口以区划为准——繁荣由地块状态缓变、算税读它，人口是户口账。
+          //   省份统计只是旁抄：改为从区划抄到省份统计，不再拿省份统计的旧数倒灌区划（旧倒灌的是剧本库那份，无害；
+          //   换到游戏那份再倒灌，会把缓变的繁荣每回合打回旧值、拿旧人口盖掉户口账）。
+          if (isFinite(Number(d.prosperity))) ps.wealth = Number(d.prosperity);
           // 行政区划地形/特产持续影响省份
           if (d.terrain && !ps.terrain) ps.terrain = d.terrain;
           if (d.specialResources && !ps.specialResources) ps.specialResources = d.specialResources;

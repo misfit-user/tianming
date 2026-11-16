@@ -143,10 +143,10 @@ function deriveAutonomy(division, faction, playerFaction) {
  * 批量派生所有行政区划的管辖类型——在世界加载/势力变更后调用
  */
 function applyAutonomyToAllDivisions() {
-  if (!P.adminHierarchy) return;
+  if (!GM.adminHierarchy) return;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
   var playerFaction = (P.playerInfo && P.playerInfo.factionName) || '';
-  Object.keys(P.adminHierarchy).forEach(function(fk) {
-    var fh = P.adminHierarchy[fk];
+  Object.keys(GM.adminHierarchy).forEach(function(fk) {
+    var fh = GM.adminHierarchy[fk];
     if (!fh || !fh.divisions) return;
     var faction = (GM.facs || []).find(function(f) { return f.name === fh.name || f.name === fk; });
     (function _walkDivs(divs, parentAutonomy) {
@@ -648,14 +648,15 @@ function inferTitleClass(titleName) {
  * @param {string} subtype - 'real' | 'nominal'（实封/虚封）
  */
 function grantFief(characterName, divisionName, titleType, subtype) {
-  if (!P.adminHierarchy) return false;
+  if (!GM.adminHierarchy) return false;
   var _found = null, _fh = null;
-  Object.keys(P.adminHierarchy).forEach(function(fk) {
-    var fh = P.adminHierarchy[fk];
+  Object.keys(GM.adminHierarchy).forEach(function(fk) {
+    var fh = GM.adminHierarchy[fk];
     if (!fh || !fh.divisions) return;
     (function _walk(ds) {
       ds.forEach(function(d) {
         if (d.name === divisionName) { _found = d; _fh = fh; }
+        if (d.children) _walk(d.children);   // 府县挂在 children 下，旧只钻 divisions 只找得到省一级
         if (d.divisions) _walk(d.divisions);
       });
     })(fh.divisions);
@@ -797,9 +798,9 @@ function inheritTitle(deceasedName, heirName, titleType) {
   heir.titles.push(inheritedTitle);
 
   // 联动：将逝者名下的封地过继给继承人
-  if (P.adminHierarchy) {
-    Object.keys(P.adminHierarchy).forEach(function(fk) {
-      var fh = P.adminHierarchy[fk];
+  if (GM.adminHierarchy) {
+    Object.keys(GM.adminHierarchy).forEach(function(fk) {
+      var fh = GM.adminHierarchy[fk];
       if (!fh || !fh.divisions) return;
       (function _walk(ds) {
         ds.forEach(function(d) {
@@ -809,6 +810,7 @@ function inheritTitle(deceasedName, heirName, titleType) {
             // 继承初期忠诚度偏低（新君/旧臣关系）
             d.autonomy.loyalty = Math.max(50, (d.autonomy.loyalty || 70) - 15);
           }
+          if (d.children) _walk(d.children);   // 府县封地也过继
           if (d.divisions) _walk(d.divisions);
         });
       })(fh.divisions);

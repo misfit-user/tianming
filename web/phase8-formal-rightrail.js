@@ -1205,7 +1205,7 @@
       if (!d) return;
       out.push(rightAdminFromDivision(d, faction));
     }
-    var ah = (gm.adminHierarchy && Object.keys(gm.adminHierarchy).length ? gm.adminHierarchy : p.adminHierarchy) || null;
+    var ah = (gm.adminHierarchy && Object.keys(gm.adminHierarchy).length ? gm.adminHierarchy : null);   // 区划只留游戏里那份（GM）（2026-11-15）
     if (Array.isArray(ah)) {
       ah.forEach(function(root){ addDivision(root, root && (root.name || root.factionName)); });
     } else if (ah && typeof ah === 'object') {

@@ -705,7 +705,7 @@ function _renderDifangPanel(force) {
   if(!force&&!_dfIsPanelVisible()){_dfNeedsRender=true;return;}
   _dfNeedsRender=false;
   // 优先读运行时 GM.adminHierarchy（与左侧栏一致·含推演更新的民心/腐败/人口）·回退剧本 P.adminHierarchy
-  var ah = (GM && GM.adminHierarchy && Object.keys(GM.adminHierarchy).length > 0) ? GM.adminHierarchy : P.adminHierarchy;
+  var ah = (GM && GM.adminHierarchy) || {};   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
   if (!ah) { grid.innerHTML = '<div style="color:var(--txt-d);text-align:center;">未设置行政区划</div>'; return; }
 
   // 启动时按需派生管辖类型（首次或势力变更后）
@@ -1518,13 +1518,14 @@ function _dfApproveBuild() {
 function _dfNonDirectAction(divName, autonomyType) {
   // 找到该区划及其 autonomy
   var _found = null;
-  if (P.adminHierarchy) {
-    Object.keys(P.adminHierarchy).forEach(function(fk) {
-      var fh = P.adminHierarchy[fk];
+  if (GM.adminHierarchy) {   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
+    Object.keys(GM.adminHierarchy).forEach(function(fk) {
+      var fh = GM.adminHierarchy[fk];
       if (!fh || !fh.divisions) return;
       (function _walk(ds) {
         ds.forEach(function(d) {
           if (d.name === divName) _found = d;
+          if (d.children) _walk(d.children);
           if (d.divisions) _walk(d.divisions);
         });
       })(fh.divisions);

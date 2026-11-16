@@ -106,13 +106,14 @@
 
   // ── ③ 募兵硬上限：按驻地兵源池（硬链引擎 md.availableRecruits）封顶；
   //      池缺数据时回退 丁口×12%×七折；全无数据返回 null（不可归因则不拦） ──
-  function findDivisionByName(P, name) {
-    if (!P || !P.adminHierarchy || !name) return null;
+  function findDivisionByName(G, name) {
+    // G 传游戏里那份（GM）。区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
+    if (!G || !G.adminHierarchy || !name) return null;
     var key = String(name).trim();
     if (!key) return null;
     var hit = null;
-    Object.keys(P.adminHierarchy).forEach(function (fk) {
-      var fh = P.adminHierarchy[fk];
+    Object.keys(G.adminHierarchy).forEach(function (fk) {
+      var fh = G.adminHierarchy[fk];
       if (!fh || !fh.divisions) return;
       (function walk(ds) {
         ds.forEach(function (d) {
@@ -139,7 +140,7 @@
   function capRecruitDelta(GM, P, locationName, delta) {
     delta = Math.round(num(delta, 0));
     if (delta <= 0) return null;
-    var div = findDivisionByName(P, locationName);
+    var div = findDivisionByName(GM, locationName);
     if (!div) return null;
     var cap = recruitCap(div);
     if (cap === null) return null;
@@ -170,9 +171,9 @@
   // ── ④ 每回合确定性步：重税之地民心叶账缓跌（挂 endturn-core·aggregate 之前） ──
   function tick(GM, P) {
     var stat = { taxedRegions: 0, minxinDeducted: 0 };
-    if (!GM || !P || !P.adminHierarchy) return stat;
-    Object.keys(P.adminHierarchy).forEach(function (fk) {
-      var fh = P.adminHierarchy[fk];
+    if (!GM || !GM.adminHierarchy) return stat;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
+    Object.keys(GM.adminHierarchy).forEach(function (fk) {
+      var fh = GM.adminHierarchy[fk];
       if (!fh || !fh.divisions) return;
       (function walk(ds) {
         ds.forEach(function (div) {

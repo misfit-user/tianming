@@ -55,8 +55,9 @@ const td = {
     { id: 'b', kind: 'event', name: '将过期', econPct: 0.1, minxinPerTurn: 0, expiresTurn: 10 }
   ]
 };
+// 区划只留游戏里那份（GM·2026-11-15）：区划挂在 GM 上，P 只给开局与编辑器
 const tP = { adminHierarchy: { player: { divisions: [td] } } };
-let st = RS.tick({ turn: 10 }, tP);
+let st = RS.tick({ turn: 10, adminHierarchy: tP.adminHierarchy }, {});
 ok(td.statusEffects.length === 1 && td.statusEffects[0].id === 'a', '到期状态清除（expiresTurn=10·turn=10）');
 ok(st.expired === 1, 'tick 统计 expired');
 ok(td.minxin === 59, '状态民心 -1 摊叶 60→59');
@@ -66,11 +67,11 @@ ok(Array.isArray(td._fieldLedger.prosperity), 'S7 近账：繁荣缓变入环账
 // 无 prosperity 字段不凭空造
 const td2 = { name: '无繁荣', minxin: 80, statusEffects: [{ kind: 'event', name: '祥瑞', econPct: 0.2, minxinPerTurn: 0, expiresTurn: null }] };
 tP.adminHierarchy.player.divisions.push(td2);
-RS.tick({ turn: 11 }, tP);
+RS.tick({ turn: 11, adminHierarchy: tP.adminHierarchy }, {});
 ok(td2.prosperity === undefined, '无 prosperity 字段不凭空造字段');
 
-// ── 4b. tick 扫两份区划（11-14·同志定「乙」）：游戏里那份（GM.adminHierarchy，开局、读档是剧本库那份的深拷贝）上挂的状态
-//   照样过期、摊民心、繁荣缓变；剧本库那份（P.adminHierarchy）照旧扫；同一州只结一次 ──
+// ── 4b. tick 只扫游戏里那份区划（11-15·区划只留一份；11-14 两份都扫的补丁撤去）：游戏里那份（GM.adminHierarchy）上挂的状态
+//   过期、摊民心、繁荣缓变；剧本库那份（P.adminHierarchy）不再扫；同一州只结一次 ──
 const gLeaf = { name: '延安府', minxin: 30, prosperity: 40, statusEffects: [
   { id: 'r', kind: 'disaster', name: '民变扰攘', econPct: -0.04, minxinPerTurn: -0.4, expiresTurn: 12, source: 'revolt' },
   { id: 'q', kind: 'disaster', name: '流寇劫掠', econPct: -0.1, minxinPerTurn: -1, expiresTurn: 11, source: 'roving' }
@@ -83,7 +84,7 @@ ok(gLeaf.statusEffects.length === 1 && gLeaf.statusEffects[0].id === 'r' && st4b
 ok(gLeaf.minxin === 29.6, '游戏里那份：状态民心 −0.4 落到州上 30→29.6（实得 ' + gLeaf.minxin + '）');
 // 繁荣：民心 29.6 → (29.6−55)×0.02＝−0.508；乘子 0.96 → −0.16；净 −0.668 → 39.33
 ok(gLeaf.prosperity === 39.33, '游戏里那份：繁荣缓变 40→39.33（实得 ' + gLeaf.prosperity + '）');
-ok(pLeaf.minxin === 15 && pLeaf.prosperity === 39.2, '剧本库那份照旧扫（没挂状态，只繁荣缓变 40→39.2）');
+ok(pLeaf.minxin === 15 && pLeaf.prosperity === 40, '剧本库那份不再扫（区划只留游戏里那份）：同名州民心、繁荣都不动（实得 ' + pLeaf.minxin + '/' + pLeaf.prosperity + '）');
 const shared = { name: '开封府', minxin: 50, statusEffects: [{ id: 's', kind: 'disaster', name: '水患', econPct: 0, minxinPerTurn: -1, expiresTurn: null }] };
 const sharedAH = { player: { divisions: [shared] } };
 RS.tick({ turn: 5, adminHierarchy: sharedAH }, { adminHierarchy: sharedAH });
@@ -98,7 +99,7 @@ const mkMx = (mx) => ({ name: 'd' + mx, minxin: mx });
 const low = mkMx(11), mid = mkMx(25), edge = mkMx(20.2), upLow = mkMx(11);
 [low, mid, edge].forEach((d) => RS.add(d, { name: '民变扰攘', kind: 'disaster', minxinPerTurn: -0.4, durationTurns: 2, source: 'revolt' }, { turn: 3 }));
 RS.add(upLow, { name: '赈济', kind: 'player', minxinPerTurn: 0.5, durationTurns: 2, source: 'relief' }, { turn: 3 });
-RS.tick({ turn: 3 }, { adminHierarchy: { player: { divisions: [low, mid, edge, upLow] } } });
+RS.tick({ turn: 3, adminHierarchy: { player: { divisions: [low, mid, edge, upLow] } } }, {});
 ok(low.minxin === 11, '民心 11 遇 −0.4：不再被抬到 20（实得 ' + low.minxin + '）');
 ok(mid.minxin === 24.6, '民心 25 遇 −0.4 → 24.6');
 ok(edge.minxin === 20, '民心 20.2 遇 −0.4：停在地板 20');
@@ -113,18 +114,18 @@ const bd = {
   buildings: [{ name: '织造大坊', level: 1, status: 'building', remainingTurns: 1, costActual: 30000 }]
 };
 const bP = { buildingSystem: { enabled: true, buildingTypes: [] }, adminHierarchy: { player: { divisions: [bd] } } };
-BW.tick({ turn: 20 }, bP);
+BW.tick({ turn: 20, adminHierarchy: bP.adminHierarchy }, bP);   // 营造只扫游戏里那份（GM）；P 只供建筑类型表
 const grant = (bd.statusEffects || []).find(e => e.name.indexOf('织造大坊') >= 0);
 ok(!!grant && grant.kind === 'building', '完工投「工成之利」状态');
 ok(grant.econPct === 0.015, '之利幅度 = cost/200万 = 1.5%');
 // 失修撤
 bd.publicTreasury.money.stock = 0; bd.publicTreasury.money.available = 0;
-BW.tick({ turn: 21 }, bP); BW.tick({ turn: 22 }, bP); BW.tick({ turn: 23 }, bP);
+BW.tick({ turn: 21, adminHierarchy: bP.adminHierarchy }, bP); BW.tick({ turn: 22, adminHierarchy: bP.adminHierarchy }, bP); BW.tick({ turn: 23, adminHierarchy: bP.adminHierarchy }, bP);
 ok(bd.buildings[0].status === 'neglected', '连欠失修（前置）');
 ok(!(bd.statusEffects || []).some(e => e.name.indexOf('织造大坊') >= 0), '失修 → 之利撤');
 // 修缮复用复挂
 bd.publicTreasury.money.stock = 99999;
-BW.tick({ turn: 24 }, bP);
+BW.tick({ turn: 24, adminHierarchy: bP.adminHierarchy }, bP);
 ok((bd.statusEffects || []).some(e => e.name.indexOf('织造大坊') >= 0), '修缮复用 → 之利复挂');
 // 拆毁撤
 BW.revertBuilding(bd, bd.buildings[0]);

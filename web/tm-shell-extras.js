@@ -195,7 +195,7 @@
     }
 
     // 2.9 行政区划（优先 GM 运行时·回退剧本 P）
-    var _adminSrc = (GM && GM.adminHierarchy && Object.keys(GM.adminHierarchy).length > 0) ? GM.adminHierarchy : (P && P.adminHierarchy);
+    var _adminSrc = (GM && GM.adminHierarchy && Object.keys(GM.adminHierarchy).length > 0) ? GM.adminHierarchy : null;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
     if (_adminSrc){
       var ap2 = document.createElement('div');
       ap2.className='gs-panel p-admin';
@@ -377,9 +377,9 @@
     mpp.className='gs-panel p-map';
     mpp.setAttribute('data-panel-key','map');
     var _pins='';
-    if (P && P.adminHierarchy){
+    if (GM && GM.adminHierarchy){
       var _all=[];
-      Object.keys(P.adminHierarchy).forEach(function(fk){ var fh=P.adminHierarchy[fk]; if(fh&&fh.divisions) fh.divisions.forEach(function(d){ _all.push(d); }); });
+      Object.keys(GM.adminHierarchy).forEach(function(fk){ var fh=GM.adminHierarchy[fk]; if(fh&&fh.divisions) fh.divisions.forEach(function(d){ _all.push(d); }); });
       _all.slice(0,6).forEach(function(d,idx){
         var top = (20 + (idx%3)*30) + '%', left = (20 + Math.floor(idx/3)*40 + (idx%2)*10) + '%';
         var cls = (d.unrest||0)>60?'crisis':(d.unrest||0)>40?'war':(d.unrest||0)<20?'stable':'';

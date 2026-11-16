@@ -719,7 +719,7 @@ function _renderZhaozhengCenter() {
       {label:'\u4E0B\u8BCF\u4EE4', sub:'\u653F\u4EE4/\u519B\u4EE4/\u5916\u4EA4/\u7ECF\u6D4E', action:'switchGTab(null,"gt-edict")', icon:'scroll', ok:true},
       {label:'\u79D1\u4E3E\u53D6\u58EB', sub:'\u5F00\u79D1\u53D6\u58EB', action:'openKejuPanel()', icon:'scroll', ok:_canKeju().ok, reason:_canKeju().reason},
       {label:'\u5730\u65B9\u533A\u5212', sub:'\u67E5\u770B\u5730\u65B9\u884C\u653F', action:'openProvinceEconomy()', icon:'treasury', ok:_canProvince().ok, reason:_canProvince().reason},
-      {label:'\u5730\u65B9\u8206\u60C5', sub:'\u5404\u9053\u5DDE\u5E9C\u6C11\u60C5', action:'switchGTab(null,"gt-difang")', icon:'faction', ok:!!P.adminHierarchy, reason:P.adminHierarchy?'':'\u65E0\u884C\u653F\u533A\u5212'}
+      {label:'\u5730\u65B9\u8206\u60C5', sub:'\u5404\u9053\u5DDE\u5E9C\u6C11\u60C5', action:'switchGTab(null,"gt-difang")', icon:'faction', ok:!!GM.adminHierarchy, reason:GM.adminHierarchy?'':'\u65E0\u884C\u653F\u533A\u5212'}
     ]},
     { label: '\u519B\u4E8B', icon: 'troops', color: 'var(--vermillion-400)', items: [
       {label:'\u519B\u4E8B\u8BCF\u4EE4', sub:'\u8C03\u5175\u9063\u5C06', action:'switchGTab(null,"gt-edict");var el=document.getElementById("edict-mil");if(el)el.focus()', icon:'troops', ok:true},

@@ -865,7 +865,7 @@ function updateMapColors(options) {
 
   // 建立 region.id → autonomy 类型 映射（若该地块映射了行政区划）
   var _regionAutonomyMap = {};
-  var runtimeAdminHierarchy = (runtimeGM && runtimeGM.adminHierarchy) || P.adminHierarchy;
+  var runtimeAdminHierarchy = (runtimeGM && runtimeGM.adminHierarchy) || null;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
   if (runtimeAdminHierarchy) {
     Object.keys(runtimeAdminHierarchy).forEach(function(fk) {
       var fh = runtimeAdminHierarchy[fk]; if (!fh || !fh.divisions) return;
@@ -886,7 +886,7 @@ function updateMapColors(options) {
   // tm-revolt-inference 写在 GM 叶上·P 侧缺失=静默无覆色·安全失效不破图）。
   var _regionOccupiedMap = {};
   [runtimeGM ? runtimeGM.adminHierarchy : null,
-    (P.adminHierarchy && (!runtimeGM || runtimeGM.adminHierarchy !== P.adminHierarchy)) ? P.adminHierarchy : null].forEach(function(ah) {
+    null].forEach(function(ah) {   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
     if (!ah) return;
     Object.keys(ah).forEach(function(fk) {
       var fh = ah[fk]; if (!fh || !fh.divisions) return;

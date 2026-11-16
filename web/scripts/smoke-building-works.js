@@ -34,7 +34,8 @@ const P = {
   ] },
   adminHierarchy: { player: { factionName: '明朝廷', divisions: [div] } }
 };
-const GM = { turn: 10 };
+// 区划只留游戏里那份（GM·2026-11-15）：营造只扫 GM 的区划；这里让 GM 与 P 共用一棵树，下面往树里加州两边都看得见
+const GM = { turn: 10, adminHierarchy: P.adminHierarchy };
 
 // ── 1. 工期递减 → 完工入账（abs: fortLevel）──
 div.buildings.push({ name: '城墙', level: 1, status: 'building', remainingTurns: 2, startTurn: 8, costActual: 30000 });

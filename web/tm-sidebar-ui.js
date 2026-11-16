@@ -553,11 +553,11 @@ function renderSidePanels(){
   }
 
   // 行政区划概览
-  if(P.adminHierarchy){
-    var _adminKeys2=Object.keys(P.adminHierarchy);
+  if(GM.adminHierarchy){
+    var _adminKeys2=Object.keys(GM.adminHierarchy);
     var _totalDivs=0;var _govCount=0;var _topDivs=[];
     _adminKeys2.forEach(function(k){
-      var ah=P.adminHierarchy[k];if(!ah||!ah.divisions)return;
+      var ah=GM.adminHierarchy[k];if(!ah||!ah.divisions)return;
       function _cnt(divs){divs.forEach(function(d){_totalDivs++;if(d.governor)_govCount++;if(d.children)_cnt(d.children);});}
       _cnt(ah.divisions);
       ah.divisions.forEach(function(d){_topDivs.push(d);});

@@ -38,7 +38,7 @@ const flipped = (domain) => { const f = fn('_barFlipToPerceived'); try { return 
 const SEALED_NOTE = '据奏之数——实情须厂卫、推问、查案方得掀见';
 // 区划号 → 名（民心分区按区划号记；老抽屉截号前六字，显成「div_mp」）
 function divisionName(id) {
-  const ah = G().adminHierarchy || (w.P && w.P.adminHierarchy) || {};
+  const ah = G().adminHierarchy || {};
   let hit = null;
   const walk = (list) => { for (const d of list || []) { if (hit) return; if (d && d.id === id) hit = d; else if (d) walk(d.children || d.divisions); } };
   for (const k of Object.keys(ah)) walk(ah[k] && ah[k].divisions);

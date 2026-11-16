@@ -31,9 +31,7 @@
   function _adminSources(P) {
     var srcs = [];
     function add(ah) { if (ah && typeof ah === 'object' && Object.keys(ah).length && srcs.indexOf(ah) < 0) srcs.push(ah); }
-    add(P && P.adminHierarchy);
-    add(root.GM && root.GM.adminHierarchy);
-    add(root.P && root.P.adminHierarchy);
+    add(root.GM && root.GM.adminHierarchy);   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）（旧双源搜索撤去）
     return srcs;
   }
 

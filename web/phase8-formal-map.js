@@ -649,7 +649,7 @@
     var idKey = (r && r.id) ? regionKeyNorm(r.id) : '';
     if (!wanted.length && !idKey) return null;
     var gmRoot = (window.GM && GM.adminHierarchy) || null;
-    var pRoot = (window.P && P.adminHierarchy) || null;
+    var pRoot = null;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15），剧本库那份不再进索引
     if (!gmRoot && !pRoot) return null;
     var turn = (window.GM && GM.turn) || 0;
     if (_admIdxCache.map === null || _admIdxCache.gmRoot !== gmRoot || _admIdxCache.pRoot !== pRoot || _admIdxCache.turn !== turn) {

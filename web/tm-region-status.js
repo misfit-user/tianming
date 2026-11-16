@@ -103,17 +103,15 @@
 
   // 每回合确定性步（endturn-core·BuildingWorks.tick 之后·final aggregate 之前）：
   // ①过期状态清除 ②minxinPerTurn 摊民心叶（合计夹 ±2）③繁荣度缓变（有 prosperity 字段才动）
-  // 扫两份区划、同一州只结一次（11-14 改，同志定「乙」）：游戏里那份 GM.adminHierarchy——开局、读档都是剧本库那份的深拷贝
-  //   （tm-patches-start.js、tm-save-lifecycle.js），游戏里挂的状态都在这份上——与剧本库那份 P.adminHierarchy。
-  //   原先只扫剧本库那份：游戏里挂的状态从不过期（「民变扰攘」「流寇劫掠」挂上就一直压征收）、状态的民心从不落、繁荣从不漂。
-  //   营建 tick 07-03 修过同一毛病（tm-building-works.js：两份都扫、按对象去重），这里照办。
+  // 只扫游戏里那份区划（GM.adminHierarchy）。区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）；11-14 两份都扫的补丁撤去。
+  //   原先只扫剧本库那份：游戏里挂的状态从不过期、状态的民心从不落、繁荣从不漂（11-14 查出）。
   function tick(GM, P) {
     var stat = { expired: 0, minxinTouched: 0, prosperityDrift: 0, activeTotal: 0 };
     if (!GM) return stat;
     var turn = num(GM.turn, 0);
     var trees = [], seen = typeof Set !== 'undefined' ? new Set() : null;
-    [GM.adminHierarchy, P && P.adminHierarchy].forEach(function (AH, i) {
-      if (!AH || typeof AH !== 'object' || (i === 1 && AH === GM.adminHierarchy)) return;
+    [GM.adminHierarchy].forEach(function (AH) {
+      if (!AH || typeof AH !== 'object') return;
       Object.keys(AH).forEach(function (fk) { trees.push(AH[fk]); });
     });
     trees.forEach(function (fh) {

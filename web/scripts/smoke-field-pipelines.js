@@ -44,8 +44,9 @@ ok(FP.taxBurdenFactor({}) === 1, '无数据 → 1（不动）');
 
 // ── 4. capRecruitDelta 募兵硬上限 ──
 const recDiv = { name: '陕西', minxin: 60, militaryDetail: { availableRecruits: 3000 }, populationDetail: { ding: 100000 } };
-const recP = { adminHierarchy: { player: { divisions: [recDiv] } } };
-const recGM = { turn: 9 };
+// 区划只留游戏里那份（GM·2026-11-15）：募兵找驻地读 GM 的区划，P 只给开局与编辑器
+const recP = {};
+const recGM = { turn: 9, adminHierarchy: { player: { divisions: [recDiv] } } };
 const cap1 = FP.capRecruitDelta(recGM, recP, '陕西', 5000);
 ok(cap1.approved === 3000 && cap1.overdraft === 2000, '募 5000 超池 3000 → 实募 3000');
 ok(recDiv.minxin === 59, '强征越限 → 民心叶 60→59');
@@ -54,7 +55,7 @@ const cap2 = FP.capRecruitDelta(recGM, recP, '陕西', 1000);
 ok(cap2.approved === 0, '池已空 → 再募实募 0');
 ok(FP.capRecruitDelta(recGM, recP, '无此地', 1000) === null, '驻地不可归因 → null 不拦');
 const dingDiv = { name: '山东', populationDetail: { ding: 10000 } };
-recP.adminHierarchy.player.divisions.push(dingDiv);
+recGM.adminHierarchy.player.divisions.push(dingDiv);
 ok(FP.recruitCap(dingDiv) === 840, '无池回退：丁 10000×12%×0.7 = 840');
 ok(Array.isArray(recDiv._fieldLedger.minxin) && recDiv._fieldLedger.minxin[0].why.indexOf('强征') >= 0, 'S7 近账：强征扣民心入环账');
 ok(Array.isArray(recDiv._fieldLedger.recruits), 'S7 近账：募兵扣池入环账');
@@ -64,8 +65,8 @@ const heavyDiv = { name: '河南', taxLevel: '重', minxin: 60 };
 const harshDiv = { name: '北直隶', taxRate: 1.35, minxin: 60 };
 const floorDiv = { name: '山西', taxLevel: '苛', minxin: 25 };
 const calmDiv = { name: '南直隶', minxin: 60 };
-const tickP = { adminHierarchy: { player: { divisions: [heavyDiv, harshDiv, floorDiv, calmDiv] } } };
-const st = FP.tick({ turn: 12 }, tickP);
+const tickP = {};
+const st = FP.tick({ turn: 12, adminHierarchy: { player: { divisions: [heavyDiv, harshDiv, floorDiv, calmDiv] } } }, tickP);
 ok(heavyDiv.minxin === 59.5, '重税（1.18）→ 民心 60→59.5 缓跌');
 ok(harshDiv.minxin === 59, '苛敛（≥1.3）→ 民心 60→59');
 ok(floorDiv.minxin === 25, '地板 25 不再跌（防确定性死亡螺旋）');

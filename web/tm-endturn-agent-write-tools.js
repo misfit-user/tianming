@@ -300,7 +300,7 @@
       if (srcs.some(function (s) { return s.ah === ah; })) return;
       srcs.push({ ah: ah, label: label });
     }
-    add(root.P && root.P.adminHierarchy, 'P.adminHierarchy');
+    // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）：写工具只落游戏那份
     add(gm && gm.adminHierarchy, 'GM.adminHierarchy');
     add(root.GM && root.GM.adminHierarchy, 'root.GM.adminHierarchy');
     return srcs;

@@ -272,8 +272,8 @@
     var q = { ding: { n: 0 }, recruit: { n: 0, silver: 0, grain: 0 } };
     if (!army || gap <= 0) return q;
     try {
-      var FP = _pipes(), w = W(), P = w && w.P;
-      var div = (FP && P) ? FP.findDivisionByName(P, army.garrison || army.location || '') : null;
+      var FP = _pipes(), w = W(), G = w && w.GM;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
+      var div = (FP && G) ? FP.findDivisionByName(G, army.garrison || army.location || '') : null;
       var cap = div ? FP.recruitCap(div) : null;
       if (cap != null) {
         var eff = (GM && typeof GM._conscriptEffMult === 'number' && isFinite(GM._conscriptEffMult)) ? Math.max(0.3, Math.min(1.3, GM._conscriptEffMult)) : 1;   // 与 capRecruitDelta 同口径(征兵效率)

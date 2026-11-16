@@ -37,11 +37,6 @@
 (function() {
   'use strict';
 
-  function _isG2Enabled() {
-    if (typeof P === 'undefined' || !P || !P.conf) return false;
-    return P.conf.useNewKejuG2 !== false; // 默认开·2026-06-14·恩科解锁
-  }
-
   function _getCurYear() {
     if (typeof GM === 'undefined' || !GM) return 0;
     return GM.year || (typeof P !== 'undefined' && P && P.time && P.time.year) || 0;

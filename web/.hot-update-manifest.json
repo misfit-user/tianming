@@ -3961,8 +3961,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "92012478714e60dfb534a9f6623cfd1ac025723e381b3eb01d577f535c3aaea3",
-      "size": 392057
+      "sha256": "8748d7d9d7a8c426ff6b4f821bf01e8188e31be4606a4917a15a258de3ce787f",
+      "size": 391974
     },
     {
       "path": "styles.css",
@@ -4626,8 +4626,8 @@
     },
     {
       "path": "tm-endturn-ai.js",
-      "sha256": "9e49bca980efc39394e9ab3f34eb21df647fb0d476c28bb28e2fb5cc6255c4e8",
-      "size": 410331
+      "sha256": "f4c4b7572d363599ac88f4de84917db44375da18088ec9cbfb3bb6312db7456a",
+      "size": 402359
     },
     {
       "path": "tm-endturn-apply-stages.js",
@@ -4636,8 +4636,8 @@
     },
     {
       "path": "tm-endturn-apply.js",
-      "sha256": "b1ed2bca9d86c5b8ac738fa8ac89794da41e52e7cd682dbf5dac3f850579945c",
-      "size": 352698
+      "sha256": "a2839794944a715c3dd7a546319d1ce219ceb5d640e384c27d7f91a03b41b07b",
+      "size": 352214
     },
     {
       "path": "tm-endturn-core.js",
@@ -4701,8 +4701,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "7efbc01df013237c5a9dcf4215f2bd6d99954afeda95f68918eebc7402b8d42a",
-      "size": 366449
+      "sha256": "07ca3f5178c9fb63ea500cf4c355b1fd3fbb1e38e1fa29f0f865d1e117ac0fcc",
+      "size": 364578
     },
     {
       "path": "tm-endturn-province.js",
@@ -4721,8 +4721,8 @@
     },
     {
       "path": "tm-endturn-record.js",
-      "sha256": "94a3865986f924dcbe30f7327beeda324a93dd7458d245745a669ee374a89ba8",
-      "size": 5026
+      "sha256": "26240059ce2355db5151e6e69723ecd36046f5117160ebf00abec9ef7456eafe",
+      "size": 4858
     },
     {
       "path": "tm-endturn-recovery-vault.js",
@@ -5171,8 +5171,8 @@
     },
     {
       "path": "tm-keju-event-hooks.js",
-      "sha256": "e11ece26120db789a0bc6700ec353260d22e32e26caaa6e416d6a87bf65bd8cc",
-      "size": 13004
+      "sha256": "2ba87fe576adf17e31b85502d2e67706a879f2ff31744d73181eda3457a1d717",
+      "size": 12825
     },
     {
       "path": "tm-keju-examiner-view.js",
@@ -5671,8 +5671,8 @@
     },
     {
       "path": "tm-npc-decision.js",
-      "sha256": "9ceed5a36b1975f592ba60e1815bb083ad6f3f286f9ed45e462ca3ebf356d08d",
-      "size": 82187
+      "sha256": "10cef6ffcc25752c9f524a4dc80b846d119dbec17b4432dd9efee34a600486d1",
+      "size": 81412
     },
     {
       "path": "tm-npc-engine.js",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "2bcef6f0ccf9c0be3235014a58f72ea4189050fcff4230a255296a5b6b16a176",
+      "sha256": "0a82ad96eac4faa51d880e7a2cb671a1c7de30d25bb631f31d16b83caf7bdf8b",
       "size": 142847
     },
     {

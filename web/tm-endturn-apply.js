@@ -1718,11 +1718,6 @@
           });
         }
 
-        // Codex修·MED:承诺履成的 canonical 结构化后果(query降腐败/intel入情报/finance提实征率)抽为共享·commitment_update 与 dialogue_commitment_feedback 两条完成路径都调·_canonFired 防双计。
-        // Completion requires a task-bound receipt; no blanket finance/corruption bonuses.
-        function _fireCommitCanon(found, foundNpc) {
-          return TM && TM.ImperialOrders ? TM.ImperialOrders.verified(GM, found) : {ok:false};
-        }
         if (p1.commitment_update && Array.isArray(p1.commitment_update)) {
           if (!(TM && TM.ImperialOrders)) throw new Error('交办核验模块未加载，已停止不安全的完成写回');
           TM.ImperialOrders.updates(GM, p1.commitment_update);

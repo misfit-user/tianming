@@ -15,8 +15,6 @@
 // Exports:   TM.Endturn.AI.record.finalize(ctx)·sync·return 12-field 对象
 // Used by:   tm-endturn-ai-infer.js (主入口·末尾调 finalize 替 inline return)
 // Side effects: 无 (纯 read·assemble·return)
-// Test:      smoke-endturn-public-contract (含 record namespace 检查)
-//            smoke-endturn-section-boundary (含 record.js 文件存在 + finalize export)
 // Notes:     R210·P7-η·suggestions 来源 ctx.record.suggestions (P7-ζ followup 已自 sc2 写)
 //            非读取 p2 的 sc2 局部·避免重引入 main-entry 局部依赖
 // ============================================================

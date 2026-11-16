@@ -600,94 +600,6 @@
   var _buildSc1bJsonSchema = ns._buildSc1bJsonSchema;
   var _buildSc1cJsonSchema = ns._buildSc1cJsonSchema;
   var _buildSc1qJsonSchema = ns._buildSc1qJsonSchema;
-  // Phase 6 Q1-4·扩 11 个子调用 schema·sc1d/sc15/sc15n/sc16/sc17/sc18/sc2/sc25/sc25c/sc27/sc28
-  function _buildGenericArrayObjectSchema(name, fieldNames) {
-    var props = {};
-    fieldNames.forEach(function(f) { props[f] = { type: 'array', items: { type: 'object', additionalProperties: true } }; });
-    return { name: name, strict: true, schema: { type: 'object', additionalProperties: true, properties: props, required: [] } };
-  }
-  function _buildSc1dJsonSchema() {
-    return { name: 'sc1d_record', strict: true, schema: { type: 'object', additionalProperties: true, properties: {
-      shilu_text: { type: 'string' }, szj_title: { type: 'string' }, shizhengji: { type: 'string' }, szj_summary: { type: 'string' },
-      basis_refs: { type: 'array', items: { type: 'object', additionalProperties: true } }
-    }, required: [] } };
-  }
-  function _buildSc15JsonSchema() {
-    return { name: 'sc15_npc_deep', strict: true, schema: { type: 'object', additionalProperties: true, properties: {
-      hidden_moves: { type: 'array', items: { type: 'string' } },
-      mood_shifts: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      relationship_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      faction_undercurrents: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      npc_schemes: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      rumors: { type: 'string' }, contradiction_shift: { type: 'string' }
-    }, required: [] } };
-  }
-  function _buildSc15nJsonSchema() {
-    return { name: 'sc15n_3tier', strict: true, schema: { type: 'object', additionalProperties: true, properties: {
-      mood_shifts: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      relationship_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      hidden_moves: { type: 'array', items: { type: 'string' } },
-      faction_undercurrents: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      npc_schemes: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      rumors: { type: 'string' },
-      npc_cognition: { type: 'array', items: { type: 'object', additionalProperties: true } }
-    }, required: [] } };
-  }
-  function _buildSc16JsonSchema() {
-    return _buildGenericArrayObjectSchema('sc16_faction', ['faction_priorities', 'faction_actions', 'faction_directives', 'diplomatic_shifts']);
-  }
-  function _buildSc17JsonSchema() {
-    return { name: 'sc17_fiscal', strict: true, schema: { type: 'object', additionalProperties: true, properties: {
-      fiscal_analysis: { type: 'string' }, trade_dynamics: { type: 'string' }, inflation_pressure: { type: 'string' },
-      resource_forecast: { type: 'string' }, economic_advice: { type: 'string' },
-      supplementary_resource_changes: { type: 'object', additionalProperties: true }
-    }, required: [] } };
-  }
-  function _buildSc18JsonSchema() {
-    return { name: 'sc18_military', strict: true, schema: { type: 'object', additionalProperties: true, properties: {
-      military_situation: { type: 'string' }, war_probability: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      supplementary_army_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      faction_military_actions: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      battleResult: { type: 'object', additionalProperties: true }, battleResults: { type: 'array', items: { type: 'object', additionalProperties: true } }, power_balance_shift: { type: 'string' }
-    }, required: [] } };
-  }
-  function _buildSc2JsonSchema() {
-    return { name: 'sc2_narrative', strict: true, schema: { type: 'object', additionalProperties: true, properties: {
-      zhengwen: { type: 'string' }, houren_xishuo: { type: 'string' }
-    }, required: [] } };
-  }
-  function _buildSc25JsonSchema() {
-    return _buildGenericArrayObjectSchema('sc25_foreshadow', ['immediate_foreshadow', 'turn_memory', 'imperial_candidates']);
-  }
-  function _buildSc25cJsonSchema() {
-    return { name: 'sc25c_synth', strict: true, schema: { type: 'object', additionalProperties: true, properties: {
-      immediate_foreshadow: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      turn_memory: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      state_board: { type: 'object', additionalProperties: true },
-      consolidated: { type: 'string' },
-      key_threads: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      npc_trajectories: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      faction_vectors: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      unresolved_tensions: { type: 'array', items: { type: 'string' } },
-      player_reputation_drift: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      next_turn_focus: { type: 'array', items: { type: 'string' } }
-    }, required: [] } };
-  }
-  function _buildSc27JsonSchema() {
-    return { name: 'sc27_review', strict: true, schema: { type: 'object', additionalProperties: true, properties: {
-      anachronisms: { type: 'array', items: { type: 'string' } },
-      name_errors: { type: 'array', items: { type: 'string' } },
-      missing_beats: { type: 'array', items: { type: 'string' } },
-      tone_guidance: { type: 'string' },
-      rewritten_passages: { type: 'string' },
-      added_details: { type: 'string' }
-    }, required: [] } };
-  }
-  function _buildSc28JsonSchema() {
-    return { name: 'sc28_world', strict: true, schema: { type: 'object', additionalProperties: true, properties: {
-      world_snapshot: { type: 'string' }, next_turn_seeds: { type: 'string' }, tension_level: { type: 'string' }
-    }, required: [] } };
-  }
 
   ns.runMain = async function(ctx, afterSc1) {
     ensureGroups(ctx);
@@ -1087,32 +999,6 @@
           GM._subcallTimings.sc1_rescue = ms;
           try { if (window.TM && TM.Endturn && TM.Endturn.Timing && typeof TM.Endturn.Timing.mark === 'function') TM.Endturn.Timing.mark(ctx, 'subcall', { id:'sc1_rescue', label:'结构化数据救援', ok:ok, attempts:1, ms:ms }); } catch(_) {}
         }
-      }
-
-      function _seedRecordFromP1ForApplyFailure(targetCtx, src) {
-        if (!targetCtx || !src || typeof src !== 'object') return;
-        // ★2026-09-18 类型守门（玩家实测 endTurn 崩在 (shizhengji||"").substring）：
-        //   原写法 `src.shizhengji || src.shizhengji_basis || src.turn_summary` 里
-        //   shizhengji_basis 是 object 类型字段，一旦 p1.shizhengji 为空就把它整个冒泡进
-        //   record.shizhengji → 下游 (shizhengji||'').substring() 对对象调用即 TypeError，
-        //   整回合死在「记忆回写」(tm-endturn-ai-infer.js:190)。
-        //   此处只收非空字符串，非字符串一律回落 '' 交给既有兜底链（G2 合成/应急账本）。
-        function _seedTxt() {
-          for (var _i = 0; _i < arguments.length; _i++) {
-            var _v = arguments[_i];
-            if (typeof _v === 'string' && _v.trim()) return _v;
-          }
-          return '';
-        }
-        targetCtx.record = targetCtx.record || {};
-        targetCtx.record.shizhengji = _seedTxt(targetCtx.record.shizhengji, src.shizhengji, src.shizhengji_basis, src.turn_summary);
-        targetCtx.record.zhengwen = _seedTxt(targetCtx.record.zhengwen, src.zhengwen, src.shizhengji, src.shizhengji_basis);
-        targetCtx.record.turnSummary = _seedTxt(targetCtx.record.turnSummary, src.turn_summary, src.shizhengji_basis);
-        targetCtx.record.shiluText = _seedTxt(targetCtx.record.shiluText, src.shilu_text);
-        targetCtx.record.szjTitle = _seedTxt(targetCtx.record.szjTitle, src.szj_title);
-        targetCtx.record.szjSummary = _seedTxt(targetCtx.record.szjSummary, src.szj_summary);
-        targetCtx.record.playerStatus = _seedTxt(targetCtx.record.playerStatus, src.player_status, src.playerStatus);
-        targetCtx.record.playerInner = _seedTxt(targetCtx.record.playerInner, src.player_inner, src.playerInner);
       }
 
       function _attachSc1RecordFallback(base, reason) {

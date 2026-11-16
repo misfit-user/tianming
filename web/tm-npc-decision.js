@@ -234,25 +234,6 @@ function calculateEraModifier(candidate, context) {
 // ===== 决策层 =====
 
 // NPC 决策推演（AI 驱动）
-function _resolveNpcDecisionPromptChar(npc) {
-  if (!npc) return {};
-  if (typeof GM === 'undefined' || !GM || !Array.isArray(GM.chars)) return npc;
-  var full = GM.chars.find(function(c) { return c && c.name === npc.name; });
-  return full || npc;
-}
-
-function _buildNpcDecisionComposerAddon(npc, options) {
-  var composer = (typeof TM !== 'undefined' && TM.PromptComposer) ? TM.PromptComposer : null;
-  if (!composer) return '';
-  var fullNpc = _resolveNpcDecisionPromptChar(npc);
-  var out = '';
-  try {
-    if (typeof composer.buildAiPersonaText === 'function') out += composer.buildAiPersonaText(fullNpc, options) || '';
-    if (typeof composer.buildRecognitionState === 'function') out += composer.buildRecognitionState(fullNpc) || '';
-  } catch (_) {}
-  return out;
-}
-
 async function npcDecisionLayer(npc, context) {
   var ledger=TM.NPC.ActionLedger, lease=ledger.capture(), budget=ledger.state(GM);
   if(!npc || npc.isPlayer || !P.ai || !P.ai.key)return null;

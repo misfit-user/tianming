@@ -17,7 +17,6 @@
 // Exports:   TM.Endturn.AI.prompt.build(ctx)·async·写入 ctx.prompt
 // Used by:   tm-endturn-ai-infer.js (主入口·§1 替换·调 build)
 // Side effects: 读 GM/P / 写 ctx.prompt / 调 showLoading
-// Test:      smoke-endturn-prompt-tokens.js (47 tokens)·smoke-endturn-public-contract (19)
 // Notes:     R209·P7-γ·依据 phase7-gamma-prompt-prep.md
 // ============================================================
 (function(global) {
@@ -3940,8 +3939,6 @@
 
     // ═══ 动态 max_tokens 上限 ═══
     // 优先级：玩家手动设置 > 检测到的模型输出上限 > 白名单匹配 > 保守兜底
-    // _tok(baseTok) 返回 undefined 表示不传 max_tokens（让模型自由发挥）
-    // 仅在玩家手动设置且有效时才传 max_tokens；否则不传，依赖模型默认行为
     var _tokCp = (typeof getCompressionParams === 'function') ? getCompressionParams() : {scale:1.0,contextK:32};
     // 计算生效的输出上限（tokens）——用于限流与截断预警
     function _getEffectiveOutputLimit() {
@@ -3958,37 +3955,6 @@
       return Math.max(4096, Math.round(_tokCp.contextK * 1024 / 8));
     }
     var _effectiveOutCap = _getEffectiveOutputLimit();
-    // _tok(baseTok) 只在玩家手动设置时才返回具体值；否则返回 undefined 让模型自由
-    function _tok(baseTok) {
-      // 玩家手动设置——必须遵守（不让模型超限）
-      if (P.conf.maxOutputTokens && P.conf.maxOutputTokens > 0) {
-        return Math.max(500, Math.min(baseTok, P.conf.maxOutputTokens));
-      }
-      // 自动模式：不传 max_tokens，让模型自己决定
-      return undefined;
-    }
-    // fetch 辅助：若 _tok() 返回 undefined，body 中不加 max_tokens 字段
-    function _buildFetchBody(model, messages, temperature, baseTok, extra) {
-      var body = {model:model, messages:messages, temperature:temperature};
-      var mt = _tok(baseTok);
-      if (mt !== undefined) body.max_tokens = mt;
-      if (extra) for (var k in extra) if (extra.hasOwnProperty(k)) body[k] = extra[k];
-      return body;
-    }
-    // 截断检测：在每次 fetch 响应后调用
-    var _truncatedOnce = false;
-    function _checkTruncated(data, label) {
-      if (_truncatedOnce) return; // 一次回合只提示一次
-      if (!data || !data.choices || !data.choices[0]) return;
-      var fr = data.choices[0].finish_reason || data.choices[0].stop_reason;
-      if (fr === 'length' || fr === 'max_tokens') {
-        _truncatedOnce = true;
-        if (typeof toast === 'function') {
-          toast('⚠ AI输出被截断(' + (label||'') + ')，建议在设置中增大"AI输出上限"或换用大窗口模型');
-        }
-        _dbg('[Truncated]', label, 'finish_reason=', fr);
-      }
-    }
     _dbg('[TokenLimit] 生效输出上限:', _effectiveOutCap, 'tokens | 手动:', P.conf.maxOutputTokens||0, '检测:', P.conf._detectedMaxOutput||0);
 
     // ============================================================

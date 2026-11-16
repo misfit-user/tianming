@@ -893,7 +893,9 @@ window.aiGenFullScenario = function() {
     '<div class="rw"><div class="fd full"><label>\u8865\u5145\u63cf\u8ff0 <span style="color:var(--txt-d);font-size:0.8rem;">\uff08\u53ef\u9009\uff0c\u6307\u5b9a\u80cc\u666f\u3001\u4e8b\u4ef6\uff09</span></label>'+
     '<textarea id="fg-desc" rows="2" placeholder="如：崇祯十七年，李自成兵临城下，朝局动荡…"></textarea></div></div>'+
     '<div class="rw"><div class="fd"><label>\u751f\u6210\u8be6\u7ec6\u7a0b\u5ea6</label>'+
-    '<select id="fg-words"><option value="brief">\u7b80\u7565\uff08\u5feb\u901f\uff09</option><option value="normal" selected>\u6807\u51c6\uff08\u63a8\u8350\uff09</option><option value="detailed">\u8be6\u7ec6\uff08\u5185\u5bb9\u4e30\u5bcc\uff09</option><option value="full">\u5b8c\u6574\uff08\u6700\u8be6\u5c3d\uff09</option></select></div></div>'+
+    '<select id="fg-words"><option value="brief">\u7b80\u7565\uff08\u5feb\u901f\uff09</option><option value="normal" selected>\u6807\u51c6\uff08\u63a8\u8350\uff09</option><option value="detailed">\u8be6\u7ec6\uff08\u5185\u5bb9\u4e30\u5bcc\uff09</option><option value="full">\u5b8c\u6574\uff08\u6700\u8be6\u5c3d\uff09</option></select></div>'+
+    '<div class="fd"><label>世界类型</label>'+
+    '<select id="fg-worldkind"><option value="historical" selected>史实（按正史考据）</option><option value="fictional">虚构（架空/奇幻/武侠/未来·原创世界观）</option></select></div></div>'+
     '<details style="margin:0.4rem 0;"><summary style="font-size:0.82rem;color:var(--txt-d);cursor:pointer;">\u2699\ufe0f \u9ad8\u7ea7\u9009\u9879</summary>'+
     '<div style="padding:0.4rem 0;">'+
     '<div style="margin-bottom:0.3rem;"><label style="font-size:0.8rem;color:var(--txt-d);">叙事风格覆盖 <span style="font-size:0.75rem;">(空则用全局: ' + _officeEditorEsc(globalStyle) + ')</span></label>'+

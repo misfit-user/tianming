@@ -5721,8 +5721,8 @@
     },
     {
       "path": "tm-office-editor.js",
-      "sha256": "23cbb51a8f5d2b8ed676739123e4306d73c4baffcaafbe5d1bd00000ebefcb0c",
-      "size": 120296
+      "sha256": "8476e1d0f97b830a73c627a91128ac3b14519b110ed0950eb3fcdfb19abf2010",
+      "size": 120559
     },
     {
       "path": "tm-office-fallback.js",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "848947bf0989969b381a973ef14007297ac703eae969e27ab13ae190f65390ea",
+      "sha256": "559aee58e58b40058346e6c74ad682a583df5507438725dcdfbdce822371d8ad",
       "size": 142848
     },
     {

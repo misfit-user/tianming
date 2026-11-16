@@ -9,13 +9,20 @@ const fs = require('fs'), path = require('path');
 const raw = fs.readFileSync(path.resolve(__dirname, '..', 'tm-launch.js'), 'utf8');
 // tm-launch.js 把中文存为 \uXXXX 转义——先解码，统一按字面中文匹配(兼容 literal/escaped 两形)。
 const src = raw.replace(/\\u([0-9a-fA-F]{4})/g, function (m, h) { return String.fromCharCode(parseInt(h, 16)); });
+// 面板是 tm-office-editor.js 里的 window.aiGenFullScenario 画的：它在 tm-launch.js 之后装载，把那边的同名旧函数整个换掉。
+// 2026-11-16 之前选择器只加在旧函数里，玩家实际看不到，这里却一直是绿的；面板三条改为检查现行实现。
+const officeRaw = fs.readFileSync(path.resolve(__dirname, '..', 'tm-office-editor.js'), 'utf8');
+const officeSrc = officeRaw.replace(/\\u([0-9a-fA-F]{4})/g, function (m, h) { return String.fromCharCode(parseInt(h, 16)); });
+const panelStart = officeSrc.indexOf('window.aiGenFullScenario = function');
+const panelEnd = officeSrc.indexOf('window.execFullGen = async function', panelStart);
+const panel = panelStart >= 0 && panelEnd > panelStart ? officeSrc.slice(panelStart, panelEnd) : '';
 let A = 0, F = 0; function ok(c, m) { if (c) { A++; console.log('  ✓ ' + m); } else { F++; console.log('  ✗ FAIL: ' + m); } }
 console.log('smoke-fullgen-worldkind-modern');
 
 // ── 3b worldKind ──
-ok(/id="fg-worldkind"/.test(src), '3b 面板含「世界类型」选择器 fg-worldkind');
-ok(/value="historical" selected>史实（按正史考据）/.test(src), '3b 史实选项');
-ok(/value="fictional">虚构（架空/.test(src), '3b 虚构选项');
+ok(/id="fg-worldkind"/.test(panel), '3b 面板含「世界类型」选择器 fg-worldkind');
+ok(/value="historical" selected>史实（按正史考据）/.test(panel), '3b 史实选项');
+ok(/value="fictional">虚构（架空/.test(panel), '3b 虚构选项');
 ok(/var worldKind=\(_\$\("fg-worldkind"\)&&_\$\("fg-worldkind"\)\.value==="fictional"\)\?"fictional":"historical"/.test(src), '3b execFullGen 读 fg-worldkind');
 ok(/var fiction=worldKind==="fictional"/.test(src), '3b fiction 标志');
 ok(/var histNote=fiction[\s\S]{0,40}虚构\/架空世界观剧本/.test(src), '3b histNote 按 fiction 分支(虚构去史实锚定)');

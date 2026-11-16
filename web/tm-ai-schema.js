@@ -179,7 +179,7 @@
     },
     admin_division_updates: {
       type: 'array',
-      desc: '行政区划树结构变更（add/remove/rename/merge/split/reform/territory_gain/territory_loss）',
+      desc: '行政区划变更（眼下受理 territory_gain/territory_loss，失地写 lostTo；add/remove/rename/merge/split/reform 须接户口账，写口未开）',
       requiredSubFields: ['action'],
       consumedBy: ['endturn:12009']
     },

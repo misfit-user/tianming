@@ -76,7 +76,7 @@ const bcAt = applySrc.indexOf('building_changes.forEach');
 ok(bcAt > 0, '刀1: building_changes 处理段存在');
 const bcSeg = applySrc.slice(bcAt, bcAt + 12000);
 ok(/_bcRoots\.push\(GM\.adminHierarchy\)/.test(bcSeg), '刀1: 找地块双源——GM.adminHierarchy 入搜索根（P 空档真记录不再静默没建）');
-ok(/GM\.adminHierarchy !== P\.adminHierarchy/.test(bcSeg), '刀1: 双源按对象引用去重（防同树双记）');
+ok(!/_bcRoots\.push\(P\.adminHierarchy\)/.test(bcSeg), '刀1→11-15: 只搜游戏里那份区划（剧本库那份不再入搜索根·区划只留一份）');
 ok(/fh\.divisions \|\| fh\.children/.test(bcSeg), '刀1: 顶层 divisions||children 都认（对齐 _adminSources 范式）');
 ok(/noop_inprogress/.test(bcSeg) && /b\.status === 'building'/.test(bcSeg),
   '刀1b: 在建同名·AI复报置 noop（勿重复立项/勿误升级提前入账）');

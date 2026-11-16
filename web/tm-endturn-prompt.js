@@ -529,7 +529,7 @@
       if (_flavorLines.length > 0) _mechResults.push('【地方风物·叙事可调用】\n' + _flavorLines.slice(0, 12).join('\n'));
     }
     // 法理冲突
-    if (typeof hasDejureClaim === 'function' && P.adminHierarchy) {
+    if (typeof hasDejureClaim === 'function' && GM.adminHierarchy) {
       var _dejureLines = [];
       function _scanDejure(divs) {
         divs.forEach(function(d) {
@@ -542,8 +542,8 @@
           if (d.children) _scanDejure(d.children);
         });
       }
-      Object.keys(P.adminHierarchy).forEach(function(fid) {
-        var ah = P.adminHierarchy[fid];
+      Object.keys(GM.adminHierarchy).forEach(function(fid) {
+        var ah = GM.adminHierarchy[fid];
         if (ah && ah.divisions) _scanDejure(ah.divisions);
       });
       if (_dejureLines.length > 0) _mechResults.push('【法理争议】\n' + _dejureLines.join('\n'));
@@ -1751,14 +1751,14 @@
     } catch (_raPE) {}
 
     // 行政区划摘要（让AI知道地方治理状况）——按中国式管辖层级分组
-    if (P.adminHierarchy) {
+    if (GM.adminHierarchy) {
       // 先派生 autonomy（若尚未派生）
       if (typeof applyAutonomyToAllDivisions === 'function') applyAutonomyToAllDivisions();
       var _playerFac = (P.playerInfo && P.playerInfo.factionName) || '';
       var _grouped = { zhixia:[], fanguo:[], fanzhen:[], jimi:[], chaogong:[], external:[] };
       var _totalDiv = 0, _govDiv = 0;
-      Object.keys(P.adminHierarchy).forEach(function(fk) {
-        var fh = P.adminHierarchy[fk];
+      Object.keys(GM.adminHierarchy).forEach(function(fk) {
+        var fh = GM.adminHierarchy[fk];
         if (!fh || !fh.divisions) return;
         var _fac = (GM.facs || []).find(function(f) { return f.name === fh.name || f.name === fk; });
         fh.divisions.forEach(function(d) {
@@ -3244,11 +3244,19 @@
     sysP += '\n  · 空缺主官的行政区会自然衰退（稳定和发展缓慢下降），应在叙事中反映"无人治理"的后果';
     sysP += '\n  · 用admin_changes的adjust动作反映地方官自主治理的效果（prosperity_delta/population_delta），在npc_actions或shizhengji中叙述其治政行为';
     // 注入当前行政区划树概要（含主官信息）
-    if (P.adminHierarchy) {
-      var _ahKey = P.adminHierarchy.player ? 'player' : Object.keys(P.adminHierarchy)[0];
-      var _ahData = _ahKey ? P.adminHierarchy[_ahKey] : null;
+    if (GM.adminHierarchy) {
+      var _ahKey = GM.adminHierarchy.player ? 'player' : Object.keys(GM.adminHierarchy)[0];
+      var _ahData = _ahKey ? GM.adminHierarchy[_ahKey] : null;
       if (_ahData && _ahData.divisions && _ahData.divisions.length > 0) {
         sysP += '\n\n\u3010\u5F53\u524D\u73A9\u5BB6\u884C\u653F\u533A\u5212\u6811\u3011';
+        // 人口按户口账取口数：游戏那份府级 population 是数、省级是对象，细账在 populationDetail（2026-11-15）
+        var _divMouthsShow = function(d) {
+          var pd = d && d.populationDetail;
+          if (pd && isFinite(Number(pd.mouths)) && Number(pd.mouths) > 0) return Math.round(Number(pd.mouths));
+          if (d && typeof d.population === 'number') return d.population;
+          var po = d && d.population;
+          return (po && typeof po === 'object') ? (Number(po.mouths) || Number(po.total) || 0) : 0;
+        };
         var _dumpAdminTree = function(divs, indent) {
           var s = '';
           for (var i = 0; i < divs.length; i++) {
@@ -3268,7 +3276,7 @@
             }
             var _statsInfo = '';
             if (_ps) _statsInfo = ' \u7A33' + Math.round(_ps.stability) + '/\u53D1' + Math.round(_ps.development) + '/\u8150' + Math.round(_ps.corruption) + '/\u6C11\u53D8' + Math.round(_ps.unrest);
-            s += '\n' + indent + d.name + '(' + (d.level || '') + ' \u4EBA\u53E3' + ((_ps && _ps.population) || d.population || '?') + _govInfo + _statsInfo + ')';
+            s += '\n' + indent + d.name + '(' + (d.level || '') + ' \u4EBA\u53E3' + (_divMouthsShow(d) || ((_ps && typeof _ps.population === 'number') ? _ps.population : '?')) + _govInfo + _statsInfo + ')';
             if (d.children && d.children.length > 0) s += _dumpAdminTree(d.children, indent + '  ');
           }
           return s;
@@ -3277,9 +3285,9 @@
         sysP += '\n【行政区划不完整声明——关键规则】';
         sysP += '\n  树中列出的只是玩家已知的行政区划，不代表全部。历史上该势力治下的行政区远多于此。';
         sysP += '\n  · 推演中AI可运用历史地理知识涉及未列出的区划——如树中京畿道只有长安，但推演可涉及陈仓、扶风等史实存在的城市';
-        sysP += '\n  · 当推演涉及未列出但史实存在的区划时→必须用admin_division_updates的add动作自动创建';
-        sysP += '\n    add时查史料填写真实的population/prosperity/terrain/specialResources（各地数据必须不同！）';
-        sysP += '\n  · 玩家在诏令/问对中提到未列出的区划→同样自动创建';
+        sysP += '\n  · 叙事可直接提及树中未列出但史实存在的地名——其人口、田赋已含在所属上级里，不要为它新增区划';
+        sysP += '\n  · 区划的增设、撤销、合并、拆分、改名、改层级眼下不受理（户口、税基严格对账，须从上级划人、拆分税基、同步名册，写口未开）';
+        sysP += '\n  · 领土得失用 admin_division_updates 的 territory_gain/territory_loss（失地须写 lostTo 落入哪个势力）或 map_changes';
         sysP += '\n  · 父级数据 ≥ 子级数据之和（不必相等——不是所有下级都列出了）';
         sysP += '\n\u5730\u65B9\u5B98\u6CBB\u7EE9\u63D0\u793A\uFF1A\u8BF7\u6839\u636E\u4E0A\u8FF0\u5404\u533A\u4E3B\u5B98\u7684\u80FD\u529B\u503C\u548C\u5F53\u524D\u533A\u57DF\u72B6\u6001\uFF0C\u5728\u672C\u56DE\u5408\u53D9\u4E8B\u548Cadmin_changes\u4E2D\u53CD\u6620\u5730\u65B9\u5B98\u7684\u81EA\u4E3B\u6CBB\u7406\u884C\u4E3A\u3002\u80FD\u5458\u6CBB\u4E0B\u7E41\u8363\u5E94\u4E0A\u5347\uFF0C\u5EB8\u5B98\u6CBB\u4E0B\u5E94\u505C\u6EDE\u6216\u8870\u9000\u3002';
       }
@@ -3488,10 +3496,10 @@
     }
 
     // 2.6: 注入各地现有营造册(让 AI 看见建筑、认其价值、纳入推演——治建筑对 AI 失明/间接效果/扩建误判)
-    if (P.adminHierarchy) {
+    if (GM.adminHierarchy) {
       var _brLines = [];
-      Object.keys(P.adminHierarchy).forEach(function(_fk){
-        var _fh = P.adminHierarchy[_fk];
+      Object.keys(GM.adminHierarchy).forEach(function(_fk){
+        var _fh = GM.adminHierarchy[_fk];
         if (!_fh || !_fh.divisions) return;
         (function _walkBld(ds){
           ds.forEach(function(d){
@@ -3665,13 +3673,9 @@
     sysP += '\n- region_status_changes: 地块状态变动（action:add/remove + region区划名 + name状态名 + kind:wonder奇观/disaster灾异/event风云/player圣裁 + econPct地方岁入乘数增减(±0.25内) + minxinPerTurn每回合民心(±2内) + durationTurns持续回合(缺省=永续·至多24) + desc叙述 + reason）';
     sysP += '\n    凡落在具体地块上的持续境况都应写状态：奇观落成、蝗旱水震天灾、丰年祥瑞、兵燹匪患、瘟疫流行、玩家放赈/免税/巡幸的地方效应等。状态会乘进该地岁入、逐回合作用民心，并在地块方志「状态」卷向玩家可见。灾异消弭、境况终了须 remove。勿与 building_changes 重复记同一工程。';
     sysP += '\n- admin_changes: 行政区划变动——地方官任免(appoint_governor/remove_governor)和地方官自主治理效果(adjust: prosperity_delta繁荣/population_delta人口，反映该官员本回合的治绩)';
-    sysP += '\n- admin_division_updates: 行政区划树结构变更。action类型：';
-    sysP += '\n    add=新增行政区（推演中涉及史实存在但树中没有的行政区时必须用此添加，parentDivision指定上级）';
-    sysP += '\n    remove=撤销行政区, rename=重命名, merge=合并(mergeInto指定目标), split=拆分(splitResult列出新名)';
-    sysP += '\n    reform=行政改革(如四级变三级), territory_gain=获得领土, territory_loss=丢失领土';
-    sysP += '\n    【重要】AI推演中如涉及树中尚未列出但史实存在的行政区划（如玩家提及某城、某州），应自动用add添加到对应上级下，数据参考史料';
-    sysP += '\n    【重要】获得领土(territory_gain)的行政区会自动进入"未定行政区"临时节点，等待玩家决定管理方案';
-    sysP += '\n    【重要】丢失领土(territory_loss)的行政区数据对玩家清零，不可管理';
+    sysP += '\n- admin_division_updates: 行政区划变更。眼下受理的 action：';
+    sysP += '\n    territory_gain=获得领土（division 写区划或地块名，归本朝）；territory_loss=丢失领土（须写 lostTo 落入哪个势力）——与地图易主同一个写口';
+    sysP += '\n    add/remove/merge/split/rename/reform 眼下不受理：区划户口、税基严格对账，增撤并拆改名、改层级（如四级变三级）须从上级划人、拆分税基、同步名册，写口未开；叙事可直接提及未列出的史实地名';
     sysP += '\n- harem_events: \u540E\u5BAB\u4E8B\u4EF6\u3002\u7C7B\u578B\uFF1A';
     sysP += '\n    pregnancy(\u6709\u5B55) / birth(\u751F\u80B2\uFF0C\u4EC5\u8BB0\u5F55\u4E8B\u4EF6\uFF0C\u4E0D\u5728\u56DE\u5408\u63A8\u6F14\u4E2D\u81EA\u52A8\u521B\u5EFA\u5B50\u55E3\u89D2\u8272) / rank_change(\u664B\u5C01/\u964D\u4F4D\uFF0CnewRank\u586B\u4F4D\u5206id)';
     sysP += '\n    death(\u85A8\u901D) / favor_change(\u5BA0\u7231\u53D8\u5316\uFF0Cfavor_delta\u6570\u503C) / scandal(\u4E11\u95FB/\u7EA0\u7EB7\uFF0Cdetail\u63CF\u8FF0)';
@@ -4043,10 +4047,10 @@
         sysP += '\n' + _enRoute.join('\n');
       }
       // 有效地名白名单（从行政区划收集）
-      if (P.adminHierarchy) {
+      if (GM.adminHierarchy) {
         var _placeNames = [];
-        Object.keys(P.adminHierarchy).forEach(function(k) {
-          var ah = P.adminHierarchy[k];
+        Object.keys(GM.adminHierarchy).forEach(function(k) {
+          var ah = GM.adminHierarchy[k];
           if (ah && ah.divisions) (function _w(divs) {
             divs.forEach(function(d) { if (d.name) _placeNames.push(d.name); if (d.children) _w(d.children); if (d.divisions) _w(d.divisions); });
           })(ah.divisions);

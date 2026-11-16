@@ -230,11 +230,11 @@
       // 现行地块状态（修·簇5#6：region_status_changes 只写不读回→AI 不知哪些地块挂着灾异/善政，无法判断该续该撤）
       try {
         var _RS = (global && global.RegionStatus) || (global && global.TM && global.TM.RegionStatus) || null;
-        var _Prs = ctx.P || (global && global.P) || null;
-        if (_RS && typeof _RS.list === 'function' && _Prs && _Prs.adminHierarchy) {
+        var _Grs = ctx.GM || (global && global.GM) || null;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
+        if (_RS && typeof _RS.list === 'function' && _Grs && _Grs.adminHierarchy) {
           var _rsLines = [], _rsN = 0;
-          Object.keys(_Prs.adminHierarchy).forEach(function(fk) {
-            var fh = _Prs.adminHierarchy[fk];
+          Object.keys(_Grs.adminHierarchy).forEach(function(fk) {
+            var fh = _Grs.adminHierarchy[fk];
             (function _w(ds) {
               (ds || []).forEach(function(d) {
                 if (!d || _rsN >= 12) return;

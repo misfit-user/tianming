@@ -1297,8 +1297,8 @@
                 var _geo = fe.geoData || {};
                 var _divFort = 0;
                 try { // 2026-06-12: 建筑工役引擎写的 division.fortLevel（城墙/敌台完工档位）进围城读链
-                  if (P.adminHierarchy) Object.keys(P.adminHierarchy).forEach(function(_fk){
-                    var _fh = P.adminHierarchy[_fk]; if (!_fh || !_fh.divisions) return;
+                  if (GM.adminHierarchy) Object.keys(GM.adminHierarchy).forEach(function(_fk){
+                    var _fh = GM.adminHierarchy[_fk]; if (!_fh || !_fh.divisions) return;
                     (function _wk(_ds){ _ds.forEach(function(_d){
                       if (_d && _d.name === fe.target && _d.fortLevel > _divFort) _divFort = _d.fortLevel;
                       if (_d && _d.children) _wk(_d.children); if (_d && _d.divisions) _wk(_d.divisions);
@@ -2577,7 +2577,7 @@
                           if (_mp && oc.person) PostTransfer.seat(_mp.id, oc.person, 'AI\u63A8\u6F14');
                         }
                         // 同步行政区划governor（如果该官职对应某个行政单位的主官）
-                        if (P.adminHierarchy) {
+                        if (GM.adminHierarchy) {
                           (function _syncAdmGov(ah) {
                             var _aks = Object.keys(ah);
                             _aks.forEach(function(k) {
@@ -2592,7 +2592,7 @@
                                 });
                               })(ah[k].divisions);
                             });
-                          })(P.adminHierarchy);
+                          })(GM.adminHierarchy);
                         }
                       } else if (oc.action === 'promote' && pos.holder) {
                         // 晋升——品级提升，可能调任新职
@@ -2750,7 +2750,7 @@
                           // 同步PostSystem
                           if (typeof PostTransfer !== 'undefined') PostTransfer.cascadeVacate(dismissed);
                           // 同步行政区划：清除被免职者的governor
-                          if (P.adminHierarchy) {
+                          if (GM.adminHierarchy) {
                             (function _clearAdmGov(ah) {
                               var _aks2 = Object.keys(ah);
                               _aks2.forEach(function(k) {
@@ -2765,7 +2765,7 @@
                                   });
                                 })(ah[k].divisions);
                               });
-                            })(P.adminHierarchy);
+                            })(GM.adminHierarchy);
                           }
                         }
                       }
@@ -3199,11 +3199,11 @@
               // 影子根治刀1(2026-07-04)：P/GM 双源搜地块——真机存档 P.adminHierarchy 常为空{}·活树在 GM。
               // 旧只搜 P 树→他档真记录(名/描述/工期)静默没建·掉进下方旧兼容通道铸「未知建筑」影子。
               // 镜像 _adminSources 范式：P 先·GM 树非同一对象才补·顶层 divisions||children 都认。
-              if (P.adminHierarchy || GM.adminHierarchy) {
+              if (GM.adminHierarchy) {
                 var _targetDiv = null;
                 var _bcRoots = [];
-                if (P.adminHierarchy && typeof P.adminHierarchy === 'object') _bcRoots.push(P.adminHierarchy);
-                if (GM.adminHierarchy && typeof GM.adminHierarchy === 'object' && GM.adminHierarchy !== P.adminHierarchy) _bcRoots.push(GM.adminHierarchy);
+                // 2026-11-15 区划只留游戏里那份（GM）：营造不再落剧本库那份（落那边完工效果算税看不到）。
+                if (typeof GM.adminHierarchy === 'object') _bcRoots.push(GM.adminHierarchy);
                 _bcRoots.forEach(function(_ahRoot) {
                   if (_targetDiv) return;
                   Object.keys(_ahRoot).forEach(function(fk) {
@@ -3361,7 +3361,7 @@
         }
 
         // 处理行政区划变动（AI新通道）
-        if (p1.admin_changes && Array.isArray(p1.admin_changes) && P.adminHierarchy) {
+        if (p1.admin_changes && Array.isArray(p1.admin_changes) && GM.adminHierarchy) {
           p1.admin_changes.forEach(function(ac) {
             if (!ac.action || !ac.division) return;
 
@@ -3373,9 +3373,9 @@
                 if (divs[i].children) _findDiv(divs[i].children);
               }
             }
-            var _adminKeys = Object.keys(P.adminHierarchy);
+            var _adminKeys = Object.keys(GM.adminHierarchy);
             for (var _ak = 0; _ak < _adminKeys.length; _ak++) {
-              var _ah = P.adminHierarchy[_adminKeys[_ak]];
+              var _ah = GM.adminHierarchy[_adminKeys[_ak]];
               if (_ah && _ah.divisions) _findDiv(_ah.divisions);
               if (_targetDiv) break;
             }
@@ -3442,7 +3442,18 @@
               _targetDiv.prosperity = clamp((_targetDiv.prosperity || 50) + clamp(_s6Scale(ac.prosperity_delta), -20, 20), 0, 100);
             }
             if (ac.population_delta) {
-              _targetDiv.population = Math.max(0, (_targetDiv.population || 50000) + clamp(_s6Scale(ac.population_delta), -50000, 50000));
+              // 人口是户口系统的账（populationDetail 与户、丁、全国总数连着），这里不直接改数字（2026-11-15）：
+              //   减口走 HujiEngine.applyPopulationLoss（按州记死亡逃散账）；增口没说从哪来（迁来、招抚逃户），不收，记未落地。
+              //   旧写法把剧本库那份的人口对象当数字加，算出 NaN 还抄进省份统计，从没生效过。
+              var _popDelta = clamp(_s6Scale(ac.population_delta), -50000, 50000);
+              if (_popDelta < 0) {
+                var _popLoss = (typeof HujiEngine !== 'undefined' && HujiEngine && typeof HujiEngine.applyPopulationLoss === 'function')
+                  ? HujiEngine.applyPopulationLoss({ cause: 'admin_changes:' + (ac.reason || ac.action), regionId: _targetDiv.id || _targetDiv.name, regionName: _targetDiv.name, mouths: -_popDelta })
+                  : null;
+                if (!_popLoss || _popLoss.ok === false) _tmRecordSemanticFailure('admin_changes.population_delta', ac.division, '户口账未落：' + ((_popLoss && _popLoss.reason) || '户口引擎未就绪'));
+              } else if (_popDelta > 0) {
+                _tmRecordSemanticFailure('admin_changes.population_delta', ac.division, '人口只随迁徙、招抚逃户等有来处的事增加，admin_changes 不凭空加口');
+              }
             }
 
             // 同步到地方区划
@@ -3460,13 +3471,13 @@
 
         // 处理地块状态变更（2026-06-12·状态系统）：奇观/灾异/风云/圣裁落地块持续境况·
         // 效果硬闸（econPct ±25%·民心 ±2/回合·工期 ≤24·每地 ≤12 条）在 TM.RegionStatus.normalize
-        if (p1.region_status_changes && Array.isArray(p1.region_status_changes) && P.adminHierarchy) {
+        if (p1.region_status_changes && Array.isArray(p1.region_status_changes) && GM.adminHierarchy) {
           p1.region_status_changes.forEach(function(sc) {
             if (!sc || !sc.region) return;
             var _rsApi = (typeof TM !== 'undefined' && TM.RegionStatus) || null;
             var _fpApi = (typeof TM !== 'undefined' && TM.FieldPipes) || null;
             if (!_rsApi || !_fpApi) return;
-            var _scDiv = _fpApi.findDivisionByName(P, sc.region);
+            var _scDiv = _fpApi.findDivisionByName(GM, sc.region);
             if (!_scDiv) return;
             if (sc.action === 'remove') {
               if (_rsApi.remove(_scDiv, sc.name || sc.id, undefined, GM)) {
@@ -3482,16 +3493,16 @@
         }
 
         // 处理中国化管辖层级变更（封建/削藩/改土归流等）
-        if (p1.autonomy_changes && Array.isArray(p1.autonomy_changes) && P.adminHierarchy) {
+        if (p1.autonomy_changes && Array.isArray(p1.autonomy_changes) && GM.adminHierarchy) {
           p1.autonomy_changes.forEach(function(ac) {
             if (!ac || !ac.action || !ac.division) return;
             // 查找区划
             var _targetAutDiv = null;
-            Object.keys(P.adminHierarchy).forEach(function(fk) {
-              var fh = P.adminHierarchy[fk];
+            Object.keys(GM.adminHierarchy).forEach(function(fk) {
+              var fh = GM.adminHierarchy[fk];
               if (!fh || !fh.divisions) return;
               (function _w(ds) {
-                ds.forEach(function(d) { if (d.name === ac.division) _targetAutDiv = d; if (d.divisions) _w(d.divisions); });
+                ds.forEach(function(d) { if (d.name === ac.division) _targetAutDiv = d; if (d.children) _w(d.children); if (d.divisions) _w(d.divisions); });
               })(fh.divisions);
             });
             if (!_targetAutDiv) return;
@@ -3600,254 +3611,35 @@
         }
 
         // 处理行政区划树结构变更（P1/P2/P4）
-        if (p1.admin_division_updates && Array.isArray(p1.admin_division_updates) && P.adminHierarchy) {
-          // 确定玩家行政区划数据
-          var _ahPlayerKey = P.adminHierarchy.player ? 'player' : null;
-          if (!_ahPlayerKey) {
-            var _ahks = Object.keys(P.adminHierarchy);
-            for (var _ki = 0; _ki < _ahks.length; _ki++) {
-              if (P.adminHierarchy[_ahks[_ki]] && P.adminHierarchy[_ahks[_ki]].divisions) { _ahPlayerKey = _ahks[_ki]; break; }
-            }
-          }
-          var _ahPlayer = _ahPlayerKey ? P.adminHierarchy[_ahPlayerKey] : null;
-          if (_ahPlayer) {
-            // 辅助：在树中查找节点（返回 { node, parent, index }）
-            function _findAdminNode(name, divs, parent) {
-              for (var i = 0; i < divs.length; i++) {
-                if (divs[i].name === name) return { node: divs[i], parent: parent, arr: divs, index: i };
-                if (divs[i].children && divs[i].children.length > 0) {
-                  var r = _findAdminNode(name, divs[i].children, divs[i]);
-                  if (r) return r;
-                }
+        if (p1.admin_division_updates && Array.isArray(p1.admin_division_updates)) {
+          // 2026-11-15 区划只留游戏里那份（GM.adminHierarchy），剧本库那份（P）只给开局与编辑器。
+          //   旧写法全改在剧本库那份上：增设的府不收税、撤掉的照收、改名不进游戏，只给 AI 看。
+          //   而游戏那份的户口是严格对账的（上级＝下级之和、全国＝末级之和），旧的增设、撤销、合并、拆分
+          //   只改一个人口数字或凭空给五万口，改名也不同步势力辖地、驻军、地图——搬过来会弄乱户口、税基与名册。
+          //   故这几样先不收、记未落地，待接上户口账与改隶式多处同步后另开写口（行2）；
+          //   得地、失地改走统一领地模块（与地图易主同一个写口）。改制（如四级变三级）旧写法只往事件流写一句、区划不动，
+          //   是假事件，同样记未落地。
+          p1.admin_division_updates.forEach(function(adu) {
+            if (!adu || !adu.action) return;
+            var act = adu.action;
+            if (act === 'territory_gain' || act === 'territory_loss') {
+              var _tfOwner = act === 'territory_gain'
+                ? ((P.playerInfo && P.playerInfo.factionName) || '')
+                : (adu.lostTo || adu.newOwner || adu.toFaction || adu.to_faction || adu.owner || adu.faction || adu.to || '');
+              var _tfApi = (typeof TM !== 'undefined' && TM.FactionMembership && typeof TM.FactionMembership.applyProvinceTransfers === 'function') ? TM.FactionMembership : null;
+              if (!adu.division || !_tfOwner || !_tfApi) {
+                _tmRecordSemanticFailure('admin_division_updates.' + act, adu.division || '', !_tfApi ? '统一领地模块未就绪' : (!adu.division ? '缺区划名' : '失地须写明落入哪个势力（lostTo）'));
+                return;
               }
-              return null;
-            }
-
-            p1.admin_division_updates.forEach(function(adu) {
-              if (!adu.action) return;
-              var act = adu.action;
-
-              if (act === 'add') {
-                // 新增行政区到指定上级下
-                var newDiv = {
-                  id: 'div_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                  name: adu.division || '未命名',
-                  level: adu.level || '',
-                  officialPosition: adu.officialPosition || '',
-                  governor: adu.governor || '',
-                  description: adu.description || '',
-                  population: parseInt(adu.population) || 50000,
-                  prosperity: parseInt(adu.prosperity) || 50,
-                  terrain: adu.terrain || '',
-                  specialResources: adu.specialResources || '',
-                  taxLevel: adu.taxLevel || '\u4E2D',
-                  children: []
-                };
-                if (adu.parentDivision) {
-                  var parentFound = _findAdminNode(adu.parentDivision, _ahPlayer.divisions, null);
-                  if (parentFound) {
-                    if (!parentFound.node.children) parentFound.node.children = [];
-                    parentFound.node.children.push(newDiv);
-                  } else {
-                    _ahPlayer.divisions.push(newDiv); // 找不到上级则添加为顶级
-                  }
-                } else {
-                  _ahPlayer.divisions.push(newDiv);
-                }
-                // 同步到provinceStats
-                if (!GM.provinceStats) GM.provinceStats = {};
-                var _playerFacName = (P.playerInfo && P.playerInfo.factionName) || '';
-                GM.provinceStats[newDiv.name] = {
-                  name: newDiv.name, owner: _playerFacName,
-                  population: newDiv.population, wealth: newDiv.prosperity,
-                  stability: 60, development: Math.round(newDiv.prosperity * 0.8),
-                  taxRevenue: 0, militaryRecruits: 0,
-                  unrest: 15, corruption: 25,
-                  terrain: newDiv.terrain, specialResources: newDiv.specialResources,
-                  governor: newDiv.governor, taxLevel: newDiv.taxLevel
-                };
-                addEB('\u884C\u653F', '\u65B0\u589E\u884C\u653F\u533A\u5212\uFF1A' + newDiv.name + (adu.reason ? '(' + adu.reason + ')' : ''));
-
-              } else if (act === 'remove') {
-                var found = _findAdminNode(adu.division, _ahPlayer.divisions, null);
-                if (found) {
-                  found.arr.splice(found.index, 1);
-                  if (GM.provinceStats && GM.provinceStats[adu.division]) delete GM.provinceStats[adu.division];
-                  addEB('\u884C\u653F', '\u64A4\u9500\u884C\u653F\u533A\u5212\uFF1A' + adu.division + (adu.reason ? '(' + adu.reason + ')' : ''));
-                }
-
-              } else if (act === 'rename') {
-                var found = _findAdminNode(adu.division, _ahPlayer.divisions, null);
-                if (found && adu.newName) {
-                  var oldName = found.node.name;
-                  found.node.name = adu.newName;
-                  // 同步provinceStats
-                  if (GM.provinceStats && GM.provinceStats[oldName]) {
-                    GM.provinceStats[adu.newName] = GM.provinceStats[oldName];
-                    GM.provinceStats[adu.newName].name = adu.newName;
-                    delete GM.provinceStats[oldName];
-                  }
-                  addEB('\u884C\u653F', oldName + '\u6539\u540D\u4E3A' + adu.newName + (adu.reason ? '(' + adu.reason + ')' : ''));
-                }
-
-              } else if (act === 'merge') {
-                // 合并：将源节点数据并入目标节点，删除源节点
-                if (adu.division === adu.mergeInto) return; // 防止自我合并
-                var src = _findAdminNode(adu.division, _ahPlayer.divisions, null);
-                var dst = adu.mergeInto ? _findAdminNode(adu.mergeInto, _ahPlayer.divisions, null) : null;
-                if (src && dst && src.node !== dst.node) {
-                  // 合并人口
-                  dst.node.population = (dst.node.population || 0) + (src.node.population || 0);
-                  // 合并子节点
-                  if (src.node.children && src.node.children.length > 0) {
-                    if (!dst.node.children) dst.node.children = [];
-                    dst.node.children = dst.node.children.concat(src.node.children);
-                  }
-                  src.arr.splice(src.index, 1);
-                  // 同步provinceStats
-                  if (GM.provinceStats) {
-                    var _srcPS = GM.provinceStats[adu.division];
-                    var _dstPS = GM.provinceStats[adu.mergeInto];
-                    if (_srcPS && _dstPS) {
-                      _dstPS.population += _srcPS.population || 0;
-                      _dstPS.taxRevenue += _srcPS.taxRevenue || 0;
-                      _dstPS.militaryRecruits += _srcPS.militaryRecruits || 0;
-                    }
-                    delete GM.provinceStats[adu.division];
-                  }
-                  addEB('\u884C\u653F', adu.division + '\u5E76\u5165' + adu.mergeInto + (adu.reason ? '(' + adu.reason + ')' : ''));
-                }
-
-              } else if (act === 'split') {
-                // 拆分：原节点保留，创建新节点分走部分人口
-                var orig = _findAdminNode(adu.division, _ahPlayer.divisions, null);
-                if (orig && adu.splitResult && Array.isArray(adu.splitResult) && adu.splitResult.length > 0) {
-                  var parentArr = orig.parent ? orig.parent.children : _ahPlayer.divisions;
-                  var splitCount = adu.splitResult.length;
-                  var popPerSplit = Math.floor((orig.node.population || 50000) / (splitCount + 1));
-                  orig.node.population = popPerSplit; // 原节点保留一份
-                  adu.splitResult.forEach(function(newName) {
-                    var newDiv = {
-                      id: 'div_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                      name: newName, level: orig.node.level || '',
-                      officialPosition: orig.node.officialPosition || '',
-                      governor: '', description: '\u62C6\u5206\u81EA' + adu.division,
-                      population: popPerSplit, prosperity: orig.node.prosperity || 50,
-                      terrain: orig.node.terrain || '', specialResources: '',
-                      taxLevel: orig.node.taxLevel || '\u4E2D', children: []
-                    };
-                    parentArr.push(newDiv);
-                  });
-                  addEB('\u884C\u653F', adu.division + '\u62C6\u5206\u4E3A' + adu.splitResult.join('\u3001') + (adu.reason ? '(' + adu.reason + ')' : ''));
-                }
-
-              } else if (act === 'territory_gain') {
-                // P2: 获得领土 → 创建"未定行政区"临时顶级节点
-                var undetermined = _findAdminNode('\u672A\u5B9A\u884C\u653F\u533A', _ahPlayer.divisions, null);
-                if (!undetermined) {
-                  var undNode = {
-                    id: 'div_undetermined', name: '\u672A\u5B9A\u884C\u653F\u533A',
-                    level: '\u4E34\u65F6', officialPosition: '',
-                    description: '\u65B0\u83B7\u5F97\u9886\u571F\uFF0C\u7B49\u5F85\u7BA1\u7406\u65B9\u6848',
-                    population: 0, prosperity: 30, terrain: '', taxLevel: '\u4E2D',
-                    children: []
-                  };
-                  _ahPlayer.divisions.push(undNode);
-                  undetermined = { node: undNode };
-                }
-                // 添加获得的行政区到未定行政区下
-                var gainDiv = {
-                  id: 'div_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                  name: adu.division || '\u65B0\u9886\u571F',
-                  level: adu.level || '', officialPosition: adu.officialPosition || '',
-                  governor: '', description: '\u4ECE' + (adu.gainedFrom || '\u654C\u65B9') + '\u83B7\u5F97',
-                  population: parseInt(adu.population) || 30000, prosperity: parseInt(adu.prosperity) || 30,
-                  terrain: adu.terrain || '', specialResources: adu.specialResources || '',
-                  taxLevel: adu.taxLevel || '\u4E2D', children: []
-                };
-                if (!undetermined.node.children) undetermined.node.children = [];
-                undetermined.node.children.push(gainDiv);
-                undetermined.node.population += gainDiv.population;
-                // 同步provinceStats
-                if (!GM.provinceStats) GM.provinceStats = {};
-                var _pfn = (P.playerInfo && P.playerInfo.factionName) || '';
-                GM.provinceStats[gainDiv.name] = {
-                  name: gainDiv.name, owner: _pfn,
-                  population: gainDiv.population, wealth: gainDiv.prosperity,
-                  stability: 40, development: 30,
-                  taxRevenue: 0, militaryRecruits: 0,
-                  unrest: 30, corruption: 30,
-                  terrain: gainDiv.terrain, specialResources: gainDiv.specialResources,
-                  governor: '', taxLevel: gainDiv.taxLevel
-                };
-                addEB('\u9886\u571F', '\u83B7\u5F97\u9886\u571F\uFF1A' + gainDiv.name + '\uFF0C\u7EB3\u5165\u672A\u5B9A\u884C\u653F\u533A' + (adu.reason ? '(' + adu.reason + ')' : ''));
-                // 触发上奏/议程
-                if (GM.memorials) {
-                  GM.memorials.push({
-                    type: 'territory', priority: 'urgent', turn: GM.turn, status: 'pending',
-                    title: '\u65B0\u83B7\u9886\u571F' + gainDiv.name + '\u7BA1\u7406\u65B9\u6848',
-                    content: '\u81E3\u5949\u8868\uFF1A\u65B0\u83B7' + gainDiv.name + '\u5C1A\u672A\u8BBE\u7F6E\u884C\u653F\u533A\u5212\u548C\u5730\u65B9\u5B98\uFF0C\u8BF7\u965B\u4E0B\u5B9A\u593A\u7BA1\u7406\u65B9\u6848\u3002',
-                    from: '\u6709\u53F8', reply: ''
-                  });
-                }
-
-              } else if (act === 'territory_loss') {
-                // P2: 丢失领土 → 数据对玩家清零
-                var lost = _findAdminNode(adu.division, _ahPlayer.divisions, null);
-                if (lost) {
-                  // 记录丢失前数据（供侨置用）
-                  if (!GM._lostTerritories) GM._lostTerritories = {};
-                  GM._lostTerritories[adu.division] = {
-                    node: JSON.parse(JSON.stringify(lost.node)),
-                    lostTo: adu.lostTo || '\u654C\u65B9',
-                    turn: GM.turn
-                  };
-                  // 从玩家树中移除
-                  lost.arr.splice(lost.index, 1);
-                  // 从provinceStats中移除
-                  if (GM.provinceStats && GM.provinceStats[adu.division]) {
-                    delete GM.provinceStats[adu.division];
-                  }
-                  // 递归移除所有子节点的provinceStats
-                  function _removeChildPS(children) {
-                    if (!children) return;
-                    children.forEach(function(c) {
-                      if (GM.provinceStats && GM.provinceStats[c.name]) delete GM.provinceStats[c.name];
-                      if (c.children) _removeChildPS(c.children);
-                    });
-                  }
-                  _removeChildPS(lost.node.children);
-                  addEB('\u9886\u571F', '\u4E22\u5931\u9886\u571F\uFF1A' + adu.division + '\uFF0C\u5F52\u5C5E' + (adu.lostTo || '\u654C\u65B9') + (adu.reason ? '(' + adu.reason + ')' : ''));
-                  // 地方官受影响 + NPC记忆
-                  var _lostGov = lost.node.governor;
-                  if (_lostGov) {
-                    var _lgCh = findCharByName(_lostGov);
-                    if (_lgCh) {
-                      _tmApplyLoyaltyDelta(_lgCh, -10, '\u4EFB\u6240\u5931\u5730', 'admin-territory-lost-governor');
-                      _lgCh.stress = Math.min(100, (_lgCh.stress || 0) + 15);
-                      if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-                        NpcMemorySystem.remember(_lostGov, '所辖' + adu.division + '失陷于' + (adu.lostTo || '敌方') + '，对此深感焦虑和羞耻', '忧', 7, undefined, { type: 'trauma' }); // 参数错位修:'trauma'曾占emotion位·importance落默认5永不成伤疤(2026-07-04 审查定罪)
-                      }
-                    }
-                  }
-                  // 触发侨置决策上奏
-                  if (GM.memorials) {
-                    GM.memorials.push({
-                      type: 'territory', priority: 'urgent', turn: GM.turn, status: 'pending',
-                      title: adu.division + '\u5931\u9677\uFF0C\u662F\u5426\u4FA8\u7F6E\uFF1F',
-                      content: '\u81E3\u5949\u8868\uFF1A' + adu.division + '\u5DF2\u5931\u9677\u4E8E' + (adu.lostTo || '\u654C\u65B9') + '\uFF0C\u8BF7\u965B\u4E0B\u5B9A\u593A\u662F\u5426\u4FA8\u7F6E\u6B64\u5730\u884C\u653F\u533A\u5212\u3002',
-                      from: '\u6709\u53F8', reply: '',
-                      _qiaozhiTarget: adu.division
-                    });
-                  }
-                }
-
-              } else if (act === 'reform') {
-                // P4: 行政改革
-                addEB('\u884C\u653F', '\u884C\u653F\u6539\u9769\uFF1A' + (adu.division || '') + ' ' + (adu.description || adu.reason || ''));
+              try {
+                _tfApi.applyProvinceTransfers([{ regionRef: adu.division, newOwner: _tfOwner, reason: adu.reason || (act === 'territory_gain' ? '得地' : '失地') }]);
+              } catch (_tfE) {
+                _tmRecordSemanticFailure('admin_division_updates.' + act, adu.division, String((_tfE && _tfE.message) || _tfE));
               }
-            });
-          }
+              return;
+            }
+            _tmRecordSemanticFailure('admin_division_updates.' + act, adu.division || '', '区划增设、撤销、合并、拆分、改名、改层级须接户口账与多处同步，写口未开，暂不受理');
+          });
         }
 
         // 处理后宫事件

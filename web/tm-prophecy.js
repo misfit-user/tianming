@@ -388,115 +388,11 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  D5 · 民变干预 UI + 粉饰 AI + 风闻录事
+  //  D5 · 粉饰 AI + 风闻录事
   // ═══════════════════════════════════════════════════════════════════
 
-  function openRevoltInterventionPanel(revoltId) {
-    var G = global.GM;
-    if (!G.minxin || !G.minxin.revolts) {
-      if (global.toast) global.toast('无民变信息');
-      return;
-    }
-    var ongoing = G.minxin.revolts.filter(function(r){return r.status==='ongoing';});
-    if (ongoing.length === 0) {
-      if (global.toast) global.toast('天下太平');
-      return;
-    }
-    var revolt = revoltId ? ongoing.find(function(r){return r.id===revoltId;}) : ongoing[0];
-    if (!revolt) return;
-    var levelDef = (typeof global.AuthorityComplete !== 'undefined' && global.AuthorityComplete.REVOLT_LEVELS) ?
-                   global.AuthorityComplete.REVOLT_LEVELS[revolt.level - 1] : { name: '民变', scale: revolt.scale };
-    var body = '<div style="max-width:560px;font-family:inherit;">';
-    body += '<div style="font-size:1.0rem;color:var(--vermillion-300);margin-bottom:0.4rem;letter-spacing:0.1em;">⚔ 民变干预</div>';
-    body += '<div style="padding:10px;background:rgba(192,64,48,0.1);border-left:3px solid var(--vermillion-400);border-radius:4px;margin-bottom:0.8rem;">';
-    body += '<div style="font-size:0.84rem;color:var(--vermillion-300);">' + (revolt.region || '某地') + ' · ' + levelDef.name + '</div>';
-    body += '<div style="font-size:0.76rem;color:var(--ink-300);margin-top:4px;">规模 ' + (revolt.scale || 0).toLocaleString() + ' · 起于 ' + (revolt.turn || 0) + ' 回合前</div>';
-    body += '<div style="font-size:0.72rem;color:#d4be7a;margin-top:4px;">' + (levelDef.description || '') + '</div>';
-    body += '</div>';
-    // 四干预
-    body += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
-    body += _interventionButton('investigate', '派员查访', '遣御史/按察使查实情 · 5 万钱', revolt.id);
-    body += _interventionButton('relief', '赈济绥民', '发帑赈粥抚怀 · 20 万钱 · 民心 +3', revolt.id);
-    body += _interventionButton('pacify', '招安赦免', '许以官职或免罪 · 皇威 -2 但民心 +5', revolt.id);
-    if (revolt.source === 'revolt-cases' && global.TM && global.TM.RevoltSuppress) {
-      // 民变案落地的民变（民2d-1）：选一支军发兵剿，到了那一州交战，由战斗引擎按兵力、地形结算
-      body += '<div style="font-size:calc(var(--text-xs) * 0.78);padding:10px;text-align:left;border:1px solid var(--color-border);border-radius:4px;">' +
-        '<div style="color:var(--gold-300);font-size:calc(var(--text-xs) * 0.84);">发兵进剿</div>' +
-        '<div style="color:var(--text-secondary);margin-top:2px;">选一支军 · 到了那一州交战，按兵力、地形结算</div>' +
-        '<div style="margin-top:4px;">' + global.TM.RevoltSuppress.panelHtml(G, revolt, { idPrefix: '_revSupD_', after: "this.closest('div[style*=position]').remove();" }) + '</div>' +
-      '</div>';
-    } else {
-      body += _interventionButton('suppress', '强力镇压', '发兵剿灭 · 需兵力 · 民心 -6 但皇威 +4', revolt.id);
-    }
-    body += '</div>';
-    body += '</div>';
-    var ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:19015;display:flex;align-items:center;justify-content:center;';
-    ov.innerHTML = '<div style="background:var(--bg-1);border:1px solid var(--vermillion);border-radius:6px;padding:1.0rem;width:92%;max-width:580px;">' + body + '<button class="btn" style="margin-top:0.6rem;" onclick="this.parentNode.parentNode.remove()">关闭</button></div>';
-    ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
-    document.body.appendChild(ov);
-  }
-
-  function _interventionButton(action, label, hint, revoltId) {
-    return '<button class="btn" style="font-size:0.74rem;padding:10px;text-align:left;" onclick="PhaseD._interveneRevolt(\''+revoltId+'\',\''+action+'\');this.parentNode.parentNode.parentNode.remove();">' +
-      '<div style="color:var(--gold-300);font-size:0.8rem;">' + label + '</div>' +
-      '<div style="color:#d4be7a;font-size:0.7rem;margin-top:2px;">' + hint + '</div>' +
-    '</button>';
-  }
-
-  function interveneRevolt(revoltId, action) {
-    var G = global.GM;
-    if (!G.minxin || !G.minxin.revolts) return { ok: false };
-    var r = G.minxin.revolts.find(function(x){return x.id===revoltId;});
-    if (!r) return { ok: false };
-    if (action === 'investigate') {
-      if (G.guoku && G.guoku.money < 50000) return { ok: false, reason: '帑廪不足' };
-      if (G.guoku) G.guoku.money -= 50000;
-      r._investigated = true;
-      // 查访可能发现真实原因
-      r._realCause = (G.vars && G.vars.disasterLevel > 0.3) ? '灾荒' :
-                     (G.corruption && (typeof G.corruption.trueIndex === 'number' ? G.corruption.trueIndex : G.corruption.overall) > 55) ? '贪官' :
-                     (G.population && G.population.corvee && G.population.corvee.recentDeaths > 5000) ? '苛役' : '税重';
-      if (global.addEB) global.addEB('民变', '御史查访 ' + (r.region || '某地') + '，果为 ' + r._realCause);
-      return { ok: true, cause: r._realCause };
-    }
-    if (action === 'relief') {
-      if (G.guoku && G.guoku.money < 200000) return { ok: false, reason: '帑廪不足' };
-      if (G.guoku) G.guoku.money -= 200000;
-      if (global._adjAuthority) global._adjAuthority('minxin', 3);
-      r._suppressed = true;
-      r.status = 'suppressed';
-      r.endedBy = 'relief'; r.endedTurn = G.turn || 0;   // 赈散的人回籍（民2d-1 善后认这个：tm-revolt-suppress.js）
-      if (global.addEB) global.addEB('赈济', '赈 ' + (r.region || '某地') + ' 民变自散');
-      _addFengwen({ type:'赈', text:(r.region||'某地') + '赈济既罢', credibility: 0.9, turn: G.turn });
-      return { ok: true };
-    }
-    if (action === 'pacify') {
-      if (global._adjAuthority) { global._adjAuthority('huangwei', -2); global._adjAuthority('minxin', 5); }
-      r._pacified = true;
-      r.status = 'pacified';
-      if (global.addEB) global.addEB('招安', '招抚 ' + (r.region || '某地') + ' 民变头目，授以小官');
-      // 风闻录事：招安换苟安
-      _addFengwen({ type:'招', text: '招抚 ' + (r.region || '某地') + '，首领授官', credibility: 0.8, turn: G.turn });
-      return { ok: true };
-    }
-    if (action === 'suppress') {
-      // 民变案落地的民变（民2d-1）：要选一支军发兵剿，不按兵数直接判
-      if (r.source === 'revolt-cases') return { ok: false, reason: '这股要选一支军发兵剿' };
-      // 需兵力估算
-      var requiredTroops = (r.scale || 1000) * 2;
-      // 调兵（简化）
-      r._suppressionOrder = { strength: requiredTroops, turn: G.turn || 0 };
-      if (typeof global.AuthorityComplete !== 'undefined' && global.AuthorityComplete.suppressRevolt) {
-        global.AuthorityComplete.suppressRevolt(r.id, requiredTroops);
-      }
-      if (global._adjAuthority) { global._adjAuthority('minxin', -6); global._adjAuthority('huangwei', 4); }
-      if (global.addEB) global.addEB('镇压', '发兵 ' + requiredTroops + ' 讨 ' + (r.region || '某地'));
-      _addFengwen({ type:'兵', text:'征伐 ' + (r.region||'某地') + ' 民变', credibility: 0.85, turn: G.turn });
-      return { ok: true, troops: requiredTroops };
-    }
-    return { ok: false };
-  }
+  // 民变干预面板（派员查访、赈济绥民、招安赦免、强力镇压四策，结果由代码按等级算）11-15 删掉：同志定「民变是治理的一部分」，
+  //   不设专用面板——剿、抚、赈都从诏令进，由推演判（tm-revolt-band.js）。
 
   // ═══════════════════════════════════════════════════════════════════
   //  粉饰文本生成（暴君段地方官上奏时的"粉饰话术"）
@@ -607,8 +503,6 @@
     checkTyrantAwakening: _checkTyrantAwakening,
     checkDecreeFiveElements: checkDecreeFiveElements,
     invokeCounterStrategy: invokeCounterStrategy,
-    openRevoltInterventionPanel: openRevoltInterventionPanel,
-    _interveneRevolt: interveneRevolt,
     generateFlatteryMemorial: generateFlatteryMemorial,
     addFengwen: _addFengwen,
     getFengwenRecent: getFengwenRecent,

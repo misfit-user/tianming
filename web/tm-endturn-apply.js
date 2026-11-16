@@ -2070,11 +2070,28 @@
           });
         }
 
+        // ── 民变案的各股（民变重做·收口，同志 11-15「民变是治理的一部分」）──
+        //   剿平、受抚、自散由推演判，按编号落到这一股（TM.RevoltBand.conclude）：首领去向取它给的 leaderFate（没给当脱身），
+        //   剿平的接皇威（平乱），人数在过回合 6.1455 善后。下面三段原本只管旧账 GM._activeRevolts；编号是民变案的先在这里了结。
+        //   交战照常走 battleResult（这股的军在军册里）；剿而未平（partial/stalemate/defeat）不在这里记。
+        var _bandConclude = function(id, status, extra) {
+          if (!id || typeof TM === 'undefined' || !TM.RevoltBand || typeof TM.RevoltBand.conclude !== 'function') return null;
+          var _bd = null;
+          try { _bd = TM.RevoltBand.conclude(GM, Object.assign({ revoltId: id, status: status, endedBy: 'ai' }, extra || {})); }
+          catch (_bdE) { _bd = null; (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_bdE, 'endturn] revolt band conclude:') : console.warn('[endturn] revolt band conclude:', _bdE); }
+          return _bd && _bd.handled ? _bd : null;
+        };
+        var _bandQiju = function(tag, text, narrative) {
+          if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【' + tag + '】' + text + '。' + (narrative || ''), category: '起义' });
+        };
+
         // ── 镇压行动 ──
-        if (p1.revolt_suppress && Array.isArray(p1.revolt_suppress) && GM._activeRevolts) {
+        if (p1.revolt_suppress && Array.isArray(p1.revolt_suppress)) {
           p1.revolt_suppress.forEach(function(sp) {
             if (!sp || !sp.revoltId) return;
-            var r = GM._activeRevolts.find(function(x){return x.id === sp.revoltId;});
+            var _bdS = sp.outcome === 'victory' ? _bandConclude(sp.revoltId, 'suppressed', { by: sp.suppressor, leaderFate: sp.leaderFate }) : null;
+            if (_bdS) { _bandQiju('镇压', (sp.suppressor || '官军') + '剿平' + _bdS.leaderName + '一股', sp.narrative); return; }
+            var r = (GM._activeRevolts || []).find(function(x){return x.id === sp.revoltId;});
             if (!r || r.outcome) return;
             var cas = sp.casualties || {};
             if (cas.rebel) r.militaryStrength = Math.max(0, (r.militaryStrength||0) - (parseInt(cas.rebel, 10) || 0)); // ||0·同上防NaN
@@ -2098,10 +2115,26 @@
         }
 
         // ── 招安行动 ──
-        if (p1.revolt_amnesty && Array.isArray(p1.revolt_amnesty) && GM._activeRevolts) {
+        if (p1.revolt_amnesty && Array.isArray(p1.revolt_amnesty)) {
           p1.revolt_amnesty.forEach(function(am) {
             if (!am || !am.revoltId) return;
-            var r = GM._activeRevolts.find(function(x){return x.id === am.revoltId;});
+            var _bdA = am.outcome === 'accepted' ? _bandConclude(am.revoltId, 'appeased', { by: am.envoy }) : null;
+            if (_bdA) {
+              // 受抚的首领（与骨干）归顺朝廷：照旧账招安同一个办法——归入玩家势力、忠诚 45；授什么官、赏多少走 office_changes、fiscal_adjustments
+              var _bdNames = Array.isArray(am.acceptedLeaders) && am.acceptedLeaders.length ? am.acceptedLeaders : [_bdA.leaderName];
+              _bdNames.forEach(function(nm) {
+                var _ch = findCharByName(nm);
+                if (!_ch || _ch.alive === false) return;
+                var _pi = (typeof TM !== 'undefined' && TM.Player && typeof TM.Player.getInfo === 'function') ? TM.Player.getInfo() : ((GM.playerInfo && typeof GM.playerInfo === 'object') ? GM.playerInfo : {});
+                var _nf = _pi.factionName || _ch.faction;
+                if (_nf !== _ch.faction && typeof TM !== 'undefined' && TM.FactionMembership && typeof TM.FactionMembership.assignChar === 'function') TM.FactionMembership.assignChar(_ch, _nf, { reason: '招安归附' });
+                _tmApplyLoyaltySet(_ch, 45, '招安归附', 'revolt-amnesty-accepted');
+                _ch._cooptedTurn = GM.turn;
+              });
+              _bandQiju('招安', (am.envoy || '朝廷') + '抚' + _bdA.leaderName + '一股，受抚' + (am.terms ? '；条件：' + String(am.terms).slice(0, 60) : ''), am.narrative);
+              return;
+            }
+            var r = (GM._activeRevolts || []).find(function(x){return x.id === am.revoltId;});
             if (!r || r.outcome) return;
             if (am.outcome === 'accepted') {
               r.outcome = 'coopted';
@@ -2165,10 +2198,13 @@
         }
 
         // ── 起义转化（建政 / 招安编入 / 融入他派 / 改朝） ──
-        if (p1.revolt_transform && Array.isArray(p1.revolt_transform) && GM._activeRevolts) {
+        if (p1.revolt_transform && Array.isArray(p1.revolt_transform)) {
           p1.revolt_transform.forEach(function(tr) {
             if (!tr || !tr.revoltId) return;
-            var r = GM._activeRevolts.find(function(x){return x.id === tr.revoltId;});
+            // 民变案的一股自行溃散；成势（攻下城立成势力）在下一刀，这里先不认 toFaction
+            var _bdT = tr.transformType === 'dissolved' ? _bandConclude(tr.revoltId, 'dispersed', {}) : null;
+            if (_bdT) { _bandQiju('起义', _bdT.leaderName + '一股自行溃散', tr.narrative); return; }
+            var r = (GM._activeRevolts || []).find(function(x){return x.id === tr.revoltId;});
             if (!r || r.outcome) return;
             if (tr.transformType === 'toFaction' && tr.newFactionName) {
               // 自动创建 faction

@@ -536,6 +536,7 @@
 
   TM.RevoltCases = {
     CFG: CFG, tick: tick, judge: judge, summary: summary, riseFromAI: riseFromAI, resolveLeaf: resolveLeaf, placeLeaf: placeLeaf,
-    realmLeaves: realmLeaves, neighborsOf: neighborsOf, baseName: baseName, seededRoll: seededRoll, ensureStore: ensureStore
+    realmLeaves: realmLeaves, neighborsOf: neighborsOf, baseName: baseName, seededRoll: seededRoll, ensureStore: ensureStore,
+    official: official   // 本州主官（各股实情给推演看：tm-revolt-band.js promptBlock）
   };
 })(typeof window !== 'undefined' ? window : globalThis);

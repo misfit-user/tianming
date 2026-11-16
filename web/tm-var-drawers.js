@@ -6,7 +6,7 @@
 //   §v2 Rich     覆盖 render* 为富内容版（原 -ext.js）
 //   §v3 Extra    wrap render* 末尾追加 extra（原 -final.js）
 //   入口集   openHujiDashboard / openMinxinHeatmap / openTianweiInspection / openQianGangInspection /
-//            openMemorialsPanel / openRevoltInterventionPanel / openInstitutionsChronicle 等（grep open*）
+//            openMemorialsPanel / openInstitutionsChronicle 等（grep open*）
 // ─────────────────────────────────────────────
 /**
  * tm-var-drawers.js — 户口/民心/皇权/皇威 侧边抽屉（纯数据展示）
@@ -356,7 +356,6 @@
     // 反击权臣 / 朱批 / 问疑 → 奏疏 / 问对
     global.openPowerCounterUI = _jumpToTab('gt-memorial');
     global.openMemorialsPanel = _jumpToTab('gt-memorial');
-    global.openRevoltInterventionPanel = _jumpToTab('gt-memorial');
     // 制度志 → 官制 tab
     global.openInstitutionsChronicle = _jumpToTab('gt-office');
     // 天时地利 → 史记/编年
@@ -982,19 +981,15 @@
         '</div>';
       });
       lh += '</div>';
-      // 进行中民变详表 + 4 干预
+      // 进行中民变详表（只看）
       var ongoing = (m.revolts||[]).filter(function(r){return r.status==='ongoing';});
       if (ongoing.length > 0) {
         ongoing.forEach(function(r) {
           var lvDef = LEVELS[(r.level||1) - 1] || { name:'L'+r.level };
           lh += '<div style="padding:6px 8px;background:rgba(192,64,48,0.08);border-left:3px solid var(--vermillion-400);border-radius:3px;margin-bottom:4px;font-size:0.74rem;">';
           lh += '<div><b style="color:var(--vermillion-300);">[' + _esc(lvDef.name) + ']</b> ' + _esc(r.region||'某地') + ' · 众 ' + _fmt(r.scale||5000) + (r.cause?' · 因 '+_esc(r.cause):'') + '</div>';
-          var _supTxt = (r.source === 'revolt-cases' && global.TM && global.TM.RevoltSuppress) ? global.TM.RevoltSuppress.statusText(G, r) : '';
-          if (_supTxt) {
-            lh += '<div style="color:var(--amber-400);margin-top:2px;">' + _esc(_supTxt) + '</div>';   // 民2d-1：发兵剿的进展
-          } else if (!r._suppressionOrder) {
-            // 干预策由大臣奏疏献策，玩家朱批
-          } else {
+          // 只看（同志 11-15：剿、抚、赈从诏令进，推演判）；旧档里还挂着的调兵令照写
+          if (r._suppressionOrder && r.source !== 'revolt-cases') {
             lh += '<div style="color:var(--amber-400);margin-top:2px;">官军 ' + _fmt(r._suppressionOrder.strength) + ' 讨伐中</div>';
           }
           lh += '</div>';

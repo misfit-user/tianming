@@ -411,7 +411,8 @@
           }
         }
       }
-      // 镇压尝试：官军作战。民变案落地的民变（民2d-1）不认「调兵数够即平」：发兵剿走行军与战斗引擎（tm-revolt-suppress.js）
+      // 镇压尝试：官军作战（旧档里还挂着的调兵令；收口后再没有地方下这种令，旧梯在「删旧」那刀整个拆）。
+      //   民变案落地的民变不认「调兵数够即平」：剿抚由推演判（tm-revolt-band.js）
       if (r.source === 'revolt-cases' && r._suppressionOrder) delete r._suppressionOrder;
       if (r._suppressionOrder && !r._suppressed) {
         var suppressionStrength = r._suppressionOrder.strength || 0;
@@ -438,17 +439,6 @@
     // 民心链见它不在，冷却过后又在原地另生一股。
     var _endedKeep = mx.revolts.filter(function(r) { return r && r.status !== 'ongoing'; }).slice(-30);
     mx.revolts = mx.revolts.filter(function(r) { return r && (r.status === 'ongoing' || _endedKeep.indexOf(r) >= 0); });
-  }
-
-  function suppressRevolt(revoltId, troops) {
-    var mx = global.GM.minxin;
-    if (!mx || !mx.revolts) return { ok: false };
-    var r = mx.revolts.find(function(x) { return x.id === revoltId; });
-    if (!r) return { ok: false };
-    // 民变案落地的民变（民2d-1）：要选一支军发兵剿（TM.RevoltSuppress.order），报个兵数不算——危机回复里写「平乱」也不再就此判平
-    if (r.source === 'revolt-cases') return { ok: false, reason: '这股要选一支军发兵剿（民变面板「发兵剿」）' };
-    r._suppressionOrder = { strength: troops, turn: global.GM.turn };
-    return { ok: true };
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -587,23 +577,6 @@
     return { ok: false, reason: 'unsupported lost authority action' };
   }
 
-  function _handleRevoltAction(action, req) {
-    if (action === 'suppress' || action === 'dispatch_troops') {
-      var revoltId = req.revoltId || req.id;
-      var troops = req.troops || req.strength || 0;
-      var ordered = suppressRevolt(revoltId, troops);
-      var mx = global.GM && global.GM.minxin;
-      var r = mx && Array.isArray(mx.revolts) ? mx.revolts.find(function(x) { return x && x.id === revoltId; }) : null;
-      if (ordered && ordered.ok && r && troops > (r.scale || 0) * 2) {
-        r.status = 'suppressed';
-        r._suppressed = true;
-        r.suppressedTurn = global.GM.turn || 0;
-        r._suppressionOrder = { strength: troops, turn: global.GM.turn || 0, immediate: true };
-      }
-      return ordered;
-    }
-    return { ok: false, reason: 'unsupported revolt action' };
-  }
 
   function _handleCorruptionCaseAction(action, req) {
     if (action === 'handle_case' || action === 'resolve') {
@@ -644,11 +617,6 @@
       return m && (m.intercepted || m.status === 'intercepted');
     });
     return memo && memo.id;
-  }
-
-  function _firstOngoingRevolt() {
-    var mx = global.GM && global.GM.minxin;
-    return mx && Array.isArray(mx.revolts) ? mx.revolts.find(function(r) { return r && r.status === 'ongoing'; }) : null;
   }
 
   function _firstActiveCorruptionCaseId() {
@@ -725,16 +693,8 @@
       };
     }
 
-    if (_crisisHasAny(text, ['\u6c11\u53d8', '\u5e73\u4e71', '\u53d1\u5175', '\u9547\u538b', '\u8ba8\u8d3c', '\u8fdb\u527f', 'revolt', 'suppress', 'dispatch troops'])) {
-      var revolt = _firstOngoingRevolt();
-      return {
-        type: 'revolt',
-        action: 'suppress',
-        revoltId: payload.revoltId || payload.id || (revolt && revolt.id),
-        troops: payload.troops || payload.strength || (revolt ? (revolt.scale || 10000) * 3 : 0),
-        text: text
-      };
-    }
+    // \u6c11\u53d8\u4e0d\u518d\u4ece\u8fd9\u91cc\u8ba4\uff08\u540c\u5fd7 11-15\u300c\u6c11\u53d8\u662f\u6cbb\u7406\u7684\u4e00\u90e8\u5206\u300d\uff09\uff1a\u539f\u5148\u6587\u5b57\u91cc\u6709\u300c\u6c11\u53d8\u300d\u300c\u5e73\u4e71\u300d\u300c\u53d1\u5175\u300d\u300c\u9547\u538b\u300d\u5c31\u6309\u4e09\u500d\u5175\u6570\u76f4\u5224\u5e73\u6389\u7b2c\u4e00\u80a1\u2014\u2014
+    //   \u527f\u3001\u629a\u3001\u8d48\u90fd\u8d70\u8bcf\u4ee4\uff0c\u7531\u63a8\u6f14\u5224\uff08tm-revolt-band.js\uff09
 
     if (_crisisHasAny(text, ['\u8150\u8d25', '\u8d2a\u58a8', '\u8d2a\u6c61', '\u8ffd\u8d43', '\u4e25\u529e', '\u67e5\u529e', 'corruption'])) {
       return {
@@ -760,8 +720,8 @@
     else if (type === 'power_minister') result = _handlePowerMinisterAction(action, req);
     else if (type === 'tyrant_syndrome') result = _handleTyrantSyndromeAction(action, req);
     else if (type === 'lost_authority') result = _handleLostAuthorityAction(action, req);
-    else if (type === 'revolt') result = _handleRevoltAction(action, req);
     else if (type === 'corruption_case') result = _handleCorruptionCaseAction(action, req);
+    // type 'revolt' 不再有专用处置（同志 11-15）：剿、抚、赈走诏令，由推演判
     if(result&&result.applied===false)return result;
     _recordCrisisPlayerAction(type, action, !!(result && result.ok), {
       target: req.targetName || req.memoId || req.revoltId || req.caseId || '',
@@ -794,7 +754,6 @@
       else if (req.type === 'power_minister') req.action = 'purge';
       else if (req.type === 'tyrant_syndrome') req.action = 'self_blame_reform';
       else if (req.type === 'lost_authority') req.action = 'grand_audience_restore';
-      else if (req.type === 'revolt') req.action = 'suppress';
       else if (req.type === 'corruption_case') req.action = 'handle_case';
     }
     var channel = data.channel || meta.channel || 'player';
@@ -1032,14 +991,14 @@
     // ── 客观事实反馈（已发生的实事，系统确实记录了）──
     // 军事胜负（有具体战报才反馈；只算玩家这方的胜负，见 _battlePlayerOutcome）
     if (G._turnBattleResults) {
-      var RS = global.TM && global.TM.RevoltSuppress, bandFac = RS && RS.CFG && RS.CFG.faction;
       G._turnBattleResults.forEach(function(b) {
         if (!b || b._hwChecked) return;
         b._hwChecked = true;
         var outcome = _battlePlayerOutcome(b, G);
         if (outcome === 'lost') triggerHuangweiEvent('militaryDefeat', { reason: '军事失利' });
-        else if (outcome === 'won' && !b._applierAftermathDone && !(bandFac && (b.attackerFaction === bandFac || b.defenderFaction === bandFac))) {
-          // 胜仗：AI 报的战果在写回时已按 P-5TK 加过（_applierAftermathDone），不再记；剿民变的胜仗归平乱（那一股散了才记），不另记军胜。
+        else if (outcome === 'won' && !b._applierAftermathDone) {
+          // 胜仗：AI 报的战果在写回时已按 P-5TK 加过（_applierAftermathDone），不再记。剿民变的胜仗与推演报的一样照军胜记
+          //   （11-15 收口：剿的仗跟别的仗一样），那一股了结时另记平乱。
           //   引擎结的胜仗没有 AI 给的量，按战果取 P-5TK 提示词分档的上沿：大胜（击溃 3～5）+5、小胜（1～2）+2〔初值，同志 11-15「大胜的话皇威可以更多」〕；
           //   引擎的「败北」是攻方败、守方守住，按小胜论。战报带了 huangweiDelta 的取它，单场封顶 8（同 P-5TK）。
           var gain = Number(b.huangweiDelta);
@@ -1708,7 +1667,6 @@
     handleCrisisAction: handleCrisisAction,
     handleCrisisSurfaceResponse: handleCrisisSurfaceResponse,
     inferCrisisActionFromSurface: inferCrisisActionFromSurface,
-    suppressRevolt: suppressRevolt,
     getAuthorityQuadrant: getAuthorityQuadrant,
     computeEdictExecutionRate: computeEdictExecutionRate,
     getExtendedAIContext: getExtendedAIContext,

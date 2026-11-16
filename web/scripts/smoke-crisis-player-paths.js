@@ -116,15 +116,16 @@ const levelBefore = gm.minxin.revolts[0].level;
 AC.tick({ turn: 24, monthRatio: 1 });
 // 五级梯冻住（同志 11-08 定，民变重做前止血）：掷骰必中、民心再低也不往上爬；玩家镇压照样要能落账。
 assert(gm.minxin.revolts[0].level === levelBefore, 'frozen ladder: a low-minxin revolt stays at its level until the revolt redesign');
-const troops = gm.minxin.revolts[0].scale * 3;
-assertOk(AC.handleCrisisAction({ type: 'revolt', action: 'suppress', revoltId: 'rv-shaanxi', troops: troops }), 'revolt suppression order');
+// 民变不再是危机处置的一类（同志 11-15「民变是治理的一部分」：剿、抚、赈走诏令，由推演判）——报个兵数不再平掉一股
+const rv = AC.handleCrisisAction({ type: 'revolt', action: 'suppress', revoltId: 'rv-shaanxi', troops: gm.minxin.revolts[0].scale * 3 });
+assert(rv && rv.ok === false, 'revolt is no longer a crisis action, got ' + JSON.stringify(rv));
 AC.tick({ turn: 25, monthRatio: 1 });
-assert(gm.minxin.revolts[0].status === 'suppressed', 'revolt suppression should resolve upgraded revolt through tick');
+assert(gm.minxin.revolts[0].status === 'ongoing' && !gm.minxin.revolts[0]._suppressionOrder, 'a crisis reply no longer suppresses a revolt');
 
 const corrBefore = gm.corruption.trueIndex;
 assertOk(AC.handleCrisisAction({ type: 'corruption_case', action: 'handle_case', caseId: 'case-fiscal-crisis', optionId: 'strict' }), 'corruption case handling');
 assert(gm.corruption.trueIndex < corrBefore, 'corruption case handling should reduce true corruption');
 assert(gm.corruption.history.exposedCases.some(c => c.id === 'case-fiscal-crisis' && c.resolvedAction === 'strict'), 'corruption case should move to resolved history');
-assert(gm._crisisPlayerActions.filter(a => a.ok).length >= 6, 'all crisis responses should be retained in crisis action audit');
+assert(gm._crisisPlayerActions.filter(a => a.ok).length >= 5, 'all crisis responses should be retained in crisis action audit');   // 民变一类 11-15 撤了，少一条
 
 console.log('[smoke-crisis-player-paths] PASS crisis player paths');

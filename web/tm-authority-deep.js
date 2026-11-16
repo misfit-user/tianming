@@ -248,49 +248,7 @@
     return count > 0 ? sum / count : (G.minxin.trueIndex || 60);
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  民变干预权重数值化
-  // ═══════════════════════════════════════════════════════════════════
-
-  var REVOLT_INTERVENTION_WEIGHTS = {
-    investigate: {
-      // 派员查访
-      successRate: { 1: 0.7, 2: 0.5, 3: 0.3, 4: 0.15, 5: 0.05 },
-      cost: 50000,
-      duration: 1
-    },
-    relief: {
-      // 赈济（效果最好于 L1-L2 灾荒引起的）
-      successRate: { 1: 0.9, 2: 0.75, 3: 0.5, 4: 0.25, 5: 0.1 },
-      cost: 200000,
-      duration: 1
-    },
-    pacify: {
-      // 招安（效果最好于 L2-L4 有领袖的）
-      successRate: { 1: 0.5, 2: 0.7, 3: 0.65, 4: 0.4, 5: 0.15 },
-      cost: 100000,
-      duration: 2
-    },
-    suppress: {
-      // 弹压（L3+ 有效，L1 反而激化）
-      successRate: { 1: 0.3, 2: 0.5, 3: 0.75, 4: 0.6, 5: 0.3 },
-      cost: 0,  // 仅费兵
-      duration: 3,
-      minxinPenalty: -6
-    }
-  };
-
-  function computeRevoltInterventionOutcome(revoltLevel, action) {
-    var w = REVOLT_INTERVENTION_WEIGHTS[action];
-    if (!w) return { ok: false };
-    var rate = w.successRate[revoltLevel] || 0.3;
-    return {
-      successProbability: rate,
-      cost: w.cost,
-      duration: w.duration,
-      expectedMinxinDelta: w.minxinPenalty || 0
-    };
-  }
+  // 民变干预权重（四策按等级的成功率、花费）11-15 随民变干预面板删掉：剿、抚、赈走诏令，由推演判（tm-revolt-band.js）。
 
   // ═══════════════════════════════════════════════════════════════════
   //  同期多地起义激励系数
@@ -466,13 +424,11 @@
     dispatchSecretEdict: dispatchSecretEdict,
     applyPermanentReformLegacy: applyPermanentReformLegacy,
     getMinxinByOldClass: getMinxinByOldClass,
-    computeRevoltInterventionOutcome: computeRevoltInterventionOutcome,
     applyMultiRebellionInspiration: _applyMultiRebellionInspiration,   // smoke 单跑（核五级梯冻住时不「同起升一级」）
     getCurrentCorruptionMode: getCurrentCorruptionMode,
     detectFraudulentReports: detectFraudulentReports,
     checkLumpSumWarning: checkLumpSumWarning,
     OLD_TO_NEW_CLASS_MAP: OLD_TO_NEW_CLASS_MAP,
-    REVOLT_INTERVENTION_WEIGHTS: REVOLT_INTERVENTION_WEIGHTS,
     CORRUPTION_GAMEMODES: CORRUPTION_GAMEMODES,
     VERSION: 1
   };

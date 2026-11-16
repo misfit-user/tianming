@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-17T06:00:45.278Z",
-  "total": 924,
+  "updatedAt": "2026-11-17T14:46:29.274Z",
+  "total": 910,
   "files": {
     "smoke-agency-covert-report.js": 2,
     "smoke-agent-mode-s1.js": 7,
@@ -180,7 +180,6 @@
     "smoke-revolt-amnesty-rejected.js": 1,
     "smoke-revolt-cases.js": 3,
     "smoke-revolt-guerrilla.js": 5,
-    "smoke-revolt-suppress.js": 13,
     "smoke-right-rail-badge-semantics.js": 3,
     "smoke-rightrail-datasource.js": 2,
     "smoke-runtime-save-consistency.js": 36,
@@ -244,6 +243,6 @@
     "smoke-workshop-pipeline-b.js": 4,
     "smoke-world-w3-prompt-visibility.js": 1,
     "smoke-write-gate-expansion.js": 13,
-    "smoke-yingzao-shadow.js": 16
+    "smoke-yingzao-shadow.js": 15
   }
 }

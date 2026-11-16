@@ -2246,6 +2246,7 @@
           "\"tactic\":\"围剿/坚壁清野/分化瓦解/利诱降服/借异族/迁徙裹挟\","+
           "\"outcome\":\"victory彻底剿灭/partial部分镇压/stalemate相持/defeat反被击溃\","+
           "\"casualties\":{\"rebel\":5000,\"official\":1500,\"civilian\":3000},"+
+          "\"leaderFate\":\"victory时首领下场 captured被擒/killed伏诛/escaped脱身(可空=脱身)\","+
           "\"narrative\":\"战况叙事\""+
         "}],"+
         // 起义招安——朝廷给条件换取归顺
@@ -2683,6 +2684,11 @@
             }
           });
         }
+      }
+      // 民变案起事的各股（民变重做·收口，同志 11-15）：首领、人数、在哪州、本州主官、这股的军、附近的官军——推演看得到才判得了剿抚
+      if (typeof TM !== 'undefined' && TM.RevoltBand && typeof TM.RevoltBand.promptBlock === 'function') {
+        try { tp1 += TM.RevoltBand.promptBlock(GM); }
+        catch (_rbPE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rbPE, 'endturn-ai] revolt band prompt:') : console.warn('[endturn-ai] revolt band prompt:', _rbPE); }
       }
       if (typeof TM !== 'undefined' && TM.LiveContext) tp1 += '\n'+TM.LiveContext.publicFacts(GM,null,JSON.stringify((ctx&&ctx.meta&&ctx.meta.edicts)||GM.edicts||{}));
       tp1 += '\n【交办验收规则】承诺进展是承办自报。完成须有与task id绑定的实际执行凭据；单写completed不会增加全国税收或降低全国腐败。请通过已支持的结构化执行动作落实，未落实须如实报告阻力。';

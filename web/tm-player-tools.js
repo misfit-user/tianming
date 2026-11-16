@@ -30,7 +30,6 @@
     body += _actionButton('move_capital',    '🏯 迁都',         '徙国都以就要冲',              'PhaseF5.openMoveCapitalUI()');
     body += _actionButton('frontier_dev',    '🗺️ 边疆开发',    '垦荒戍边，实边固圉',          'PhaseF5.openFrontierUI()');
     body += _actionButton('huji_dashboard',  '📊 户口仪表盘',  '户籍总览+地域分布+曲线',     'PhaseF5.openHujiDashboard()');
-    body += _actionButton('revolt',          '⚔ 民变干预',      '四策处置民变',               'PhaseD.openRevoltInterventionPanel()');
     body += _actionButton('annual_fuyi',     '📜 年度赋役',    '滑块调本年赋役基调',          'openAnnualFuyiPanel()');
     body += _actionButton('power_counter', _institutionalPowerCounterMode(global.GM)?'⚖️ 职掌与交接':'⚖️ 反击权臣', _institutionalPowerCounterMode(global.GM)?'拟议职掌与交割':'七策反击', 'PhaseF5.openPowerCounterUI()');
     body += '</div>';

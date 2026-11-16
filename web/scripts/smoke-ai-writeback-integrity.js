@@ -597,14 +597,15 @@ async function main() {
     return { ok: true, applied: { failed: [] } };
   };
   ctx.preflightAIWriteBack = (x) => x;
-  ctx.GM = baseGM();
+  ctx.GM = baseGM({ facs: [{ id: 'f-a', name: '甲国' }, { id: 'f-b', name: '乙国' }] });
   const p1 = {
     shizhengji: '', changes: [], appointments: [], institutions: [], regions: [], events: [], npc_actions: [], relations: [],
     tax_reforms: [{ op: 'rate', taxId: 'shangshui', rate: 0.06 }],
     class_updates: [{ name: '士绅', updates: { satisfaction: 50 } }],
     region_updates: [{ id: 'shandong', updates: { prosperity: 60 } }],
     project_updates: [{ name: '河工', progress: 10 }],
-    anyPathChanges: [{ path: 'custom.flag', op: 'set', value: true }]
+    anyPathChanges: [{ path: 'custom.flag', op: 'set', value: true }],
+    battleResult: { battleId: 'b-smoke', winnerFactionId: '甲国', loserFactionId: '乙国', casualties: { attacker: 10, defender: 20 } }
   };
   await ctx.TM.Endturn.AI.apply.stages._applyCore_reconcile({ results: { sc1: p1 }, meta: {}, record: {} });
   check(captured.length >= 1, 'apply stage must invoke applyAITurnChanges');
@@ -613,6 +614,15 @@ async function main() {
     check(dispatched[field] !== p1[field] && JSON.stringify(dispatched[field]) === JSON.stringify(p1[field]) && dispatched[field].length === 1,
       'dispatcher must forward a detached but equivalent ' + field);
   });
+  // 主推演报的仗：派发给应用器的是预检认过势力的那份（势力换成编号）；原先这份清单漏了它，主推演的仗从没落账
+  const sentBattle = dispatched.battleResult;
+  check(sentBattle && sentBattle !== p1.battleResult && sentBattle.battleId === 'b-smoke' && sentBattle.winnerFactionId === 'f-a' && sentBattle.loserFactionId === 'f-b',
+    'dispatcher must forward the preflight-resolved main battleResult');
+  // 势力对不上的仗：预检单条剔掉（记账），不派发；其余照常落
+  captured.length = 0;
+  const p1Ghost = { shizhengji: '', events: [], battleResult: { battleId: 'b-ghost', winnerFactionId: '甲国', loserFactionId: '丙国', casualties: { attacker: 1, defender: 2 } } };
+  await ctx.TM.Endturn.AI.apply.stages._applyCore_reconcile({ results: { sc1: p1Ghost }, meta: {}, record: {} });
+  check(captured.length >= 1 && !captured[0].battleResult, 'battleResult with an unknown faction is pruned before dispatch, not forwarded');
 
   console.log('[smoke-ai-writeback-integrity] PASS assertions=' + assertions);
 }

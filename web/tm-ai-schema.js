@@ -565,12 +565,12 @@
             items: {
               type: 'object',
               properties: {
-                action: { type: 'string', enum: ['start','suppress','appease'], description: '动作：起事/镇压/招抚' },
+                action: { type: 'string', enum: ['start','suppress','appease'], description: '动作：起事/平定（已剿平）/招抚（已受抚）' },
                 region: { type: 'string', description: '发生地（如 陕西、山东）' },
                 leader: { type: 'string', description: '首领姓名（可选）' },
                 scale: { type: 'number', description: '规模（人数）' },
                 reason: { type: 'string', description: '原因（不超过30字）' },
-                army: { type: 'string', description: '镇压时出兵的我方军队名（可选；民变案起事的各股按此派兵去剿，胜负由战斗结算）' }
+                leaderFate: { type: 'string', enum: ['captured','killed','escaped'], description: '平定时首领下场：被擒/伏诛/脱身（可选；不写当脱身）' }
               },
               required: ['action','region']
             }

@@ -265,12 +265,13 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
     if (window.TM && TM.RevoltCases) TM.RevoltCases.tick(GM, { turn: GM.turn, monthRatio: monthRatio });
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] RevoltCases.tick 失败:') : console.error('[endTurn] RevoltCases.tick 失败:', e); }
 
-  // 6.1455 发兵剿民变（民变重做·民2d-1，11-15）：民变案落地的每股在军册有一支军；官军奉剿令到了那一州就挂一场仗，
-  //   下次过回合由 3.0 战斗引擎结算；这里读战果定这股散不散、首领擒杀逃，军里少的人记死、记逃散；了结了的善后（tm-revolt-suppress.js）。
-  //   在游击连带之前：这回合剿破的，同一回合撤「盘踞」、驿路复通。出错不拦过回合：只记错误。
+  // 6.1455 民变的军与账（民变重做·民2d-1，11-15 收口）：民变案落地的每股在军册有一支军；与官军怎么打、剿平受抚由推演判
+  //   （战果写口、revolt_suppress / revolt_amnesty），这里对账——军里少的人记死、记逃散；军打没了、溃散了这股了结；
+  //   了结了的善后，「从乱」对账（tm-revolt-band.js）。在游击连带之前：这回合了结的，同一回合撤「盘踞」、驿路复通。
+  //   出错不拦过回合：只记错误。
   try {
-    if (window.TM && TM.RevoltSuppress) TM.RevoltSuppress.tick(GM, { turn: GM.turn, monthRatio: monthRatio });
-  } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] RevoltSuppress.tick 失败:') : console.error('[endTurn] RevoltSuppress.tick 失败:', e); }
+    if (window.TM && TM.RevoltBand) TM.RevoltBand.tick(GM, { turn: GM.turn, monthRatio: monthRatio });
+  } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] RevoltBand.tick 失败:') : console.error('[endTurn] RevoltBand.tick 失败:', e); }
 
   // 6.146 民变游击的连带（民变重做·民2c，11-14）：民变案落地的民变在它那一州盘踞——地块状态「某股盘踞」（本州征收打折）、
   //   驿路阻断、户口逃散、本州民心（tm-revolt-guerrilla.js）。邻州民心照旧走「民变不宁」。出错不拦过回合：只记错误。

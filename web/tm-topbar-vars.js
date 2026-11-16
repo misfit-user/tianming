@@ -576,32 +576,20 @@ function _openHujiPanel() {
     body += '</select>';
     body += '<button class="btn" style="font-size:0.7rem;padding:3px 8px;margin-left:6px;" onclick="var s=document.getElementById(\'_largeCorveePick\');if(s.value){var r=HujiEngine.startLargeCorvee(s.value);if(r.ok)toast(\'已开工\');else toast(r.reason||\'失败\');document.querySelector(\'[onclick*=_openHujiPanel]\');this.closest(\'div[style*=position]\').remove();if(typeof _openHujiPanel===\'function\')_openHujiPanel();}">开工</button>';
   }
-  // 民变镇压 UI
+  // 进行中民变（只看：同志 11-15「民变是治理的一部分」——剿、抚、赈从诏令进，由推演判，不在这里下令）
   if (GM.minxin && GM.minxin.revolts && typeof AuthorityComplete !== 'undefined') {
     var ongoing = GM.minxin.revolts.filter(function(r) { return r.status === 'ongoing'; });
     if (ongoing.length > 0) {
-      body += '<div style="font-size:0.82rem;color:var(--vermillion-400);margin:0.6rem 0 0.2rem;">进行中民变（需镇压）</div>';
+      body += '<div style="font-size:0.82rem;color:var(--vermillion-400);margin:0.6rem 0 0.2rem;">进行中民变</div>';
       var LEVELS = AuthorityComplete.REVOLT_LEVELS || [];
       ongoing.forEach(function(r) {
         var lv = LEVELS[(r.level||1) - 1] || {};
         body += '<div style="padding:6px;margin:3px 0;background:var(--bg-2);border-left:3px solid var(--vermillion-400);border-radius:3px;font-size:0.72rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
         body += '<b style="color:var(--vermillion-300);">[' + (lv.name || ('L'+r.level)) + ']</b>';
         body += (r.region || '某地') + ' · 众 ' + (r.scale >= 10000 ? (r.scale/10000).toFixed(1)+'万' : r.scale);
-        if (r.source === 'revolt-cases' && window.TM && TM.RevoltSuppress) {
-          // 民变案落地的民变（民2d-1）：选一支军发兵剿，走行军与战斗引擎（tm-revolt-suppress.js）
-          body += TM.RevoltSuppress.panelHtml(GM, r, { idPrefix: '_revSupH_', after: "this.closest('div[style*=position]').remove();if(typeof _openHujiPanel==='function')_openHujiPanel();" });
-        } else {
-        body += (r._suppressionOrder ? ' · <span style="color:var(--amber-400);">官军 ' + r._suppressionOrder.strength + ' 讨伐中</span>' : '');
-        if (!r._suppressionOrder) {
-          var suggestTroops = (r.scale || 5000) * 3;
-          body += ' <input type="number" id="_revTroops_' + r.id + '" value="' + suggestTroops + '" style="width:80px;padding:1px 4px;font-size:0.7rem;">';
-          body += ' <button class="btn" style="font-size:0.71rem;padding:2px 6px;" onclick="var v=parseInt(document.getElementById(\'_revTroops_' + r.id + '\').value)||0;var res=AuthorityComplete.suppressRevolt(\'' + r.id + '\',v);if(res.ok)toast(\'已调 \'+v+\' 兵镇压\');this.closest(\'div[style*=position]\').remove();if(typeof _openHujiPanel===\'function\')_openHujiPanel();">调兵镇压</button>';
-        }
-        }
+        if (r._suppressionOrder && r.source !== 'revolt-cases') body += ' · <span style="color:var(--amber-400);">官军 ' + r._suppressionOrder.strength + ' 讨伐中</span>';
         body += '</div>';
       });
-      if (ongoing.some(function(r) { return r.source !== 'revolt-cases'; })) body += '<div style="font-size:0.71rem;color:var(--txt-d);margin-top:4px;">需调兵力约 3×民变规模方可速平；不足则拉锯。</div>';
-      if (ongoing.some(function(r) { return r.source === 'revolt-cases'; })) body += '<div style="font-size:calc(var(--text-xs) * 0.75);color:var(--txt-d);margin-top:4px;">民变案起事的各股：选一支军发兵剿，不在那一州的先行军，到了交战，按兵力、士气、训练、主将、地形结算。</div>';
     }
   }
   // 军队调动 UI
@@ -1364,15 +1352,8 @@ function _renderMinxinFullPanel() {
         h += '<div style="padding:6px;margin:3px 0;background:var(--bg-2);border-left:3px solid var(--vermillion-400);border-radius:3px;font-size:0.74rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
         h += '<b style="color:var(--vermillion-300);">[' + (lv.name || ('L'+r.level)) + ']</b>';
         h += (r.region || '某地') + ' · ' + _barFmtNum(r.scale||5000);
-        if (r.source === 'revolt-cases' && window.TM && TM.RevoltSuppress) {
-          // 民变案落地的民变（民2d-1）：选一支军发兵剿（tm-revolt-suppress.js）
-          h += TM.RevoltSuppress.panelHtml(GM, r, { idPrefix: '_revSupM_' });
-        } else if (!r._suppressionOrder) {
-          h += ' <input type="number" id="_revT_' + r.id + '" value="' + ((r.scale||5000)*3) + '" style="width:80px;padding:1px 4px;font-size:0.7rem;">';
-          h += ' <button class="btn" style="font-size:0.71rem;padding:2px 6px;" onclick="var v=parseInt(document.getElementById(\'_revT_' + r.id + '\').value)||0;var rr=AuthorityComplete.suppressRevolt(\'' + r.id + '\',v);if(rr.ok)toast(\'已调 \'+v+\' 兵\');">调兵镇压</button>';
-        } else {
-          h += ' <span style="color:var(--amber-400);">官军 ' + r._suppressionOrder.strength + ' 讨伐中</span>';
-        }
+        // 只看（同志 11-15）：剿、抚、赈从诏令进，由推演判；旧档里还挂着的调兵令照写
+        if (r._suppressionOrder && r.source !== 'revolt-cases') h += ' <span style="color:var(--amber-400);">官军 ' + r._suppressionOrder.strength + ' 讨伐中</span>';
         h += '</div>';
       });
     }

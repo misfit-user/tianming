@@ -139,13 +139,14 @@ assertOk(AC.handleCrisisSurfaceResponse({
 }), 'tinyi outcome restores lost authority');
 assert(gm.huangwei.lostAuthorityCrisis.active === false, 'tinyi crisis bridge should clear lost authority crisis');
 
-assertOk(AC.handleCrisisSurfaceResponse({
+// \u6c11\u53d8\u4e0d\u518d\u4ece\u5371\u673a\u56de\u590d\u7684\u5b57\u773c\u91cc\u8ba4\uff08\u540c\u5fd7 11-15\u300c\u6c11\u53d8\u662f\u6cbb\u7406\u7684\u4e00\u90e8\u5206\u300d\uff1a\u527f\u3001\u629a\u3001\u8d48\u8d70\u8bcf\u4ee4\uff0c\u7531\u63a8\u6f14\u5224\uff09
+const hy = AC.handleCrisisSurfaceResponse({
   channel: 'hongyan',
   revoltId: 'rv-shaanxi',
   troops: 90000,
   text: '\u9e3f\u96c1\u5bc6\u4ee4\uff1a\u53d1\u5175\u9655\u897f\u5e73\u4e71\uff0c\u52ff\u4f7f\u6c11\u53d8\u8513\u5ef6\u3002'
-}), 'hongyan order suppresses revolt');
-assert(gm.minxin.revolts[0].status === 'suppressed', 'hongyan crisis bridge should suppress named revolt');
+});
+assert(hy && hy.skipped && gm.minxin.revolts[0].status === 'ongoing', 'hongyan text about revolt no longer suppresses it, got ' + JSON.stringify(hy));
 
 assertOk(AC.handleCrisisSurfaceResponse({
   channel: 'memorial',
@@ -155,7 +156,7 @@ assertOk(AC.handleCrisisSurfaceResponse({
 }), 'memorial reply handles corruption case');
 assert(gm.corruption.history.exposedCases.some(c => c.id === 'case-fiscal-crisis'), 'corruption case should move to exposed history');
 
-assert(gm._crisisPlayerActions.filter(a => a.ok).length >= 6, 'surface crisis actions should be audited');
-assert(gm._crisisSurfaceResponses && gm._crisisSurfaceResponses.length >= 6, 'surface bridge should retain response ledger');
+assert(gm._crisisPlayerActions.filter(a => a.ok).length >= 5, 'surface crisis actions should be audited');   // 民变一类 11-15 撤了，少一条
+assert(gm._crisisSurfaceResponses && gm._crisisSurfaceResponses.length >= 5, 'surface bridge should retain response ledger');
 
 console.log('[smoke-crisis-player-surface-bridge] PASS crisis player surface bridge');

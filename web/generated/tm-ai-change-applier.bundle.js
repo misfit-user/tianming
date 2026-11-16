@@ -6242,10 +6242,15 @@
           blocked++;
         } else {
           var battleFailures = Array.isArray(_tmPreflightCollector) ? _tmPreflightCollector : [];
-          var winner = _tmStrictIdentity(G.facs, winnerRef, "faction", "battleResult", null, battleFailures, {
+          var military = global.MilitarySystems || global.TM && global.TM.MilitarySystems, bandSides = {};
+          var bandSide = function(ref) {
+            if (!military || typeof military.battleBandSide !== "function" || !military.battleBandSide(ref, br, G)) return null;
+            return bandSides[ref] || (bandSides[ref] = { id: String(ref), name: String(ref) });
+          };
+          var winner = bandSide(winnerRef) || _tmStrictIdentity(G.facs, winnerRef, "faction", "battleResult", null, battleFailures, {
             identityFields: ["winnerFactionId", "winnerFaction", "winner"]
           });
-          var loser = _tmStrictIdentity(G.facs, loserRef, "faction", "battleResult", null, battleFailures, {
+          var loser = bandSide(loserRef) || _tmStrictIdentity(G.facs, loserRef, "faction", "battleResult", null, battleFailures, {
             identityFields: ["loserFactionId", "loserFaction", "loser"]
           });
           if (!winner || !loser || winner === loser) {
@@ -6631,6 +6636,7 @@
       }
       if (r && r.duplicate && arguments[3] !== r.result) return;
       if (r && r.ok) {
+        if (r.result) r.result._mainWriteback = true;
         if (applied) {
           if (!applied.semantic) applied.semantic = {};
           applied.semantic.battleResult = 1;

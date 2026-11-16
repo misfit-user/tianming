@@ -43,11 +43,21 @@
     add(br.defenderArmyId || br.defenderArmy || br.defender, { loss: br.casualties && br.casualties.defender }, 'defender');
     return list;
   }
+  function realFaction(ref, G) {
+    return !!(ref && Array.isArray(G.facs) && G.facs.some(function(f) { return f && (f.id === ref || f.name === ref); }));
+  }
+  // 民变的军（民变案起事立的「某某部」，军上带 _revoltBand）还不是势力：战果里这一方的势力写它军上的势力（「民变」），
+  //   认得出参战的有这样一支军就认（同志 11-15：剿的仗跟别的仗一样由推演报战果）
+  function bandSideFaction(ref, br, G) {
+    if (!ref) return false;
+    var key = String(ref);
+    return battleParticipants(br, G).some(function(p) { return p.army && p.army._revoltBand && String(p.army.faction || '') === key; });
+  }
   function validateBattleResult(br, G) {
     var errors = []; br = br || {}; G = G || _root();
     var winner = br.winnerFactionId || br.winnerFaction || br.winner, loser = br.loserFactionId || br.loserFaction || br.loser;
     if (!winner || !loser || battleFactionName(winner, G) === battleFactionName(loser, G)) errors.push('战果须有不同的胜败双方');
-    [winner, loser].forEach(function(ref) { if (ref && Array.isArray(G.facs) && G.facs.length && !G.facs.some(function(f) { return f && (f.id === ref || f.name === ref); })) errors.push('势力不存在·' + ref); });
+    [winner, loser].forEach(function(ref) { if (ref && Array.isArray(G.facs) && G.facs.length && !realFaction(ref, G) && !bandSideFaction(ref, br, G)) errors.push('势力不存在·' + ref); });
     ['attacker','defender'].forEach(function(side) {
       var loss = Number(br.casualties && br.casualties[side] || 0), ref = br[side + 'ArmyId'] || br[side + 'Army'] || br[side];
       if (!isFinite(loss) || loss < 0 || loss > 5000000) errors.push('casualties 不合理·' + side);
@@ -84,6 +94,29 @@
     return totals;
   }
 
+  // 同一仗不记两遍：主推演写回时已结算（或挂着待亲裁）的仗，军事子调用换个编号再报——
+  //   报的攻守两支军都在主推演那一仗里，就认作那一仗，不再结算（同编号的由 findSettledBattle 挡）。
+  //   只认主推演报的（应用器结算时打 _mainWriteback、挂着待亲裁的有 _applierAftermathPending）；子调用自己一批里同一对军打两仗照旧各记各的。
+  function principalArmyIds(br, G) {
+    var att = _findArmy(br.attackerArmyId || br.attackerArmy || br.attacker, G), def = _findArmy(br.defenderArmyId || br.defenderArmy || br.defender, G);
+    if (!att || !def || att === def) return null;
+    return [String(att.id || att.armyId || att.name), String(def.id || def.armyId || def.name)];
+  }
+  function sameFight(br, G) {
+    var pair = principalArmyIds(br, G);
+    if (!pair) return null;
+    var row = ((G && G.battleHistory) || []).filter(function(r) {
+      if (!r || !(r._mainWriteback || r._applierAftermathDone) || Number(r.turn || 0) !== Number(G.turn || 0)) return false;
+      var ids = (r.affectedArmies || []).map(function(e) { return String(e && e.armyId || ''); });
+      return ids.indexOf(pair[0]) >= 0 && ids.indexOf(pair[1]) >= 0;
+    })[0];
+    if (row) return { ok: true, duplicate: true, result: row, applied: row.applied };
+    var pending = ((G && G._pendingAbstractBattles) || []).filter(function(p) {
+      var q = p && p !== br && p._applierAftermathPending && principalArmyIds(p, G);
+      return q && q.indexOf(pair[0]) >= 0 && q.indexOf(pair[1]) >= 0;
+    })[0];
+    return pending ? { ok: true, duplicate: true, deferred: true } : null;
+  }
   function consumeBattleResults(payload, G) {
     var events = Array.isArray(payload.battleResults) ? payload.battleResults.slice() : [], seen = {}, accepted = [], rejected = [], totals = {};
     if (payload.battleResult && events.indexOf(payload.battleResult) < 0) events.unshift(payload.battleResult);
@@ -91,9 +124,10 @@
       if (!br || typeof br !== 'object') return;
       var id = br.battleId || br.id;
       if (id && seen[id]) return; if (id) seen[id] = true;
-      var valid = validateBattleResult(br, G);
+      var same = sameFight(br, G);   // 先认是不是已结算的那一仗：再报的伤亡常按结算前的兵数写，过不了校验，也还是那一仗
+      var valid = same ? { ok: true } : validateBattleResult(br, G);
       if (!valid.ok) { rejected.push({ battleId:id, errors:valid.errors }); if (payload.battleResult === br) payload.battleResult = null; return; }
-      var receipt = ms.applyBattleResult(br, G);
+      var receipt = same || ms.applyBattleResult(br, G);
       accepted.push({ battleId:id, receipt:receipt });
       var rows = receipt && receipt.deferred ? battleParticipants(br,G).map(function(p) { return { faction:p.army.faction, loss:p.entry.loss }; })
         : receipt && receipt.ok && receipt.result ? receipt.result.affectedArmies || [] : [];
@@ -111,18 +145,25 @@
     ensureBattleId(br,G);
     var prior = findSettledBattle(br, G);
     if (prior) return { ok: true, duplicate: true, result: prior, applied: prior.applied };
+    // 民变的军打赢、战报写了占城：先不落城（「民变」不是势力；攻下一座城立成真势力在民变「成势」那一刀接），城留在战报上
+    var win = br.winnerFactionId || br.winnerFaction || br.winner;
+    if (Array.isArray(br.occupiedCityIds) && br.occupiedCityIds.length && !realFaction(win, G) && bandSideFaction(win, br, G)) {
+      br._bandOccupiedCityIds = br.occupiedCityIds; br.occupiedCityIds = [];
+    }
     var result = original.call(ms, br, G); // 保留原写口的ID/名称存储契约；归一化仅用于引用判定
     if (result && result.ok && global.GuokuEngine && global.GuokuEngine.syncBattleCasualtyBonus) global.GuokuEngine.syncBattleCasualtyBonus(G);
     if (result && result.ok && br._applierAftermathPending && !result.result._applierAftermathDone && typeof global._applyBattleResult === 'function') {
       result.result._applierAftermathDone = true;
       global._applyBattleResult(G, { battleResult: br }, null, result.result); // 真实结果对象作为内部凭据，JSON输入不能伪造身份
     }
+    // 胜仗主将记功：推演报的仗（主推演、军事子调用、亲征结的）都在这里落定时记，大小跟推演给的皇威量走（honorScale）
+    if (result && result.ok && !result.deferred && result.result) honorOne(result.result, G, honorScale(br));
     return result;
   };
   function dispatchComputedBattle(battle, result, attackerArmy, defenderArmy, G) {
     if (!(global.TMBattleTurn && global.TMBattleTurn.enabled && global.TMBattleTurn.enabled(G))) return false;
     var attackerWon = result.verdict !== '败北', draw = result.verdict === '僵持';
-    var event = { battleId: battle.id || result.battleId, location: battle.location,
+    var event = { battleId: battle.id || result.battleId, location: battle.location, engineVerdict: result.verdict,
       winnerFactionId: draw ? '僵持' : attackerWon ? attackerArmy.faction : defenderArmy.faction,
       loserFactionId: draw ? '僵持' : attackerWon ? defenderArmy.faction : attackerArmy.faction,
       attackerArmyId: attackerArmy.id || attackerArmy.name, defenderArmyId: defenderArmy.id || defenderArmy.name,
@@ -175,42 +216,60 @@
     win = win.filter(Boolean); lose = lose.filter(Boolean);
     return { scale: scale, winnerFaction: wf, loserFaction: lf, winners: win, losers: lose, vsRevolt: lose.some(band), byRevolt: win.some(band) };
   }
-  // 胜仗主将记功（民2d-1 续，同志 11-15「胜利的将军应该可以加威望和贤能」）：本回合每一仗，打赢那一方领兵的主将——
+  // 胜仗主将记功（民2d-1 续，同志 11-15「胜利的将军应该可以加威望和贤能」）：每一仗，打赢那一方领兵的主将——
   //   名望照名望事件表（CharEconEngine.FAME_EVENTS）的「克捷」，剿民变的记「平乱」，大胜足数、小胜减半〔初值〕；
   //   贤能记军功，大胜 10×、小胜 4×升迁尺度（TMPromotion.SCALE，京察拔擢是 10×）〔初值〕，进功名近账；我方的主将事件流记一笔。
-  //   不记：AI 报的仗（写回时打了 _applierAftermathDone，功过由推演自己定）、僵持、玩家本人（皇帝的威在皇威）、民变的军、已死的、认不出主将的。
-  var HONOR = { fame: { '大胜': 1, '小胜': 0.5 }, merit: { '大胜': 10, '小胜': 4 } };
+  //   推演报的仗（11-15 收口：剿的仗跟别的仗一样由推演判）在战果写口落定时记（上面 applyBattleResult），大小跟推演给的皇威量走：
+  //   6 以上（P-5TK 提示词「灭国级大捷/收复重镇 6~8」）按大胜，其余与没给量的按小胜；引擎结的仗按引擎的大胜小胜。
+  //   不记：僵持、玩家本人（皇帝的威在皇威）、民变的军、已死的、认不出主将的；败将不扣（待定）。一仗只记一次（_honorChecked）。
+  var HONOR = { fame: { '大胜': 1, '小胜': 0.5 }, merit: { '大胜': 10, '小胜': 4 }, bigHuangwei: 6 };
+  function honorScale(br) {
+    var hw = Number(br && br.huangweiDelta);
+    if (isFinite(hw) && hw >= HONOR.bigHuangwei) return '大胜';
+    if (br && (br.verdict === '大胜' || br.engineVerdict === '大胜')) return '大胜';
+    return '小胜';
+  }
+  function honorOne(br, G, scale) {
+    var CE = global.CharEconEngine, BA = global.TMBattleAdapter, out = [];
+    if (!br || typeof br !== 'object' || br._honorChecked) return out;
+    br._honorChecked = true;
+    if (!CE || !BA || typeof BA.resolveCommander !== 'function') return out;
+    var vic = battleVictors(br, G);
+    if (!vic || vic.byRevolt) return out;
+    var sc = scale === '大胜' || scale === '小胜' ? scale : vic.scale;
+    var SC = (global.TMPromotion && Number(global.TMPromotion.SCALE)) || 15, pf = battlePlayerFaction(G);
+    var foe = vic.losers[0] ? String(vic.losers[0].name || '') : '', seen = [];
+    vic.winners.forEach(function(a) {
+      var who = BA.resolveCommander(a.commander, G, a.commanderId).character;
+      if (!who || seen.indexOf(who) >= 0 || who.isPlayer || who.alive === false || who.dead === true) return;
+      seen.push(who);
+      var key = vic.vsRevolt ? 'suppress_revolt' : 'military_victory';
+      var fame = typeof CE.applyFameEvent === 'function' ? CE.applyFameEvent(who, key, HONOR.fame[sc]) : 0;
+      var merit = typeof CE.adjustVirtueMerit === 'function' ? Math.round(HONOR.merit[sc] * SC) : 0;
+      if (merit) CE.adjustVirtueMerit(who, merit, '军功·' + sc + foe);
+      out.push({ battleId: br.battleId, name: who.name, key: key, fame: fame, merit: merit });
+      if (battleFactionName(a.faction, G) === pf && typeof global.addEB === 'function') {
+        global.addEB('功名', who.name + '（' + (a.name || '') + '）' + sc + foe + '，记军功：名望 +' + fame + '，贤能 +' + merit);
+      }
+    });
+    return out;
+  }
+  // 过回合 3.0 结仗之后：本回合引擎结的仗（推演报的在写口已记，带 _honorChecked）
   function honorBattleVictors(G) {
     G = G || _root();
-    var CE = global.CharEconEngine, BA = global.TMBattleAdapter, out = [];
-    if (!CE || !BA || typeof BA.resolveCommander !== 'function' || !Array.isArray(G._turnBattleResults)) return out;
-    var SC = (global.TMPromotion && Number(global.TMPromotion.SCALE)) || 15, pf = battlePlayerFaction(G);
+    var out = [];
+    if (!Array.isArray(G._turnBattleResults)) return out;
     G._turnBattleResults.forEach(function(br) {
       if (!br || br._honorChecked) return;
-      br._honorChecked = true;
-      if (br._applierAftermathDone) return;
-      var vic = battleVictors(br, G);
-      if (!vic || vic.byRevolt) return;
-      var foe = vic.losers[0] ? String(vic.losers[0].name || '') : '', seen = [];
-      vic.winners.forEach(function(a) {
-        var who = BA.resolveCommander(a.commander, G, a.commanderId).character;
-        if (!who || seen.indexOf(who) >= 0 || who.isPlayer || who.alive === false || who.dead === true) return;
-        seen.push(who);
-        var key = vic.vsRevolt ? 'suppress_revolt' : 'military_victory';
-        var fame = typeof CE.applyFameEvent === 'function' ? CE.applyFameEvent(who, key, HONOR.fame[vic.scale]) : 0;
-        var merit = typeof CE.adjustVirtueMerit === 'function' ? Math.round(HONOR.merit[vic.scale] * SC) : 0;
-        if (merit) CE.adjustVirtueMerit(who, merit, '军功·' + vic.scale + foe);
-        out.push({ battleId: br.battleId, name: who.name, key: key, fame: fame, merit: merit });
-        if (battleFactionName(a.faction, G) === pf && typeof global.addEB === 'function') {
-          global.addEB('功名', who.name + '（' + (a.name || '') + '）' + vic.scale + foe + '，记军功：名望 +' + fame + '，贤能 +' + merit);
-        }
-      });
+      if (br._applierAftermathDone) { br._honorChecked = true; return; }   // 推演报的仗走过写口（记过了或无可记）
+      out = out.concat(honorOne(br, G, null));
     });
     return out;
   }
   Object.assign(ms, { battleParticipants:battleParticipants, battleFactionName:battleFactionName, battlePlayerFaction:battlePlayerFaction,
     validateBattleResult:validateBattleResult, ensureBattleId:ensureBattleId, findSettledBattle:findSettledBattle, turnBattleCasualties:turnBattleCasualties, consumeBattleResults:consumeBattleResults, dispatchComputedBattle:dispatchComputedBattle,
-    battleTerrainKey:battleTerrainKey, battleVictors:battleVictors, honorBattleVictors:honorBattleVictors, BATTLE_HONOR:HONOR });
+    battleTerrainKey:battleTerrainKey, battleVictors:battleVictors, honorBattleVictors:honorBattleVictors, honorBattleScale:honorScale, BATTLE_HONOR:HONOR,
+    battleBandSide:bandSideFaction });
 })(typeof window !== 'undefined' ? window : globalThis);
 
 // Shared strength implementation; the public military function is a lazy forwarder.

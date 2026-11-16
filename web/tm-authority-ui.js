@@ -351,8 +351,7 @@
         body += '<div style="font-size:0.82rem;color:var(--vermillion-400);margin:10px 0 4px;">民变 ' + ongoing.length + ' 起</div>';
         ongoing.forEach(function(r) {
           body += '<div style="font-size:0.72rem;background:rgba(192,64,48,0.1);padding:4px 8px;margin:2px 0;">';
-          body += (r.region||'某地') + ' · L' + r.level + ' · ' + (r.cause||'？');
-          body += '<button class="btn" style="font-size:0.71rem;padding:2px 6px;margin-left:6px;" onclick="PhaseD.openRevoltInterventionPanel(\''+r.id+'\')">干预</button>';
+          body += (r.region||'某地') + ' · L' + r.level + ' · ' + (r.cause||'？');   // 只看：剿、抚、赈从诏令进（同志 11-15）
           body += '</div>';
         });
       }

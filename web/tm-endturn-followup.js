@@ -1074,6 +1074,17 @@
           });
         });
         if (p1 && p1.army_changes && p1.army_changes.length > 0) tp18 += '\u672C\u56DE\u5408\u519B\u4E8B\u53D8\u52A8\uFF1A' + p1.army_changes.map(function(a){return a.name+' \u5175'+a.soldiers_delta;}).join('\uFF1B') + '\n';
+        // 主推演报的仗在写回时已结算（上面的兵数是结算后的）：列出来，免得这里把同一仗再报一遍
+        try {
+          var _settled18 = (GM.battleHistory || []).filter(function(r){ return r && Number(r.turn || 0) === Number(GM.turn || 0); }).slice(-8);
+          if (_settled18.length) {
+            var _fac18 = function(ref){ return (typeof MilitarySystems !== 'undefined' && MilitarySystems.battleFactionName) ? MilitarySystems.battleFactionName(ref, GM) : (ref || '?'); };
+            tp18 += '【本回合已结算之战（伤亡已扣、胜负已定；勿再写 battleResult，勿再扣这几仗的伤亡，提到时沿用原 battleId）】\n';
+            _settled18.forEach(function(r){
+              tp18 += '  ' + (r.battleId || '?') + '：' + _fac18(r.winner) + '胜，' + _fac18(r.loser) + '败；' + (r.affectedArmies || []).map(function(e){ return (e && (e.name || e.armyId)) + '折' + Math.max(0, Number(e && e.loss) || 0); }).join('，') + '\n';
+            });
+          }
+        } catch(_settled18E) { _dbg('[sc18] settled battles cue failed:', _settled18E); }
         try {
           var _phase5Systems = (typeof MilitarySystems !== 'undefined' && MilitarySystems.getMilitarySystems) ? MilitarySystems.getMilitarySystems(GM) : null;
           if (_phase5Systems && _phase5Systems.length) {

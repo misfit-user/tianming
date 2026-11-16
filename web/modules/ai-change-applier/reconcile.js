@@ -1095,10 +1095,16 @@ export function createReconcile(deps) {
         blocked++;
       } else {
         var battleFailures = Array.isArray(_tmPreflightCollector) ? _tmPreflightCollector : [];
-        var winner = _tmStrictIdentity(G.facs, winnerRef, 'faction', 'battleResult', null, battleFailures, {
+        // 民变的军（民变案起事立的，军上势力写「民变」）还不是势力：这一方认参战的军，跟战果写口同一条规矩（MilitarySystems.battleBandSide）
+        var military = global.MilitarySystems || (global.TM && global.TM.MilitarySystems), bandSides = {};
+        var bandSide = function(ref) {
+          if (!military || typeof military.battleBandSide !== 'function' || !military.battleBandSide(ref, br, G)) return null;
+          return bandSides[ref] || (bandSides[ref] = { id: String(ref), name: String(ref) });
+        };
+        var winner = bandSide(winnerRef) || _tmStrictIdentity(G.facs, winnerRef, 'faction', 'battleResult', null, battleFailures, {
           identityFields:['winnerFactionId', 'winnerFaction', 'winner']
         });
-        var loser = _tmStrictIdentity(G.facs, loserRef, 'faction', 'battleResult', null, battleFailures, {
+        var loser = bandSide(loserRef) || _tmStrictIdentity(G.facs, loserRef, 'faction', 'battleResult', null, battleFailures, {
           identityFields:['loserFactionId', 'loserFaction', 'loser']
         });
         if (!winner || !loser || winner === loser) {
@@ -1458,6 +1464,7 @@ export function createReconcile(deps) {
     }
     if (r && r.duplicate && arguments[3] !== r.result) return; // 只允许真实结算回调补一次后效，重试不重复加皇威
     if (r && r.ok) {
+      if (r.result) r.result._mainWriteback = true; // 主推演报的仗：军事子调用换编号再报同一仗时认它（MilitarySystems.consumeBattleResults）
       if (applied) {
         if (!applied.semantic) applied.semantic = {};
         applied.semantic.battleResult = 1;

@@ -498,6 +498,9 @@ inst._imprisonedTurn = GM.turn||0;
               directive_compliance: Array.isArray(p1.directive_compliance) ? p1.directive_compliance : [],
               regent_decisions: Array.isArray(p1.regent_decisions) ? p1.regent_decisions : []
             };
+            // 主推演报的仗：提示词要它出 battleResult、应用器也有结算它的一段（军胜皇威 P-5TK 也在那里），
+            //   这份清单原先漏了它，主推演报的仗从没落过账；预检没认出的（势力对不上）已在上面单条剔掉记账
+            if (p1.battleResult && typeof p1.battleResult === 'object' && !Array.isArray(p1.battleResult)) _mainWritebackBatch1.battleResult = p1.battleResult;
             var _applyRes1 = applyAITurnChanges(_mainWritebackBatch1);
             if (_applyRes1 && _strictPreflight.dropped && _strictPreflight.dropped.length) {
               _applyRes1.applied = _applyRes1.applied || {};
@@ -680,7 +683,7 @@ inst._imprisonedTurn = GM.turn||0;
                 });
               } else if (tc.name === 'record_revolt_events' && Array.isArray(tc.input.events)) {
                 tc.input.events.forEach(function(r) {
-                  if (r && r.action && r.region) _patch.revolt_events.push({ action: r.action, region: r.region, leader: r.leader||'', scale: Number(r.scale)||0, reason: r.reason||'', army: r.army||'' });
+                  if (r && r.action && r.region) _patch.revolt_events.push({ action: r.action, region: r.region, leader: r.leader||'', scale: Number(r.scale)||0, reason: r.reason||'', leaderFate: r.leaderFate||'' });
                 });
               } else if (tc.name === 'record_disaster_events' && Array.isArray(tc.input.events)) {
                 tc.input.events.forEach(function(d) {
@@ -844,16 +847,16 @@ inst._imprisonedTurn = GM.turn||0;
                     }
                   }
                 } else if (r.action === 'suppress' || r.action === 'appease') {
-                  // 民变重做·民2d-1（11-15）：说「镇压」的落到民变案的一股，不直接判平——照它说的派一支官军去剿
-                  //   （TM.RevoltSuppress.fromAI：点了军名用它点的，没点的派在途来此、本州、本省最先一支；本省无兵不剿），
-                  //   胜负下次过回合由战斗引擎结算。不是民变案的旧式民变、剧本没开战斗结算的，照旧判平。招抚在民2d-2。
+                  // 民变重做·收口（同志 11-15「民变是治理的一部分」）：推演说「镇压」「招抚」就是它判定这股平了、受抚了——
+                  //   落到民变案的一股（认首领、认州、只说到省的挑那省人多的），由 TM.RevoltBand.conclude 了结：首领去向取它给的
+                  //   （没给当脱身），剿平的接皇威（平乱），人数在过回合 6.1455 善后。不是民变案的旧式民变照旧判平。
                   var _supR = null;
-                  if (r.action === 'suppress' && typeof TM !== 'undefined' && TM.RevoltSuppress && typeof TM.RevoltSuppress.fromAI === 'function') {
-                    try { _supR = TM.RevoltSuppress.fromAI(GM, { by: 'reconcile', region: r.region, leader: r.leader, army: r.army, reason: r.reason }); }
-                    catch (_supRE) { _supR = null; (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_supRE, 'reconcile revolt fromAI:') : console.warn('[Reconcile] revolt fromAI failed:', _supRE); }
+                  if (typeof TM !== 'undefined' && TM.RevoltBand && typeof TM.RevoltBand.conclude === 'function') {
+                    try { _supR = TM.RevoltBand.conclude(GM, { by: '', endedBy: 'reconcile', region: r.region, leader: r.leader, leaderFate: r.leaderFate, reason: r.reason, status: r.action === 'suppress' ? 'suppressed' : 'appeased' }); }
+                    catch (_supRE) { _supR = null; (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_supRE, 'reconcile revolt conclude:') : console.warn('[Reconcile] revolt conclude failed:', _supRE); }
                   }
-                  if (_supR && _supR.handled) return;   // 派兵是剿令，不是民变数目的增减：不记进本回合变量
-                  var openR = GM.minxin.revolts.find(function(x){return x && x.status === 'ongoing' && x.region === r.region;});
+                  if (_supR && _supR.handled) _revChanged = true;
+                  var openR = _supR && _supR.handled ? null : GM.minxin.revolts.find(function(x){return x && x.status === 'ongoing' && x.region === r.region;});
                   if (openR) {
                     _revChanged = true;
                     openR.status = (r.action === 'suppress') ? 'suppressed' : 'appeased';

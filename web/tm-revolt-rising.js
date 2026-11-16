@@ -15,7 +15,7 @@
 // 民2b（11-14）：AI 宣布的起义并进案（TM.RevoltCases.riseFromAI）也走这里落地——首领、骨干按 AI 给的名字先在档里找，
 //   找不到用这个名字按出身新生（出身照 AI 说的：教门、兵变、盐枭、饥民、佃农）；人数照样从户口拨，不取 AI 报的兵数；
 //   口号、诉求、教派这些原话当文字留在民变上。
-// 民2d-1（11-15）：落地即在军册立这股的军（tm-revolt-suppress.js ensureArmy）：兵数＝人数 × 本州丁口比，不是写死的兵数。
+// 民2d-1（11-15）：落地即在军册立这股的军（tm-revolt-band.js ensureArmy）：兵数＝人数 × 本州丁口比，不是写死的兵数。
 // 本模块不判起不起（那是 tm-revolt-cases.js），只把已判定起事的案落成人和数。
 // ============================================================
 (function (global) {
@@ -114,6 +114,7 @@
     arr(G.chars).forEach(function (ch) {
       if (!ch || ch.alive === false || ch.dead === true || isPlayerChar(G, ch)) return;
       if (ch._imprisoned || ch.imprisoned || ch._captured || ch.captured) return;   // 在押、被俘的不当首领（民2d-1：剿破被擒的下狱）
+      if (ch._revoltAppeasedTurn != null || ch._cooptedTurn != null) return;       // 受过抚、归顺了的不由代码再挑（复叛要推演点名，走 namedLeader）
       if (num(ch.age, 30) < CFG.minLeaderAge) return;
       var fac = str(ch.faction || ch.factionId);
       var rebel = !!rebels[fac];
@@ -301,9 +302,9 @@
     c.revoltId = revolt.id;
     c.leaderId = leader.id;
     c.followers = got.n;
-    // 起事即立一支军（民2d-1，同志 11-14 定）：军册里「某某部」，首领领兵，驻本州；剿走军事系统（tm-revolt-suppress.js）
-    if (TM.RevoltSuppress && typeof TM.RevoltSuppress.ensureArmy === 'function') {
-      try { TM.RevoltSuppress.ensureArmy(G, revolt, L); } catch (_) {}
+    // 起事即立一支军（民2d-1，同志 11-14 定）：军册里「某某部」，首领领兵，驻本州；与官军怎么打由推演报战果（tm-revolt-band.js）
+    if (TM.RevoltBand && typeof TM.RevoltBand.ensureArmy === 'function') {
+      try { TM.RevoltBand.ensureArmy(G, revolt, L); } catch (_) {}
     }
     if (typeof global.addEB === 'function') {
       try {

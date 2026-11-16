@@ -12,10 +12,4 @@ for (const row of manifest.files) {
   assert.strictEqual(crypto.createHash('sha256').update(content).digest('hex'), row.sha256);
   assert.strictEqual(content.subarray(0, 4).toString('hex'), '0061736d');
 }
-const recall = fs.readFileSync(path.join(web, 'tm-semantic-recall.js'), 'utf8');
-const worker = fs.readFileSync(path.join(web, 'tm-semantic-worker.js'), 'utf8');
-assert(recall.includes("wasm.wasmPaths = semanticAssetURL('./vendor/transformers/');"));
-assert(recall.includes("new Worker(semanticAssetURL('./tm-semantic-worker.js'), { type: 'module' })"));
-assert(worker.includes('wasm.wasmPaths = localWasmRoot;'));
-assert(worker.includes('new URL(localWasmRoot, self.location.href).href'));
 console.log('PASS semantic offline assets: pinned WASM hashes, local roots and worker entry');

@@ -11,22 +11,23 @@ const main = fs.readFileSync(path.join(web, 'tm-endturn-ai.js'), 'utf8');
 const c = { console: { log() {}, warn() {}, error() {} }, TM: { Endturn: { AI: {} } }, Date };
 c.window = c; vm.createContext(c);
 for (const file of ['tm-ai-schema.js', 'tm-ai-output-validator.js', 'tm-endturn-ai-sc1-budget.js']) vm.runInContext(fs.readFileSync(path.join(web, file), 'utf8'), c, { filename: file });
-for (const name of ['_hasSc1StructuredResult', '_hasExpectedJsonKey', '_buildGenericArrayObjectSchema', '_buildSc1dJsonSchema', '_buildSc15JsonSchema', '_buildSc15nJsonSchema', '_buildSc16JsonSchema', '_buildSc17JsonSchema', '_buildSc18JsonSchema', '_buildSc2JsonSchema', '_buildSc25cJsonSchema', '_buildSc27JsonSchema', '_buildSc28JsonSchema']) vm.runInContext(functionSource(main, name), c, { filename: 'tm-endturn-ai.js:' + name });
+for (const name of ['_hasSc1StructuredResult', '_hasExpectedJsonKey']) vm.runInContext(functionSource(main, name), c, { filename: 'tm-endturn-ai.js:' + name });
 vm.runInContext('var injectedResponseFor = ' + responseFor.toString() + ';', c);
 const ajv = new Ajv({ allErrors: true });
 const builders = {
   sc1: c.TM.Endturn.AI.subcalls._buildSc1JsonSchema, sc1q: c.TM.Endturn.AI.subcalls._buildSc1qJsonSchema,
-  sc1b: c.TM.Endturn.AI.subcalls._buildSc1bJsonSchema, sc1c: c.TM.Endturn.AI.subcalls._buildSc1cJsonSchema,
-  sc1d: c._buildSc1dJsonSchema, sc15: c._buildSc15JsonSchema, sc15n: c._buildSc15nJsonSchema,
-  sc16: c._buildSc16JsonSchema, sc17: c._buildSc17JsonSchema, sc18: c._buildSc18JsonSchema,
-  sc2: c._buildSc2JsonSchema, 'sc25c.tactical': c._buildSc25cJsonSchema,
-  'sc25c.strategic': c._buildSc25cJsonSchema, sc27: c._buildSc27JsonSchema, sc28: c._buildSc28JsonSchema
+  sc1b: c.TM.Endturn.AI.subcalls._buildSc1bJsonSchema, sc1c: c.TM.Endturn.AI.subcalls._buildSc1cJsonSchema
 };
+// 游戏只给这四个子调用的请求带 schema；其余子调用没有请求侧 schema，只核对注入用的回应前后一致。
+const kinds = Object.keys(builders).concat(['sc1d', 'sc15', 'sc15n', 'sc16', 'sc17', 'sc18', 'sc2', 'sc25c.tactical', 'sc25c.strategic', 'sc27', 'sc28']);
 let passed = 0;
-for (const [kind, build] of Object.entries(builders)) {
+for (const kind of kinds) {
+  const build = builders[kind];
   const response = responseFor(kind, '');
-  const validate = ajv.compile(JSON.parse(JSON.stringify(build().schema)));
-  assert(validate(response), kind + ': ' + JSON.stringify(validate.errors));
+  if (build) {
+    const validate = ajv.compile(JSON.parse(JSON.stringify(build().schema)));
+    assert(validate(response), kind + ': ' + JSON.stringify(validate.errors));
+  }
   assert.equal(JSON.stringify(c.injectedResponseFor(kind, '')), JSON.stringify(response), 'renderer injection is self-contained: ' + kind);
   if (/^sc1(?:b|c)?$/.test(kind)) {
     const checked = c.TM.validateAIOutput(response, kind, 'turn-full');
@@ -34,7 +35,7 @@ for (const [kind, build] of Object.entries(builders)) {
     assert.equal(checked.stats.unknownKeys, 0, kind + ' cannot mix other subcall schemas');
     assert.equal(checked.warnings.length, 0, kind + ': ' + JSON.stringify(checked.warnings));
   }
-  console.log('PASS real schema and isolated renderer fixture ' + kind); passed++;
+  console.log('PASS ' + (build ? 'real schema and ' : '') + 'isolated renderer fixture ' + kind); passed++;
 }
 const mainResponse = responseFor('sc1', '');
 assert.equal(c._hasSc1StructuredResult(mainResponse), true, 'SC1 must pass the actual substantive-result gate');
@@ -124,8 +125,6 @@ async function directProducerChecks() {
   for (const file of ['tm-border-invasion.js', 'tm-revolt-inference.js']) d.load(file);
   const borderPrompt = '你是天命推演引擎的外患演绎官。以下敌国各有心思';
   const revoltPrompt = '你是天命推演引擎的民变演绎官。天下汹汹';
-  assert(fs.readFileSync(path.join(web, 'tm-border-invasion.js'), 'utf8').includes(borderPrompt));
-  assert(fs.readFileSync(path.join(web, 'tm-revolt-inference.js'), 'utf8').includes(revoltPrompt));
   assert.equal(d.TM.BorderInvasion._applyInvasionActions(d.GM, responseFor('', borderPrompt)).applied, 0);
   assert.equal(d.TM.RevoltInference._applyActions(d.GM, responseFor('', revoltPrompt)).applied, 0);
   assert.throws(() => responseFor('', '你是天命推演引擎的国变演绎官。京师已陷'), /unsupported/);

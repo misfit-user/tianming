@@ -142,11 +142,6 @@ function main() {
   assert(Army.findArmyForAIChange(ctx.GM, '皇太极') === findArmy(ctx, '后金·两黄旗(汗亲领)'), '主帅反查精确：皇太极→两黄旗·不串两红旗');
 
   // ── [D] prompt 源契约：option 1 硬约束在位（防被静默改掉·治 AI 纯叙事不吐结构化的情况）──
-  const promptSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
-  assert(promptSrc.indexOf('折损会落空') >= 0 && promptSrc.indexOf('精确番号或其主帅姓名') >= 0,
-    '[D] army_changes 提示词含「折损必落结构化 + name 用精确番号/主帅名」硬约束');
-  assert(promptSrc.indexOf('伤亡定位') >= 0 && promptSrc.indexOf('引擎无法定位到具体军') >= 0,
-    '[D] battleResult 提示词含「败方军队引用须精确番号/主帅名」硬约束');
 
   console.log(`smoke-enemy-casualty-routing: ${pass} assertions PASS`);
 }

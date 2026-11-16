@@ -4,7 +4,6 @@
 
 const assert = require('assert');
 const fs = require('fs');
-const path = require('path');
 
 const picker = require('./lib-smoke-select.js');
 
@@ -79,8 +78,5 @@ const fixture = picker.select(real, ['web/scripts/lib-npc-action-fixture.js']);
 ok(fixture.selected.size > 0 && fixture.selected.size < total / 4, '改一份夹具，挑中用到它的那些 smoke（现 ' + fixture.selected.size + ' 支）');
 
 // ---------- 接线 ----------
-const runner = fs.readFileSync(path.join(__dirname, 'run-smokes.js'), 'utf8');
-ok(runner.includes("args.includes('--changed')") && runner.includes("require('./lib-smoke-select')"), 'run-smokes.js 接了 --changed');
-ok(/!smokes\.length && CHANGED[\s\S]{0,160}process\.exit\(0\)/.test(runner), '改动不牵涉任何 smoke 时正常退出，并说明这不算回归通过');
 
 console.log('[smoke-select-by-change] PASS ' + checks + ' checks');

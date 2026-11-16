@@ -5,7 +5,6 @@
 //     无 _radicalFrac 的阶层退回旧 satisfaction 阈值行为（rf=0·零影响·回归安全）。
 'use strict';
 
-const fs = require('fs');
 const path = require('path');
 const WEB = path.join(__dirname, '..');
 require(path.join(WEB, 'tm-engine-constants.js'));
@@ -45,9 +44,6 @@ ok(phaseOf({ name: '农户', satisfaction: 70, _radicalFrac: 0.4 }).phase === 'b
 ok(phaseOf({ name: '农户', satisfaction: 70, _radicalFrac: 0.39 }).phase === 'calm', '边界·rf=0.39+满意70→平静');
 
 // ── 6. 源契约 ──
-const src = fs.readFileSync(path.join(WEB, 'tm-class-engine.js'), 'utf8');
-ok(src.indexOf('Number(cls._radicalFrac)') >= 0 && src.indexOf('rf >= 0.6') >= 0 && src.indexOf('rf >= 0.4') >= 0,
-  '★refreshClassPhase 读 _radicalFrac 作起义触发(≥0.6/≥0.4)');
 
 console.log('\n[smoke-class-radical-revolt] ' + (failed ? 'FAIL' : 'PASS') + ' — ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed ? 1 : 0);

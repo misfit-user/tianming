@@ -79,9 +79,6 @@ assert(cEntry && typeof cEntry === 'object' && /^#/.test(cEntry.main || ''), '�
 assert(/^rgba\(/.test(cEntry.alpha || ''), 'alpha=rgba 串(与剧本色派生形状同构)');
 
 console.log('② 渲染层静态契约：updateMapColors 挂 occupiedBy 走表+压轴覆色');
-var mapSrc = fs.readFileSync(path.join(ROOT, 'tm-map-system.js'), 'utf8');
-assert(/_regionOccupiedMap/.test(mapSrc) && /d\.occupiedBy && Array\.isArray\(d\.mappedRegions\)/.test(mapSrc), '占据走表(division.occupiedBy→region.id)已挂');
-assert(/义军占据覆色压轴/.test(mapSrc) && /region\.occupiedBy = _occ/.test(mapSrc), '压轴覆色+region.occupiedBy 标记已挂(退据自动还色)');
 
 console.log('③ 挟君索赎：不挟君不得挟');
 var r3 = RI._applyActions(GM, { stocks: [{ id: 'rvR', actions: [{ type: 'ransom_demand', silverDemand: 500000 }] }] });

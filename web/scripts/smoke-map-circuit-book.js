@@ -448,17 +448,6 @@ setTimeout(async () => {
       assert.ok(d.edges < d.apartEdges, '外沿边数少于各州分开描时的边数');
     });
 
-    // VM 的模拟节点不实现 classList 与属性增删，关闭与刷新只能查源码；真浏览器里的行为由第五片的 Electron 验收覆盖
-    check('源码约束：关闭册页清掉通志标记，回合刷新会重画通志', () => {
-      const map = fs.readFileSync(path.join(WEB, 'phase8-formal-map.js'), 'utf8');
-      const refresh = map.slice(map.indexOf('function refreshMapPpop'), map.indexOf('function refreshMapFromRuntime'));
-      assert.match(refresh, /panelKind === 'circuit'[^\n]*openCircuitDossier\(pop\.dataset\.circuitKey/, '回合刷新时按省道 key 重画通志');
-      const dossier = fs.readFileSync(path.join(WEB, 'phase8-formal-map-dossier.js'), 'utf8');
-      const close = dossier.slice(dossier.indexOf('function closeMapDossier'), dossier.indexOf('function closeMapDossier') + 700);
-      assert.match(close, /classList\.remove\([^)]*'circuit-panel'/, '关闭时去掉 circuit-panel');
-      assert.match(close, /removeAttribute\('data-circuit-key'\)/, '关闭时清掉省道 key');
-    });
-
     // 第六片：改隶。入口只生成诏书建议；落地经回合末写工具，三处同步后通志与地图分组随之改
     check('改隶入口：方志「改隶」列候选、首府只给说明，通志「调整辖区」列划出划入，选定只写建议库', () => {
       const d = JSON.parse(run(`(function(){

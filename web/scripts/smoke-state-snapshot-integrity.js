@@ -175,9 +175,6 @@ function fakeIndexedDB(options) {
   vm.createContext(ctx);
   vm.runInContext(src, ctx);
 
-  ok(/DB_VERSION = 6/.test(src) && /LINEAGE_STORE = 'timeline_graph'/.test(src) && /campaignParent/.test(src) && /keyPath: 'id'/.test(src),
-    'v6 使用 compound snapshot id、父链索引与独立 timeline graph');
-  ok(/_buildSaveState/.test(src) && /format: 'idb', detach: true/.test(src), '快照复用完整纯存档 builder');
   ok(registeredHook && typeof registeredHook === 'function', 'after hook 已注册');
 
   function expectedLegacyTimeline(campaignId) {
@@ -362,9 +359,6 @@ function fakeIndexedDB(options) {
     && primaryDb.stats.fullStoreGetAll === fullReadsBeforeLRU,
   '205 条真实 payload 的 LRU 只读 keys 并精确保留最新 200 条');
 
-  ok(/_stillCurrent\(sourceGM, sourceP, sourceLoadGen, campaignId, timelineId\)/.test(src), 'timeTravel 在异步边界复验 GM/P/loadGen/campaign/timeline');
-  ok(/failed to save return point/.test(src) && /time-travel-rollback/.test(src), '返航点失败不恢复，目标恢复失败会回滚');
-  ok(/return saveSnapshot\(t\)\.then/.test(src), '自动 hook 显式返回保存链');
   ok(primaryDb.stats.indexGetAll > 0 && primaryDb.stats.indexGetAllKeys > 0 && primaryDb.stats.fullStoreGetAll === 0
     && !/objectStore\(STORE\)\.getAll\(\)/.test(src) && !/objectStore\(LINEAGE_STORE\)\.getAll\(\)/.test(src),
   '多战役快照列表按复合索引、keys-only LRU 和谱系主键读取，不执行全库 getAll');

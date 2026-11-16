@@ -71,8 +71,4 @@ assert.strictEqual(edge.srcRef, 'currentIssues:issue-new', 'edge should carry a 
 assert.strictEqual(edge.dstRef, 'currentIssues:issue-old', 'edge should carry a typed destination ref');
 assert.strictEqual(GM._memEdges.length, 1, 'issue edges should dedupe identical src/dst/type triples');
 
-const applySource = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
-assert(applySource.includes('MemoryIssueGovernance.normalizeIssueUpdate'), 'endturn apply should normalize current issue updates');
-assert(applySource.includes('MemoryIssueGovernance.recordIssueEdge'), 'endturn apply should write issue relation edges');
-
 console.log('smoke-memory-current-issues-governance ok');

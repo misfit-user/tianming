@@ -93,8 +93,6 @@ assert(riskWith(true, 0) < base, '⑫ 威胁0·压强×0.6·边警回落');
 assert(riskWith(true, 50) === base, '⑬ 威胁50=中性·×1.0 与旧行为等值');
 
 // ── 静态契约：开关+绍宋声明在位（家族序契约：tm-patches.js 先于 tm-patches-start.js 提及）──
-const patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-assert(patches.indexOf("'threatVarLinkEnabled'") >= 0, '⑭a tm-patches 设置开关已挂(threatVarLinkEnabled)');
 const shaosongEntry = officialSync.ENTRIES.find(function (entry) { return entry.key === 'shaosong'; });
 const shaosong = JSON.parse(fs.readFileSync(path.join(officialSync.SOURCE_DIR, shaosongEntry.filename), 'utf8'));
 const threatVar = Object.values(shaosong.variables || {}).reduce(function (all, rows) {

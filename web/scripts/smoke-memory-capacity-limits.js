@@ -53,7 +53,4 @@ assert(GM._memEdges.length <= 80, 'memory edges should be capped at 80 entries')
 assert(GM._memEdges.some((edge) => edge.dst === 'old:edge-139'), 'memory edges should retain newest edge');
 assert(!GM._memEdges.some((edge) => edge.dst === 'old:edge-0'), 'memory edges should prune oldest edge');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-capacity-limits.js'), 'verify-all should include memory capacity smoke');
-
 console.log('smoke-memory-capacity-limits ok');

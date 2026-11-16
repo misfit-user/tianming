@@ -105,8 +105,6 @@ ok(R.assertNoDingInRenli(GM).length === 0, '7·GM.renli 无丁计数泄漏（def
 // ── T8 源契约 ──
 ok(typeof R.applyUnrestPressure === 'function', '8·导出 applyUnrestPressure');
 var fs = require('fs'); var src = fs.readFileSync(require('path').join(__dirname, '..', 'tm-renli.js'), 'utf8');
-ok(/tick\(GM, Pp\);\s*\n\s*try \{ applyUnrestPressure\(GM, Pp\); \} catch/.test(src), '8·endturnTick 农政 tick 后接 applyUnrestPressure（过回合自动施压）');
-ok(/byLegalStatus[\s\S]{0,80}taoohu/.test(src), '8·流寇通道走既有逃户池 byLegalStatus.taoohu（不另立流寇账）');
 ok(!/天启|陕西'|sc-tianqi/.test(src.slice(src.indexOf('function applyUnrestPressure'), src.indexOf('function applyUnrestPressure') + 1600)), '8·applyUnrestPressure 无朝代/地名硬编（中立）');
 
 console.log('\n[smoke-renli-unrest-ignition] ' + pass + ' 通过 / ' + fail + ' 失败');

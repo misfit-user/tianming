@@ -27,10 +27,6 @@ const PORT_RE = /AuthorityEngines\s*&&\s*(?:global\.)?AuthorityEngines\.adjustHu
   const n = (src.match(/adjustHuang(wei|quan)\(/g) || []).length;
   ok(n >= minPorts, f + ' 走口调用 ≥' + minPorts + '(实际 ' + n + ')');
 });
-ok(/adjustHuangwei\('memorialObjection'/.test(read('tm-office-reform.js')), 'office-reform 改制代价走口');
-ok(/adjustHuangwei\('courtScandal', -8/.test(read('tm-prophecy.js')), 'prophecy 顶撞受挫走口');
-ok(/adjustHuangwei\(delta > 0 \? 'culturalAchievement'/.test(read('tm-keju-runtime.js')), 'keju-runtime 帮手接真引擎(注释终于名副其实)');
-ok(/adjustHuangwei\('privateDecision', 1/.test(read('tm-tinyi-v3.js')), 'tinyi 私决御前走口');
 
 // ── ② 真跑:neitang 公开 API 走口·台账真记账 ──
 const ctx = { console: console, Math: Math, JSON: JSON, Date: Date, setTimeout: function(){}, localStorage: { getItem: function(){return null;}, setItem: function(){} } };

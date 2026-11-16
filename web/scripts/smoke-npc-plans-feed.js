@@ -74,9 +74,5 @@ ctx.TMZhi.setView('dongtai');
 assert(main().indexOf('图 谋 前 瞻') < 0, '⑩ 无 active 图谋则前瞻段不显(不塌)');
 
 // ── 静态契约:消费端接线在 ──
-const src = fs.readFileSync(path.join(ROOT, 'tm-renwu-tuzhi.js'), 'utf8');
-assert(/function _dtPlansHtml\(\)/.test(src) && /function _dtActivePlans\(\)/.test(src), '⑪ _dtPlansHtml/_dtActivePlans 定义');
-assert(/ensurePlans/.test(src), '⑫ 读单一真源 ensurePlans(非直摸 _npcPlans 首选)');
-assert(/'\+ctrl\+plansHtml\+body\+'/.test(src) || /ctrl\+plansHtml\+body/.test(src), '⑬ renderDongtai innerHTML 已接入 plansHtml');
 
 console.log('[smoke-npc-plans-feed] pass assertions=' + n);

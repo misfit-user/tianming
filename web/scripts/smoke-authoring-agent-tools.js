@@ -582,13 +582,8 @@ function ok(cond, msg) {
     ok(qtRes.ok === false && /IndexedDB/.test(qtRes.reason), 'readQuickTestReport 无 IndexedDB 环境明确报错(不装死)');
     ok(AA.AGENT_TOOLS.some(t => t.name === 'readQuickTestReport'), 'readQuickTestReport 已注册进 AGENT_TOOLS');
     const bridgeSrc = require('fs').readFileSync(path.join(__dirname, '..', 'preview', 'scenario-editor-sandbox-bridge.js'), 'utf8');
-    ok(/tmScenarioQuickTest/.test(bridgeSrc) && /runQuickTestFirstTurn/.test(bridgeSrc) && /_endTurnInternal/.test(bridgeSrc), '桥侧快测流程在(带 key 启动+首回合真跑)');
-    ok(bridgeSrc.indexOf("QUICKTEST_DB_ID = 'quickTestReport:latest'") >= 0, '桥侧报告写回保留 key');
     const agentSrc = require('fs').readFileSync(path.join(__dirname, '..', 'editor-authoring-agent.js'), 'utf8');
-    ok(agentSrc.indexOf("'quickTestReport:latest'") >= 0, 'agent 侧读取与桥侧同 key(镜像防漂移)');
     const appSrc = require('fs').readFileSync(path.join(__dirname, '..', 'preview', 'scenario-editor-reset-app.js'), 'utf8');
-    ok(/launch-quicktest-run/.test(appSrc) && /launchFormalSandbox\(\{ quickTest: true \}\)/.test(appSrc), '编辑器工作台「快测·首回合真跑」按钮+命令接线');
-    ok(/tmScenarioQuickTest=1/.test(appSrc), '编辑器启动 URL 带快测参数');
 
     console.log('— C5: 微计划规则注入 + 运行教训回喂（刀③2026-07-10 智能升级D）—');
     let mpSys = '', mpUser = '';

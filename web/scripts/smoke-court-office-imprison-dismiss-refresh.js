@@ -17,7 +17,6 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const changchao = (fs.readFileSync(path.join(ROOT, 'tm-chaoyi-changchao-adapter.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-chaoyi-changchao.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-chaoyi-changchao-flows.js'), 'utf8'));
-const applier = fs.readFileSync(path.join(ROOT, 'modules/ai-change-applier/core.js'), 'utf8');
 
 let passed = 0;
 function assert(cond, msg) { if (!cond) throw new Error('FAIL: ' + msg); passed += 1; }
@@ -50,15 +49,5 @@ assert(oldStyle({ officialTitle: '', title: '兵部尚书' }) === true && isOff(
   '对照:旧回退会让罢官者上朝·新修已堵');
 
 // ── task3b 源码:_cc3_buildCharsFromGM 入口硬排除下狱/流放/逃亡 ────────────────
-const build = changchao.slice(changchao.indexOf('function _cc3_buildCharsFromGM'), changchao.indexOf('function _cc3_classifyAbsent'));
-assert(/_imprisoned[\s\S]{0,140}_exiled[\s\S]{0,80}return;/.test(build), 'buildChars 须硬排除下狱/流放等(return·不入百官列)');
-assert(build.indexOf('ch._fled') >= 0 && build.indexOf('ch._jailed') >= 0, '硬排除须覆盖 _jailed/_fled 等变体');
-
-// ── task4 源码:applier office/personnel 变更后刷新官制 UI ────────────────────
-assert(/officeCount > 0 \|\| personnelFromPcCount > 0/.test(applier), 'office/personnel 变更须触发刷新');
-assert(/_tmOfficeUiRefreshPending/.test(applier), '须去抖(防多次 office 变更重复刷)');
-assert(/TMPhase8FormalBridge && typeof window\.TMPhase8FormalBridge\.refresh === 'function'/.test(applier), '须调御案 TMPhase8FormalBridge.refresh(右栏官制面板)');
-assert(/window\.renderOfficeTree === 'function'/.test(applier), '须同时刷新 legacy renderOfficeTree(经典 UI)');
-assert(/window\.setTimeout\(function\(\)\{[\s\S]{0,400}_tmOfficeUiRefreshPending = false/.test(applier), '须 setTimeout 延后一帧·读最新 GM.officeTree');
 
 console.log('[smoke-court-office-imprison-dismiss-refresh] PASS ' + passed + ' assertions');

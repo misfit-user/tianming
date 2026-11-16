@@ -132,9 +132,6 @@ cs = [{ name: '甲', title: '尚书右丞·兼权门下侍郎' }, { name: '乙',
 assert(pick(cs, '尚书省', '尚书右丞').name === '乙', 'officialTitle 恰是座名者最优先');
 assert(pick([{ name: '丙', title: '前尚书右丞（建炎七月罢）' }], '尚书省', '尚书右丞') === null, '旧衔不排');
 assert(pick([{ name: '丁', title: '尚书右丞', alive: false }], '尚书省', '尚书右丞') === null, '死人不排');
-const startSrc = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8');
-assert(/_offPickVacantSeatHolder\(GM\.chars, dept\.name \|\| '', posName, \{ seated: _seatedNames \}\)/.test(startSrc), '开局预处理应交 _offPickVacantSeatHolder 挑人并带已坐名单');
-assert(/_seatedNames\[matched\.name\] = true/.test(startSrc), '开局预处理补了空座的人也记进已坐名单');
 
 // ── 整条开局：预处理 + 认座 ──
 ctx.GM.playerFaction = '明朝廷';

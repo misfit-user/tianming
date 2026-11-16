@@ -161,13 +161,6 @@ check('compiler preserves input objects and source evidence', () => {
   assert.strictEqual(JSON.stringify(hits), before);
   assert(compiled.text.includes('courtRecords:ruling-1'));
 });
-check('production recall does not revive intentionally empty output', () => {
-  const source = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
-  assert(source.includes('} else if (!_compiledRecall) {'));
-  assert(source.includes('_compiledRecall.injectedHits || _compiledRecall.hits'));
-  assert(source.includes('_sc1CompiledContext.injectedHits || _sc1CompiledContext.hits'));
-  assert(source.includes("GM: GM, audience: 'system', intent: 'historical_evidence'"));
-});
 check('loaded branches inherit only pre-fork parent evidence', () => {
   const gm = { turn: 20, _timelineId: 'child', _parentTimelineId: 'parent', _forkTurn: 6 };
   const parent = { ...base, turn: 4, timelineId: 'parent' };

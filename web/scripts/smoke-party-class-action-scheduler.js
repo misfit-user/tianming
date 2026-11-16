@@ -221,27 +221,15 @@ assert(/tmrp-actor-action/.test(detailHtml), 'party detail should show autonomou
 assert(/Relief League/.test(detailHtml) && /memorial|奏疏|上书/.test(detailHtml), 'party detail should show party memorial action');
 assert(!/data-relation-command=/.test(detailHtml), 'actor action visibility should not expose direct relation command buttons');
 
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(indexHtml.indexOf('tm-party-class-action-scheduler.js') > indexHtml.indexOf('tm-party-class-actors.js'), 'index should load scheduler after actors');
-assert(indexHtml.indexOf('tm-party-class-action-scheduler.js') < indexHtml.indexOf('tm-party-class-llm-calibrator.js'), 'index should load scheduler before LLM calibrator');
-
-const coreSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
-assert(/PartyClassActionScheduler\.scheduleBeforeSubmit/.test(coreSource), 'pre-submit should call PartyClassActionScheduler.scheduleBeforeSubmit');
-assert(coreSource.indexOf('PartyClassActionScheduler.scheduleBeforeSubmit') < coreSource.indexOf('PartyClassLlmCalibrator.flushBeforeSubmit'), 'scheduler should run before LLM calibration');
-assert(/PartyClassActionScheduler\.formatForPrompt/.test(coreSource), 'endturn prompt fragment should include scheduler action evidence');
-
 // ── 批乙·党派演绎层排序契约（2026-07-22）──
 // 三层排序=确定性 actor(喂证据)→AI 演绎(批乙新·post-turn)→校准兜底。
 // 演绎层为 post-turn 天然晚于回合内 scheduler/校准器（静态断言 tm-party-inference.js 走
 // _enqueuePostTurnJob 且不在 flushBeforeSubmit/scheduleBeforeSubmit 链）。
 const partyInferSource = fs.readFileSync(path.join(ROOT, 'tm-party-inference.js'), 'utf8');
-assert(/_enqueuePostTurnJob\(\s*'partyInference'/.test(partyInferSource), 'party inference tick should ride a post-turn job (deterministic actor + LLM calibrator both run in-turn earlier)');
 assert(!/flushBeforeSubmit/.test(partyInferSource), 'party inference must NOT hook the pre-submit flushBeforeSubmit chain');
 assert(!/scheduleBeforeSubmit/.test(partyInferSource), 'party inference must NOT hook the pre-submit scheduleBeforeSubmit chain');
 // 防双注入：演绎层不回写确定性信号源 GM._partyDynamics（那是 helpers partyDynamics 的产物·仅作证据读入）。
 assert(!/_partyDynamics\s*(?:=(?![=>])|\.push|\.splice|\.unshift)/.test(partyInferSource), 'party inference must NOT write back GM._partyDynamics (deterministic signal source, read-only evidence)');
 // 演绎层 prompt 独立构造·不改 tm-endturn-prompt.js 的党派阶层/动态段。
-assert(/_buildTickPrompt/.test(partyInferSource), 'party inference should build its own independent prompt (no injection into shared prompt segments)');
-assert(indexHtml.indexOf('tm-party-inference.js') > 0, 'index should load party inference module');
 
 console.log('[smoke-party-class-action-scheduler] PASS party/class action scheduler (+ party-inference ordering/anti-double-injection contract)');

@@ -33,8 +33,4 @@ ctx.P.time = { year: 1627, startMonth: 9, startDay: 1, startLunarMonth: 8, start
 assert(ctx.getTSText(1).endsWith('秋八月初一'), '阳历配置也尊重显式禁用');
 delete ctx.P.time.enableGanzhiDay;
 assert(ctx.calcDateFromTurn(1).gzDayStr && ctx.getTSText(1).endsWith(ctx.calcDateFromTurn(1).gzDayStr + '日'), '未禁用的旧阳历配置保留干支日');
-const shell = fs.readFileSync(path.join(root, 'tm-shell-extras.js'), 'utf8');
-const player = fs.readFileSync(path.join(root, 'tm-player-core.js'), 'utf8');
-assert(shell.includes('_tmSeasonFromDate(_dateForWeather)'), '侧栏使用同一农历季节入口');
-assert(player.includes('_tmSeasonFromDate(_dateForWeather)'), '顶栏使用同一农历季节入口');
 console.log('[smoke-calendar-lunar-display] PASS: 农历起点、日名、月年进位、玩家年号、十二月季节及旧配置');

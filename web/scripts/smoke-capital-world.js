@@ -76,8 +76,6 @@ assert(!threw, '推京城出错不外抛，不拖垮存读档');
 const twice = ensure(ensure(world({ capital: '应天府' })));
 assert(twice._capital === '应天府' && twice.capital === undefined, '可重复调用，不多写字段');
 assert(ensure(world({}))._capital === undefined, '什么都推不出：不写');
-assert(/_tmEnsureCapital\(GM, P\)/.test(read('tm-save-lifecycle.js')), '_ensureGMDefaults 调它（读档、存档前都过这里）');
-assert(/_tmEnsureCapital\(GM, P\)/.test(read('tm-patches-start.js')), 'doActualStart 标完玩家势力就调它');
 
 console.log('三、没有京城时行为不变');
 sandbox.GM = {};
@@ -185,9 +183,6 @@ sandbox.GM = { _capital: '京兆府·长安' };
 assert(sandbox.calcLetterDays('京师', '魏州', 'normal') === 28, '晚唐：京师是长安，到魏州二十八日');
 
 console.log('九、迁都两个字段一起写');
-assert(/G\._capital = params\.newCapital;\s*G\.capital = params\.newCapital;/.test(read('tm-edict-complete.js')), '迁都诏同写两字段');
-assert(/GM\.capital = e\.newCapital;\s*GM\._capital = e\.newCapital;/.test(read('tm-endturn-apply-stages.js')), '推演 move_capital 同写两字段');
-assert(/gm\.capital = cap;\s*gm\._capital = cap;/.test(read('tm-endturn-agent-write-tools.js')), 'relocate_capital 同写两字段');
 
 if (failed) {
   console.log('FAIL smoke-capital-world: ' + failed + ' 处失败');

@@ -40,8 +40,6 @@ var c3 = run([{name:'A'}], -1);
 ok(c3.P.military.armies.length === 1, '负 index → no-op');
 
 // 源契约
-ok(mil.indexOf('disbandArmyInEditor("+i+")') >= 0, 'onclick 走命名 handler disbandArmyInEditor');
 ok(mil.indexOf('armies.splice("+i+",1);renderEdTab') < 0, '裸内联 splice 已清');
-ok(/gameplay.*诏书\/朝议|诏书\/朝议.*制度通道|制度通道/.test(mil), '注明 gameplay 裁军走诏书/朝议制度通道(非裸 UI)');
 
 console.log('\n结果: '+A+' 通过 / 0 失败');

@@ -201,6 +201,15 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
 - 顺手还掉几处后跑 `node scripts/lint-silent-catch.js --update` 收紧；`--top 15` 看空 catch 最多的文件。
 - 范围：`index.html` 脚本清单里的运行时代码，加上新前端 `web/ui/`（`dev/` 除外）。
 
+### ⑪ 冒烟里「查源码文字」的断言 `lint-smoke-source-pins.js`（2026-11-16）
+冒烟脚本里曾有近万处这样的判断：把游戏源码当文字读进来，断言里面「出现了某段字」（`ok(/function _foo\(/.test(src))`、`ok(src.includes('TM.Foo.bar('))`）。
+它不执行代码——代码写错了照样绿，代码没错只是改了名字、换了写法就红；删一个没人调用的函数会红一片测试。
+2026-11-16 清掉了能确认的那批（整支只读文字的 113 支、把逻辑抄进测试自测的 13 支，另有四百支里的三千七百多条语句），守卫管不许再添：
+- 每支冒烟里这类判断的数目记在基线里，只许减不许增；新脚本从 0 起。
+- 要测一段逻辑，就把它装起来跑（vm 装文件 / require 模块），断言它算出来的结果。
+- 确实只能看文字的（某个旧写法不得再出现）写成否定式 `ok(!src.includes(…))`、`ok(!/…/.test(src))`——否定式不计数。
+- 只是静态地数（变量来自 `readFileSync` 或包了它的本地小函数），数不到的写法不追究；数目变少后跑 `--update` 收紧，`--top 15` 看最多的几支。
+
 ### runner 附注：flake 自愈（2026-07-06）
 `run-smokes.js` 全量并行下 DOM-stub/AI 超时类假阳性反复出现——失败 ≤15 个时自动
 **串行重跑一次**，过了标 `flaky`（汇总/报告单列，不静默掩盖；反复上榜的去查真因）。
@@ -208,5 +217,5 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
 
 ## 基线文件（要进 git）
 
-`scripts/arch-baselines/{gm-writes,dep-dangling,file-size,smoke-skip,split-stamps,smoke-family-order,design-tokens,silent-catch}.json` —— 棘轮的账本，删了守卫就瞎。
+`scripts/arch-baselines/{gm-writes,dep-dangling,file-size,smoke-skip,split-stamps,smoke-family-order,design-tokens,silent-catch,smoke-source-pins}.json` —— 棘轮的账本，删了守卫就瞎。
 `dev-tools/arch-guard/` 下是生成物（依赖清单/smoke报告），不进安装包，可随时重生成。

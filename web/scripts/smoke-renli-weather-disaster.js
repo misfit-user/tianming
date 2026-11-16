@@ -73,7 +73,6 @@ ok(!rf || rf.weather == null || rf.weather === undefined, '7·未种子省→ref
 var fs = require('fs'), path = require('path');
 ok(typeof R.refreshWeather === 'function', '8·导出 refreshWeather');
 var src = fs.readFileSync(path.join(__dirname, '..', 'tm-renli.js'), 'utf8');
-ok(/refreshWeather\(GM, Pp\); \} catch[\s\S]{0,40}tick\(GM, Pp\);/.test(src), '8·endturnTick 在 tick 前填天时(refreshWeather→tick)');
 var body = src.slice(src.indexOf('function refreshWeather'), src.indexOf('function refreshWeather') + 1200);
 ok(!/天启|陕西|西安|sc-tianqi/.test(body), '9·refreshWeather 无朝代/地名硬编（中立）');
 

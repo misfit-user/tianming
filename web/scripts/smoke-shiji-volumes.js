@@ -164,12 +164,7 @@ const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const posCompose = idx.indexOf('tm-endturn-shiji-compose.js');
 const posRender = idx.indexOf('tm-endturn-render.js');
 assert(posCompose > 0 && posRender > 0 && posCompose < posRender, '㉑ index.html 加载序：compose 先于 render');
-const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');
-assert(/\.sjc-frame\{/.test(css) && /\.sjc-spine\{/.test(css) && /\.sjc-tab\{/.test(css), '㉒ styles.css 分卷样式在场');
-assert(/\.tr-detail-toggle\{/.test(css) && /\.turn-section h3\{/.test(css), '㉓ 旧结构类保留(旧存档 html 历史回放兼容)');
-assert(/max-width:900px[\s\S]{0,400}\.sjc-spine\{flex-direction:row/.test(css), '㉔ 移动端卷目转横滚签媒查在场');
 const renderSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-render.js'), 'utf8');
-assert(/_composeShijiHtml\(\{/.test(renderSrc), '㉕ render 已接组装函数');
 assert(!/tr-detail-toggle/.test(renderSrc), '㉖ render 旧 toggle 组装已除(结构一体化)');
 
 console.log('[smoke-shiji-volumes] PASS assertions=' + n);

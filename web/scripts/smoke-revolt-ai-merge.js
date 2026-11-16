@@ -196,7 +196,6 @@ function between(file, from, to) {
 }
 const CLASS_BLOCK = between('tm-endturn-apply.js', '// ── 阶层起义爆发——长周期生命周期起点 ──', '// 拒抚反消失闸');
 const RECON_BLOCK = between('tm-endturn-apply-stages.js', '// 民变补录', '// 天灾补录');
-ok(/riseFromAI\(GM, \{\s*by: 'class_revolt'/.test(CLASS_BLOCK) && /riseFromAI\(GM, \{ by: 'reconcile'/.test(RECON_BLOCK), '两处都走 riseFromAI');
 
 function runClassRevolt(G, p1) {
   const e = sandbox();

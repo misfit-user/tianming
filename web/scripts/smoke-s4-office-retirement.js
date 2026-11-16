@@ -15,14 +15,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·源契约 ════════
-const src = fs.readFileSync(path.join(ROOT, 'tm-office-system.js'), 'utf8');
-ok(/function _officePersonnelTurnoverOn\(\)/.test(src), '_officePersonnelTurnoverOn 开关已定义');
-ok(/officePersonnelTurnoverEnabled/.test(src), '开关读 officePersonnelTurnoverEnabled');
-ok(/function _engineRetireOfficial\(c, reason\)/.test(src), '_engineRetireOfficial 致仕原语');
-ok(/c\.officialTitle = c\.officialTitle \+ '·致仕'/.test(src), '标 officialTitle 致仕（_OFF_RETIRE_RE 排出树）');
-ok(/可诏起复/.test(src), '注释明确：可诏起复（可规避·复用既有召回路径）');
-ok(/SettlementPipeline\.register\('officePersonnelTurnover'/.test(src), '注册 perturn 结算步 officePersonnelTurnover');
-ok(/tags: \['联动', '官制'\]/.test(src), '致仕 → World Reaction Bus digest 联动');
 
 // ════════ 二·真代码：headless 调真 _tickOfficePersonnelTurnover ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

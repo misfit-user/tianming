@@ -5,7 +5,6 @@
 //     权贵不满拖低→缙绅离心；庶民怨而权贵安→民怨上达；对齐→相安；权重≠均值；tick 集成 + 正册 surface。
 'use strict';
 
-const fs = require('fs');
 const path = require('path');
 const WEB = path.join(__dirname, '..');
 require(path.join(WEB, 'tm-engine-constants.js'));
@@ -58,11 +57,6 @@ ok(out7.legitimacy && GM7._legitimacy && GM7._legitimacy.clout < GM7._legitimacy
   'tick 集成·GM._legitimacy 落·clout<pop (flag ' + (GM7._legitimacy || {}).flag + ')');
 
 // ── 8. 源契约：tick 调用 + 两正册构建器 surface 天命权重 ──
-const sfSrc = fs.readFileSync(path.join(WEB, 'tm-social-foundation.js'), 'utf8');
-const ctxSrc = fs.readFileSync(path.join(WEB, 'tm-endturn-ai-context.js'), 'utf8');
-const promptSrc = fs.readFileSync(path.join(WEB, 'tm-endturn-prompt.js'), 'utf8');
-ok(sfSrc.indexOf('out.legitimacy = computeLegitimacy(GM)') >= 0, 'tick 调用 computeLegitimacy');
-ok(ctxSrc.indexOf('天命权重') >= 0 && promptSrc.indexOf('天命权重') >= 0, '两正册构建器均 surface 天命权重·喂 LLM');
 
 // ── 9. 乱民化拉低忠诚：高 radicalFrac 权贵纵满意度高亦拖低 clout 加权（士绅离心现形）──
 const rfHigh = leg([{ name: '勋贵', economicRole: '治理', influence: 40, satisfaction: 70, _radicalFrac: 0.8 },

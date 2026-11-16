@@ -69,9 +69,5 @@ ok(p1hi.keju.quotaPerExam === 1500, '名额夹上限 1500 (got ' + p1hi.keju.quo
 const p1lo = { keju: { quotaPerExam: 350 } }; runLever(p1lo, { keju_quota_change: { value: 10 } });
 ok(p1lo.keju.quotaPerExam === 50, '名额夹下限 50 (got ' + p1lo.keju.quotaPerExam + ')');
 
-// 源契约
-ok(/qBlock/.test(kjSrc) && /_quotaBaseline/.test(kjSrc), '源契约·_kejuMobilityFlow 名额 throttle');
-ok(/keju_quota_change/.test(fs.readFileSync(path.join(WEB, 'tm-ai-schema.js'), 'utf8')), '源契约·schema 有 keju_quota_change 杠杆');
-
 console.log('\n[smoke-keju-quota-lever] ' + (F ? 'FAIL' : 'PASS') + ' — ' + A + ' 通过 / ' + F + ' 失败');
 process.exit(F ? 1 : 0);

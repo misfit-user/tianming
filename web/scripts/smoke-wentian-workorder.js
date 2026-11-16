@@ -16,7 +16,6 @@ function assert(cond, msg) {
 }
 
 // 拆分家族契约序：先提及 tm-game-loop.js 再 tm-game-loop-wentian-hardchange.js（lint-smoke-family-order）
-var glSrc = fs.readFileSync(path.join(ROOT, 'tm-game-loop.js'), 'utf8');
 
 var sandbox = { console: console };
 sandbox.window = sandbox;
@@ -72,12 +71,7 @@ sandbox._wtRunFulfillAudit();
 assert(dirR._lastStatus === 'ignored' && dirR._watch._streakOk === 0, 'rule 失守 → ignored·streak 清零(常青价值)');
 
 console.log('⑤ 静态契约：prompt 工单供奉段+治理列 chips');
-var promptSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
-assert((promptSrc.match(/⚖工单指标\(引擎核验·勿虚报\)/g) || []).length === 2, 'endturn prompt 规则/指令两个循环各供奉工单指标');
-assert(/_watchClosed/.test(promptSrc), '已核销工单不再供奉');
 // 该文件中文按惯例存 \uXXXX 转义·契约锚 ASCII 标识符（glSrc 已按家族序在文件头预读）
-assert(/checkChip/.test(glSrc) && /adviceChip/.test(glSrc) && /d\._watchClosed/.test(glSrc) && /_ignoredCount \|\| 0\) >= 3/.test(glSrc), '治理列三件(核销章/裁撤提示/T标)已挂(ASCII锚)');
-assert(/statusChip \+ watchChip \+ checkChip \+ adviceChip/.test(glSrc), '四 chip 已并入指令行渲染');
 
 console.log('');
 if (failures.length) {

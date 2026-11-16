@@ -9,19 +9,11 @@ var pass = 0, fail = 0, fails = [];
 function ok(c, m) { if (c) pass++; else { fail++; fails.push(m); console.error('  ✗ ' + m); } }
 var fs = require('fs'), path = require('path'), vm = require('vm');
 var ROOT = path.join(__dirname, '..');
-var fu = fs.readFileSync(path.join(ROOT, 'tm-endturn-followup.js'), 'utf8');
 var gk = fs.readFileSync(path.join(ROOT, 'tm-guoku-engine.js'), 'utf8');
 
 // ── ① 生产端契约 ──
-ok(/刀二·战争耗国库/.test(fu), '1·tm-endturn-followup 含刀二生产端');
-ok(/GuokuEngine\.syncBattleCasualtyBonus\(GM\)/.test(fu), '1·SC18使用国库写主同步营葬镜像');
 var mil = fs.readFileSync(path.join(ROOT,'tm-military.js'),'utf8');
 var contract = fs.readFileSync(path.join(ROOT,'tm-battle-contract.js'),'utf8');
-ok(/syncBattleCasualtyBonus\(G\)/.test(contract), '1·军事实际落地后再次同步，覆盖延期亲征');
-
-// ── ② 消费端契约（悬空钩现已被喂）──
-ok(/_battleCasualtyBonus\b/.test(gk), '2·tm-guoku-engine 读 _battleCasualtyBonus');
-ok(/var total = [\s\S]{0,200}\bbattleBonus\b/.test(gk), '2·battleBonus 入军饷总支出 total(消费端确在用·钩已接通)');
 
 // ── ③ 真实国库写主 + 真实军事战果汇总，不再复刻公式掩盖延期错误 ──
 var ctx={console:{log(){},warn(){}},SettlementPipeline:{register(){}},P:{playerInfo:{factionName:'明廷'}}};ctx.window=ctx;
@@ -33,7 +25,6 @@ ok(k2({ '后金': 9000 }, isPlayer) === 0, '3·只敌方阵亡→本朝营葬0(�
 
 // ── ④ 自清语义 ──
 ok(k2({}, isPlayer) === 0, '4·无战(空累加器)→营葬0(无陈值)');
-ok(/var _battleResultCasualtyFactions = \{\};/.test(fu), '4·_battleResultCasualtyFactions 每回合(sc18)重置为{}=无战自清·不留陈值反复扣库');
 ctx.GM.turn++;ctx.GuokuEngine.syncBattleCasualtyBonus(ctx.GM);ok(ctx.GM.guoku._battleCasualtyBonus===0,'4·推进到无战回合，实际写主清除旧营葬银');
 
 console.log('\n[smoke-battle-cost-guoku] ' + pass + ' 通过 / ' + fail + ' 失败');

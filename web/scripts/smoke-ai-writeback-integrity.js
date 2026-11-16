@@ -447,19 +447,7 @@ async function main() {
   check(deathCtx._busDeaths === 1 && deathCtx._deathEvents === 1 && deathCtx.GM._playerDeathReason === '宫变遇害', 'duplicate death delivery must not repeat event or overwrite original death reason');
   const endturnApplySource = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
   const endturnStagesSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply-stages.js'), 'utf8');
-  check(/he\.type === 'death'[\s\S]{0,500}_tmApplyCanonicalDeath\(he\.character/.test(endturnApplySource) && !/he\.type === 'death'[\s\S]{0,500}\.alive\s*=\s*false/.test(endturnApplySource), 'harem death consumer must route the raw character reference to the canonical death sink without bare writes');
   check(!/\.alive\s*=\s*false|\.dead\s*=\s*true/.test(endturnApplySource + '\n' + endturnStagesSource), 'endturn writeback consumers must not contain direct character death writes');
-  check(endturnApplySource.includes("_tmSetFactionLeaderCanonical(_coupFac, fe.newLeader") &&
-    endturnApplySource.includes("_tmSetFactionLeaderCanonical(fObj, sc.newLeaderId || sc.newLeader") &&
-    endturnApplySource.includes("_tmSetPartyLeaderCanonical(party, pc.new_leader"), 'faction coup/succession and party change leaders must use canonical living-entity sinks');
-  check(endturnApplySource.includes("_tmSetPartyLeaderCanonical(newParty, sp.newLeader") &&
-    endturnApplySource.includes("TM.SocialFormation.apply(GM, p1,") &&
-    endturnApplySource.includes("_tmSetFactionLeaderCanonical(newF, fc.leader"), 'new parties use the canonical SocialFormation creator; split parties and factions retain canonical leader sinks (runtime invalid-founder cases are exercised in smoke-social-descriptor-formation)');
-  check(endturnApplySource.includes("_tmApplyCanonicalDeath(r.leaderName, ru.leaderCasualty") &&
-    endturnApplySource.includes("_tmApplyCanonicalDeath(r.leaderName, '起义失败被剿'"), 'revolt casualty and suppression deaths must share the canonical death sink');
-  check(endturnStagesSource.includes("global.applyOneDeath({ name:_sov.name") &&
-    endturnStagesSource.includes("death pipeline did not apply") &&
-    endturnStagesSource.includes("player character not found"), 'reconcile regicide must route player death and surface missing/no-op pipeline failures');
 
   // D. 真跑 apply stage，确认 prompt 宣告的五个扩展字段不再被 dispatcher 丢弃。
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-endturn-apply-stages.js'), 'utf8'), ctx, { filename: 'tm-endturn-apply-stages.js' });

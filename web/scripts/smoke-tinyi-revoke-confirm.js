@@ -15,7 +15,6 @@ console.log('smoke-tinyi-revoke-confirm');
 const src = (fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-persona.js'), 'utf8') + '\n' + (fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-edict-personnel.js'), 'utf8')) + '\n' + fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-parties.js'), 'utf8'));
 const fnSrc = sliceFn(src, 'function _ty3_promptAction(');
 ok(!!fnSrc, '_ty3_promptAction 抽取成功');
-ok(/_danger\[actionType\]/.test(fnSrc) && /confirm\(/.test(fnSrc), '源契约:危险动作经 confirm 闸');
 
 function run(actionType, confirmResult){
   const calls = [];

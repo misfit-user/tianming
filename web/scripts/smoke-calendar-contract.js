@@ -16,10 +16,6 @@ function sliceFn(src, marker) {
 }
 
 const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
-const start = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8');
-const systems = fs.readFileSync(path.join(ROOT, 'tm-endturn-systems.js'), 'utf8');
-const lifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
-const manager = fs.readFileSync(path.join(ROOT, 'tm-save-manager.js'), 'utf8');
 const calcSrc = sliceFn(infra, 'function calcDateFromTurn(');
 const syncSrc = sliceFn(infra, 'function _tmSyncGMCalendar(');
 ok(!!calcSrc && !!syncSrc, '可抽取权威日期计算与唯一镜像写口');
@@ -42,11 +38,6 @@ ctx.P = {};
 ctx.GM = { turn: 25, year: 1598, month: 7, day: 3 };
 const legacyWithoutTime = ctx._tmSyncGMCalendar(ctx.GM, 25);
 ok(legacyWithoutTime === null && ctx.GM.year === 1598 && ctx.GM.month === 7 && ctx.GM.day === 3, '旧档缺 P.time 时保留日期镜像，不写入 adYear=0 占位');
-
-ok(/_tmSyncGMCalendar\(GM, GM\.turn \|\| 1\)/.test(start), '新局在时间配置落定后同步');
-ok(/GM\.turn\+\+;[\s\S]{0,300}_tmSyncGMCalendar\(GM, GM\.turn\)/.test(systems), '回合推进后立即同步');
-ok(/function fullLoadGame[\s\S]*?_tmSyncGMCalendar\(GM, GM\.turn \|\| 1\)/.test(lifecycle), '完整读档同步旧档/陈旧镜像');
-ok(/GM = deepClone\(gs\.GM \|\| gs\);[\s\S]{0,300}_tmSyncGMCalendar\(GM, GM\.turn \|\| 1\)/.test(manager), '降级读档路径同样同步');
 
 // Load the real cumulative clock: an onsite response can stop a formal turn
 // at a fractional day, while calendar dates still name a whole civil day.

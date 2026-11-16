@@ -14,8 +14,6 @@ function sliceFn(src, marker){ const a=src.indexOf(marker); if(a<0) return null;
 console.log('smoke-diplo-consequence');
 
 const rel = fs.readFileSync(path.join(ROOT,'tm-relations.js'),'utf8');
-const fiscal = fs.readFileSync(path.join(ROOT,'tm-fiscal-engine.js'),'utf8');
-const wendui = (fs.readFileSync(path.join(ROOT, 'tm-wendui.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-wendui-persona-views.js'), 'utf8'));
 const f1 = sliceFn(rel,'function _diploFindFac('), f2 = sliceFn(rel,'function _diploPlayerFac('), f3 = sliceFn(rel,'function _diploTributeAmt('), f4 = sliceFn(rel,'function _applyDiploResourceConsequence(');
 ok(f1&&f2&&f3&&f4, '外交后果四函数抽取成功');
 
@@ -73,10 +71,5 @@ var c6 = setup([{name:'后金',strength:100,money:50000},{name:'蒙古',strength
 c6.go('后金','蒙古','pay_indemnity');  // 后金赔款给蒙古·额由收方蒙古 60→36000
 ok(c6.spendCalls.length === 0 && c6.addCalls.length === 0, '② 两 AI 势力交互→国库(玩家帑廪)不动');
 ok(c6.GM.facs[0].money === 50000 - 36000 && c6.GM.facs[1].money === 30000 + 36000, '② 两 AI→动抽象 faction.money(后金-36000/蒙古+36000)');
-
-// 源契约
-ok(/addToGuoku: addToGuoku/.test(fiscal), '源契约:FiscalEngine 暴露 addToGuoku');
-ok(/_applyDiploResourceConsequence\(facA, facB, type, extra\)/.test(rel), '源契约:applyFactionInteraction 挂钩资源后果');
-ok(/_tStr \* 600/.test(wendui) && /spendFromGuoku\(_trib,/.test(wendui), '源契约:wendui 岁币应用走 strength 派生 _trib(非硬编 30000)');
 
 console.log('\n结果: '+A+' 通过 / 0 失败');

@@ -140,14 +140,6 @@ const noDecay = CE.decayRecentPolicyScores(noDecayRoot, { turn: 21, source: 'smo
 assert(noDecay.ok === false, 'missing recentPolicyDecay should not invent a decay');
 assertEq(noDecayRoot.partyState.Reform.recentPolicyWin, 4, 'missing recentPolicyDecay should leave counters unchanged');
 
-const tinyiText = (fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-persona.js'), 'utf8') + '\n' + (fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-edict-personnel.js'), 'utf8')) + '\n' + fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-parties.js'), 'utf8'));
-assert(tinyiText.indexOf('TM.ClassEngine.applyPartyOutcomeToClasses') >= 0, 'tinyi should call party-to-class bridge');
-assert(tinyiText.indexOf('tinyi-stage6-issued') >= 0, 'tinyi should propagate issued seal outcomes');
-assert(tinyiText.indexOf('tinyi-stage6-blocked') >= 0, 'tinyi should propagate blocked seal outcomes');
-assert(tinyiText.indexOf('tinyi-stage7-follow-up') >= 0, 'tinyi should propagate follow-up outcomes');
-assert(tinyiText.indexOf('if (force && hostile)') < tinyiText.indexOf('function _ty3_phase6_doSeal') || tinyiText.indexOf('/*\n  if (force && hostile)') < 0, 'old phase6 unreachable body should not remain commented in place');
-
 const inferText = readEndturnSource();
-assert(inferText.indexOf('partyOutcomeRef') >= 0, 'AI prompt/sample should mention class_changes.partyOutcomeRef');
 
 console.log('[smoke-class-party-bidirectional] pass assertions=' + ASSERTS);

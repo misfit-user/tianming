@@ -124,17 +124,5 @@ console.log('— §a · triggerCharacterDeath 行为 —');
   ok(c6.GM._playerDead === true, '继承人已殁：不传死人·走终局');
 })();
 
-/* ── §b 接线契约 ─────────────────────────────────────────────── */
-console.log('— §b · 接线契约 —');
-(function () {
-  ok(/if \(ch\.health <= 0 && !ch\.dead\) \{\s*\n\s*triggerCharacterDeath\(ch, '疾'\);/.test(src), '老化扣血→触死路径原样在(上游未动)');
-  ok(/if \(ch\.isPlayer\) \{/.test(src.slice(s, s + 3000)), 'triggerCharacterDeath 内 isPlayer 分支在');
-  ok(/adjudicatePlayerDeath/.test(src.slice(s, e)), 'isPlayer 分支委托玩家之死裁决器(R1a 统一收口)');
-  var core = read('tm-endturn-core.js');
-  ok(/_playerDead/.test(core), 'endturn-core 终局消费点在(下游未动)');
-  var aid = read('tm-ai-apply-deaths.js');
-  ok(/adjudicatePlayerDeath/.test(aid), 'AI 死亡路径 E10 同委托裁决器(两产地一口)');
-})();
-
 console.log('\nsmoke-player-natural-death-routing ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
 process.exit(F0 === 0 ? 0 : 1);

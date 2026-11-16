@@ -124,16 +124,5 @@ console.log('— §b · S2 阴谋密报零回归 —');
   ctx.__plots.length = 0;
 })();
 
-/* ── §c 接线契约 ─────────────────────────────────────────────── */
-console.log('— §c · 接线契约 —');
-(function () {
-  var fu = read('tm-endturn-followup.js');
-  ok(/GM\._recentHiddenMoves = \{ turn: GM\.turn \|\| 0, moves: _hmBuf \}/.test(fu), 'followup 落暗流缓冲(整体覆写带回合戳)');
-  ok(/_hmBuf\.length < 10/.test(fu), '缓冲 cap10');
-  ok(/密探风闻/.test(read('tm-patches.js')), '设置开关文案已注明风闻能力');
-  var cj = read('tm-conspiracy.js');
-  ok(/_agencyCovertMoves/.test(cj) && /intensity < 6/.test(cj), 'S3 段在 _agencyWatch 内·效力门槛在');
-})();
-
 console.log('\nsmoke-agency-covert-report ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
 process.exit(F0 === 0 ? 0 : 1);

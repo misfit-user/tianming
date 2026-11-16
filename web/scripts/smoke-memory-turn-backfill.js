@@ -199,13 +199,4 @@ assert(GM2._turnMemoryArchive.some((bundle) => bundle.id === 'turn-archive-4-SC1
 assert(!GM2._turnMemoryArchive.some((bundle) => bundle.id === 'legacy-turn-archive-4'), 'legacy bundle should skip existing authoritative turn');
 assert(GM2._turnMemoryArchive.some((bundle) => bundle.id === 'legacy-turn-archive-5'), 'new legacy turn should backfill');
 
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(indexHtml.includes('tm-memory-turn-backfill.js'), 'index.html should load memory backfill module');
-const saveLifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
-assert(saveLifecycle.includes('MemoryTurnBackfill.ensureBackfilled'), 'fullLoadGame should ensure legacy memory backfill');
-const workshop = fs.readFileSync(path.join(ROOT, 'tm-memory-workshop.js'), 'utf8');
-assert(workshop.includes('data-action="backfill-legacy"'), 'Workshop should expose manual backfill action');
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-turn-backfill.js'), 'verify-all should include memory turn backfill smoke');
-
 console.log('smoke-memory-turn-backfill ok');

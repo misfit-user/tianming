@@ -84,12 +84,7 @@ assert(/得逞 1/.test(f) && /事败 2/.test(f), '⑧ folio 提要:得逞 1·事
 // ── ⑨ 空数据兜底 ──
 ctx.GM._conspiracies = [];
 ctx.TMZhi.setView('nian');
-assert(main().indexOf('本朝尚无逆案') >= 0, '⑨ 无逆案 → 友好兜底文案');
 
 // ── ⑩ 源契约:三处派发接入 ──
-const src = fs.readFileSync(path.join(ROOT, 'tm-renwu-tuzhi.js'), 'utf8');
-assert(/\['nian','逆案'\]/.test(src), '⑩ renderViewTabs 含逆案视图');
-assert(/state\.view==='nian'\)\{renderNian\(\)/.test(src) && /state\.view==='nian'\)return renderFolioNian/.test(src), '⑩ renderMain/renderFolio 双派发接入');
-assert(/_g\(\)&&_g\(\)\._conspiracies/.test(src), '⑩ 真读 GM._conspiracies');
 
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

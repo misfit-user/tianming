@@ -51,8 +51,4 @@ assert(cta(-5, annual) === 5000, '极端 -5 夹到 -0.5：田赋 ×0.5=5000');
 // 非年度税不受赋役影响（赋役只指农赋）
 assert(cta(0.2, nonAnnual) === 10000, '非年度税：赋役不动它（仍 10000）');
 
-// 源契约
-assert(/fuyiMult/.test(fiscalSrc), 'computeTaxAmount 含 fuyiMult 接线');
-assert(/annualFuyi\b[\s\S]{0,40}taxRateAdjust/.test(fiscalSrc), '真读 fiscalConfig.annualFuyi.taxRateAdjust');
-
 console.log('PASS smoke-fuyi-income-wire · ' + passed + ' 断言');

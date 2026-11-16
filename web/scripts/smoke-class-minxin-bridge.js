@@ -308,10 +308,6 @@ assert(calibratorRoot._pendingTinyiTopics.some(t => t && t.from === 'class-minxi
 assert(calibratorRoot.minxin.uprisingCandidates.some(c => c && c.className === 'Market Guilds' && c.region === 'Market Ward'), 'class-minxin pressure should create uprising candidate instead of direct revolt');
 assert(!calibratorRoot.minxin.revolts || !calibratorRoot.minxin.revolts.some(r => r && r.className === 'Market Guilds'), 'class-minxin bridge should not directly create minxin revolts');
 
-const endturnSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
-assert(/ClassMinxinBridge\.formatForPrompt/.test(endturnSource), 'endturn prompt should include class-minxin bridge evidence');
-const drawerSource = fs.readFileSync(path.join(ROOT, 'tm-var-drawers.js'), 'utf8');
-assert(/_classMinxinBridgeLedger/.test(drawerSource) && /lastPressure/.test(drawerSource), 'minxin drawer should show class-minxin bridge near causes');
 const rightRailSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail-social.js'), 'utf8');
 const classHeadMatch = rightRailSource.match(/function rightSocialClassHead[\s\S]*?function rightSocialClassDetail/);
 const classDetailMatch = rightRailSource.match(/function rightSocialClassDetail[\s\S]*?function renderRightClassPanel/);
@@ -320,9 +316,5 @@ assert(classHeadMatch && !/rightClassMinxinBridgeRows/.test(classHeadMatch[0]), 
 // 紧凑行契约(2026-07-11·玩家反馈行14)：列表卡无条形图/逐卡提示·保点行进详情·全档只在 flyout
 assert(classHeadMatch && !/rightArmyBar/.test(classHeadMatch[0]) && !/tmrp-detail-hint/.test(classHeadMatch[0]), 'class list card stays compact (no bars, no per-card hint)');
 assert(classHeadMatch && /outline-select/.test(classHeadMatch[0]), 'compact class card keeps click-to-expand wiring');
-const mapSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-map.js'), 'utf8');
-assert(/data-map-mode="classPressure"/.test(mapSource), 'formal map should expose a class pressure layer button');
-assert(/classPressureForRegion/.test(mapSource) && /ClassMinxinBridge/.test(mapSource), 'formal map should render class-minxin pressure per region');
-assert(/mode === 'classPressure'/.test(mapSource) && /阶层民心压力/.test(mapSource), 'formal map region dossier should expose class pressure detail');
 
 console.log('[smoke-class-minxin-bridge] PASS class-minxin bridge');

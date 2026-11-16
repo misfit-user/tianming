@@ -20,7 +20,6 @@ function runFile(ctx, file) {
 
 async function main() {
   const index = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  const pipelineSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
   const decisionPos = index.indexOf('tm-faction-npc-llm-decision.js');
   const driverPos = index.indexOf('tm-faction-npc-in-turn-driver.js');
   const dispatcherPos = index.indexOf('tm-faction-npc-dispatcher.js');
@@ -30,8 +29,6 @@ async function main() {
   assert(dispatcherPos > driverPos, 'dispatcher must load after in-turn driver');
   assert(indexPos < 0 || driverPos < indexPos, 'in-turn driver should load before faction index/UI block');
   assert(indexPos < 0 || dispatcherPos < indexPos, 'dispatcher should load before faction index/UI block');
-  assert(pipelineSrc.indexOf('FactionNpcDispatchQueue.scheduleTurnRuns') >= 0,
-    'render-finalize should schedule faction LLM through unified dispatch queue');
 
   const timers = [];
   const cleared = [];

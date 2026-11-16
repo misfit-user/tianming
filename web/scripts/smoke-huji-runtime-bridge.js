@@ -281,13 +281,5 @@ assert(exactSmallBreakdowns, 'category and legal-status allocations should conse
 
 const src = name => fs.readFileSync(path.join(ROOT, name), 'utf8');
 const index = src('index.html');
-assert(index.indexOf('tm-huji-runtime-bridge.js') > 0, 'index should load runtime bridge');
-assert(index.indexOf('tm-huji-deep-fill.js') < index.indexOf('tm-huji-runtime-bridge.js'), 'bridge should load after Huji deep fill');
-assert(index.indexOf('tm-huji-runtime-bridge.js') < index.indexOf('tm-namespaces.js'), 'bridge should load before namespace facade');
-assert(/HujiRuntimeBridge\.maintain/.test(src('tm-endturn-core.js')), 'pre-submit should maintain bridge');
-assert(/HujiRuntimeBridge\.formatForPrompt/.test(src('tm-endturn-core.js')), 'LLM prompt should include bridge snapshot');
-assert(/HujiRuntimeBridge\.maintain/.test(src('tm-endturn-systems.js')), 'turn systems should reconcile bridge after huji tick');
-assert(/Huji Runtime Bridge/.test((src('phase8-formal-rightrail.js') + src('phase8-formal-rightrail-social.js'))), 'right rail diagnostics should expose bridge');
-assert(/_renderHujiRuntimeBridge/.test(src('tm-topbar-vars.js')), 'topbar hukou/minxin surfaces should expose bridge');
 
 console.log('[smoke-huji-runtime-bridge] PASS hukou runtime bridge');

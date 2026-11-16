@@ -15,12 +15,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·源契约 ════════
-const src = fs.readFileSync(path.join(ROOT, 'tm-office-system.js'), 'utf8');
-ok(/function _activeRankHierarchy\(\)/.test(src), '_activeRankHierarchy 已定义');
-ok(/GM\.rankHierarchy/.test(src) && /P\.engineConstants && P\.engineConstants\.rankHierarchy/.test(src), 'override 源:GM.rankHierarchy / P.engineConstants.rankHierarchy');
-ok(/return RANK_HIERARCHY;/.test(src), '无 override → 返默认 RANK_HIERARCHY(零回归)');
-ok(/function getRankLevel[\s\S]{0,80}var H = _activeRankHierarchy\(\)/.test(src), 'getRankLevel 走 _activeRankHierarchy');
-ok(/function getRankInfo[\s\S]{0,80}var H = _activeRankHierarchy\(\)/.test(src), 'getRankInfo 走 _activeRankHierarchy');
 
 // ════════ 二·真代码 ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

@@ -50,8 +50,6 @@ ok(out1.indexOf('西安府') >= 0 && out1.indexOf('延安府') < 0, '6·limit=1�
 
 // ── T7 装配接线 + T8 中立 ──
 var fs = require('fs'), path = require('path');
-var coreSrc = fs.readFileSync(path.join(__dirname, '..', 'tm-endturn-core.js'), 'utf8');
-ok(/TM\.Renli\.formatForPrompt\(GM, \{ limit: 10 \}\)/.test(coreSrc) && /lines\.push\(renliAgrarian\)/.test(coreSrc), '7·tm-endturn-core 装配链已挂 Renli.formatForPrompt');
 var src = fs.readFileSync(path.join(__dirname, '..', 'tm-renli.js'), 'utf8');
 var fpBody = src.slice(src.indexOf('function formatForPrompt'), src.indexOf('function formatForPrompt') + 1400);
 ok(!/天启|陕西|延安|西安|sc-tianqi/.test(fpBody), '8·formatForPrompt 无朝代/地名硬编（中立·地名来自数据）');

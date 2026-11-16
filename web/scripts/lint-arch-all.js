@@ -29,6 +29,7 @@ const CHECKS = [
   { name: 'lint-design-tokens', file: 'lint-design-tokens.js' },
   { name: 'lint-person-assembly', file: 'lint-person-assembly.js' },
   { name: 'lint-silent-catch', file: 'lint-silent-catch.js' },
+  { name: 'lint-smoke-source-pins', file: 'lint-smoke-source-pins.js' },
   { name: 'ref-check', file: 'ref-check.js' }
 ];
 

@@ -15,11 +15,6 @@ function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m
 
 // ════════ 一·源契约：护栏抽函数 + applier 集成（ASCII 锚点·faction 段中文为 \u 转义） ════════
 const src = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
-ok(/function _tmGuardBattleStrengthDelta\(G, facName, sd\)/.test(src), '护栏谓词已抽为可测函数 _tmGuardBattleStrengthDelta');
-ok(/ns\.guardBattleStrengthDelta = _tmGuardBattleStrengthDelta/.test(src), '导出 ns.guardBattleStrengthDelta 供单测真代码');
-ok(/_dt = \(G\.turn\|\|0\) - \(b && b\.turn \|\| 0\)[\s\S]{0,80}_dt >= 0 && _dt <= 1/.test(src), '容 1 拍 turn 匹配（覆盖 GM.turn++ 边界）');
-ok(/_battleSettledFactions/.test(src) && /b\.strengthDelta\|\|0\) < 0/.test(src), '读 _battleSettledFactions·仅 reactor 负扣记录触发');
-ok(/_sdG = _tmGuardBattleStrengthDelta\(GM, fc\.name, _sd\)/.test(src), 'applier 调用护栏谓词');
 const gi = src.indexOf('_sdG = _tmGuardBattleStrengthDelta');
 const ai = src.indexOf('fac.strength = clamp(oldS + _sd', gi);
 ok(gi > 0 && ai > gi, '护栏在写 fac.strength 之前（拦得住）');

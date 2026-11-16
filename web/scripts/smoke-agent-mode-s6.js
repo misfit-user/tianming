@@ -46,27 +46,13 @@ assert(agentFlagOn('courtDebateEnabled') === true && agentFlagOn('other') === fa
 
 // ── ③④ UI 源码守卫(tm-patches.js) ──
 const patchSrc = (fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8'));
-assert(/s-exp-enabled/.test(patchSrc) && /_toggleExperimentalEnabled/.test(patchSrc), '③ 总闸 toggle(s-exp-enabled+handler)');
 // 注:onchange 内是 JS 字符串·单引号被转义为 \'·故宽松匹配 handler 名 + 两模式标签
-assert(/name="exp-mode"/.test(patchSrc) && patchSrc.indexOf('_setExperimentalMode(') >= 0, '③ 模式选择 radio + handler 调用');
-assert(patchSrc.indexOf('🧠 LLM 模式') >= 0 && patchSrc.indexOf('🤖 Agent 模式') >= 0, '③ 两模式标签(LLM/Agent)齐');
-assert(patchSrc.indexOf('🧪 实验模式') >= 0, '③ 区头正名"🧪 实验模式"');
-assert(patchSrc.indexOf('回合推演 agent 化') >= 0 && patchSrc.indexOf('局内') >= 0, '③ Agent 模式内容(回合推演 agent化)');
-assert(patchSrc.indexOf('启用全部 LLM 升级') >= 0, '④ "agent升级"已正名"LLM 升级"');
 assert(patchSrc.indexOf('启用全部 agent 升级') < 0, '④ 旧名"启用全部 agent 升级"已无');
 assert(patchSrc.indexOf('🧪 实验玩法') < 0, '④ 旧区头"🧪 实验玩法"已无');
 // 原有 toggle 保留(移入 LLM 分支)；「势力按需取数」(s-faction-toolcall) 11-11 已撤：势力调度一次问完
-assert(/s-office-activation/.test(patchSrc) && /s-event-unification/.test(patchSrc) && !/s-faction-toolcall/.test(patchSrc), '③ 原 LLM 升级 toggle(官制/事件)保留，势力按需取数已撤');
-assert(/s-agent-upgrades/.test(patchSrc), '③ LLM 升级总闸 checkbox(id 留 s-agent-upgrades)保留');
 
 // ── ⑤ handlers(tm-player-settings.js) ──
-const psSrc = fs.readFileSync(path.join(ROOT, 'tm-player-settings.js'), 'utf8');
-assert(/function _toggleExperimentalEnabled/.test(psSrc) && /function _setExperimentalMode/.test(psSrc), '⑤ 两 handler 已定义');
-assert(/experimentalMode\s*=\s*\(mode === 'agent'\)/.test(psSrc), '⑤ _setExperimentalMode 写 experimentalMode');
 
 // ── 门控源码守卫(tm-agent-flags.js) ──
-const flagSrc = fs.readFileSync(path.join(ROOT, 'tm-agent-flags.js'), 'utf8');
-assert(/if \(agentModeOn\(\)\) return false;/.test(flagSrc), '互斥守卫在 agentFlagOn 内');
-assert(/experimentalMode\) === 'agent'/.test(flagSrc), 'agentModeOn 认 experimentalMode===agent');
 
 console.log('[smoke-agent-mode-s6] pass assertions=' + passed.value);

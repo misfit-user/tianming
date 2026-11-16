@@ -12,14 +12,6 @@ function ok(c, m) { if (c) pass++; else { fail++; console.error('  ✗ ' + m); }
 
 const SRC = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
 
-// ── 源契约 ──
-ok(/function _npcDisgraceRipple\(\)/.test(SRC), '契约:_npcDisgraceRipple 定义存在');
-ok(/SettlementPipeline\.register\('npcDisgraceReact', '下狱流放涟漪'.*'perturn'\)/.test(SRC), '契约:注册为 perturn 结算步骤');
-ok(/d\._imprisoned && typeof d\._imprisonedTurn === 'number'/.test(SRC), '契约:下狱用 _imprisonedTurn 标记');
-ok(/d\._exiled && typeof d\._exileTurn === 'number'/.test(SRC), '契约:流放用 _exileTurn 标记(非 _exiledTurn)');
-ok(/'惧'/.test(SRC), '契约:党羽情绪用「惧」(株连之忧)');
-ok(/d\._imprisonReacted = true/.test(SRC) && /d\._exileReacted = true/.test(SRC), '契约:下狱/流放各自幂等标记');
-
 // ── 花括号配平抽真函数 ──
 const startIdx = SRC.indexOf('function _npcDisgraceRipple()');
 let i = SRC.indexOf('{', startIdx), depth = 0, endIdx = -1;

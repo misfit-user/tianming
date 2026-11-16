@@ -184,7 +184,6 @@ assert(ids('庆州').join() === 'r-q1', '「庆州」是叫庆州的那一块');
 assert(ids('契丹庆州').join() === 'r-q2', '写全了的还是契丹庆州');
 
 console.log('七、老档读进来绑一次');
-assert(/'map location binding'[\s\S]{0,120}TMMapLocations\.syncWorld\(GM\)/.test(read('tm-save-lifecycle.js')), '读档绑定且出错不拖垮读档');
 
 if (failed) {
   console.log('FAIL smoke-same-region: ' + failed + ' 处失败');

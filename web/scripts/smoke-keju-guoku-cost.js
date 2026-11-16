@@ -14,9 +14,6 @@ const wuju = fs.readFileSync(path.join(ROOT,'tm-keju-wuju.js'),'utf8');
 // 死 guard 已清(只剩注释里引用·真 if 条件不再是 typeof number)
 ok(!/if \(typeof GM\.guoku === 'number'/.test(enke), '★恩科:死 if(typeof GM.guoku===number) 已清');
 ok(!/if \(typeof GM\.guoku === 'number'/.test(wuju), '★武举:死 if 已清');
-ok(/spendFromGuoku\(\{ money: _ekCost \}/.test(enke), '恩科走 spendFromGuoku({money})');
-ok(/spendFromGuoku\(\{ money: _wjCost \}/.test(wuju), '武举走 spendFromGuoku({money})');
-ok(/Math\.abs\(ac\['国库'\]\) \* 3000/.test(enke) && /Math\.abs\(ac\['国库'\]\) \* 3000/.test(wuju), '抽象点×3000 两折算');
 
 // 复刻扣费块:ac['国库']=-8 → spendFromGuoku money 24000;正数/0 不扣
 function runCost(acVal){

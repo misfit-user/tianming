@@ -60,15 +60,5 @@ console.log('— §A · ImageAPI.normalizeUrl / getConfig —');
   ok(cfg3.supported === true && cfg3.inferred === true && /\/v1\/images\/generations$/.test(cfg3.url), '无生图配置 → 主 API 推断兜底仍在');
 })();
 
-/* ── §B 国师镜像契约 ─────────────────────────────────────────── */
-console.log('— §B · 国师 generateImage 镜像 —');
-(function () {
-  var agent = read('editor-authoring-agent.js');
-  ok(agent.indexOf('generations|edits|variations') >= 0, '国师侧同规归一化正则在(完整端点不双拼)');
-  ok(/_loadImageApiConfig/.test(agent) && /loadEditorApiConfig\(\)\.key/.test(agent), '国师侧 Key 留空回退主 API Key');
-  var infra = (read('tm-ai-infra-retry.js') + '\n' + read('tm-ai-infra.js'));
-  ok(/normalizeUrl/.test(infra) && /editor-authoring-agent\.js generateImage 有同规镜像/.test(infra), '两侧镜像互注防漂移');
-})();
-
 console.log('\nsmoke-imageapi-url ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
 process.exit(F0 === 0 ? 0 : 1);

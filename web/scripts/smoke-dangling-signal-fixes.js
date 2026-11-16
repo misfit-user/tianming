@@ -21,26 +21,13 @@ console.log('— §a · 党派叙事错名修 —');
   var fu = read('tm-endturn-followup.js');
   ok(!/GM\._factionNarratives/.test(fu), 'followup 复数错名 _factionNarratives 已绝迹');
   var ctx=require('./lib-political-action-fixture').politicalFixture();ctx.GM._factionNarrative={privateThought:'PRIVATE_FACTION_NARRATIVE'};ok(!ctx.TM.PoliticalActions.strategicPrompt().user.includes('PRIVATE_FACTION_NARRATIVE'),'SC16 公开投影不读取全局人物内心叙述');
-  ok(/GM\._factionNarrative = p25\.faction_narrative/.test(fu), '写点(单数)原样保留');
-  var ap = read('tm-ai-planning.js');
-  ok(/GM\._factionNarrative && typeof GM\._factionNarrative === 'object'/.test(ap), 'ai-planning 单数读点未受扰(零回归)');
-})();
-
-/* ── §b 黑洞桶告警 ── */
-console.log('— §b · _issueEffects 黑洞桶告警 —');
-(function () {
-  var h = read('tm-endturn-helpers.js');
-  ok(/GM\._issueEffects\[k\] = \(GM\._issueEffects\[k\] \|\| 0\) \+ v;\s*\n\s*try \{ console\.warn\(/.test(h), '未识别效果键落桶时 console.warn 告警(不再静默吞)');
-  ok(/console\.warn\([^\n]*_issueEffects/.test(h), '告警文案点名 _issueEffects 便于排查');
 })();
 
 /* ── §c 噤声读点 ── */
 console.log('— §c · _courtSilenced 噤声读点 —');
 (function () {
   var fu = read('tm-endturn-followup.js');
-  ok(/typeof GM\._courtSilenced === 'number' && \(GM\.turn - GM\._courtSilenced\) >= 0 && \(GM\.turn - GM\._courtSilenced\) <= 3/.test(fu), '叙事注入读点在(≤3回合窗)');
   var dt = read('tm-endturn-agent-depth-tools.js');
-  ok(/_silencedRecently = \(typeof gm\._courtSilenced === 'number'/.test(dt), 'agent 求见压制读点在');
 
   // vm 行为级：切出求见段实跑(含 names/audN 定义·至 total 聚合行前)
   var s = dt.indexOf("if (!Array.isArray(gm._pendingAudiences)) gm._pendingAudiences = [];");
@@ -71,11 +58,7 @@ console.log('— §c · _courtSilenced 噤声读点 —');
 console.log('— §d · 精力标签/实扣一致 —');
 (function () {
   var cy = read('tm-chaoyi.js');
-  ok(/'tinyi',[^\n]*'精力 15'/.test(cy), '廷议卡片 25→15(owner 调参漏网补齐·与实扣 tinyi:_spendEnergy(15) 一致)');
   ok(!/'精力 25'/.test(cy), '旧标签「精力 25」绝迹');
-  ok(/_spendEnergy\(10, '常朝'\)/.test(cy), '常朝实扣 10 接上(卡片承诺兑现)');
-  var ti = read('tm-chaoyi-tinyi.js');
-  ok(/_spendEnergy\(15, '廷议'\)/.test(ti), '廷议实扣 15 未动(零回归)');
 
   // vm 行为级：_cy_pickMode changchao 分支
   var s2 = cy.indexOf('function _cy_pickMode(');

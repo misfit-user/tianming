@@ -34,8 +34,6 @@ ok(!!arcFnSrc, '① _arcTypeCN 抽取成功');
   ok(!/[a-zA-Z]/.test(Object.keys(ctx.M).map(function(k){return ctx.M[k];}).join('')), '① 映射值全中文无英文残留');
 }
 // ── ② 渲染点契约 ──
-ok(/ti:_arcTypeCN\(a\.type\)/.test(tuzhi), '② tabBenji 本纪卷走 _arcTypeCN');
-ok(/esc\(_arcTypeCN\(a\.type\)\)/.test(tuzhi), '② tabMemory 角色弧线走 _arcTypeCN');
 ok(tuzhi.indexOf('esc(a.type)')<0, '② 零裸 esc(a.type)(英文不再直显)');
 
 // ── ③ 编年 CHRONICLE_TYPE_CN + _chronicleTypeCN ──
@@ -55,8 +53,6 @@ ok(!!chFnSrc, '③ _chronicleTypeCN 抽取成功');
   ok(ctx.F({category:'',type:'未知键'})==='未知键', '③ 未知键透传(不丢字)');
 }
 // ── ④ 编年 active 行契约 ──
-ok(/type: _chronicleTypeCN\(t\)/.test(recs), '④ active 行 type 走 _chronicleTypeCN');
-ok(/tags: \[_chronicleTypeCN\(t\)\]/.test(recs), '④ active 行 tags 走 _chronicleTypeCN');
 ok(recs.indexOf("type: t.type || '长期事势'")<0, '④ 零裸 type: t.type||长期事势(英文不再当 chip)');
 
 console.log('\n结果: '+A+' 通过 / 0 失败');

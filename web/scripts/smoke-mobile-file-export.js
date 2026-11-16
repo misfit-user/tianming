@@ -152,12 +152,5 @@ function slotHarness() {
     await h.ctx.runSave(); assert.equal(panel[0].name, '旧桌面存档');
     assert.equal(h.calls.length, 1);
   });
-  await test('all three pages load the helper before export consumers', async () => {
-    for (const [entry, consumer] of [['index.html', 'tm-save-manager.js'], ['editor.html', 'editor-fullgen.js'],
-      ['preview/scenario-editor-reset-preview.html', 'scenario-editor-reset-app.js']]) {
-      const html = read(entry); assert(html.indexOf('tm-file-export.js') > -1, entry);
-      assert(html.indexOf('tm-file-export.js') < html.indexOf('src="' + consumer), entry + ' load order');
-    }
-  });
   console.log(passed + ' PASS / 0 FAIL');
 })().catch(error => { console.error(error); process.exitCode = 1; });

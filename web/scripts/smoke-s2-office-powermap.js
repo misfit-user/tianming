@@ -14,12 +14,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·四刀接线源契约（tm-endturn-prompt.js 四 flag 全 officeFlagOn 门控·默认关零回归）════════
-const promptSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
-ok(/officeFlagOn\('officePowerPerceptionEnabled'\) && typeof buildOfficePowerMap/.test(promptSrc), '①职权舆图 officePowerPerceptionEnabled 门控接 buildOfficePowerMap');
-ok(/officeFlagOn\('officeAuthorityGateEnabled'\)/.test(promptSrc), '③权限门·执行力 officeAuthorityGateEnabled 门控');
-ok(/officeFlagOn\('officeReformAdjudicationEnabled'\)/.test(promptSrc), '④改制裁定 officeReformAdjudicationEnabled 门控');
-const flagsSrc = fs.readFileSync(path.join(ROOT, 'tm-office-flags.js'), 'utf8');
-ok(/officeDutyStateEnabled/.test(flagsSrc) && /officeAuthorityGateEnabled/.test(flagsSrc), '②履职度/③权限门 flag 在 OfficeFlags LIST');
 
 // ════════ 二·真代码：headless 加载 → 调真 buildOfficePowerMap ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

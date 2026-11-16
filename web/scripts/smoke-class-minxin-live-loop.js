@@ -278,9 +278,6 @@ function load(file) {
   assert(/阶层民心/.test(detailHtml), 'right rail detail should render class-minxin block');
   assert(/Canal Laborers/.test(detailHtml) && /Canal Ward/.test(detailHtml), 'right rail detail should render class-minxin class and region evidence');
 
-  const endturnSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
-  assert(/ClassMinxinBridge\.maintain/.test(endturnSource), 'pre-submit endturn path should maintain class-minxin bridge even without fresh LLM changes');
-
   console.log('[smoke-class-minxin-live-loop] PASS live loop');
 })().catch((e) => {
   console.error('[smoke-class-minxin-live-loop] FAIL:', (e && e.stack) || e);

@@ -44,7 +44,4 @@ assert(accepted, 'collected accepted memory should keep schema fields');
 assert.strictEqual(accepted.schemaVersion, 'memory-envelope/v0', 'collected envelope should keep schemaVersion');
 assert.strictEqual(accepted.saveId, 'save-alpha', 'collected envelope should keep saveId');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-envelope-schema-v0.js'), 'verify-all should include envelope schema smoke');
-
 console.log('smoke-memory-envelope-schema-v0 ok');

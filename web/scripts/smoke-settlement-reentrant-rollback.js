@@ -10,25 +10,14 @@
 //       ④引擎抛错→留在 Agent 支路并显式回滚单例 ⑤自检不过→留在 Agent 支路并回滚 ⑥happy 不还原(已提交)
 //   注:真 50-tick 引擎 node 跑不动·单例用记录型 stub 挂 globalThis 验编排闭环(同 s5 范式)。
 // ============================================================
-const fs = require('fs');
 const path = require('path');
 const { ROOT, makeAssert } = require('./smoke-endturn-baseline-helpers');
 const passed = { value: 0 };
 const assert = makeAssert(passed);
 
 // ── ① 真模块 API:两单例暴露 snapshot/restore ──
-const cqSrc = fs.readFileSync(path.join(ROOT, 'tm-change-queue.js'), 'utf8');
-const mechSrc = (fs.readFileSync(path.join(ROOT, 'tm-mechanics.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-mechanics-memory.js'), 'utf8'));
-assert(/function restoreLedger\(snap\)/.test(cqSrc) && /restoreLedger: restoreLedger/.test(cqSrc), '① AccountingSystem 加 restoreLedger 并暴露');
-assert(/function getPreviousValues\(\)/.test(mechSrc) && /getPreviousValues: getPreviousValues/.test(mechSrc), '① StateCouplingSystem 加 getPreviousValues 并暴露');
-assert(/function restorePreviousValues\(snap\)/.test(mechSrc) && /restorePreviousValues: restorePreviousValues/.test(mechSrc), '① StateCouplingSystem 加 restorePreviousValues 并暴露');
 
 // ── ② agent-mode 接线源码守卫 ──
-const amSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-agent-mode.js'), 'utf8');
-assert(/function _rollback\(gm, snapshot, ctx, extSnap\)/.test(amSrc), '② _rollback 加可选第4参 extSnap');
-assert(/_restoreExternals\(extSnap\)/.test(amSrc) && /function _restoreExternals/.test(amSrc), '② _rollback 内调 _restoreExternals');
-assert(/var _extSnap = _snapshotExternals\(\)/.test(amSrc), '② run() 结算前捕获 _extSnap');
-assert((amSrc.match(/_rollback\(gm, snapshot, ctx, _extSnap\)/g) || []).length >= 2, '② 两处回滚点(bail+引擎抛错)都传 _extSnap');
 
 // ── 真集成:stub 两单例挂 globalThis + require agent-mode(同 s5) ──
 function makeAcctStub() {

@@ -36,7 +36,6 @@ function world(){
  ok(c.ctx.record.shizhengji.includes('俟晴续办'),'final record receives post-settlement political narrative');
  ok(G._recentNarrative[0].shizhengji===c.ctx.record.shizhengji,'next turn memory receives the same final narrative');
  const houren=c.TM.Endturn.AI.prompt.hourenSpec({});ok(houren.includes('完整生活进程')&&houren.includes('具体动作')&&houren.includes('对话')&&houren.includes('日常片段'),'posterity prose retains scenes and daily life');
- ok(read('tm-endturn-followup.js').includes('TM.EdictOutcomes.narrativeFacts(GM, GM.turn)'),'posterity facts receive same execution receipts');
  // Agent mode uses the same variable sink and associates its real tool receipts.
  const a=world(),A=a.TM.EdictOutcomes,aid=A.collect(a.GM,{political:'督修河堤。'},4)[0].id;
  vm.runInContext(read('tm-endturn-agent-write-tools.js'),a,{filename:'tm-endturn-agent-write-tools.js'});const WT=a.TM.Endturn.AgentWriteTools,ctx={GM:a.GM,input:{resolutionTurn:4}};

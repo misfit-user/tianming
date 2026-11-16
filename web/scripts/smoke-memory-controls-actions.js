@@ -49,7 +49,4 @@ assert(ranked.suppressed.some((s) => s.reason === 'marked_false'), 'markFalse sh
 MC.supersedeMemory(GM, ref, { type: 'currentIssues', id: 'issue-river-new' }, { reason: 'merged into newer issue' });
 assert(GM._memEdges.some((e) => e.type === 'supersedes' && e.src === 'currentIssues:issue-river-new' && e.dst === 'currentIssues:issue-river'), 'supersedeMemory should create a memory edge');
 
-const index = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(index.includes('tm-memory-controls.js'), 'index should load tm-memory-controls.js');
-
 console.log('smoke-memory-controls-actions ok');

@@ -244,9 +244,6 @@ assert(influencePos >= 0, 'index.html missing tm-influence-groups.js');
 assert(constantsPos >= 0 && constantsPos < influencePos, 'influence groups must load after engine constants');
 assert(inferPos >= 0 && influencePos < inferPos, 'influence groups should load before endturn infer');
 
-const loopText = (fs.readFileSync(path.join(ROOT, 'tm-game-loop.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-game-loop-wentian-hardchange.js'), 'utf8'));
-assert(loopText.indexOf('TM.InfluenceGroups.bootstrap') >= 0, 'game loop missing influence group bootstrap');
-
 assert(context.CorruptionEngine && context.CorruptionEngine.Sources, 'CorruptionEngine sources missing');
 context.GM = {
   influenceGroupState: {

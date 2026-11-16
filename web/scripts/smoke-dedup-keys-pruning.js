@@ -49,8 +49,4 @@ assert(root._classMinxinBridgeKeys['sigsys|e2|class:nong|90'] === true, '⑧ 窗
 assert(root._classMinxinBridgeKeys['legacy|weird|noturn'] === true, '⑨ 异形键(尾非数字)保留不误删');
 assert(root._classMinxinBridgeKeys._prunedAtTurn === 100, '⑩ 回合清扫标记');
 
-// ── 静态契约：接线在真调用路径上 ──
-assert(schedSrc.indexOf('_pruneSeenKeys(seen, _nowTurn)') >= 0 && schedSrc.indexOf('seen[key] = _nowTurn') >= 0, '⑪ rememberOnce 走戳号+清扫(不再写 true)');
-assert(bridgeSrc.indexOf('_pruneBridgeKeys(root)') >= 0, '⑫ ensureLedger 挂清扫');
-
 console.log('smoke-dedup-keys-pruning OK — ' + N + ' 断言全绿（按龄清/旧档补戳/异形保留/每回合一趟）');

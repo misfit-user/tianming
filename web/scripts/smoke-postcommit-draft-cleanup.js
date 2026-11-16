@@ -54,7 +54,5 @@ const clearStart = formal.indexOf('function clearFormalEdictDrafts()');
 const clearBody = sliceFn(formal, 'function clearFormalEdictDrafts()');
 check(clearStart >= 0 && clearBody.indexOf('state.edictDraft = []') < clearBody.indexOf('clearFormalDraftStore'),
   'formal bridge clears in-memory truth before fallible persistence cleanup');
-check(/return \{ ok: errors\.length === 0, committed: true, errors: errors \}/.test(clearBody),
-  'formal bridge returns an explicit committed cleanup result instead of throwing after state clear');
 
 console.log('[smoke-postcommit-draft-cleanup] PASS assertions=' + assertions);

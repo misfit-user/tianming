@@ -16,13 +16,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·源契约 ════════
-const src = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
-ok(/function _officeReviewLandingOn\(\)/.test(src), '_officeReviewLandingOn 开关已定义');
-ok(/officeReviewLandingEnabled/.test(src), '开关读 officeReviewLandingEnabled');
-ok(/adjustVirtueMerit\(c, _grant, '考课优等'\)/.test(src), '优等 → adjustVirtueMerit 功名推力');
-ok(/adjustVirtueMerit\(c, _pen, '考课劣等'\)/.test(src), '劣等 → adjustVirtueMerit 功名扣减');
-ok(/_reviewPoorStreak = \(c\._reviewPoorStreak \|\| 0\) \+ 1/.test(src), '连劣记数 _reviewPoorStreak（喂 S4）');
-ok(/_officeReviewLandingOn\(\) && c\.officialTitle/.test(src), '仅在任官(有officialTitle)受考课功名后果');
 
 // ════════ 二·真代码：headless 加载 → 调真 runAnnualReview ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

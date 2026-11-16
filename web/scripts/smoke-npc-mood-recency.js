@@ -29,11 +29,6 @@ function mkMood(src, turn) {
 const SRC = (fs.readFileSync(path.join(ROOT, 'tm-mechanics.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-mechanics-memory.js'), 'utf8'));
 const mood = mkMood(SRC, 40); // 当前回合 40
 
-// ── 源契约 ──
-ok(/时近加权/.test(SRC), '契约:时近加权注释');
-ok(/if \(age > 8\) return;/.test(SRC), '契约:>8回合旧事件不主导');
-ok(/m\.emotion === '平'\) return;/.test(SRC), '契约:跳过"平"噪声');
-
 // ① 近期强情绪主导
 ok(mood({ _memory: [{ emotion: '怒', importance: 8, turn: 39 }] }) === '怒', '① 近期(turn39)怒→心绪怒');
 

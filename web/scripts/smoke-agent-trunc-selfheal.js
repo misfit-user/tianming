@@ -11,16 +11,12 @@ const passed = { value: 0 };
 const assert = makeAssert(passed);
 
 // ── ① infra 源契约:callAIWithTools 返回带纯增量 truncated(三家 finish_reason) ──
-const infraSrc = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
-assert(/return \{ text: text, toolCalls: toolCalls, truncated: _truncH2 \};/.test(infraSrc), '① infra 工具调用返回带 truncated 字段(纯增量·不读则如旧)');
-assert(/finish_reason === 'length'/.test(infraSrc) && /data\.stop_reason === 'max_tokens'/.test(infraSrc) && /finishReason === 'MAX_TOKENS'/.test(infraSrc), '① 三家截断信号全覆盖(OpenAI/Anthropic/Gemini)');
 
 // ── ② agent-mode 源契约:截断分支在 narrative 赋值之前(截断叙事不污染产出) ──
 const modeSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-agent-mode.js'), 'utf8').replace(/\r/g, '');
 const truncIdx = modeSrc.indexOf('resp.truncated && !(Array.isArray(resp.toolCalls)');
 const narrIdx = modeSrc.indexOf('if (resp.text && !state.narrative) state.narrative = resp.text;');
 assert(truncIdx > 0 && narrIdx > truncIdx, '② 截断重试分支先于 narrative 赋值(截断文本不入产出)');
-assert(/round--; continue;/.test(modeSrc) && /_tokBump < 2/.test(modeSrc), '② 重试同一轮·≤2 次熔断');
 
 // ── ③ 行为:真跑 run()·首轮截断 → maxTok 2400→4800 重试 → 落地 → 完成 ──
 (async function () {

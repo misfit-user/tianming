@@ -145,14 +145,4 @@ const prompt = HL.formatForPrompt(sandbox.GM, { limit: 8 });
 assert(/Minxin Hard Links/.test(prompt), 'prompt should identify hard links');
 assert(/fiscal/.test(prompt) && /hukou/.test(prompt) && /conscription/.test(prompt), 'prompt should include fiscal, hukou, and conscription summaries');
 
-const src = name => fs.readFileSync(path.join(ROOT, name), 'utf8');
-const index = src('index.html');
-assert(index.indexOf('tm-minxin-hard-links.js') > 0, 'index should load hard links');
-assert(index.indexOf('tm-minxin-responsibility-chain.js') < index.indexOf('tm-minxin-hard-links.js'), 'hard links should load after responsibility chain');
-assert(index.indexOf('tm-minxin-hard-links.js') < index.indexOf('tm-endturn-core.js'), 'hard links should load before endturn core');
-assert(/MinxinHardLinks\.tick/.test(src('tm-endturn-core.js')), 'endturn should tick hard links before LLM');
-assert(/MinxinHardLinks\.formatForPrompt/.test(src('tm-endturn-core.js')), 'endturn prompt should include hard links');
-assert(/Minxin Hard Links/.test((src('phase8-formal-rightrail.js') + src('phase8-formal-rightrail-social.js'))), 'right rail debug should expose hard links');
-assert(/_renderMinxinHardLinks/.test(src('tm-topbar-vars.js')), 'topbar minxin panel should expose hard links');
-
 console.log('[smoke-minxin-hard-links] PASS minxin hard links');

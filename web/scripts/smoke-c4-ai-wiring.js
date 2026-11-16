@@ -72,8 +72,5 @@ const gBad = mkRebelGM();
 runConsumer(gBad, { roving_actions: [null, { action: '' }, { foo: 1 }] });
 ok(gBad.rovingRebels[0].strength === p0 || gBad.rovingRebels[0].strength > 0, '脏 roving_actions 安全(无 action 不动)');
 
-// 源契约
-ok(/【流寇警报】/.test(ctxSrc) && /roving_actions/.test(applySrc) && /roving_actions/.test(fs.readFileSync(path.join(WEB, 'tm-ai-schema.js'), 'utf8')), '源契约·prompt+schema+apply 三处接通');
-
 console.log('\n[smoke-c4-ai-wiring] ' + (F ? 'FAIL' : 'PASS') + ' — ' + A + ' 通过 / ' + F + ' 失败');
 process.exit(F ? 1 : 0);

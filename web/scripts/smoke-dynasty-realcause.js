@@ -45,10 +45,5 @@ var r3 = ctx._consumeDynastyEndSignal();
 assert(r3 === null, '⑧ 已消费信号不重弹');
 
 // ── 静态契约：信号写入端带真亡因 + 太史公 _fgDetail 组装 ──
-const auth = fs.readFileSync(path.join(ROOT, 'tm-authority-complete.js'), 'utf8');
-assert(auth.indexOf('region: r.region') >= 0 && auth.indexOf('levelName: (REVOLT_LEVELS[r.level - 1]') >= 0, '⑨ 写入端补 region/levelName');
-const helpers = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
-assert(helpers.indexOf('_fgDetail') >= 0 && helpers.indexOf("failGoal._dynastyEnd") >= 0, '⑩ 太史公 prompt 带 _fgDetail(亡因细节)');
-assert(helpers.indexOf('+ _fgDetail :') >= 0, '⑪ _fgDetail 已拼入失败句');
 
 console.log('smoke-dynasty-realcause OK — ' + N + ' 断言全绿（真亡因入信号/文案/太史公·旧档回落）');

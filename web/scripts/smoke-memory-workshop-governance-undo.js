@@ -240,7 +240,4 @@ assert(!GM._memoryControls['draft-undo'], 'panel Undo should remove a control cr
 assert(markEvent.undone === true, 'panel Undo should mark the audit event as undone');
 assert(body.innerHTML.includes('undone'), 'panel refresh should show undone audit status');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-governance-undo.js'), 'verify-all should include Workshop governance undo smoke');
-
 console.log('smoke-memory-workshop-governance-undo ok');

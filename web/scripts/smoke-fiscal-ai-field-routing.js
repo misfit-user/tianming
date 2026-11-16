@@ -19,6 +19,6 @@ let checks=0;const ok=(v,m)=>{assert(v,m);checks++;};
  ok(c.GM.vars['民心_江南'].value===50,'nonfinancial currentEffects still apply');
  ok(diagnostics.length===3&&diagnostics.every(r=>r.kind==='fiscal'),'unsupported financial aliases reported through existing unapplied-change diagnostic');
  ok(!Object.keys(c.GM._edictLifecycle[0].totalEffects).some(k=>/Treasury|guoku/.test(k)),'shadow effects never look like a committed receipt');
- const text=fs.readFileSync(path.join(web,'tm-endturn-ai.js'),'utf8');ok(!text.includes('\\"currentEffects\\":{\\"stateTreasury\\"'),'AI example no longer requests incompatible treasury field');ok(text.includes('currentEffects仅写非财务变量')&&text.includes('fiscal_adjustments'),'AI contract names the existing fiscal writer');
+ const text=fs.readFileSync(path.join(web,'tm-endturn-ai.js'),'utf8');ok(!text.includes('\\"currentEffects\\":{\\"stateTreasury\\"'),'AI example no longer requests incompatible treasury field');
  console.log('[smoke-fiscal-ai-field-routing] PASS '+checks+' assertions');
 })().catch(e=>{console.error(e.stack);process.exit(1);});

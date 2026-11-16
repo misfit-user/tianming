@@ -111,7 +111,4 @@ assert.strictEqual(cleared, true, 'clear-rollup-control returns true');
 assert(!GM._memoryControls['issue-chain-salt'], 'clear removes control');
 assert(GM._memoryAuditEvents.some((event) => event.action === 'clear_rollup_control' && event.id === 'issue-chain-salt'), 'clear action audited');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-rollup-controls.js'), 'verify-all should include rollup workshop smoke');
-
 console.log('smoke-memory-workshop-rollup-controls ok');

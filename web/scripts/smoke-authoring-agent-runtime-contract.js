@@ -1,6 +1,5 @@
 'use strict';
 // 剧本工坊运行契约：手动自动选模、懒加载工具包、原子批写、暂存副作用、真取消。
-const fs = require('fs');
 const path = require('path');
 const { ROOT, makeAssert } = require('./smoke-endturn-baseline-helpers');
 const passed = { value: 0 };
@@ -102,10 +101,6 @@ assert(atomicOk.ok && atomicOk.atomic && atomicDraft.name === '新名' && atomic
   assert(AA.abort() === true, 'abort 找到并停止活动运行');
   const cancelled = await cancelRun;
   assert(abortedSignal && cancelled.stopReason === 'aborted', '停止会取消在途调用并干净返回 aborted');
-
-  const uiSrc = fs.readFileSync(path.join(ROOT, 'editor-authoring-agent-ui.js'), 'utf8');
-  assert(/act: 'auto-select'/.test(uiSrc) && /ui\._autoModeArmed/.test(uiSrc), '自动选择是玩家显式武装的工作模式');
-  assert(/data-pm="plan"/.test(uiSrc) && /data-pm="review"/.test(uiSrc) && /data-pm="auto"/.test(uiSrc), '自动选模与问策/共审/放行权限模式彼此独立');
 
   console.log('[smoke-authoring-agent-runtime-contract] pass assertions=' + passed.value);
 })().catch(function(e) { console.error(e); process.exit(1); });

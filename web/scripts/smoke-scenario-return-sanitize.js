@@ -25,33 +25,14 @@ function grab(src, name) {
 }
 
 console.log('— 静态·编辑器侧（reset-app） —');
-ok(/function _sanitizeRowEntries\(arr\)/.test(app), '归一 helper _sanitizeRowEntries 在');
-ok(/var _lastReturnSanitize = \{ repaired: 0, dropped: 0 \}/.test(app), '归一计数器 _lastReturnSanitize 在');
 var buildBody = '';
 try { buildBody = grab(app, 'buildRuntimeReturnScenario'); } catch (e) {}
 ok(!!buildBody, 'buildRuntimeReturnScenario 源码可抽取');
-ok(buildBody.indexOf('_sanitizeRowEntries(sc[field])') >= 0, 'buildRuntimeReturnScenario 字段循环先归一');
-ok(buildBody.indexOf('_sanitizeRowEntries(sc[field])') >= 0
-  && buildBody.indexOf('_sanitizeRowEntries(sc[field])') < buildBody.indexOf('next.sid = sc.id'),
-  '先归一后赋 sid（顺序钉死）');
-ok(/已自动修复 '.+_lastReturnSanitize\.repaired/.test(app) && /跳过 '.+_lastReturnSanitize\.dropped/.test(app),
-  '写回成功状态条挂修复/跳过计数');
-ok(/command === 'return-to-formal-runtime'\) \{\s*try \{ returnToFormalRuntime\(\); \}\s*catch \(err\) \{ setStatus\('写回正式页失败：'/.test(app),
-  '命令分支 return-to-formal-runtime 有同步 try/catch（按钮不再装死）');
-ok(/\.catch\(function\(err\) \{\s*setStatus\('写回正式页失败：'/.test(app), '异步 .catch 状态条反馈仍在');
 
 console.log('— 静态·游戏侧（sandbox-bridge） —');
-ok(/function _sanitizeRowEntries\(arr\)/.test(bridge), 'bridge 归一 helper 在');
-ok(/function jsonCandidateFromText\(text\)/.test(bridge), 'bridge 容错 parse 件 jsonCandidateFromText 在（与编辑器侧同款）');
 var normBody = '', installBody = '';
 try { normBody = grab(bridge, 'normalizeRuntimeScenario'); } catch (e) {}
 try { installBody = grab(bridge, 'installRows'); } catch (e) {}
-ok(normBody.indexOf('_sanitizeRowEntries(sc[key])') >= 0
-  && normBody.indexOf('_sanitizeRowEntries(sc[key])') < normBody.indexOf('next.sid = sc.id'),
-  'normalizeRuntimeScenario 先归一后赋 sid');
-ok(installBody.indexOf('_sanitizeRowEntries(rows)') >= 0
-  && installBody.indexOf('_sanitizeRowEntries(rows)') < installBody.indexOf('next.sid = sid'),
-  'installRows 先归一后赋 sid');
 
 console.log('— 行为·编辑器侧 helper（eval 真源码） —');
 try {

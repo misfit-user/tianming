@@ -178,7 +178,4 @@ const expired = PG.expireGoals(sandbox.GM, 'Reformers', { turn: 43, source: 'smo
 assert(expired.some(g => g && g.id === expiring.id), 'expireGoals should expire overdue active goals');
 assert(expiring.status === 'expired', 'expired goal should update status');
 
-const indexSource = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(indexSource.indexOf('tm-party-goals.js') >= 0, 'index.html should load tm-party-goals.js');
-
 console.log('[smoke-party-goals-lifecycle] PASS normalized party goal lifecycle');

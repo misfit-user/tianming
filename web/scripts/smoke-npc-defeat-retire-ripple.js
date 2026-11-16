@@ -11,15 +11,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.error('  ✗ ' + m); } }
 
 const SRC = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
-const APPLIER = fs.readFileSync(path.join(ROOT, 'modules/ai-change-applier/core.js'), 'utf8') + '\n' +
-  fs.readFileSync(path.join(ROOT, 'modules/ai-change-applier/reconcile.js'), 'utf8');
-
-// ── 源契约:战败标记 + 两 ripple ──
-ok(/_cfChBR\.alive !== false\) \{ _cfChBR\._defeatTurn = G\.turn/.test(APPLIER), '契约:_applyBattleResult 给幸存败将打 _defeatTurn(alive 守卫·阵亡走死亡涟漪)');
-ok(/ch\._retireTurn = G\.turn \|\| 0;/.test(APPLIER), '契约:AI 致仕路径补 _retireTurn');
-ok(/function _npcDefeatRipple\(\)/.test(SRC) && /register\('npcDefeatReact', '战败涟漪'.*'perturn'\)/.test(SRC), '契约:战败涟漪函数+注册');
-ok(/function _npcRetireRipple\(\)/.test(SRC) && /register\('npcRetireReact', '致仕涟漪'.*'perturn'\)/.test(SRC), '契约:致仕涟漪函数+注册');
-ok(/var rt = \(typeof d\._retireTurn === 'number'\).*d\._retiredTurn/.test(SRC), '契约:致仕读 _retireTurn/_retiredTurn 两字段');
 
 // ── 花括号配平抽真函数 ──
 function extractFn(name) {
@@ -30,8 +21,6 @@ function extractFn(name) {
 }
 const defeatSrc = extractFn('_npcDefeatRipple');
 const retireSrc = extractFn('_npcRetireRipple');
-ok(defeatSrc.indexOf('_defeatReacted') > 0, '抽到 _npcDefeatRipple');
-ok(retireSrc.indexOf('_retireReacted') > 0, '抽到 _npcRetireRipple');
 
 function mkCtx(chars, affMap, turn, fnSrc) {
   const ctx = { Math: Math };

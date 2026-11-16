@@ -46,7 +46,6 @@ test('annual report escapes names and keys while treasury uses the same read-onl
   ctx.PhaseG4.openYearlyReport();
   assert(!ctx.html.includes('<img'));assert(ctx.html.includes('&lt;img'));assert(ctx.html.includes('&quot;&lt;key&gt;'));
   assert.equal(g.fiscal.regions[id].actualRevenue,777);
-  const source=fs.readFileSync(path.join(__dirname,'../tm-var-drawers.js'),'utf8');
-  assert.match(source,/PhaseG4\.regionLabelsForDisplay\(G\)/);assert.match(source,/_esc\(regionName\)/);
+
 });
 console.log(passed+' PASS, 0 FAIL');

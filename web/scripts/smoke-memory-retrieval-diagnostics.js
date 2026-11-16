@@ -6,7 +6,6 @@ const vm = require('vm');
 const ROOT = path.join(__dirname, '..');
 const retrievalSrc = fs.readFileSync(path.join(ROOT, 'tm-memory-retrieval.js'), 'utf8');
 const traceSrc = fs.readFileSync(path.join(ROOT, 'tm-memory-trace.js'), 'utf8');
-const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 
 const sandbox = { console, Date, Math, JSON, window: {} };
 sandbox.window.window = sandbox.window;
@@ -57,8 +56,5 @@ const retrieval = MT.recordRetrieval(GM, {
 assert.strictEqual(retrieval.suppressed.length, 5, 'MemoryTrace should persist bounded suppressed diagnostics');
 assert(retrieval.suppressed.some((s) => s.reason === 'contradicted'), 'MemoryTrace should persist contradicted suppression reason');
 assert(!JSON.stringify(retrieval).includes('hidden evidencehidden evidence'), 'suppressed diagnostics should not store long raw text');
-
-assert(endturnAi.includes('rankHitsDetailed'), 'SC_RECALL should use rankHitsDetailed for suppression diagnostics');
-assert(endturnAi.includes('suppressed: _traceSuppressed'), 'SC_RECALL trace should include suppressed diagnostics');
 
 console.log('smoke-memory-retrieval-diagnostics ok');

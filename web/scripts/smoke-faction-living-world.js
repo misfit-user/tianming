@@ -193,7 +193,6 @@ function goalLifecycleOnTest() {
   const fld = ctx.TM.FactionNpcLlmDecision;
   ctx.GM._facIndex['甲势力'] = { chars: [], parties: {}, metrics: {} };
   const p = fld._buildPrompt(fac);
-  assert(p.user.includes('sourcePlanId') && !p.user.includes('stepDone'), 'plans progress through concrete adopted operations rather than a model stepDone flag');
 }
 
 // ─────────────── Slice 3·后果事件化 ───────────────
@@ -259,7 +258,6 @@ function b1ContractNotTruncatedTest() {
   assert(c.indexOf('declare_war') >= 0 && c.indexOf('join_war') >= 0, 'B1: contract at maxChars=1800 still lists BOTH new types (not truncated off the tail)');
   assert(c.indexOf('CasusBelliSystem') >= 0, 'B1: the declare_war full field line (mutates=CasusBelliSystem) survives, not just a mention');
   const p = fld._buildPrompt(ctx.GM.facs[0]);
-  assert(p.user.includes('declare_war/join_war') && p.user.includes('actingPositionId'), 'war choices advertise actual acting identity and both domain actions');
   assert(p.user.indexOf('10 种 type') < 0, 'B1: the false "10 种" claim is gone when ON');
 }
 
@@ -506,7 +504,6 @@ function b8AgentModeInertTest() {
   assert(ctx.agentModeOn() && eng.livingWorldOn(), 'Agent 管线具有完整势力世界');
   assert(ctx.agentFlagOn('factionAgentEnabled') && ctx.agentFlagOn('factionGoalStackEnabled'), 'Agent 管线同样具有自主决策和目标栈');
   const p=fld._buildPrompt(ctx.GM.facs[0]);
-  assert(p.user.includes('declare_war') && p.user.includes('proposalResponses'), 'Agent 势力决策保留外交及战争契约');
   const sum=eng.applyDecision(ctx.GM.facs[0],mkDecision([{type:'declare_war',targetFaction:'乙势力',casusBelli:'border'}]),{turn:5});
   assert(sum.wars === 1 && ctx.CasusBelliSystem._calls.length === 1,'Agent 合法战争仍走同一写口');
 }

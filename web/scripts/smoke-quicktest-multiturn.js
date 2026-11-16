@@ -29,13 +29,6 @@ function ok(cond, msg) { if (cond) { passed++; console.log('  ✓ ' + msg); } el
 
 // ═══ 0. 源码契约面（镜像/入口钉，与 smoke-authoring-agent-tools C6 互补） ═══
 console.log('— 0: 源码契约面 —');
-ok(src.indexOf("QUICKTEST_DB_ID = 'quickTestReport:latest'") >= 0, '报告写回 key 保留(quickTestReport:latest·agent 镜像同 key)');
-ok(/TM_SCENARIO_QUICKTEST\s*=/.test(src) && /runById/.test(src), 'TM_SCENARIO_QUICKTEST 句柄 + runById console 入口在');
-ok(/tmScenarioQuickTestTurns/.test(src), 'URL 回合数参数 tmScenarioQuickTestTurns 接线在');
-ok(/_useSecondaryTier/.test(src) && /restoreAiTier/.test(src), '快档路由 engage/restore 在');
-ok(/TM\.invariants/.test(src) && /_fiscalValidatorLog/.test(src) && /_personnelValidatorLog/.test(src), '四类体检全走既有校验器(invariants/fiscal/personnel log)');
-const agentSrc = fs.readFileSync(path.join(ROOT, 'editor-authoring-agent.js'), 'utf8');
-ok(agentSrc.indexOf("'quickTestReport:latest'") >= 0, 'agent 侧读取仍与桥侧同 key(镜像防漂移)');
 
 // ═══ vm 沙箱：mock IndexedDB + mock 回合引擎(按 plan 编排) ═══
 function makeIDB() {

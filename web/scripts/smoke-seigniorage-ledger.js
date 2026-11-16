@@ -18,7 +18,6 @@ const mintSrc = sliceFn(eco, 'function _mintCycle(');
 const accountingSrc = sliceFn(eco, 'function CURRENCY_LEDGER_V2(');
 ok(!!mintSrc, '_mintCycle 抽取成功');
 ok(!!accountingSrc, '装载真实的记账模式判定，保持旧剧本铸钱回归');
-ok(/typeof gk\.ledgers\.money === 'object'/.test(mintSrc) && /_ml\.stock =/.test(mintSrc), '源契约:入库走 money ledger.stock(对象守卫)');
 ok(mintSrc.indexOf('gk.ledgers.money += ') < 0, '源契约:旧 gk.ledgers.money += number 已清');
 
 // ── swap-test:旧写法复现损坏 ──

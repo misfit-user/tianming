@@ -183,8 +183,4 @@ assert(/court=approved/.test(prompt), 'prompt should include approved court deci
 assert(/court=rejected/.test(prompt), 'prompt should include rejected court decision');
 assert(/court=deferred/.test(prompt), 'prompt should include deferred court decision');
 
-const src = name => fs.readFileSync(path.join(ROOT, name), 'utf8');
-assert(/HujiGovernanceLoop\.applyCourtFeedbacks/.test(src('tm-endturn-core.js')), 'pre-submit should apply court feedback');
-assert(/applyCourtFeedbacks/.test(src('tm-huji-governance-loop.js')), 'governance loop should implement court feedback bridge');
-
 console.log('[smoke-huji-governance-court-feedback] PASS huji governance court feedback');

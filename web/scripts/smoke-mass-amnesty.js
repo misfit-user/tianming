@@ -72,7 +72,5 @@ c4.applyEdictActions(c4.extractEdictActions('大赦天下。'));
 assert(c4.GM.currentIssues[0] && c4.GM.currentIssues[0].description.indexOf('无可赦之囚') >= 0, '⑳ 狱空诚实昭告');
 
 // ── 静态契约：设置开关在位 ──
-const patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-assert(patches.indexOf("'massAmnestyEnabled'") >= 0, '⑴ tm-patches 设置开关已挂(massAmnestyEnabled)');
 
 console.log('smoke-mass-amnesty OK — ' + N + ' 断言全绿（识别否定门/群放归/重罪不赦/昭告/flag闸）');

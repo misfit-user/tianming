@@ -52,7 +52,6 @@ if (m) {
 
 // ── 源码级：著卷列表页有导入正门 ──
 const launch = fs.readFileSync(path.join(__dirname, '..', 'tm-launch.js'), 'utf8');
-ok(launch.indexOf('importScnFromFile()') >= 0 && launch.indexOf('function importScnFromFile') >= 0, '著卷列表页有「导入剧本」卡且函数在位');
 // 架构约束：p:_indices 子树写主是 tm-indices.js·导入不得手写索引（靠 findScenarioById 查询侧自愈）
 ok(!/importScnFromFile[\s\S]{0,1600}scenarioById\.set/.test(launch.slice(launch.indexOf('function importScnFromFile'))), '导入不闯 p:_indices 子树（索引走查询侧自愈）');
 

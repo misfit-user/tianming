@@ -73,8 +73,6 @@ assert(/新生·死亡·逃散/.test(deathHtml) && /tr-reason-txt/.test(deathHtm
 
 // ── 静态契约（2026-07-06 组装迁 compose·模式随 _sjc 名）──
 const src = fs.readFileSync(path.join(ROOT, 'tm-endturn-shiji-compose.js'), 'utf8');
-assert(/reasons: _sjcCoreMetricReasons\(k, label\)/.test(src), '⑩ 政治核心 push 已接 _sjcCoreMetricReasons(非 reasons:[])');
-assert(/reasonsHtml: _sjcPopReasonHtml\(\['flee'\]/.test(src), '⑪ 逃户 reasonsHtml 已接 _sjcPopReasonHtml');
 assert(!/民逃江淮/.test(src), '⑫ 旧误导硬编「民逃江淮」已除');
 
 console.log('[smoke-endturn-cause-legibility] pass assertions=' + n);

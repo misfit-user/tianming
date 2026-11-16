@@ -5,10 +5,8 @@ const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
 const compilerPath = path.join(ROOT, 'tm-memory-context-compiler.js');
-const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 
 assert(fs.existsSync(compilerPath), 'tm-memory-context-compiler.js should exist');
-assert(endturnAi.includes('MemoryContextCompiler'), 'SC_RECALL should route recall prompt text through MemoryContextCompiler when available');
 
 const sandbox = { console, Date, Math, JSON, window: {} };
 sandbox.window.window = sandbox.window;

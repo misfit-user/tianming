@@ -74,25 +74,6 @@ console.log('===== Slice 3·赴任在途硬名册逻辑 =====');
   assert(!_enRoute.some(l => l.indexOf('李四') >= 0), '死者李四不入在途名册');
 })();
 
-// ───────────────────────────────────────────────────────────────────
-// Slice 3b: 源码契约·firewall 块确有确定性在途硬名册(非仅靠 AI 摘要)
-// ───────────────────────────────────────────────────────────────────
-console.log('===== Slice 3·源码契约 =====');
-(function(){
-  const src = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
-  assert(/【赴任在途·尚未到任名册·硬约束】/.test(src), 'prompt 含【赴任在途·尚未到任名册·硬约束】标题');
-  assert(/不得叙事其已在目的地视事[、，].*赈灾/.test(src), '硬约束明列"不得叙事已在目的地视事…赈灾"');
-  // 名册遍历 c._travelTo·且滤 alive===false
-  const block = src.slice(src.indexOf('var _enRoute'), src.indexOf('var _enRoute') + 900);
-  assert(/c\._travelTo/.test(block) && /alive === false/.test(block), '名册遍历 GM.chars 取 _travelTo 且滤死者');
-})();
-
-// 校验器仍拼 zhengwen(Slice 1 契约·防回退)
-(function(){
-  const src = fs.readFileSync(path.join(ROOT, 'generated/tm-ai-change-applier.bundle.js'), 'utf8');
-  assert(/aiOutput\.zhengwen\) narrativeText \+=/.test(src), '人事校验器叙事文本已含 zhengwen 字段(Slice 1)');
-})();
-
 console.log('');
 console.log(`[smoke-death-office-travel-roster] ${passed} passed / ${failed} failed`);
 if (failed > 0) process.exit(1);

@@ -29,14 +29,7 @@ ok(I.getLog('不存在之邦').length === 0, 'A⑤ 无记录之邦 → 空');
 
 // ───────── B. 显示源契约 ─────────
 const ui = fs.readFileSync(path.join(ROOT, 'tm-three-systems-ui.js'), 'utf8');
-ok(/_actCN = \{ bribe:'暗结收买', spreadRumor:'散播谣言', sponsorRebellion:'资助内斗', espionage:'刺探军情' \}/.test(ui), 'B① action 中文化映射(暗结/散谣/资助内斗/刺探)');
-ok(ui.indexOf('我朝谍报·已对') >= 0, 'B② 标题「我朝谍报」(原「已用干预」薄行已替换)');
-ok(ui.indexOf("var actCN = _actCN[i.action] || '密遣'") >= 0, 'B③ 未知 action 兜底「密遣」(绝不漏英文码)');
-ok(/已策反/.test(ui) && /忠诚-/.test(ui), 'B④ bribe 结果:已策反/忠诚-N');
-ok(/得手/.test(ui) && /未果/.test(ui), 'B⑤ 其它动作成败:得手/未果');
-ok(/万两/.test(ui) && /万石/.test(ui), 'B⑥ 花费渲染(万两/万石)');
 // ★旧英文泄漏行已除
 ok(ui.indexOf("['+esc(i.action)+']") < 0, 'B⑦ ★旧 [英文action] 泄漏行已除');
-ok(/TM\.FactionNpcIntervention\.getLog\(fac\.name\)/.test(ui), 'B⑧ 仍真读 getLog(fac.name)');
 
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

@@ -9,5 +9,4 @@ const seats=JSON.stringify(c.GM.officeTree[0].positions),people=JSON.stringify(c
 c.renderOfficeDeptV2=(dept)=>'<section>'+dept.name+'</section>';c.renderOfficeTree(true);assert.equal(JSON.stringify(c.GM.officeTree[0].positions),seats);assert.equal(JSON.stringify(c.GM.chars),people);assert.equal(JSON.stringify(c.GM.guoku),money);assert(el.innerHTML.includes('本署'));
 // Explicit import/synchronization remains available to the existing load/settlement paths.
 c._offSyncHoldersFromChars({force:true,importSeats:true});assert(c.GM.officeTree.some(d=>(d.positions||[]).some(p=>p.holder==='甲')));
-const rail=fs.readFileSync(path.resolve(__dirname,'../phase8-formal-rightrail.js'),'utf8');assert(rail.includes('_offSyncHoldersFromChars({readOnly:true})'));
 console.log('[smoke-office-tree-render-rederive] PASS real render is read-only; explicit load/import synchronization remains functional');

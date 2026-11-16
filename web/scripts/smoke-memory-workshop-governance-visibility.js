@@ -114,7 +114,4 @@ assert(fullHtml.includes('data-section="drafts"'), 'full Workshop should include
 assert(fullHtml.includes('data-section="accepted-memory"'), 'full Workshop should include Accepted section');
 assert(fullHtml.includes('supersededBy=accepted-river-new'), 'full Workshop should surface governance control state');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-governance-visibility.js'), 'verify-all should include Workshop governance visibility smoke');
-
 console.log('smoke-memory-workshop-governance-visibility ok');

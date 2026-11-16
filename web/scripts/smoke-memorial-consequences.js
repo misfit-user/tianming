@@ -80,13 +80,5 @@ assert(chars['甲'].stress !== chars['乙'].stress && chars['丙'].stress !== ch
 assert(loyaltyLog['君'] === undefined && faceLog['君'] === undefined && chars['君'].stress === 0 && chars['君'].loyalty === 100, '君上为上奏者→差异化后果跳过');
 
 // ── Part B：源契约（deskStageMemorial 接通廷议） ──
-const draftsSrc = fs.readFileSync(path.join(ROOT, 'phase8-formal-drafts.js'), 'utf8');
-const dsi = draftsSrc.indexOf('function deskStageMemorial(');
-const dei = draftsSrc.indexOf('deskRefreshLegacy();', dsi);
-const dseg = draftsSrc.slice(dsi, dei);
-assert(dseg.indexOf('_pendingTinyiTopics') >= 0, 'deskStageMemorial 接入 _pendingTinyiTopics（兑现奏疏→廷议）');
-assert(/decision === 'court_debate'/.test(dseg), '仅 court_debate 推入廷议队列');
-assert(dseg.indexOf('_memTinyiId') >= 0, '带 _memTinyiId 去重 + 改主意撤回');
-assert(dseg.indexOf('m._tinyiQueuedId') >= 0, '记 _tinyiQueuedId 以便改主意时移除陈旧议题');
 
 console.log('PASS smoke-memorial-consequences · ' + passed + ' 断言');

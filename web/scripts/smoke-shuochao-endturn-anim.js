@@ -43,7 +43,6 @@ ok(ctx.matchBeat('回合阶段 3/6').beat.id === 'step-3', '③ 「回合阶段 
 
 // ── ④ tm-court-meter.js 源契约 ──
 // '时移事去' = 时移事去
-ok(COURT.indexOf("showLoading('\\u65F6\\u79FB\\u4E8B\\u53BB', 50)") >= 0, '④ 退朝 AI 未就绪分支改触发 core-start(时移事去)');
 ok(COURT.indexOf("showLoading('\\u5019\\u6709\\u53F8\\u63A8\\u6F14\\u2026\\u2026', 50)") < 0, '④ 不再用老「候有司推演……」plain loading');
 // 仍在 AI-未就绪分支(courtDone=true 之后·return 之前)
 const branchIdx = COURT.indexOf('GM._pendingShijiModal.courtDone = true;');

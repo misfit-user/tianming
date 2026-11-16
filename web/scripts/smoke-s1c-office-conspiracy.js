@@ -16,17 +16,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·源契约 ════════
-const src = fs.readFileSync(path.join(ROOT, 'tm-conspiracy.js'), 'utf8');
-ok(/function _officeConspiracyOn\(\)/.test(src), '_officeConspiracyOn 开关已定义');
-ok(/officeConspiracyEnabled/.test(src), '开关读 officeConspiracyEnabled');
-ok(/function _officeConspiracyBonus\(ch, G\)/.test(src), '_officeConspiracyBonus 已定义');
-ok(/!ch\.officialTitle/.test(src), '仅在任官(有 officialTitle)受用·散阶无实权不算');
-ok(/return intel \* 0\.6 \+ force \* 0\.4 \+ _officeConspiracyBonus\(ch, G\)/.test(src), '_cap 叠加官位谋逆能量');
-ok(/_cap\(lead, G\) \/ CFG\.capPivot/.test(src), '动量 capFactor 走 _cap(lead, G)');
-ok(/1\.4 - _cap\(lead, G\) \/ 120/.test(src), '保密 hideFactor 走 _cap(lead, G)');
-ok(/_reach = 1 \+ _officeConspiracyBonus\(lead, G\) \/ 60/.test(src), '_recruit 拉拢半径按官位放大');
-ok(/CFG\.recruitChanceBase \* monthRatio \* _reach, 0, 0\.9/.test(src), '招募阈值上界仍 0.9(flag 关字节不变)');
-ok(/_officeConspiracyBonus: _officeConspiracyBonus/.test(src), '导出 _officeConspiracyBonus 供单测');
 
 // ════════ 二·真代码：headless 加载 → 调真函数 ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

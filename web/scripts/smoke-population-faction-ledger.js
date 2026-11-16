@@ -10,9 +10,7 @@ const hujiSource = fs.readFileSync(path.join(ROOT, 'tm-huji-engine.js'), 'utf8')
 const deepSource = fs.readFileSync(path.join(ROOT, 'tm-huji-deep-fill.js'), 'utf8');
 const runtimeBridgeSource = fs.readFileSync(path.join(ROOT, 'tm-huji-runtime-bridge.js'), 'utf8');
 const integrationBridgeSource = fs.readFileSync(path.join(ROOT, 'tm-integration-bridge.js'), 'utf8');
-const economySource = fs.readFileSync(path.join(ROOT, 'tm-economy-engine.js'), 'utf8');
 const historicalSource = fs.readFileSync(path.join(ROOT, 'tm-historical-presets.js'), 'utf8');
-const regionEnrichSource = fs.readFileSync(path.join(ROOT, 'tm-region-enrich.js'), 'utf8');
 
 let pass = 0;
 let fail = 0;
@@ -740,19 +738,6 @@ console.log('[smoke-population-faction-ledger]');
     && context.GM.population.national.mouths === after,
   'large-corvee mortality survives the complete leaf-to-national bridge');
 }
-
-ok(/function _applyEnvironmentPopulationLoss/.test(economySource)
-  && /HujiEngine\.applyPopulationLoss/.test(economySource)
-  && !/pop\.mouths\s*=/.test(economySource)
-  && !/Math\.max\(10000\s*,/.test(economySource),
-  'environment crisis mortality is routed through the leaf ledger');
-ok(/HujiEngine\.applyPopulationLoss\(Object\.assign\(target/.test(historicalSource)
-  && /faction-target-required/.test(historicalSource)
-  && !/population\.national\.mouths\s*=\s*Math\.max\(100000/.test(historicalSource),
-  'historical plague and war casualties are routed through the leaf ledger');
-ok(/HujiEngine\.applyPopulationLoss\(\{ cause:'disease-cycle:/.test(regionEnrichSource)
-  && !/population\.national\.mouths\s*=\s*Math\.max\(0/.test(regionEnrichSource),
-  'regional disease mortality is routed through the leaf ledger');
 
 console.log('\n[smoke-population-faction-ledger] ' + pass + ' passed / ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

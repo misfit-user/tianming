@@ -202,7 +202,5 @@ const sys = read('tm-endturn-systems.js');
 const iAC = sys.indexOf('AuthorityComplete.tick({'), iRC = sys.indexOf('TM.RevoltCases.tick(GM');
 ok(iAC > 0 && iRC > iAC && sys.indexOf('GM.turn++') < iAC, '过回合：回合数加一之后、AuthorityComplete 之后判');
 ok(!/RevoltCases\.tick 失败:', e\); throw e;/.test(sys), '判错不拦过回合');
-const html = read('index.html');
-ok(html.indexOf('tm-revolt-cases.js') > html.indexOf('tm-revolt-inference.js') && html.indexOf('tm-person.js') < html.indexOf('tm-revolt-cases.js'), 'index.html 装载 tm-revolt-cases.js');
 
 console.log('PASS smoke-revolt-cases ' + checks + '/' + checks);

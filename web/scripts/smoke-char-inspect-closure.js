@@ -119,9 +119,5 @@ var closedCnt = ctx.GM._charInvestigations.filter(function (v) { return v.status
 assert(closedCnt === 12, '⑴ 案卷瘦身已结留12条');
 
 // ── 静态契约：canSeeHidden 按人开门 + 抄家门联动 ──
-const uiSrc = fs.readFileSync(path.join(ROOT, 'tm-char-economy-ui.js'), 'utf8');
-assert(uiSrc.indexOf('_hiddenWealthKnown === true') >= 0, '⑵ canSeeHidden 接 _hiddenWealthKnown(查案开门)');
-const engSrc = fs.readFileSync(path.join(ROOT, 'tm-char-economy-engine.js'), 'utf8');
-assert(engSrc.indexOf('tickInvestigations();') >= 0, '⑶ 引擎 tick 已挂结案调用');
 
 console.log('smoke-char-inspect-closure OK — ' + N + ' 断言全绿（派案防重/三档结案/殁案/旧档兼容/瘦身/揭隐产）');

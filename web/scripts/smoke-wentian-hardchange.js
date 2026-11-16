@@ -159,7 +159,4 @@ assert(dry5.ok === true && dry5.kind === 'generic', 'dry-run allowCreate should 
 const inferred = context._wtAugmentParsedHardChange('天意让袁崇焕所在地改为京师', { category: 'absolute', structured: {} }, 'absolute');
 assert(inferred.hardChange && inferred.hardChange.path === 'chars.袁崇焕.location' && inferred.hardChange.value === '京师', 'Tianyi location text should infer hardChange payload');
 
-assert(src.includes("p.category === 'absolute'") && src.includes('p.hardChange && p.hardChange.path') && src.includes('_wtApplyHardChange(ahc.path'), 'Tianyi branch should immediately apply hardChange payloads');
-assert(src.includes('category":"narrative|setting|hardChange|edictSubstitute|absolute"'), 'Wentian parser JSON schema should allow absolute category');
-
 console.log('[smoke-wentian-hardchange] PASS');

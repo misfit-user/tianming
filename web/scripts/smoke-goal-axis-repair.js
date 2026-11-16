@@ -120,14 +120,5 @@ console.log('— §c · 官方剧本目标 —');
   ok(h.ctx.P.goals[0].completed !== true && h.ctx.P.goals[0].progress === 33, '开局值不白送(仅 turn_before 满足=33%)');
 })();
 
-/* ── §d 侧栏进度契约 ──────────────────────────────────────────── */
-console.log('— §d · 侧栏进度契约 —');
-(function () {
-  var sb = read('tm-sidebar-ui.js');
-  ok(/_calcGoalProgress/.test(sb) && /g\.completed \? 100/.test(sb), '侧栏接进度(完成100/引擎progress/兜底现算)');
-  ok(/typeof g\.progress === 'number'/.test(sb), '优先读 checkGoals 已写的 g.progress');
-  ok(/turn_before/.test(read('tm-endturn-helpers.js')), '引擎 turn_before 分支在');
-})();
-
 console.log('\nsmoke-goal-axis-repair ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
 process.exit(F0 === 0 ? 0 : 1);

@@ -88,11 +88,6 @@ const AM = globalThis.TM.Endturn.AgentMode;
   assert(P.activeBeats() === P.BEATS, '⑤ 非 agent 模式 → activeBeats=BEATS(零回归)');
 
   // ── ⑥ 消费端重建源码守卫 ──
-  var loadSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-loading.js'), 'utf8');
-  assert(/function start\(payload\)/.test(loadSrc), '⑥ start(payload) 接生效拍表');
-  assert(/BEATS = nb/.test(loadSrc) && /builtLen/.test(loadSrc), '⑥ 按 payload.beats 重绑 + builtLen 判重建');
-  assert(loadSrc.indexOf("'agent-loop'") >= 0 && loadSrc.indexOf('亲裁推演') >= 0, '⑥ agent 拍 META(诗行)已加');
-  assert(/start\(payload\)/.test(loadSrc.slice(loadSrc.indexOf("type === 'start'"))), '⑥ 事件 start 传 payload');
 
   console.log('[smoke-agent-mode-s7] pass assertions=' + passed.value);
 })().catch(function (e) { console.error(e); process.exit(1); });

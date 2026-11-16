@@ -61,9 +61,5 @@ ok(render({ minxin: { revolts: [{ level: 5, _suppressed: true }] } }) === '', '�
 const h6 = render({ minxin: { revolts: [{ level: 6 }] } });
 ok(/濒亡/.test(h6) && /改朝/.test(h6) && !/undefined/.test(h6), '⑦b level6 越界→clamp 到5(濒亡·改朝·非 安/undefined)');
 
-// ── ⑧ 源契约:注入 renderArmy(军情预警前·最醒目) ──
-//   2026-07-11 军务页签化(玩家反馈行12·名册默认页)：国柞卡归概览页·仍钉「概览页内居预警前」。
-ok(/function rightGuozuoCard\(/.test(src) && /rightGuozuoCard\(\) \+ armyOverviewCard/.test(src), '⑧ 源契约·rightGuozuoCard 注入 renderArmy 概览页顶(军情预警前)');
-
 console.log('[smoke-guozuo-collapse-proximity] ' + (F ? 'FAIL' : 'PASS') + ' — ' + A + ' 通过 / ' + F + ' 失败');
 process.exit(F ? 1 : 0);

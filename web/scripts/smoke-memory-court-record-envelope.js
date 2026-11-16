@@ -58,7 +58,4 @@ assert(hit, 'court record envelope should be retrievable as a priority hit');
 assert.strictEqual(hit.source, 'court_record', 'court retrieval source should be court_record');
 assert(hit.sourceRefs.some((ref) => ref.type === 'courtRecords' && ref.id === 'court-1'), 'court hit should preserve sourceRefs');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-court-record-envelope.js'), 'verify-all should include court record smoke');
-
 console.log('smoke-memory-court-record-envelope ok');

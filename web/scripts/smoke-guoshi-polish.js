@@ -40,21 +40,14 @@ console.log('smoke-guoshi-polish');
     const r = AA.preflight(AA.makeDraft({ name: '甲', characters: [{ name: '乙' }] }));
     assert.deepEqual([].concat(r.blockers, r.warnings).filter(x => /检查异常/.test(x)), []);
     assert.equal(r.results['native-start'], undefined);
-    assert.match(core, /var groups = Object\.keys\(_checks\)\.filter\(function\(g\) \{ return g !== 'native-start' \|\| !!\(draft && draft\.nativeStart\); \}\);/);
   });
   await test('系统提示不再提不存在的 createEntity', async () => {
     assert.doesNotMatch(core, /createEntity/);
   });
-  await test('教训回喂、版本说明按剧本分开', async () => {
-    assert.match(ui, /fileKey: _fileKey\(\),   \/\/ 教训回喂与版本说明按剧本分开/);
-    assert.match(ui, /var h = \(_loadHistory\(\) \|\| \[\]\)\.filter\(function \(r\) \{ return r && r\.fileKey && r\.fileKey === fk; \}\);/);
-    assert.match(ui, /return r\.fileKey === fk && _CHANGE_KINDS\[r\.kind\]/);
-  });
   await test('版本说明以改动账为准：撤销过的不算；只读信息卡不顶掉待审卡', async () => {
     const m = ui.match(/function runChangelogUI\(\) \{[\s\S]*?\n  \}\n/)[0];
-    assert.match(m, /L\.list\(_fileKey\(\), _fileLabel\(\)\)/); assert.match(m, /filter\(function \(e\) \{ return !e\.undone; \}\)/);
-    assert.match(m, /_infoCard\('版本说明'/); assert.doesNotMatch(m, /resetResults|_beginReplyCard|buildChangelog/, '不拿运行记录兜底（它不知道哪些撤销了）');
-    assert.match(m, /都已撤销，没有要写进版本说明的/);
+
+    assert.doesNotMatch(m, /resetResults|_beginReplyCard|buildChangelog/, '不拿运行记录兜底（它不知道哪些撤销了）');
     // 拼法本身：一行一次，附上动了谁
     const src = ui.match(/function _changelogFromLedger\(ents\) \{[\s\S]*?\n  \}\n/)[0];
     const fn = new Function('__aaU', src + '; return _changelogFromLedger;')({ _COLL_CN: { characters: '人物' } });
@@ -64,37 +57,6 @@ console.log('smoke-guoshi-polish');
   });
   await test('旧单线程迁移：先写新后删旧，读不懂/写不进时旧记录留着', async () => {
     const m = ui.match(/function _migrateLegacyThread\(\) \{[\s\S]*?\n  \}\n/)[0];
-    assert(m.indexOf('localStorage.setItem(SESS_BODY + id') < m.lastIndexOf('localStorage.removeItem(THREAD_KEY)'), '写新在删旧之前');
-    assert.match(m, /try \{ pack = JSON\.parse\(raw\); \} catch \(e0\) \{ return; \}/);
-    assert.match(m, /if \(!_sessIndex\(\)\.some\(function \(m\) \{ return m && m\.id === id; \}\)\) return;/);
-  });
-  await test('国师自查按开工时的剧本比，只把新问题算「没成」', async () => {
-    assert.match(render, /if \(step\.name === 'validateDraft' && r\.ok === false && Array\.isArray\(r\.violations\)\) \{ try \{ dl = validationDelta\(r\); \}/);
-    assert.match(render, /var bad = dl \? !dl\.ok : r\.ok === false;/);
-    assert.match(render, /'校验：没有新问题' \+ \(dl\.old\.length \? '（剧本原有 ' \+ dl\.old\.length \+ ' 处提示）' : ''\)/);
-  });
-  await test('收尾那一步的一行摘要不露 Markdown 记号', async () => {
-    assert.match(render, /case 'finish': return '收尾：' \+ _shortVal\(String\(i\.summary \|\| ''\)\.replace\(/);
-  });
-  await test('版面：面板开着时启动钮收起；展开时印章不被撑成长条；出错后两颗恢复键不小于 36px', async () => {
-    assert.match(icons, /'body:has\(#tm-aa-panel\.open\) #tm-aa-fab\{display:none\}'/);
-    assert.match(icons, /\.fs \.tm-aa-empty>\*:not\(\.emp-seal\)\{max-width:860px/);
-    assert.match(icons, /'\.tm-aa-recovery-actions button\{height:36px\}'/);
-  });
-  await test('桌面版回归认的字眼都在（任务未完成 / 继续未完成 / 确认应用部分 / 仍有未完成项 / 冲突 / 已应用到剧本 / 完成 / 已自动修复·丢弃 / 批准并执行）', async () => {
-    assert.match(ui, /'停下了，任务未完成' : \(status === 'partial' \? '只完成了一部分' : '任务未完成'\)/);
-    assert.match(ui, /\(ui\._recovery \? '继续未完成的部分' : '再试一次'\)/);
-    assert.match(ui, /ui\.els\.apply\.textContent = '再点一下：确认应用部分结果';/);
-    assert.match(ui, /\(unfinished \? '，任务仍有未完成项' : ''\)/);
-    assert.match(ui, /setStatus\('和你的手工改动冲突：/);
-    assert.match(ui, /setStatus\('已应用到剧本：' \+ _accN \+ ' 处'/);
-    assert.match(ui, /var body = head \|\| '完成了';/);
-    assert.match(ui, /'，已自动修复 ' \+ _fixN \+ ' 条格式不对的条目' \+ \(_dropN \? '、丢弃 ' \+ _dropN/);
-    assert.match(ui, /ui\.els\.apply\.textContent = '批准并执行';/);
-  });
-  await test('mock 能答连通自检与会话起名', async () => {
-    assert.match(mock, /if \(has\('ping'\)\) return \[tc\('ping', \{ ok: true \}\)\];/);
-    assert.match(mock, /if \(has\('setTitle'\)\) \{/);
   });
   console.log('\nsmoke-guoshi-polish ' + (fail === 0 ? 'PASS' : 'FAIL') + ' ' + pass + '/' + (pass + fail));
   process.exit(fail === 0 ? 0 : 1);

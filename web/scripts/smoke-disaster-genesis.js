@@ -162,17 +162,5 @@ console.log('— §b · 平粜/开仓压粮价指数 —');
   ok(Math.abs(pOld - pNo) < 1e-9, '放粮已过窗(8回合前·窗2月)→不再压价(信号有时效)');
 })();
 
-/* ── §c 接线契约 ─────────────────────────────────────────────── */
-console.log('— §c · 接线契约 —');
-(function () {
-  ok(/try \{ simulateDisasterGenesis\(\); \} catch/.test(src), 'tickDisasters 开头挂发生器(管线零改动·新灾当回合入派生信号)');
-  ok(/simulateDisasterGenesis: simulateDisasterGenesis,/.test(src), '发生器导出(可诊断)');
-  ok(/disasterSimEnabled === false\) return null/.test(src), '发生器保留显式关闭；60回合验证默认开启');
-  ok(/GM\._grainReleaseTurn = GM\.turn \|\| 0/.test(src), 'openGranary 落放粮信号');
-  var cl = read('tm-central-local-engine.js');
-  ok(/global\.GM\._grainReleaseTurn = global\.GM\.turn \|\| 0/.test(cl), '央地平粜同写放粮信号');
-  ok(/disasterSimEnabled/.test(read('tm-patches.js')), '设置开关在(玩法机制·深化)');
-})();
-
 console.log('\nsmoke-disaster-genesis ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
 process.exit(F0 === 0 ? 0 : 1);

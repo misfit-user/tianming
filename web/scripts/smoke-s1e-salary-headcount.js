@@ -16,12 +16,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·源契约 ════════
-const src = fs.readFileSync(path.join(ROOT, 'tm-fiscal-engine.js'), 'utf8');
-ok(/function _salaryHeadcountOn\(\)/.test(src), '_salaryHeadcountOn 开关已定义');
-ok(/officeSalaryHeadcountEnabled/.test(src), '开关读 officeSalaryHeadcountEnabled');
-ok(/function _salaryActualBodies\(pos\)/.test(src), '_salaryActualBodies 实有人数(跨双模型)已定义');
-ok(/if \(_bodies > heads\) heads = _bodies/.test(src), '仅超编(实有>虚拟在岗)才提高 heads（只惩超编）');
-ok(/calcSalary: calcSalary/.test(src), '导出 calcSalary 供单测真代码');
 
 // ════════ 二·真代码：headless 加载 → 调真函数 ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

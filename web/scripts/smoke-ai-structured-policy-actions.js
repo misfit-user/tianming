@@ -66,24 +66,6 @@ function buildContext() {
 }
 
 (function main() {
-  const aiSchemaSource = fs.readFileSync(path.join(ROOT, 'tm-ai-schema.js'), 'utf8');
-  const validatorSource = fs.readFileSync(path.join(ROOT, 'tm-ai-output-validator.js'), 'utf8');
-  const endturnAiSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
-  const endturnApplySource = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-endturn-apply-stages.js'), 'utf8'); // apply解构S2·主应用透传等迁 stages·拼接 origin→stages
-
-  [
-    'currency_adjustments',
-    'population_adjustments',
-    'central_local_actions',
-    'environment_actions',
-    'institution_changes'
-  ].forEach((field) => {
-    assert(aiSchemaSource.includes(field + ':'), 'TM_AI_SCHEMA should define ' + field);
-    assert(validatorSource.includes(field + ": 'array'") || validatorSource.includes(field + ': "array"'), 'validator fallback should know ' + field);
-    assert(endturnAiSource.includes("copy('" + field + "'"), 'endturn JSON normalizer should preserve aliases for ' + field);
-    assert(endturnAiSource.includes(field + ': { type') || endturnAiSource.includes('\\"' + field + '\\"'), 'SC1 prompt/schema should mention ' + field);
-    assert(endturnApplySource.includes(field + ': Array.isArray(p1.' + field + ')'), 'endturn apply should pass through ' + field);
-  });
 
   const schemaCtx = buildContext();
   runFile(schemaCtx, 'tm-ai-schema.js');

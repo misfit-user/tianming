@@ -114,14 +114,5 @@ console.log('— §b · 落效行为 —');
   ok(!threw, '后端缺位(typeof 守卫)不抛');
 })();
 
-/* ── §c 接线契约 ─────────────────────────────────────────────── */
-console.log('— §c · 接线契约 —');
-(function () {
-  ok(/edictDiplomacyEnabled !== true\) return \[\]/.test(src), 'flag 闸在 extract 内(默认关·prep 零行为)');
-  var prep = read('tm-endturn-prep.js');
-  ok(/extractEdictDiplomacy/.test(prep) && /applyEdictDiplomacy/.test(prep) && /_turnDiploActions/.test(prep), 'prep 接线(与财政动作同区·同款 try 包裹)');
-  ok(/edictDiplomacyEnabled/.test(read('tm-patches.js')), '设置开关在(玩法机制·深化)');
-})();
-
 console.log('\nsmoke-edict-diplomacy ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
 process.exit(F0 === 0 ? 0 : 1);

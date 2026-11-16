@@ -6,7 +6,6 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { createTurnDataCommitter } = require('../../main-turn-data-commit.js');
-const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
 let assertions = 0;
 function check(value, message) {
@@ -78,13 +77,6 @@ try {
   const recoveredFromStage = committer.recover(interrupted);
   check(recoveredFromStage.success === true && fs.existsSync(path.join(committer.rootFor(interrupted), '52', 'player-input.json')),
     'next-start recovery publishes a committed save descriptor left in staging');
-
-  const mainSource = fs.readFileSync(path.join(REPO_ROOT, 'main-impl.js'), 'utf8');
-  const preloadSource = fs.readFileSync(path.join(REPO_ROOT, 'preload-impl.js'), 'utf8');
-  check(['stage', 'publish', 'recover', 'discard'].every(action => mainSource.includes("ipcMain.handle('" + action + "-turn-data'")),
-    'main process exposes every two-phase turn-data channel');
-  check(['stageTurnData', 'publishTurnData', 'recoverTurnData', 'discardTurnData'].every(name => preloadSource.includes(name + ':')),
-    'preload exposes the bounded two-phase turn-data API');
 
   const bound = Object.assign({}, descriptor, {
     turn: 53,

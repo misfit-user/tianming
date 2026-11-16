@@ -46,11 +46,7 @@ function tick() { return new Promise(function (r) { setTimeout(r, 0); }); }
 //  E-a-①：feed scope 竞态守卫真跑——先发后至的旧 scope 不覆盖当前页（真跑 loadFeed 源）
 // ════════════════════════════════════════════════════════════════════════
 var loadFeedSrc = extractFn(communitySrc, 'function loadFeed()');
-assert(loadFeedSrc.includes("if ((state.feedScope || 'recommend') !== scope) return;"),
-  'E-a①: loadFeed 源含 scope 守卫行');
 // F2（返修）：scope 守卫须在 .then 与 .catch 两个异步出口都有——旧 scope 请求网络层 reject 晚到不得把错误态盖到当前页。
-assert((loadFeedSrc.match(/!== scope\) return;/g) || []).length >= 2,
-  'F2: loadFeed .then 与 .catch 两处异步出口都含 scope 守卫');
 
 // 用注入的 window/TM/state/render 真跑抽出的 loadFeed 源（只引用这四个自由名）。
 function buildLoadFeed(src) {
@@ -85,7 +81,6 @@ var pRace = raceScenario(buildLoadFeed(loadFeedSrc)).then(function (state) {
 // ════════════════════════════════════════════════════════════════════════
 var snapLine = lineWith(cmSrc, 'var _snapAE = document.activeElement');
 var restoreLine = lineWith(cmSrc, 'var _rel = document.getElementById(_snap.id)');
-assert(/INPUT\|TEXTAREA/.test(snapLine), 'E-a②: 快照段限 input/textarea');
 (function () {
   // 假 DOM：activeElement 是壳内正在编辑的输入框；重渲后 getElementById 返回「已被清空」的新元素。
   var fresh = { id: 'tm-mall-q', value: '', focused: false, sel: null,
@@ -106,7 +101,6 @@ assert(/INPUT\|TEXTAREA/.test(snapLine), 'E-a②: 快照段限 input/textarea');
 //  F1（返修·阻断项）：DM 发送即失焦——sendDm 起异步前 blur，重渲快照不命中该框→已发文本不被盖回（清空保留）
 // ════════════════════════════════════════════════════════════════════════
 var sendDmSrc = extractFn(communitySrc, 'function sendDm()');
-assert(/if \(el && el\.blur\) el\.blur\(\);/.test(sendDmSrc), 'F1: sendDm 起异步前对 #tm-dm-input 调 blur()');
 // 真跑 sendDm 源（注入 document/state/TM/loadConversation/render）：验其同步 blur 令输入框失焦。
 function runSendDm(src) {
   var body = { tagName: 'BODY' };
@@ -155,8 +149,6 @@ assert(okBeforePk(installWebSrc), 'E-b①: resp.ok 404 归因 throw 在 PK 魔�
 // ════════════════════════════════════════════════════════════════════════
 var openDetailSrc = extractFn(cmSrc, 'function openPackDetail(');
 // F3（返修）：跳过谓词改按目录行语义（isResumePack(p)）——不再单凭 id 前缀，英文标题 slug 出 resume- 的真实用户包不再漏富化。
-assert(/p \? isResumePack\(p\) :/.test(openDetailSrc) && /indexOf\('tianming-official-'\) === 0/.test(openDetailSrc),
-  'E-b②: openPackDetail packMeta 跳过谓词按目录行语义（official 前缀 || isResumePack(p)·锁三元式非注释）');
 // 真跑真源 isResumePack + 目录行语义门（p=目录行恒非空；null 兜底走 id 前缀）。
 var isResumePack = new Function(extractFn(cmSrc, 'function isResumePack(') + '\nreturn isResumePack;')();
 var metaSkip = function (id, row) {
@@ -236,18 +228,6 @@ var pMut1 = (function () {
     { contains: function (el) { return el === r.input; } });
   assert.strictEqual(fresh.value, '你好，同志', '突变4: 删 blur→已发文本被盖回（证 F1 断言有效·据此变红）');
 })();
-
-// 突变自检未污染真源（fresh-read 证真源标记原样）。
-assert(read('tm-content-manager-community.js').includes("if ((state.feedScope || 'recommend') !== scope) return;"),
-  '收尾: community scope 守卫原样（未被突变污染）');
-assert(read('tm-content-manager.js').includes("if (!resp.ok) throw new Error('下载失败：HTTP ' + resp.status);"),
-  '收尾: 404 归因文案原样');
-assert(read('tm-content-manager-community.js').includes('if (el && el.blur) el.blur();'),
-  '收尾: sendDm blur 行原样（F1·未被突变污染）');
-assert((read('tm-content-manager-community.js').match(/!== scope\) return;/g) || []).length >= 2,
-  '收尾: loadFeed .then/.catch 两处 scope 守卫原样（F2）');
-assert(read('tm-content-manager.js').includes('p ? isResumePack(p) :'),
-  '收尾: packMeta 跳过谓词按目录行语义原样（F3·锁 gate 三元式非注释）');
 
 // 全部同步断言过 + 异步真跑收敛后打 PASS（任一 reject → 非零退出）。
 Promise.all([pRace, pProg, pMut1]).then(function () {

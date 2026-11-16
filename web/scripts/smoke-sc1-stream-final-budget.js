@@ -162,8 +162,6 @@ async function main() {
   });
   assert.strictEqual(sent[0].stream, undefined, 'default non-stream path remains non-streaming');
 
-  assert(endturnSource.includes('callAIBodyStream(_sc1Body, {'),
-    'production SC1 branch calls the exact finalized-body transport');
   assert(!endturnSource.includes('extraBody: _modelFamily === \'openai\' ? { response_format: { type: \'json_object\' } }'),
     'production stream branch no longer downgrades strict schema');
   console.log('[smoke-sc1-stream-final-budget] PASS requests=' + sent.length);

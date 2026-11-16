@@ -16,7 +16,6 @@ ok(!!fnSrc, '_courtDebateMemorial 抽取成功');
 var code = fnSrc.replace(/\/\/[^\n]*/g, ''); // 剔行注释(修复注释里会提及旧 API 名)
 ok(code.indexOf('startChaoyiSession') < 0, '★不再裸调 startChaoyiSession(剔注释后)');
 ok(code.indexOf('cy-topic-input') < 0, '★不再写错误 DOM id cy-topic-input(剔注释后)');
-ok(code.indexOf('_pendingTinyiTopics') >= 0, '改用 _pendingTinyiTopics 队列');
 
 function run(GM, idx){
   const ctx = { GM:GM, Array:Array, String:String, Number:Number, isNaN:isNaN, console:console };

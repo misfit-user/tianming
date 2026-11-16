@@ -49,10 +49,4 @@ assert(traceItem, 'recordZoneInjection should write MemoryTrace injection');
 assert.strictEqual(traceItem.lane, 'context_zones', 'zone trace should use context_zones lane');
 assert(traceItem.items.some((i) => i.id === 'world' && i.lane === 'L1_world_truth'), 'zone trace should keep item lanes');
 
-const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
-const index = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(endturnAi.includes('TM.ContextZones.packZones'), 'SC1 prefix should use ContextZones packZones');
-assert(endturnAi.includes('recordZoneInjection'), 'SC1 prefix should trace zone injection');
-assert(index.includes('tm-context-zones.js'), 'index should load tm-context-zones before endturn AI');
-
 console.log('smoke-context-zones-core ok');

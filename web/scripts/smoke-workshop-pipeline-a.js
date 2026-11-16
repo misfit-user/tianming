@@ -13,10 +13,8 @@ const assert = require('assert');
 const ROOT = path.resolve(__dirname, '..');
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
-const onlineClient = read('tm-online-client.js');
 const cm = read('tm-content-manager.js');
 const community = read('tm-content-manager-community.js');
-const audio = read('tm-audio-theme.js');
 const admin = read('workshop-admin.html');
 
 // 语法自检（除 admin 内联脚本外，其余三个 JS 运行时源用 --check 由 run-smokes 侧跑；
@@ -28,92 +26,10 @@ new Function(adminScript[1]);
 // ── ① A1：catalog 直连分支存在 resp.ok 检查，且错误卡/空卡两态分离 ──
 // 融合树：tm-online-client.js 采百工谱阁超集版（两条 catalog 路径均 resp.ok 抛错 + cat.success===false 抛业务错），
 // 直连分支文案由批A「HTTP …」升为「在线目录 HTTP …」——语义（resp.text() 前先查 resp.ok、非 2xx 抛 HTTP 码）不变。
-assert(
-  /\.then\(function \(resp\) \{\s*if \(!resp\.ok\) throw new Error\('在线目录 HTTP ' \+ resp\.status\);\s*return resp\.text\(\);/.test(onlineClient),
-  'A1: catalog() 直连分支必须在 resp.text() 前检查 resp.ok（非 2xx 抛 HTTP 码·百工谱阁「在线目录 HTTP」文案）'
-);
-assert(
-  cm.includes('state.catalogError = null;'),
-  'A1: loadWorkshopCatalog 开跑须清 state.catalogError'
-);
-assert(
-  cm.includes("state.catalogError = (e && e.message) || '未知错误';"),
-  'A1: loadWorkshopCatalog 的 catch 须落明确错误标记（带 HTTP 码来自 e.message）'
-);
 // community 侧错误卡（含「重试」）与真空卡两态分离，且靠 catalogError 标记而非文案串匹配
-assert(
-  community.includes('state.catalogError') && community.includes('class="empty err"'),
-  'A1: renderBrowsePane 须有独立错误卡（class="empty err"·靠 state.catalogError 分支）'
-);
-assert(
-  community.includes('loadWorkshopCatalog()">重试'),
-  'A1: 错误卡须含「重试」按钮，重新触发 loadWorkshopCatalog'
-);
-assert(
-  community.includes('尚未载入在线目录'),
-  'A1: 真空卡文案须与错误卡分开保留'
-);
-
-// ── ② A2：封面键位双键兼容（coverImage + 扁平 coverUrl）──
-assert(
-  community.includes("if (p && typeof p.coverUrl === 'string' && p.coverUrl) return p.coverUrl;"),
-  'A2: community packCoverUrl 须在 coverImage 之后回退扁平 coverUrl'
-);
-assert(
-  admin.includes("if (p && typeof p.coverUrl === 'string' && p.coverUrl) return p.coverUrl;"),
-  'A2: 审核台 coverUrl 须双键兼容（coverImage + 扁平 coverUrl）'
-);
 
 // ── ③ A3：waWarmup 含 mod 包扫描，且排除残局包 / 封面基名 ──
-assert(
-  cm.includes("var isModPack = pk.type === 'mod';"),
-  'A3: waWarmup 须让 mod 包参与立绘索引'
-);
-assert(
-  cm.includes('if (isModPack && isResumePack(mf)) return {'),
-  'A3: waWarmup 须把残局壳（isResumePack）排除在资产扫描外'
-);
-assert(
-  cm.includes('/^(cover|shot|preview|screenshot)/i'),
-  'A3: waWarmup 须排除 cover*/shot*/preview* 封面截图基名，勿把封面误当立绘'
-);
-assert(
-  cm.includes('portraits?') && cm.includes('a.type || a.kind'),
-  'A3: waWarmup mod 立绘识别须「优先 manifest 类型化声明·兜底 portraits/ 子目录约定」'
-);
 // mod 详情与安装文案的组合包语义
-assert(
-  cm.includes('混合资产组合包'),
-  'A3: renderDetailTypeBody 的 mod 分支须写清组合包语义'
-);
-assert(
-  cm.includes('组合包已装载：包内立绘 / 音乐将自动生效'),
-  'A3: mod 安装成功文案须给真后缀'
-);
-
-// ── ④ A3 音乐链：mod 包内音频也入 BGM 轮播（且排除残局壳）──
-assert(
-  audio.includes("p.type === 'music' || p.type === 'mod'"),
-  'A3: loadWorkshopTracks 曲库须纳入 mod 组合包'
-);
-assert(
-  /p\.type === 'mod' && mf && \(\(Array\.isArray\(mf\.tags\)[\s\S]{0,80}残局[\s\S]{0,80}packageKind === 'resume'/.test(audio),
-  'A3: 音乐链须把残局壳（tags 含「残局」/packageKind=resume）排除在曲库外'
-);
-
-// ── ⑤ A4：网页/安卓配额耗尽给专门文案 ──
-assert(
-  cm.includes("e.name === 'QuotaExceededError'"),
-  'A4: installCatalogPackWeb catch 须识别 QuotaExceededError'
-);
-assert(
-  cm.includes('设备存储空间不足：请清理空间或卸载不用的工坊包后重试。'),
-  'A4: 配额耗尽须给专门文案'
-);
-assert(
-  cm.includes("'网页安装失败：'"),
-  'A4: 非配额错误须保持现「网页安装失败」文案'
-);
 
 // ════════════════════════════════════════════════════════════════════════
 //  返修·Codex 四条：把上面的「水断言」升级为可执行断言（纯 node·无 DOM）。
@@ -142,19 +58,6 @@ function extractFn(src, header) {
     'R4·R1: 无错误+无数据 → empty（真空卡）');
   assert(catalogViewState({ catalog: { packs: [{ id: 'a' }] }, catalogError: null }) === 'list',
     'R4·R1: 无错误+有数据 → list');
-})();
-// P1-2·按函数锁接线（extractFn 失配即红）：分别抽 renderDiscover / renderBrowsePane 源文，
-// 逐函数断言各自含 error 接线（vs === 'error' + catalogErrorCardHtml）与 stale 接线（vs === 'stale' +
-// catalogStaleBannerHtml）——防「删某页 stale-banner 行」或「把该页 vs === 'error' 改恒假」被文件级计数静默漏过。
-(function testPaneWiringPerFunction() {
-  [['renderDiscover', 'function renderDiscover()'], ['renderBrowsePane', 'function renderBrowsePane()']].forEach(function (pair) {
-    var name = pair[0], src = extractFn(community, pair[1]);
-    assert(src.includes('catalogViewState(state)'), 'R4·R1: ' + name + ' 须先取视图态 catalogViewState（据 state 标记分派·非文案串匹配）');
-    assert(/vs === 'error'/.test(src) && src.includes('catalogErrorCardHtml(state)'),
-      'R4·R1: ' + name + ' 须有 error 接线（vs === "error" → catalogErrorCardHtml）');
-    assert(/vs === 'stale'/.test(src) && src.includes('catalogStaleBannerHtml(state)'),
-      'R4·R1: ' + name + ' 须有 stale 接线（vs === "stale" → catalogStaleBannerHtml）');
-  });
 })();
 
 // P1(三轮)·真跑渲染验输出（字符串共现到头：突变 `false && vs === 'error'` 字符串仍在会静默 PASS）：
@@ -231,8 +134,6 @@ function extractFn(src, header) {
   assert(waMergePortraitIndex([pB, pA]).li === 'A::li',
     'R4·R2: 同类型按 waListAssetPacks 列表序（order 小者先占坑）');
 })();
-assert(cm.includes('_waPortraitIdx = waMergePortraitIndex(results);'),
-  'R4·R2: waWarmup 须把 Promise.all 结果交纯归并（而非在并发 job 内先到先占坑）');
 
 // ── R4·R3：配额判定纯 helper 真跑（只认真配额错误·不误吞其他错误）──────────
 (function testQuota() {
@@ -251,8 +152,6 @@ assert(cm.includes('_waPortraitIdx = waMergePortraitIndex(results);'),
   assert(isQuotaError(new Error('network timeout')) === false, 'R4·R3: 无关错误 → false');
   assert(isQuotaError(null) === false, 'R4·R3: null → false');
 })();
-assert(cm.includes('var quota = isQuotaError(e);'),
-  'R4·R3: 安装 catch 须走 isQuotaError（而非内联裸 exceeded 正则）');
 
 // ── P1·真源条 stale 档接入（Codex 融合审 NO-GO 返修）：stale=「有可用旧数据的降级态」，
 //   真源条须走中间态(is-fallback)、绝不落 is-error 红档，且值含「旧目录」文案——真跑

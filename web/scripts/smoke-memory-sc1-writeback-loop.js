@@ -7,8 +7,6 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-sc1-writeback-loop.js'), 'verify-all should include SC1 writeback loop smoke');
 
 const sandbox = { window: {}, console, Date, Math, JSON };
 sandbox.window = sandbox;

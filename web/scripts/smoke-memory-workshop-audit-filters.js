@@ -180,7 +180,4 @@ clickPanel(panel, { 'data-action': 'clear-audit-target' });
 assert(body.innerHTML.includes('Audit Filter all'), 'clicking all filter should restore all filter label');
 assert(!body.innerHTML.includes('Audit Target draft-filter-a'), 'clear target should remove target filter label');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-audit-filters.js'), 'verify-all should include audit filters smoke');
-
 console.log('smoke-memory-workshop-audit-filters ok');

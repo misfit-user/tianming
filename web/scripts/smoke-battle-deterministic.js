@@ -87,9 +87,6 @@ MS.applyBattleResult(brc, ctx.GM);
 ok(brc._deterministicCasualties === true, '⑧ 剧本旧关闭值也不能禁用正式伤亡校核');
 
 // ── ⑨ 源契约 ──
-const mil = fs.readFileSync(path.join(ROOT, 'tm-military.js'), 'utf8');
-ok(/!cfg\.enabled && !\(context && context\.forceCompute\)/.test(mil), '⑨ resolve 加 forceCompute 旁路(不需全引擎 enabled)');
-ok(!/conf\.deterministicCasualties|battleConfig\.deterministicCasualties/.test(mil) && /BattleEngine\.resolve/.test(mil), '⑨ 正式伤亡核算不再读取退役开关');
 const pat = (fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8'));
 ok(!/id="s-det-cas"/.test(pat), '⑨ 设置中已移除确定性战果开关');
 

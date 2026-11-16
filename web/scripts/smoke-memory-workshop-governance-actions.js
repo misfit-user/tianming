@@ -129,7 +129,4 @@ assert(GM._memoryAuditEvents.some((event) => event.id === 'accepted-river-new' &
 const updatedAcceptedHtml = MW.renderAcceptedMemory(GM, { playerSafe: true });
 assert(updatedAcceptedHtml.includes('supersededBy=accepted-river-new'), 'accepted render should show newly applied supersededBy control');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-governance-actions.js'), 'verify-all should include Workshop governance actions smoke');
-
 console.log('smoke-memory-workshop-governance-actions ok');

@@ -83,11 +83,6 @@ console.log('— §A · 廷议党争先验(行为) —');
   ok(npcT && npcT.sourceParty === '甲党' && Array.isArray(npcT.opposingParties), '带 sourceParty/opposingParties meta(下游注入吃得到)');
 })();
 console.log('— §A · 运动议题/迁移判定(契约) —');
-var _tv = (read('tm-tinyi-v3-persona.js') + (read('tm-tinyi-v3.js') + '\n' + read('tm-tinyi-v3-edict-personnel.js')) + read('tm-tinyi-v3-parties.js'));
-ok(/ty3-spawn-movement/.test(_tv) && /movementSupport/.test(_tv), 'scan 消费政治运动出议题(带全套 meta)');
-ok(/mv\._lastTinyiTurn = mvTurn/.test(_tv), '运动议题 per-运动 3 回合冷却');
-ok(/async function _ty3_phase2_finalize/.test(_tv) && /await _ty2_judgeStanceShifts\(prevSpeeches\)/.test(_tv), '立场迁移判定接进 v3 活路径(轮末补判)');
-ok(/party-initial/.test(_tv), 'initial 立场党争先验已接锚定块');
 
 /* ══ §B 御前 ══════════════════════════════════════════════════ */
 console.log('— §B · 御前决断落账(行为) —');
@@ -119,13 +114,6 @@ console.log('— §B · 御前决断落账(行为) —');
   ok(sb.GM._edictTracker.length === 1, '诏令照旧入 _edictTracker');
 })();
 console.log('— §B · 御前 prompt/泄密(契约) —');
-var _yq = read('tm-chaoyi-yuqian.js');
-ok(/当前皇威：/.test(_yq) && /皇权弱·直言可肆/.test(_yq), '主发言 prompt 补皇威皇权 cue');
-ok(/本党近期所谋：/.test(_yq), '主发言 prompt 补本党所谋');
-ok(/对陛下：/.test(_yq), '主发言 prompt 补对陛下心迹');
-ok(/【此人记忆与心性】/.test(_yq) && /_dqMem/.test(_yq), '深问 prompt 补统一记忆');
-ok(/adjustHuangwei\('memorialObjection', -1, '御前密议外泄/.test(_yq), '重度泄密→皇威微损(有据可预见渐进)');
-ok(/泄于外·惴惴不安/.test(_yq), '泄密者自记其事');
 
 /* ══ §C 策名 ══════════════════════════════════════════════════ */
 console.log('— §C · 策名入局接线(行为·本地路) —');
@@ -160,7 +148,6 @@ console.log('— §C · 策名入局接线(行为·本地路) —');
     ok(r2.char.party == null || r2.char.party === '', '配不上党则白身(不硬塞)');
     ok(mems.filter(function(m){ return m.n === '测君乙'; }).length === 2 && mems.length === m1 + 2, '跨时空另记时空之惑(两笔)');
     var _cm = read('tm-ceming.js');
-    ok(/欲授官职可另行任命\/征召/.test(_cm), 'toast 提示授官走任命/征召(工具/系统不混搭)');
     ok(!/assignPost/.test(_cm), '策名仍不占编制(D1 by design)');
   })();
 })().then(function() {

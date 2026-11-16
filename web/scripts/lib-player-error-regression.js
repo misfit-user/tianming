@@ -35,7 +35,7 @@ function population() {
 function mainContext() {
   const c=context({_aiDepth:'full',_dbg(){},ctx:{results:{},meta:{},record:{}},GM:baseGM({_turnAiResults:{},_aiDispatchStats:{byId:{},totalCalls:0,totalTime:0,errors:0},_subcallTimings:{}}),P:{ai:{key:'fixture-only'},conf:{}},TM:{},ns:{getCallPolicy:()=>({subcallRetries:0})},_formatAIError:e=>({message:e.message,status:e.status||0,snippet:''})});
   load(c,'tm-ai-infra-retry.js');load(c,'tm-ai-result-contract.js');
-  extracted(c,'tm-endturn-ai.js',['_runSubcall','_seedRecordFromP1ForApplyFailure']);return c;
+  extracted(c,'tm-endturn-ai.js',['_runSubcall']);return c;
 }
 async function run(tests) {
   let pass=0,fail=0;

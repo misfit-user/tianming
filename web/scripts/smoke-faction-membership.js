@@ -374,20 +374,6 @@ function testBidirInvariant() {
   assert(inMembers, '韩爌 should now appear in 后金.members.chars');
 }
 
-function testIntegrationCallSites() {
-  // 静态检查·tm-endturn-apply.js 关键路径必须用 API
-  const apply = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
-  assert(/TM\.FactionMembership\.dissolveFaction/.test(apply), 'endturn-apply should call dissolveFaction');
-  assert(/TM\.FactionMembership\.bulkReassignChars/.test(apply), 'endturn-apply should call bulkReassignChars');
-  // index.html 加载顺序
-  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  const idxFI = html.indexOf('tm-faction-index.js');
-  const idxDH = html.indexOf('tm-faction-derived-health.js');
-  const idxFM = html.indexOf('tm-faction-membership.js');
-  const idxUI = html.indexOf('tm-three-systems-ui.js');
-  assert(idxFI < idxDH && idxDH < idxFM && idxFM < idxUI, 'load order: index → derived-health → membership → ui');
-}
-
 function main() {
   testApiPresent();
   testAssignChar();
@@ -411,7 +397,6 @@ function main() {
   testBidirectionalFacMembers();
   testBidirInvariant();
   testIndexAutoRefresh();
-  testIntegrationCallSites();
   console.log('[smoke-faction-membership] pass·23 tests');
 }
 

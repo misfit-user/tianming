@@ -79,9 +79,5 @@ r = GE.Actions.openGranary('national');
 ok(r.success === false && !ctx.GM.activeDisasters[0]._relieved, '⑫ 帑廪不足→失败·不标记已赈');
 
 // 源契约
-const src = fs.readFileSync(path.join(ROOT, 'tm-guoku-engine.js'), 'utf8');
-ok(/function tickDisasters\(\)/.test(src) && /tickDisasters: tickDisasters/.test(src), '⑬ tickDisasters 定义+导出');
-const sys = fs.readFileSync(path.join(ROOT, 'tm-endturn-systems.js'), 'utf8');
-ok(/GuokuEngine\.tickDisasters\(\)/.test(sys), '⑬ endturn-systems 每回合调 tickDisasters');
 
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

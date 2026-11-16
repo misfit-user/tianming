@@ -129,20 +129,6 @@ assert(/emergency levy hit Canal Ward Farmers/.test(diag), 'diagnostics should i
 assert(/Mountain County/.test(diag) && /uprisingChain/.test(diag), 'diagnostics should include uprising chain');
 assert(/issue-levy/.test(ML.formatForPrompt(sandbox.GM, { limit: 8 })), 'prompt formatter should include linked issue');
 
-const index = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(index.indexOf('tm-minxin-ledger.js') > 0, 'index should load tm-minxin-ledger.js');
-assert(index.indexOf('tm-minxin-ledger.js') < index.indexOf('tm-class-minxin-bridge.js'), 'minxin ledger should load before class-minxin bridge');
-assert(index.indexOf('tm-minxin-ledger.js') < index.indexOf('tm-authority-engines.js'), 'minxin ledger should load before authority engines');
-
-const authSource = fs.readFileSync(path.join(ROOT, 'tm-authority-engines.js'), 'utf8');
-assert(/TM\.MinxinLedger\.recordAndApply/.test(authSource), 'AuthorityEngines.adjustMinxin should route through MinxinLedger');
-
-const railSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail-social.js'), 'utf8');
-assert(/Minxin Ledger/.test(railSource), 'right rail debug panel should expose Minxin Ledger');
-
-const topbarSource = fs.readFileSync(path.join(ROOT, 'tm-topbar-vars.js'), 'utf8');
-assert(/_renderMinxinLedgerCauses/.test(topbarSource), 'topbar minxin panel should render ledger causes');
-
 // 精确认州：exact 行只扣编号/名字完全相同的那个州；按「包含」认会把名字里含「杞县」的州一起扣。
 // 精确点名配不上（那州已不在治下）不转去扣全国。
 const exactGM = {

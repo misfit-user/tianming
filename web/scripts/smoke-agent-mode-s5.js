@@ -6,7 +6,6 @@
 //   注:真 50-tick 引擎 node 跑不动·此处用 stub 验**编排逻辑**;真集成留真机验。
 // ============================================================
 
-const fs = require('fs');
 const path = require('path');
 const { ROOT, makeAssert } = require('./smoke-endturn-baseline-helpers');
 
@@ -101,10 +100,6 @@ assert(c.input._systemsRan === undefined, 'rollback:清 _systemsRan(让 mode a �
   assert(res.ok === true && gm._agentTurnMeta.engineFirst === false, '引擎缺失 → engineFirst=false 仍正常提交(优雅降级)');
 
   // ── ⑤ systems 步幂等源码守卫 ──
-  const stepsSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
-  const sysIdx = stepsSrc.indexOf("name: 'systems'");
-  const sysBlock = stepsSrc.slice(sysIdx, sysIdx + 1200);
-  assert(/!ctx\.input\._systemsRan && typeof _endTurn_updateSystems/.test(sysBlock), '⑤ systems 步:引擎 tick 被 !_systemsRan 幂等守卫包裹');
 
   console.log('[smoke-agent-mode-s5] pass assertions=' + passed.value);
 })().catch(function (e) { console.error(e); process.exit(1); });

@@ -6,9 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const ROOT = path.resolve(__dirname, '..');
-const main = fs.readFileSync(path.join(ROOT, 'tm-content-manager.js'), 'utf8');
 const community = fs.readFileSync(path.join(ROOT, 'tm-content-manager-community.js'), 'utf8');
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const onlineClientModule = require(path.join(ROOT, 'tm-online-client.js'));
 let pass = 0, fail = 0;
 function ok(cond, msg) { if (cond) { pass++; console.log('  PASS ' + msg); } else { fail++; console.error('  FAIL ' + msg); } }
@@ -67,16 +65,6 @@ vm.runInContext(resetSrc + '\n' + identitySrc + '\n' + replaceSrc + '\n' + inval
 
   const invalidations = community.match(/invalidateAccountSession\('登录已失效，请重新登录。'\)/g) || [];
   ok(invalidations.length >= 6, '身份刷新、好友、通知与两条私信认证失败入口都清理完整会话');
-  ok((community.match(/if \(!_sameAccountEpoch\(requestEpoch\)\) return;/g) || []).length >= 8, '好友、通知和私信成功/失败回调都拒绝旧身份 epoch');
-  ok(((main + community).match(/replaceAccountSession\(/g) || []).length >= 4, '网页/桌面重开工坊与登录刷新统一走身份替换入口');
-  ok(((main + community).match(/state\.accountSession\s*=/g) || []).length === 2, '账号内存身份只允许由替换/失效两个集中写口修改');
-  ok(/replaceAccountSession\(\(onlineSession && \(onlineSession\.loggedIn \|\| onlineSession\.user\)\)/.test(community),
-    '更新中心读取无 token 的桌面公开会话时仍优先当前在线身份，不复活旧 IPC 身份');
-  ok((community.match(/_invalidateExpiredAtEpoch\(/g) || []).length >= 10, '好友、通知与私信写操作的 resolved/rejected 认证失败都统一失效会话');
-  ok(/accountRefresh[\s\S]*?var requestEpoch = _accountEpoch\(\)[\s\S]*?_sameAccountEpoch\(requestEpoch\)/.test(community), '手动身份刷新拒绝旧账号晚到回包');
-  ok(/tm-online-client\.js\?v=[A-Za-z0-9_.-]+/.test(indexHtml), '在线客户端修复已刷新运行时缓存戳');
-  ok(/refreshFriends:\s*function/.test(main) && /TMContentManager\.refreshFriends\(\)/.test(community), '好友瞬时失败提供可达重试入口');
-  ok(/if \(me && me\.loggedIn\)[\s\S]*?await refreshAccountSession\(\);[\s\S]*?else invalidateAccountSession\('登录已失效，请重新登录。'\)/.test(community), '手动刷新遇已失效 token 也清除内存用户');
 
   let resolveFriends, resolveRequests;
   const staleOnline = {

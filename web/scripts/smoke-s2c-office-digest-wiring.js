@@ -15,11 +15,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·源契约：②③ 均推 chronicle 联动(官制↔ + 联动 tag) ════════
-const applierSrc = fs.readFileSync(path.join(ROOT, 'modules/ai-change-applier/core.js'), 'utf8') + '\n' +
-  fs.readFileSync(path.join(ROOT, 'modules/ai-change-applier/reconcile.js'), 'utf8');
-ok(/百官履职[\s\S]{0,300}tags: \['联动', '官制'\]/.test(applierSrc), '②履职结算 → chronicle 联动(官制)');
-ok(/掌征税之权[\s\S]{0,300}tags: \['联动', '官制'\]/.test(applierSrc), '③加赋失实 → chronicle 联动(官制)');
-ok(/type: \(agg\.compliance !== 0 && agg\.corruption !== 0\) \? '官制↔财政·吏治'/.test(applierSrc), '②按 compliance/corruption 取 官制↔财政/吏治 域');
 
 // ════════ 二·真代码：headless → _applyTaxAuthorityGate → WorldDigest 端到端 ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

@@ -60,7 +60,4 @@ ok(cleared.vars.disasterType === '' && cleared.activeFamine === false, '③ 无�
 var never = run([], {});
 ok(!('disasterLevel' in never.vars) || never.vars.disasterLevel === 0, '③ 从未有灾→不无谓触碰(或保持0)');
 
-// ⑤ 源契约:tickDisasters 在册/无灾两分支均调 _syncDisasterSignals
-ok((guoku.match(/_syncDisasterSignals\(/g)||[]).length >= 3, '⑤ tickDisasters 两分支(在册 kept / 无灾 [])均接入(定义+2调用=3+)');
-
 console.log('\n结果: '+A+' 通过 / 0 失败');

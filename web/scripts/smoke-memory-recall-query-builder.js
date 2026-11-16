@@ -5,7 +5,6 @@ const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
 const src = fs.readFileSync(path.join(ROOT, 'tm-memory-retrieval.js'), 'utf8');
-const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 
 const sandbox = { console, Date, Math, JSON, window: {} };
 sandbox.window.window = sandbox.window;
@@ -62,8 +61,5 @@ const deduped = MR.buildRecallQueries(GM, [
   { keywords: ['Wei Zhongxian'], participant: 'Wei Zhongxian', purpose: 'SC0 already asked' },
 ], { maxQueries: 6 });
 assert.strictEqual(deduped.filter((q) => q.participant === 'Wei Zhongxian').length, 1, 'base query should suppress duplicate auto participant query');
-
-assert(endturnAi.includes('buildRecallQueries'), 'SC_RECALL should use MemoryRetrieval.buildRecallQueries');
-assert(endturnAi.includes('_mqList.length > 0'), 'SC_RECALL should run from the built query list, not only raw SC0 queries');
 
 console.log('smoke-memory-recall-query-builder ok');

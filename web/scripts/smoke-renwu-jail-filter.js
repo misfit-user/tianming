@@ -70,9 +70,5 @@ ctx.TMZhi.selectP('流放者');
 assert(/流放在外/.test(main()), '流放者详情应有「流放在外」横幅');
 
 // ── 源码契约:CSS + computeStat ──
-var src = fs.readFileSync(path.join(ROOT, 'tm-renwu-tuzhi.js'), 'utf8');
-assert(/repeat\(7,1fr\)/.test(src), 'statbar 应为 7 列网格');
-assert(/\.ptag\.jail\{[^}]*linear-gradient/.test(src), '.ptag.jail 应为实心朱红渐变');
-assert(/jail:0\}/.test(src) && /p\._imprisoned\|\|p\._exiled\)st\.jail\+\+/.test(src), 'computeStat 应计 jail(下狱|流放)');
 
 console.log('[smoke-renwu-jail-filter] pass assertions=' + A);

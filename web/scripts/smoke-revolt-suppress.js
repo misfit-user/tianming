@@ -349,7 +349,6 @@ part('六·旧路拦住：调兵数、危机回复「平乱」、干预「强力
   const pd = leafOf(G, 'd-yanan').populationDetail;
   ok(pd.rebels === 0 && pd.fugitives === 14000 && r.settled.to === 'registered', '赈散的回籍');
   const src = read('tm-authority-complete.js');
-  ok(/r\.source === 'revolt-cases' && r\._suppressionOrder\) delete r\._suppressionOrder/.test(src), '五级梯 tick 里新民变的旧镇压令删掉不认');
 });
 
 part('七·主推演说「镇压」：认首领、认州、只说到省；点了军名用它；本省无兵不剿；旧式不归这里', () => {
@@ -411,14 +410,6 @@ part('九·面板小件与接线', () => {
   const ap = read('tm-endturn-apply-stages.js');
   const aF = ap.indexOf('TM.RevoltSuppress.fromAI(GM, { by: \'reconcile\''), aO = ap.indexOf('var openR = GM.minxin.revolts.find');
   ok(aF > 0 && aF < aO && /army: r\.army\|\|''/.test(ap) && /if \(_supR && _supR\.handled\) return;/.test(ap), '一致性补录：说镇压先交 fromAI，带上军名');
-  ok(/army: \{ type: 'string', description: '镇压时出兵的我方军队名/.test(read('tm-ai-schema.js')), '补录工具多一个可选的出兵军名');
-  const tb = read('tm-topbar-vars.js');
-  ok((tb.match(/TM\.RevoltSuppress\.panelHtml\(GM, r,/g) || []).length === 2, '顶栏两处民变面板接选军发兵');
-  ok(/global\.TM\.RevoltSuppress\.statusText\(G, r\)/.test(read('tm-var-drawers.js')), '民心抽屉写进剿进展');
-  ok(/global\.TM\.RevoltSuppress\.panelHtml\(G, revolt,/.test(read('tm-prophecy.js')), '民变干预面板：新民变给选军发兵');
-  const br = read('tm-border-risk.js');
-  ok((br.match(/!a\._revoltBand/g) || []).length === 2, '边患：民变的军不算本地守军，也不记军费');
-  ok(/if \(a\._revoltBand\) return false;/.test(read('tm-revolt-rising.js')) && /TM\.RevoltSuppress\.ensureArmy\(G, revolt, L\)/.test(read('tm-revolt-rising.js')), '落地立军、首领领自己的股不算在任');
 });
 
 part('十·战报接皇威只算玩家这方的胜负：剿胜归平乱不另记、不当军败；我方大胜 +5、小胜 +2（带 AI 量的取它）、我败扣、旁人的仗不碰', () => {

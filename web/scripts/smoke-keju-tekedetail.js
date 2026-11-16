@@ -65,9 +65,4 @@ ok(ht.indexOf('选童 3 名') >= 0, '④ 童子科用「选童 N 名」(读 pool
 // ⑤ 空 → 兜底
 ok(rows([], 'enke').indexOf('暂无开科记录') >= 0, '⑤ 空 history → 暂无开科记录');
 
-// ⑥ 源契约:可点格 toggle + 明细 div + 读真 history
-ok(/id="kj-enke-detail"/.test(src) && /id="kj-wuju-detail"/.test(src) && /id="kj-tongzi-detail"/.test(src), '⑥ 三类明细 div 就位');
-ok(/_kjTog\('kj-enke-detail'\)/.test(src), '⑥ 恩科格接 toggle');
-ok(/GM\._enkeHistory[\s\S]{0,40}_wujuHistory[\s\S]{0,40}_tongziHistory|_enkeArr|_wujuArr|_tongziArr/.test(src), '⑥ 真读 _enkeHistory/_wujuHistory/_tongziHistory');
-
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

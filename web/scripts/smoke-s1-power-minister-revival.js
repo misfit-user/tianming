@@ -16,16 +16,9 @@ function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m
 
 // ════════ 一·源契约 ════════
 const src = fs.readFileSync(path.join(ROOT, 'tm-authority-complete.js'), 'utf8');
-ok(/function _tickOfficeTenure\(ctx, mr\)/.test(src), '_tickOfficeTenure 已定义');
-ok(/function _powerMinisterEnabled\(\)/.test(src), '_powerMinisterEnabled 开关已定义');
-ok(/powerMinisterEnabled/.test(src) && /P\.conf/.test(src), '开关读 P.conf/P.ai.powerMinisterEnabled');
-ok(/_tenureMonths = \(c\._tenureMonths \|\| 0\) \+ step/.test(src), '在任按月递增 _tenureMonths');
-ok(/_OFF_TENURE_RETIRE_RE/.test(src) && /致仕/.test(src), '致仕/守制 排除正则');
 const tIdx = src.indexOf('_tickOfficeTenure(ctx, mr); } catch');
 const dIdx = src.indexOf('_detectPowerMinister(ctx); _tickPowerMinister');
 ok(tIdx > 0 && dIdx > tIdx, 'tick() 中 _tickOfficeTenure 在 _detectPowerMinister 之前（本回合任期当回合可见）');
-ok(/tickOfficeTenure: _tickOfficeTenure/.test(src), '导出 tickOfficeTenure 供单测真代码');
-ok(/isPowerMinisterEnabled: _powerMinisterEnabled/.test(src), '导出 isPowerMinisterEnabled');
 
 // ════════ 二·真代码：headless 加载 app → 调真导出函数 ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

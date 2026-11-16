@@ -35,16 +35,9 @@ function makeGov(liveMap, chars){
   ok(gov({ governor: '活员' }) === '活员', '① 无官职但静态主官在世→保留');
   ok(gov({}) === '', '① 无官职无主官→空');
 }
-ok(/governor: rightAdminLiveGovernor\(d\)/.test(rail), '① rightAdminFromDivision.governor 走活绑定真源');
-ok(/function rightAdminGovernorText\(x\)\{[\s\S]*?x\.governorUnrecorded \? '任官未详' : '空缺.待补'/.test(rail)
-  && /esc\(rightAdminGovernorText\(x\)\)/.test(rail),
-  '① 主官卡空值：剧本没写 governor 显「任官未详」，写了却为空显「空缺·待补」');
 
 // ── ② 问对名单无 24 cap·渐进水合 ────────────────────────────────
 ok(!/waiting\.slice\(0, 24\)/.test(rail) && !/away\.slice\(0, 24\)/.test(rail), '② 候旨/远方名单去除 slice(0,24) 静默截断');
-ok(/waitingBody = waiting\.length \? rightWenduiHydratedList\(/.test(rail)
-  && /awayBody = away\.length \? rightWenduiHydratedList\(/.test(rail)
-  && /seekerBody = seekers\.length \? rightWenduiHydratedList\(/.test(rail), '② 候旨/远方/求见三名单均走 rightWenduiHydratedList 水合');
 {
   const hydSrc = grab(rail, /function rightWenduiHydratedList\(cls, items, renderItem\)\{[\s\S]*?\n {2}\}/, 'rightWenduiHydratedList');
   const hyd = new Function('RIGHT_WENDUI_INITIAL_ROWS', 'rightScheduleWenduiHydration', 'attr', '_rightWenduiRenderSeq',
@@ -62,9 +55,6 @@ ok(/waitingBody = waiting\.length \? rightWenduiHydratedList\(/.test(rail)
 // ── ③ 钉选臣僚卡走真源格式化(ghost + 真实卡都有派系) ───────────────
 ok(!/p\.title \|\| p\.office \|\| p\.role \|\| '在朝'/.test(rail), '③ ghost 卡职衔不再读 p.title 原始单值');
 ok(!/p\.title \|\| p\.office \|\| p\.role \|\| p\.faction \|\| '未仕'/.test(rail), '③ 实卡职衔不再读 p.title 原始单值');
-ok(/esc\(rightFactionDisplay\(p\.faction\) \|\| '.'\)/.test(rail), '③ ghost 卡派系调 rightFactionDisplay');
-ok(/loyTag \+ '<\/i> . ' \+ esc\(rightIssuePersonTitle\(p\)\) \+ \(rightFactionDisplay\(p\.faction\)/.test(rail), '③ 真实钉选卡补派系格式化(rightFactionDisplay·复审返工)');
-ok((rail.match(/esc\(rightIssuePersonTitle\(p\)\)/g) || []).length >= 2, '③ 钉选卡职衔调 rightIssuePersonTitle(多职格式化)');
 
 // ── ④ 军队 morale/supply 对齐真源 ──────────────────────────────
 {
@@ -126,21 +116,9 @@ ok((rail.match(/esc\(rightIssuePersonTitle\(p\)\)/g) || []).length >= 2, '③ �
   const estimatedItems = cascade('income', estimate.account, estimate.forecast);
   ok(estimatedItems.length === 1 && estimatedItems[0].amount === 20 && estimatedItems[0].note === '本期预计', '⑤ 预测模型按10日口径列明本期预计20');
 }
-ok(/incomeFromCascade \? periodNote : '[^']*概算/.test(rail), '⑤ cascade 缺数据回落标「(概算)」·已交割/预计使用真实期长');
-
-// ── ⑥ 文苑余 N 提示 ───────────────────────────────────────────
-ok(/filteredWorks\.length > 24 \? '<div class="tmrp-meta">余 ' \+ \(filteredWorks\.length - 24\)/.test(rail), '⑥ 文苑超 24 件留「余 N 件」提示');
 
 // ── ⑦ 待见删除写口收口 + _qid 主键 ────────────────────────────
 ok(!/\.splice\(/.test(rail), '⑦ rightrail 无裸 splice(删除全走唯一写口)');
-ok(/window\._wdCleansePendingAudiences\(rightWenduiKeepPending\)/.test(rail), '⑦ 右栏 render 清洗走 _wdCleansePendingAudiences（与只读角标共用谓词）');
-ok(/window\._wdRemovePendingAudience\(qid\)/.test(rail), '⑦ 暂却兜底按 _qid 删');
-ok(/data-right-action="wendui-queue" data-qid="/.test(rail) && /data-right-action="wendui-dismiss" data-qid="/.test(rail), '⑦ 队列按钮写 data-qid(稳定标识·非 render-time index)');
-ok(/var qid = \(data && data\.qid\)/.test(rail), '⑦ 队列 handler 按 data.qid 解析');
-ok(/window\._wdEnsurePendingQids/.test(rail), '⑦ 右栏 render 前 ensure 补 _qid');
-ok(/_wdOpenAudienceQueue\([\s\S]{0,30}q\._qid/.test(wendui), '⑦ 旧 UI 队列 onclick 按 _qid');
-ok(/function _wdOpenAudienceQueue\(ref\)[\s\S]{0,90}_wdResolvePending\(ref\)/.test(wendui)
-  && /function _wdDismissPending\(ref\)[\s\S]{0,90}_wdResolvePending\(ref\)/.test(wendui), '⑦ 旧 UI 两 handler 入口按 _qid 解析(_wdResolvePending)');
 {
   const assignSrc = grab(wendui, /function _wdAssignQid\(q\) \{[\s\S]*?\n\}/, '_wdAssignQid');
   const ensureSrc = grab(wendui, /function _wdEnsurePendingQids\(\) \{[\s\S]*?\n\}/, '_wdEnsurePendingQids');

@@ -127,8 +127,4 @@ assert(derived.ok, 'mature ecology relation should let class demand derive party
 assert(PG.getActiveGoals(root, 'Relief League', { turn: 21 }).some(g => g && g.kind === 'classDemand' && g.sourceClass === 'Canal Tenants'), 'aligned party should receive derived class demand goal');
 assert(PG.getActiveGoals(root, 'Revenue Clique', { turn: 21 }).some(g => g && g.kind === 'counterClassDemand'), 'rival hostile party should receive a counter goal once support exists');
 
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(indexHtml.indexOf('tm-party-class-ecology.js') > 0, 'index should load party/class ecology module');
-assert(indexHtml.indexOf('tm-party-class-ecology.js') < indexHtml.indexOf('tm-social-political-signals.js'), 'ecology should load before social/political signals');
-
 console.log('[smoke-party-class-ecology] PASS scenario ecology emergence');

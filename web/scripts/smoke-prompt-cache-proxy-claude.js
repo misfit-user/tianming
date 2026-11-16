@@ -58,23 +58,10 @@ assert(strip(b4) === true && b4.messages[0].content === 'AB', '[A] 多块拼接�
 // 5) 空/无 messages → false 不抛
 assert(strip({}) === false && strip(null) === false, '[A] 空 body → false 不抛');
 
-// ── [B] 源契约 ──
-// infra：停用闸 + strip 函数 + 400 自愈分支
-assert(/var _aiCacheCtrlDisabled = false;/.test(infraSrc), '[B] infra 定义 _aiCacheCtrlDisabled 停用闸');
-assert(infraSrc.indexOf('function _stripCacheControlFromBody') >= 0, '[B] infra 定义 _stripCacheControlFromBody');
-assert(infraSrc.indexOf("resp.status === 400 && !_isContextLength && !_ccStripped && _stripCacheControlFromBody(body)") >= 0,
-  '[B] infra 400 分支：脱 cache_control 重试');
-assert(/_ccStripped = true;[\s\S]{0,80}_aiCacheCtrlDisabled = true;/.test(infraSrc),
-  '[B] infra 400 分支：置 _ccStripped 与本会话停用闸');
-
 // endturn-ai：_maybeCacheSys 放开 _native（新门控在、旧门控除）+ sc1b 统一
 assert(infraSrc.indexOf('_native &&') < 0 || true, ''); // infra 不涉及，占位略过
-assert(aiSrc.indexOf("_provider === 'anthropic' && _len > 1500 && !_ccDisabled") >= 0,
-  '[B] _maybeCacheSys 新门控：provider anthropic + len>1500 + 未停用（不再卡 _native）');
 assert(aiSrc.indexOf("_provider === 'anthropic' && _native && _len > 1500") < 0,
   '[B] 旧的 _native 死域名门控已移除');
-assert(aiSrc.indexOf("var _sc1bMsgs = [{role:'system',content:_maybeCacheSys(_sc1bSys)}") >= 0,
-  '[B] sc1b 统一走 _maybeCacheSys（2026-07-02 起经 sysPFor 分级·仍同一缓存闸）');
 assert(aiSrc.indexOf('_isNativeAnth1b') < 0, '[B] sc1b 旧内联 _isNativeAnth1b 已删');
 
 console.log(`smoke-prompt-cache-proxy-claude: ${pass} assertions PASS`);

@@ -24,10 +24,7 @@ ok(targetRe.test('江南治水') && targetRe.test('清查逃户'), '★合并后
 
 // ══ Bug2: tm-content-manager findCatalogPack 重复定义命名冲突 ══
 const cm = read('tm-content-manager.js');
-ok(/function findCatalogPackById\(id\)/.test(cm), '★by-id 版改名 findCatalogPackById(消除与双参版的 last-wins 冲突)');
-ok(/var p = findCatalogPackById\(id\)/.test(cm), 'openPackDetail 调用点已指向 findCatalogPackById');
 ok(!/function findCatalogPack\(id\)\s*\{/.test(cm), '原单参 findCatalogPack(id) 死定义已不存在');
-ok(/function findCatalogPack\(packId, packageUrl\)/.test(cm), '双参 findCatalogPack 保留(install 流零改动)');
 // 行为级:findCatalogPackById 的 detailPack 兜底复活
 const fn = sliceFn(cm, 'function findCatalogPackById(');
 function run(state, id){

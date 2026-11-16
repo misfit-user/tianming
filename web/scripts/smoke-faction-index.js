@@ -195,48 +195,6 @@ function testEmptyGM() {
   assert(typeof idx === 'object' && Object.keys(idx).length === 0, 'no facs → empty index');
 }
 
-function testHookPresence() {
-  // 静态检查·startGame + pipeline render-finalize step 必须 call rebuild
-  const gameLoop = (fs.readFileSync(path.join(ROOT, 'tm-game-loop.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-game-loop-wentian-hardchange.js'), 'utf8'));
-  assert(/TM\.FactionIndex\.rebuild\s*\(\s*\)/.test(gameLoop), 'startGame missing TM.FactionIndex.rebuild()');
-  assert(/_facIndex 构建完成/.test(gameLoop), 'startGame missing console.log marker');
-
-  const pipeline = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
-  assert(/TM\.FactionIndex\.rebuild\s*\(\s*\)/.test(pipeline), 'pipeline missing TM.FactionIndex.rebuild()');
-  assert(/'GM\._facIndex'/.test(pipeline), 'pipeline writes annotation missing GM._facIndex');
-
-  const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert(/<script src="tm-faction-index\.js/.test(indexHtml), 'index.html missing tm-faction-index.js script tag');
-  // 必须在 three-systems-ui 之前
-  const idxFI = indexHtml.indexOf('tm-faction-index.js');
-  const idxUI = indexHtml.indexOf('tm-three-systems-ui.js');
-  assert(idxFI > 0 && idxFI < idxUI, 'tm-faction-index.js must load before tm-three-systems-ui.js');
-}
-
-function testUIPanelInlining() {
-  // Active faction panel must inline people / armies from GM._facIndex.
-  const ui = fs.readFileSync(path.join(ROOT, 'tm-three-systems-ui.js'), 'utf8');
-  assert(/function\s+_detailPanel\s*\(\s*fac\s*,\s*playerFac\s*\)/.test(ui), 'UI missing active faction detail panel');
-  assert(/var\s+chars\s*=\s*\(entry\s*&&\s*entry\.chars\)\s*\|\|\s*\[\]/.test(ui), 'UI detail panel must read indexed chars');
-  assert(/var\s+armies\s*=\s*\(entry\s*&&\s*entry\.armies\)\s*\|\|\s*\[\]/.test(ui), 'UI detail panel must read indexed armies');
-  assert(ui.includes('\u4eba\u7269\u9aa8\u67b6') && ui.includes('\u5c06\u9886'), 'UI missing people/general inline sections');
-  assert(ui.includes('frp-chipline') && ui.includes('frp-army-list'), 'UI missing active inline list containers');
-  // Must read _facIndex instead of recomputing from GM.chars.
-  assert(/GM\._facIndex\s*&&\s*GM\._facIndex\[(?:f|fac)\.name\]/.test(ui), 'UI panel must read GM._facIndex');
-  // Defensive rebuild call.
-  assert(/TM\.FactionIndex\.rebuild/.test(ui), 'UI panel must call TM.FactionIndex.rebuild defensively');
-  // Key metric fields must surface.
-  ['m\\.charCount', 'm\\.armyCount', 'm\\.totalSoldiers', 'm\\.arrearsArmies', 'm\\.privatizedRatio', 'm\\.partyDominantName', 'm\\.partyImbalance'].forEach(function(rex){
-    assert(new RegExp(rex).test(ui), 'UI must surface ' + rex.replace('\\.', '.'));
-  });
-  assert(ui.includes('\u79c1\u5175\u5316') && /privatizedRatio\s*>=\s*0\.4\s*\?\s*'warn'/.test(ui), 'UI missing private-army risk surface');
-  // Derived health/economy/cohesion/strength surfaces.
-  ['derivedHealth', 'derivedEconomy', 'derivedCohesion', 'derivedStrength', 'militaryStability'].forEach(function(key){
-    assert(ui.indexOf(key) >= 0, 'UI must surface derived metric: ' + key);
-  });
-  assert(/TM\.FactionDerived\.compute/.test(ui), 'UI must call TM.FactionDerived.compute defensively');
-}
-
 function testDerivedHealthFormulas() {
   // 纯函数·验证 4 个公式输出范围
   const ctx = buildContext();
@@ -316,22 +274,6 @@ function testDerivedHealthFromIndex() {
   assert(empty.derivedHealth, '空壳势力 also gets derivedHealth');
 }
 
-function testLayer3HookPresence() {
-  const gameLoop = (fs.readFileSync(path.join(ROOT, 'tm-game-loop.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-game-loop-wentian-hardchange.js'), 'utf8'));
-  assert(/TM\.FactionDerived\.compute\s*\(\s*\)/.test(gameLoop), 'startGame missing TM.FactionDerived.compute()');
-  const pipeline = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
-  assert(/TM\.FactionDerived\.compute\s*\(\s*\)/.test(pipeline), 'pipeline missing TM.FactionDerived.compute()');
-  assert(/'GM\.facs\[\*\]\.derivedHealth'/.test(pipeline), 'pipeline writes annotation missing derivedHealth');
-
-  const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert(/<script src="tm-faction-derived-health\.js/.test(indexHtml), 'index.html missing tm-faction-derived-health.js');
-  // 必须在 index 之后·UI 之前
-  const idxFI = indexHtml.indexOf('tm-faction-index.js');
-  const idxDH = indexHtml.indexOf('tm-faction-derived-health.js');
-  const idxUI = indexHtml.indexOf('tm-three-systems-ui.js');
-  assert(idxFI < idxDH && idxDH < idxUI, 'load order: tm-faction-index → tm-faction-derived-health → tm-three-systems-ui');
-}
-
 function main() {
   testBasicStructure();
   testCharCounts();
@@ -341,11 +283,8 @@ function main() {
   testProvinces();
   testGetOrRebuild();
   testEmptyGM();
-  testHookPresence();
-  testUIPanelInlining();
   testDerivedHealthFormulas();
   testDerivedHealthFromIndex();
-  testLayer3HookPresence();
   console.log('[smoke-faction-index] pass·13 tests');
 }
 

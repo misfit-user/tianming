@@ -127,36 +127,9 @@ check(context.TM.MilitarySystems === MS, 'MilitarySystems TM alias missing');
 check(context.DA && context.DA.armies, 'DataAccess armies facade missing');
 
 const endturnSource = readEndturnSource();
-check(endturnSource.indexOf('MilitarySystems.getMilitarySystems(GM)') >= 0, 'sc18 should inject militarySystems catalog context');
 check(endturnSource.indexOf('MilitarySystems.consumeBattleResults(p18, GM)') >= 0 && typeof MS.consumeBattleResults === 'function', 'sc18 should apply structured single/multiple battle results through the shared contract');
-check(endturnSource.indexOf('affectedArmies:[{armyId,side,loss,moraleDelta,loyaltyDelta,state,commanderFate}]') >= 0, 'sc18 should request affectedArmies');
-check(endturnSource.indexOf('_battleResultCasualtyFactions') >= 0, 'sc18 should track battleResult casualty factions before faction action writeback');
-check(endturnSource.indexOf('_skipCasualtyWriteback') >= 0, 'sc18 should skip duplicated faction casualties already covered by battleResult');
-check(endturnSource.indexOf("global.applyAIArmyChange(ac, { source: 'endturn.army_changes'") >= 0,
-  'sc1 army_changes should use shared AI army writeback');
-check(endturnSource.indexOf("global.applyAIArmyChange(ac, { source: 'sc18.supplementary_army_changes'") >= 0,
-  'sc18 supplementary army changes should use shared AI army writeback');
-check(endturnSource.indexOf('lastInteractionMemory') >= 0 && endturnSource.indexOf('recognitionState') >= 0, 'sc07 should expose new cognition fields');
-check(endturnSource.indexOf('lastInteractionMemory/recognitionState') >= 0, 'sc07 dynamic info rule missing');
 
-const militarySource = fs.readFileSync(path.join(ROOT, 'tm-military.js'), 'utf8');
-const renderSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-shiji-compose.js'), 'utf8');  // 2026-07-06 诸军总览迁 compose
-const applierSource = fs.readFileSync(path.resolve(ROOT, 'generated/tm-ai-change-applier.bundle.js'), 'utf8');
 // 2026-05-21·Slice 2·applyAIArmyChange 已拆到 tm-ai-change-army.js
-const armySource = fs.readFileSync(path.join(ROOT, 'tm-ai-change-army.js'), 'utf8');
-const phase8FormalSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-bridge.js'), 'utf8') +
-  '\n' + fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail.js'), 'utf8');
-check(militarySource.indexOf('a.armyType') >= 0, 'syncMilitarySources should preserve scenario armyType buckets');
-check(renderSource.indexOf("['军', '势力', '统帅', '驻地'") >= 0, 'military risk table should show faction column');
-check(renderSource.indexOf('欠饷≥3月') >= 0, 'military risk warning should use 欠饷 wording');
-check(armySource.indexOf('function applyAIArmyChange') >= 0, 'AI army module should expose shared army writeback helper');
-check(applierSource.indexOf('military_changes') >= 0 && applierSource.indexOf('army_changes') >= 0,
-  'AI applier should consume both military_changes and army_changes');
-check(phase8FormalSource.indexOf('function refreshActivePanel') >= 0 &&
-      phase8FormalSource.indexOf('function refreshArmyFlyout') >= 0 &&
-      phase8FormalSource.indexOf('refreshPanel: refreshActivePanel') >= 0 &&
-      phase8FormalSource.indexOf('refreshActivePanel();') >= 0,
-  'phase8 formal refresh should redraw the active right panel');
 
 let militaryRefreshHits = 0;
 let formalBridgeRefreshHits = 0;
@@ -658,13 +631,6 @@ context.GM = {
 };
 checkEq(context.DA.armies.totalTroops(), 150, 'DA.armies.totalTroops should read live army troop aliases');
 checkEq(context.DA.armies.totalTroops('A'), 120, 'DA.armies.totalTroops should filter faction with live aliases');
-
-const saveLifecycleSource = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
-check(saveLifecycleSource.indexOf('EngineMigration.run(GM);') >= 0, 'save lifecycle should run engine migration');
-check(saveLifecycleSource.indexOf('RelGraph.syncCharRefs(ch, GM)') >= 0, 'save lifecycle should sync char refs');
-
-const threeSystemsSource = fs.readFileSync(path.join(ROOT, 'tm-three-systems-ext.js'), 'utf8');
-check(threeSystemsSource.indexOf('RelGraph.syncCharRefs(ch, global.GM)') >= 0, 'three systems should sync char refs on start');
 
 function idsOf(list) {
   return (list || []).map(x => x && x.id).filter(Boolean);

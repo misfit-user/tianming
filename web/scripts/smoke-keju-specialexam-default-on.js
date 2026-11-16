@@ -52,29 +52,12 @@ gate('tm-keju-enke.js',          'function _isG2Enabled() {', 'useNewKejuG2');
 gate('tm-keju-wuju.js',          'function _isG3Enabled() {', 'useNewKejuG3');
 gate('tm-keju-tongzi.js',        'function _isG5Enabled() {', 'useNewKejuG5');
 
-// G2 三处文件一致
-['tm-keju-enke.js', 'tm-keju-enke-player-initiative.js', 'tm-keju-event-hooks.js'].forEach(function(f){
-  const s = fs.readFileSync(path.join(ROOT, f), 'utf8');
-  assert(s.indexOf('P.conf.useNewKejuG2 !== false') >= 0, f + ' G2 闸门走 !== false');
-  assert(s.indexOf('P.conf.useNewKejuG2 === true') < 0, f + ' G2 旧 === true 已清');
-});
-
 // 设置 UI 源契约
 {
   const p = (fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8'));
   assert(p.indexOf('🎓 特科·总开关（默认开）') >= 0, '设置标题改人话（特科总开关）');
   assert(p.indexOf('🎓 恩科（需总开关）') >= 0 && p.indexOf('🎓 武举（需总开关）') >= 0 && p.indexOf('🎓 童子科（需总开关）') >= 0, '恩科/武举/童子标题改人话');
   assert(p.indexOf('default OFF') < 0 && p.indexOf('need D2') < 0 && p.indexOf('spawn infra') < 0, '开发黑话已清（default OFF / need D2 / spawn infra）');
-  ['useNewKejuD2', 'useNewKejuG2', 'useNewKejuG3', 'useNewKejuG5'].forEach(function(f){
-    assert(p.indexOf('P.conf.' + f + ' !== false') >= 0, f + ' 复选框态同步 !== false（默认显勾选）');
-  });
 }
-
-// D1 门生/清议默认开（2026-06-15·spawn 有冷却·不刷屏·与特科同 !== false 范式）
-['tm-keju-cohort-meet.js', 'tm-keju-disciple-graph.js', 'tm-keju-disciple-memorial.js', 'tm-keju-yanguan-attribution.js', 'tm-keju-yanguan-qingyi.js'].forEach(function(f){
-  const s = fs.readFileSync(path.join(ROOT, f), 'utf8');
-  assert(s.indexOf('P.conf.useNewKejuD1 !== false') >= 0, f + ' D1 闸门走 !== false（门生默认开）');
-  assert(s.indexOf('P.conf.useNewKejuD1 === true') < 0, f + ' D1 旧 === true 已清');
-});
 
 console.log('PASS smoke-keju-specialexam-default-on · ' + passed + ' 断言');

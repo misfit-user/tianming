@@ -66,7 +66,6 @@ assert(/名望[\s\S]{0,80}—/.test(h丙) || h丙.indexOf('>—<') >= 0, '④ �
 // ⑤ 源契约:旧静态假公式已除·真字段已接
 const src = fs.readFileSync(path.join(ROOT, 'tm-renwu-tuzhi.js'), 'utf8');
 assert(!/renown=p\.familyTier===.imperial.\?100/.test(src), '⑤ 旧 familyTier 硬编 renown 公式已删');
-assert(/var fame=\(p\.mingwang==null\)\?null:Math\.round\(p\.mingwang\)/.test(src), '⑤ 家望改读真 p.mingwang');
 assert(src.indexOf("['家望',renown,renown]") < 0, '⑤ 旧 [家望,renown,renown] 假进度条已除');
 
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

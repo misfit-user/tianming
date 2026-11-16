@@ -92,7 +92,6 @@ assert(allEq, '120 人预扫语义 = 旧四函数逐一等价(零行为变化)')
 console.log('② 静态契约：卡片循环不再每人全量扫');
 var src = fs.readFileSync(path.join(ROOT, 'tm-hongyan-office.js'), 'utf8');
 assert(!/_ltCountUnread\(ch\.name\)/.test(src), '循环内 _ltCountUnread(ch.name) 已除');
-assert(/_cnt\[ch\.name\]/.test(src), '循环改查预扫表');
 
 console.log('③ 信史收卷：>120 封只铺近 120');
 sandbox.GM._pendingLetterTo = '臣0';

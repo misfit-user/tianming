@@ -35,33 +35,18 @@ var coerceSrc = extractFn(agent, '_coerceEntityValue');
 ok(!!coerceSrc, '_coerceEntityValue 存在');
 ok(coerceSrc && coerceSrc.indexOf('JSON.parse') >= 0 && coerceSrc.indexOf('```') >= 0, 'JSON.parse + ```json 围栏容错');
 ok(coerceSrc && /typeof p === 'object'/.test(coerceSrc) && coerceSrc.indexOf('return { ok: false }') >= 0, 'parse 出非对象/失败 → { ok:false } 标记拒绝');
-ok(agent.indexOf('_coerceEntityValue: _coerceEntityValue') >= 0, '导出 _coerceEntityValue（onApply/smoke 复用·对齐 underscore 导出惯例）');
 
 console.log('— applyEdit · _ARR_COLLS 整集合字符串 parse-or-reject —');
 var editBody = extractFn(agent, 'applyEdit') || '';
-ok(editBody.indexOf('_coerceEntityValue(value)') >= 0, 'applyEdit 走 _coerceEntityValue 归一');
-ok(/if \(!_cv\.ok\) return \{ ok: false, reason:/.test(editBody), 'applyEdit 归一失败返回 { ok:false, reason } 工具错误');
-ok(editBody.indexOf('请直接传结构化 JSON') >= 0 && editBody.indexOf('不要把 JSON 字符串化后再传') >= 0, 'applyEdit 拒绝文案指路：传结构化 JSON·别字符串化');
-ok(editBody.indexOf('_ARR_COLLS[String(path)] && typeof value === \'string\'') >= 0, '归一只圈 _ARR_COLLS 顶层集合（普通字符串字段不受影响）');
 
 console.log('— applyPush · push 前同款归一 —');
 var pushBody = extractFn(agent, 'applyPush') || '';
-ok(pushBody.indexOf('_coerceEntityValue(value)') >= 0, 'applyPush 走 _coerceEntityValue 归一');
-ok(/if \(!_cv\.ok\) return \{ ok: false, reason:/.test(pushBody), 'applyPush 归一失败返回 { ok:false, reason } 工具错误');
-ok(pushBody.indexOf('Array.isArray(value) ? value : [value]') >= 0, 'parse 出数组 → 逐条入列（不当单元素嵌套）');
 
 console.log('— multiEdit / bulkAdd 同径受益 —');
-ok(agent.indexOf('applyEdit(_meDraft, e.path, e.value') >= 0, 'multiEdit 逐条走 applyEdit → 自然走归一');
-ok(agent.indexOf('applyPush(_baDraft, input.collection, it)') >= 0, 'bulkAdd 逐条走 applyPush → 自然走归一');
 
 console.log('— onApply · 元素级归一兜底 —');
-ok(ui.indexOf('function _coerceArrElem(') >= 0, '_coerceArrElem 存在');
-ok(ui.indexOf('function _coerceArrElem(') < ui.indexOf('function onApply('), '_coerceArrElem 定于 onApply 前');
 // 取完整实际函数，不能因前方新增身份守卫而在固定4200字符处截掉原有成功摘要。
 var applyNode = require('acorn').parse(ui, { ecmaVersion: 'latest' }).body[0].expression.callee.body.body.find(function(n) { return n.type === 'FunctionDeclaration' && n.id.name === 'onApply'; });
-var applyBody = applyNode ? ui.slice(applyNode.start, applyNode.end) : '';
-ok(applyBody.indexOf('_coerceArrElem(it)') >= 0 && applyBody.indexOf('_dropN++') >= 0 && applyBody.indexOf('_fixN++') >= 0, 'onApply 数组集合元素级归一 + 修复/丢弃计数');
-ok(applyBody.indexOf("'，已自动修复 ' + _fixN + ' 条格式不对的条目'") >= 0 && applyBody.indexOf("'、丢弃 ' + _dropN + ' 条读不懂的'") >= 0, 'apply 摘要体现「已自动修复 N 条格式不对的条目、丢弃 M 条读不懂的」');
 
 console.log('— 行为断言 · eval 归一函数喂用例 —');
 var coerce = null;

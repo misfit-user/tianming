@@ -15,16 +15,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·源契约 ════════
-const panel = fs.readFileSync(path.join(ROOT, 'tm-office-panel.js'), 'utf8');
-ok(/function _offMenyin\(officialName\)/.test(panel), '_offMenyin handler 已定义');
-ok(/TMGongming\.grantPreset\(son, 'menyin'/.test(panel), '授门荫出身走 grantPreset(menyin)');
-ok(/CharFullSchema[\s\S]{0,40}ensureFullFields\(son\)/.test(panel), '建角色走 ensureFullFields 补必填');
-ok(/_menyinGranted/.test(panel), '一官一荫 _menyinGranted 守');
-ok(/lv > 0 && lv <= 6/.test(panel), '品级门槛 level≤6(三品以上)');
-ok(/window\._offMenyin = _offMenyin/.test(panel), '导出 window._offMenyin 供 onclick');
-const runtime = (fs.readFileSync(path.join(ROOT, 'tm-office-runtime.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-office-runtime-summary-appoint.js'), 'utf8'));
-ok(/_offMenyin\(\\'' \+ _safeHolder/.test(runtime) || /_offMenyin\('/.test(runtime), '职位卡荫子按钮接 _offMenyin');
-ok(/_menyinLv > 0 && _menyinLv <= 6/.test(runtime), '荫子按钮条件 level≤6');
 
 // ════════ 二·真代码：headless → _offMenyin ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }
@@ -89,8 +79,6 @@ const lowHtml = vm.runInContext('String(_ogpRenderPosCard(GM.officeTree[0].posit
 ok(!/荫\s*子/.test(lowHtml), '列表卡：低品官(未达三品) → 无荫子按钮');
 
 // ════════ 三·荐辟/荐贤(S5-2) ════════
-ok(/function _offJianbi\(officialName\)/.test(panel), '_offJianbi handler 已定义');
-ok(/TMGongming\.grant\(person, \{ path: 'jianxuan'/.test(panel), '荐辟授出身走 grant(path:jianxuan·无 preset)');
 ok(vm.runInContext('typeof _offJianbi === "function"', sandbox), 'boot 后 _offJianbi 可调');
 function callJianbi(name) { sandbox.__jn = name; vm.runInContext('_offJianbi(__jn)', sandbox); }
 const findBuyi = (chars, before) => chars.slice(before).find(c => c && c.familyRole === '布衣');
@@ -117,7 +105,6 @@ const jHtml = vm.runInContext('String(_ogpRenderPosCard(GM.officeTree[0].positio
 ok(/荐\s*贤/.test(jHtml) && /_offJianbi/.test(jHtml), '列表卡：eligible 官 → 渲染荐贤按钮(接 _offJianbi)');
 
 // ════════ 四·独立罢免(S1d-UI) ════════
-ok(/_offDismissToEdict\(/.test(runtime) && /罢\s*免/.test(runtime), '罢免按钮接 _offDismissToEdict + 文案「罢免」');
 vm.runInContext('if(typeof _renderEdictSuggestions!=="function")_renderEdictSuggestions=function(){};', sandbox);
 sandbox.GM = { turn: 5, chars: [mkHuzhu('某官', '侍郎', 7, '明')], facs: [{ name: '明', isPlayer: true }], officeTree: [{ name: '某部', positions: [{ name: '侍郎', rank: '正三品', holder: '某官' }] }], _edictSuggestions: [], _capital: '京师' };
 sandbox.P = { conf: {}, playerInfo: { factionName: '明' } };

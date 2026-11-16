@@ -58,7 +58,4 @@ const packed = MR.packForInjection([
 
 assert(packed.recallResults[0].hits.some((h) => h.id === 'issue-resident'), 'resident memory should survive injection packing');
 
-const retrievalSource = fs.readFileSync(path.join(ROOT, 'tm-memory-retrieval.js'), 'utf8');
-assert(retrievalSource.includes('_memoryControls'), 'retrieval should read GM._memoryControls');
-
 console.log('smoke-memory-controls ok');

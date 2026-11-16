@@ -14,9 +14,6 @@ assert(registryIdx >= 0, 'index should load tm-memory-evidence-registry.js');
 assert(envelopeIdx >= 0, 'index should load tm-memory-envelope.js');
 assert(registryIdx < envelopeIdx, 'evidence registry should load before memory envelope');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-evidence-registry.js'), 'verify-all should include evidence registry smoke');
-
 const sandbox = { console, Date, Math, JSON, window: {} };
 sandbox.window.window = sandbox.window;
 vm.runInNewContext(fs.readFileSync(registryPath, 'utf8'), sandbox.window, { filename: 'tm-memory-evidence-registry.js' });

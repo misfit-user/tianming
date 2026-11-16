@@ -259,7 +259,6 @@ const prompt = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
   const anchorEnd = prompt.indexOf('heartCount++;', start);
   const segEnd = prompt.indexOf('});', anchorEnd) + 3;
   const seg = prompt.slice(start, segEnd);
-  ok(seg.indexOf('_tmFilterMemories(c._memory, GM)') >= 0, 'npc-hearts sink 段已接 _tmFilterMemories');
   const runHearts = new Function('c', 'GM', '_tmFilterMemories', '_memScore', 'impMin', 'perChar', '_xE', 'xmlLines', 'heartCount', 'totalCap',
     seg + '\n return xmlLines;');
   setGM({ turn: 5, chars: [{ name: WEI, alive: true }] });
@@ -286,14 +285,6 @@ const prompt = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
 
 // ═══ ⑧ 各 sink 源码接线结构断言（persona-views / agent-mode）═══
 console.log('\n[P0-1] sink 接线结构');
-const rd = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
-ok(rd('tm-wendui-persona-views.js').indexOf('_tmFilterWenduiEntries((GM.wenduiHistory && GM.wenduiHistory[ch.name])') >= 0, '⑧ persona-views 承续上下文已接过滤器');
-ok(rd('tm-endturn-agent-mode.js').indexOf('_tmFilterWenduiEntries(arr, gm)') >= 0, '⑧ agent-mode 问对注入已接过滤器');
 // 二轮·四个直读点各接过滤器（变异锁：删调用即红）
-ok(rd('tm-mechanics-memory.js').indexOf('var _gmcMem = (typeof _tmFilterMemories') >= 0, '⑧ getMemoryContext 内部单点收口已接 _tmFilterMemories');
-ok(rd('tm-memorials.js').indexOf('_tmFilterMemories(ch._memory, GM) : ch._memory).slice(-3)') >= 0, '⑧ memorials:349 直读 slice(-3) 已接过滤器');
-ok(rd('tm-endturn-prompt.js').indexOf('_tmFilterMemories(c2._memory, GM) : c2._memory).slice()') >= 0, '⑧ endturn-prompt:1184 最高重要度记忆已接过滤器');
-ok(rd('tm-faction-npc-llm-decision.js').indexOf('_tmFilterMemories(c._memory,') >= 0, '⑧ faction:1012 直读 slice(-2) 已接过滤器（仅加过滤调用）');
-ok(rd('tm-keju-reform-llm.js').indexOf('_tmFilterWenduiEntries(GM.wenduiHistory[ch.name], GM)') >= 0 && rd('tm-keju-reform-llm.js').split('_tmFilterWenduiEntries((GM_.wenduiHistory').length === 3, '⑧ keju-reform 两处 wenduiHistory 直读已接过滤器');
 
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

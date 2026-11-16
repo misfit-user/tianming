@@ -138,8 +138,5 @@ let duplicateError = null;
 try { context._tmValidateUniqueStableIds('人物', [{ id: 'same' }, { id: 'same' }]); } catch (error) { duplicateError = error; }
 ok(!!duplicateError && /重复 id/.test(duplicateError.message), 'validation rejects duplicate stable IDs');
 
-ok(/function _ensureGMDefaults\(GM, P\)[\s\S]*?_tmEnsureTimelineIdentity\(GM\);[\s\S]*?_tmMigrateCoreStableIds\(GM\);/.test(lifecycle),
-  'load defaults run deterministic ID migration before world validation');
-
 console.log('\n[smoke-stable-id-migration] ' + pass + ' passed / ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

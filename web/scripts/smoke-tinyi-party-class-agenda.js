@@ -203,7 +203,4 @@ assert(Array.isArray(reformers.agenda_history), 'party goal result should write 
 assert(reformers.agenda_history.some(h => h && h.source === 'tinyi-party-goal' && h.goalText === 'salt reform' && h.sealStatus === 'issued'), 'agenda_history should record tinyi party-goal outcome');
 assert(reformers.lastTinyiGoalOutcome && reformers.lastTinyiGoalOutcome.sealStatus === 'issued', 'party should keep last tinyi goal outcome snapshot');
 
-const v2Source = fs.readFileSync(path.join(ROOT, 'tm-chaoyi-tinyi.js'), 'utf8');
-assert(/shortGoal/.test(v2Source) && /currentAgenda/.test(v2Source), 'tinyi speech prompt should mention party short/current agenda fields');
-
 console.log('[smoke-tinyi-party-class-agenda] PASS party/class agenda tinyi loop');

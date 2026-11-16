@@ -62,6 +62,5 @@ const aiResultsIdx = renderSrc.indexOf('var aiResults=GM._turnAiResults||{};');
 assert(finalizeIdx >= 0, 'record finalization should finalize MemoryTrace before staging desktop turn data');
 assert(aiResultsIdx >= 0, 'render should still write aiResults from GM._turnAiResults');
 assert(finalizeIdx < aiResultsIdx, 'MemoryTrace should be finalized before aiResults is captured for staged turn data');
-assert(renderSrc.includes("recordMemoryDiagnostic('trace'"), 'render should publish a lightweight MemoryTrace diagnostic summary');
 
 console.log('smoke-memory-trace-persist ok');

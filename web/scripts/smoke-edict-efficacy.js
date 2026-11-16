@@ -97,9 +97,6 @@ test('prune keeps current laws but still drops finished one-offs after the reten
 });
 
 test('turn prep delegates clock and pruning to the efficacy module', () => {
-  const source = fs.readFileSync(path.join(WEB, 'tm-endturn-prep.js'), 'utf8');
-  assert(source.includes('TM.EdictEfficacy.tick(GM)'));
-  assert(source.includes('TM.EdictEfficacy.prune(GM,'));
   assert(!/content\.slice\(0,\s*400\)/.test(fs.readFileSync(path.join(WEB, 'tm-endturn-agent-mode.js'), 'utf8')), 'agent 模式登记诏令须存全文');
 });
 
@@ -150,11 +147,7 @@ test('memory compiler projects a completed-but-current edict and drops a finishe
 });
 
 test('main inference and agent mode both read the standing section', () => {
-  const ai = fs.readFileSync(path.join(WEB, 'tm-endturn-ai.js'), 'utf8');
-  assert(/TM\.EdictEfficacy\.promptSection\(GM, \{ excludeTurn: GM\.turn \}\)/.test(ai));
   const agent = fs.readFileSync(path.join(WEB, 'tm-endturn-agent-mode.js'), 'utf8');
-  assert(/_standingEdicts = \(TM\.EdictEfficacy\.promptSection\(gm, \{ excludeTurn: resolutionTurn \}\) \+ TM\.EdictEfficacy\.feedbackGuide\(gm, \{ tool: 'judge_edict' \}\)\)/.test(agent));
-  assert(/standing: _standingEdicts/.test(agent) && /_bParts\.standing/.test(agent), 'agent 基线拼装带上现行诏制');
   assert(!/if \(_agentEdictOversightOn\(P\)\)[^\n]*_standingEdicts/.test(agent), '不受督查开关限制');
 });
 
@@ -273,9 +266,6 @@ test('main inference applies efficacy only on exact matches', () => {
   assert.equal(c.TM.EdictEfficacy.stateOf(e),'unjudged');assert.equal(e.status,'pending');
   c.TM.EdictOutcomes.receive(c.GM,{edict_feedback:[{edictId:e.id,content:e.content,status:'completed',feedback:'已颁行',efficacy:'standing'}]},[],4,[]);
   assert.equal(c.TM.EdictEfficacy.stateOf(e),'standing');assert.equal(e.status,'completed');
-  const ai = fs.readFileSync(path.join(WEB, 'tm-endturn-ai.js'), 'utf8');
-  assert(/tp1 \+= '  #id=' \+ e\.id \+ ' 【' \+ e\.category \+ '】' \+ e\.content;/.test(ai), '本回合诏令带编号');
-  assert(/TM\.EdictEfficacy\.feedbackGuide\(GM\)/.test(ai), '主推演附判定说明');
 });
 
 test('crowded memory budget keeps every current law, full clauses and pinned imperial rows', () => {

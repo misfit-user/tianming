@@ -59,14 +59,4 @@ assert.strictEqual(
 );
 assert(meta.basisRefs.every((r) => r.authority && typeof r.authorityRank === 'number'), 'basis refs should be normalized with authority ranks');
 
-const render = fs.readFileSync(path.join(ROOT, 'tm-endturn-render.js'), 'utf8');
-const pipeline = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
-const index = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-
-assert(render.includes('MemorySourceBound.buildRecordMetadata'), 'render should build source-bound shiji/qiju metadata');
-assert(render.includes('basisRefs: _recordMeta ? _recordMeta.basisRefs : _evidenceRefs'), 'shijiHistory should store basisRefs');
-assert(render.includes('contentHash: _recordMeta && _recordMeta.contentHash'), 'shijiHistory should store contentHash');
-assert(pipeline.includes('basis_refs') || pipeline.includes('basisRefs'), 'pipeline should pass SC1d basis refs into render');
-assert(index.includes('tm-memory-source-bound.js'), 'index should load tm-memory-source-bound before render');
-
 console.log('smoke-memory-source-bound-records ok');

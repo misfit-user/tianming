@@ -41,8 +41,6 @@ assert(commitment.sourceRefs.some((r) => r.type === 'dialogueCommitment' && r.id
 assert(commitment.basisRefs.some((r) => r.type === 'jishiRecords' && r.id === 'jishi-22-sun'), 'commitment envelope should preserve basis refs');
 assert.strictEqual(commitment.authority, 'rule_validated', 'persisted sc1q commitments should stay rule_validated');
 
-const applySource = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
-assert(applySource.includes('TM.ImperialOrders.fromDialogue(GM,'), 'endturn routes source-bound reconciliation through its owner');
 ['tm-tax-policy.js','tm-imperial-orders.js'].forEach(file=>vm.runInNewContext(fs.readFileSync(path.join(ROOT,file),'utf8'),sandbox.window,{filename:file}));
 const realGame={turn:22,playerInfo:{factionName:'Court'},facs:[{id:'court',name:'Court'}],chars:[{id:'sun',name:'Minister Sun',faction:'Court',alive:true}],_npcCommitments:{}};
 sandbox.window.GM=realGame;sandbox.window.P={time:{daysPerTurn:30}};

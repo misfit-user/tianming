@@ -19,8 +19,6 @@ const src = fs.readFileSync(path.join(ROOT, 'tm-neitang-engine.js'), 'utf8');
 const a = src.indexOf('function applyRoyalClanPressure(mr) {');
 const b = src.indexOf('function triggerRoyalClanBankruptcy');
 assert(a > 0 && b > a, '① 切片锚点在位(applyRoyalClanPressure..triggerRoyalClanBankruptcy)');
-const slice = src.slice(a, b);
-assert(slice.indexOf('clanGrowthEnabled') > 0 && slice.indexOf('imperialClan') > 0, '② 联动块已入函数体');
 
 function mkCtx(over) {
   const ctx = Object.assign({
@@ -91,10 +89,5 @@ for (var i = 0; i < 24; i++) { c5.applyRoyalClanPressure(1); c6.applyRoyalClanPr
 assert(c5.GM.imperialClan.princeCount === c6.GM.imperialClan.princeCount && c5.GM.neitang._royalClan.population === c6.GM.neitang._royalClan.population, '⑫ 确定性·同局面同轨');
 
 // ── 静态契约：下游读点/开关在位 ──
-const guoku = fs.readFileSync(path.join(ROOT, 'tm-guoku-engine.js'), 'utf8');
-assert(guoku.indexOf('GM.imperialClan && GM.imperialClan.princeCount') >= 0, '⑬ guoku 宗藩世禄读 princeCount(下游现成·零改动)');
-const patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-assert(patches.indexOf("'clanGrowthEnabled'") >= 0, '⑭ tm-patches 设置开关已挂(clanGrowthEnabled)');
-assert(src.indexOf('NeitangEngine.applyRoyalClanPressure = applyRoyalClanPressure') > 0, '⑮ 函数导出在位(运行时挂 neitang tick)');
 
 console.log('smoke-clan-stipend-growth OK — ' + N + ' 断言全绿（种子不跳变/十年复利/剧本预置/编年/确定性/flag闸）');

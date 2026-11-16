@@ -90,18 +90,6 @@ detach();
 ok(el._count('touchmove') === 0 && el._count('touchstart') === 0, '⑤ detach() 解绑全部 touch 监听');
 
 // ════ 源契约 ════
-const mapSrc = fs.readFileSync(path.join(WEB, 'phase8-formal-map.js'), 'utf8');
-const offSrc = (fs.readFileSync(path.join(WEB, 'tm-office-runtime.js'), 'utf8') + '\n' + fs.readFileSync(path.join(WEB, 'tm-office-runtime-summary-appoint.js'), 'utf8'));
-const cssSrc = fs.readFileSync(path.join(WEB, 'tm-touch.css'), 'utf8');
-const htmlSrc = fs.readFileSync(path.join(WEB, 'index.html'), 'utf8');
-
-ok(/TM\.attachPinchPan\(stage/.test(mapSrc), '⑥ 舆图 installMapInteraction 接 attachPinchPan(stage)');
-ok(/pointerType === 'touch'\) return/.test(mapSrc), '⑥ 舆图 pointerdown 对 touch early-return(防 pointer+touch 双重 pan)');
-ok(/onGesture:[\s\S]*?scheduleMapTransform\(\);\s*},\s*onEnd:/.test(mapSrc) && /function scheduleMapTransform[\s\S]{0,1200}applyMapTransform/.test(mapSrc), '⑥ 舆图 onGesture 经帧调度器施加 applyMapTransform');
-ok(/TM\.attachPinchPan\(wrap/.test(offSrc), '⑦ 官制树接 attachPinchPan(wrap)');
-ok(/shouldStart:\s*function/.test(offSrc) && /og-pos-card/.test(offSrc.slice(offSrc.indexOf('attachPinchPan(wrap'))), '⑦ 官制树 shouldStart 跳卡片(og-pos-card 等)保留点击');
-ok(/#ming-map-layer/.test(cssSrc) && /#office-tree-wrap-game/.test(cssSrc) && /touch-action:\s*none/.test(cssSrc), '⑧ tm-touch.css 两手势面 touch-action:none');
-ok(/tm-pinch-pan\.js/.test(htmlSrc), '⑨ index.html 引入 tm-pinch-pan.js');
 
 console.log('\n结果: ' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

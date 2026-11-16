@@ -240,18 +240,6 @@ fakeBus.emit('peasantBurden.critical', {
 assert(eventRoot._socialPoliticalSignals && eventRoot._socialPoliticalSignals.items.length === 1, 'event bridge should record to current GM at emit time');
 assert(eventRoot._socialPoliticalSignals.items[0].kind === 'peasantBurden.critical', 'event bridge should preserve event name as signal kind');
 
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(indexHtml.indexOf('tm-social-political-signals.js') >= 0, 'index.html should load the social political signal bridge');
-assert(indexHtml.indexOf('tm-party-goals.js') < indexHtml.indexOf('tm-social-political-signals.js'), 'signal bridge should load after PartyGoals');
-assert(indexHtml.indexOf('tm-social-political-signals.js') < indexHtml.indexOf('tm-party-class-llm-calibrator.js'), 'signal bridge should load before party/class LLM calibrator');
-
-const endturnSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
-assert(/SocialPoliticalSignals\.scanRuntimePressures/.test(endturnSource), 'endturn pre-submit should scan runtime social-political pressures');
-assert(/PartyClassSignalBridge\.applyPending/.test(endturnSource), 'endturn pre-submit should consume pending signals through PartyClassSignalBridge');
-assert(/SocialPoliticalSignals\.formatForPrompt/.test(endturnSource), 'endturn prompt should include social-political signal evidence');
-const eventBusSource = fs.readFileSync(path.join(ROOT, 'tm-event-bus.js'), 'utf8');
-assert(/SocialPoliticalSignals\.installEventBridge/.test(eventBusSource), 'event bus should auto-install the social political signal bridge after load');
-
 load('tm-player-action-signals.js');
 const actionRoot = {
   turn: 10,
@@ -271,10 +259,6 @@ assert(actionRoot._socialPoliticalSignals.items[0].sourceSystem === 'player-acti
 assert(actionRoot._socialPoliticalSignals.items[0].linkedIssue === 'issue-tax-levy', 'mirrored player action should preserve linked issue');
 assert(actionRoot._socialPoliticalSignals.items[0].affectedClasses.some(x => x.name === 'Farmers'), 'mirrored player action should list affected classes');
 assert(actionRoot._socialPoliticalSignals.items[0].affectedParties.some(x => x.name === 'Relief Party'), 'mirrored player action should list affected parties');
-
-const tinyiSource = (fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-persona.js'), 'utf8') + '\n' + (fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-edict-personnel.js'), 'utf8')) + '\n' + fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-parties.js'), 'utf8'));
-assert(/SocialPoliticalSignals\.record/.test(tinyiSource), 'tinyi results should be mirrored into the standard social/political ledger');
-assert(/tinyi-stage6-social-signal/.test(tinyiSource), 'tinyi result signal should have a stable source marker');
 
 load('tm-party-class-llm-calibrator.js');
 const Cal = sandbox.TM && sandbox.TM.PartyClassLlmCalibrator;

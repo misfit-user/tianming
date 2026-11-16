@@ -193,10 +193,6 @@ try {
   assert(_clean.factionLivingWorldDefault === false && _clean.revoltEntityEnabled === true && _clean.qijuLookback === 7, 'C⑪·正常设置键完整保留(含 factionLivingWorldDefault 跨局镜像·不误伤)');
   assert(_dirty.apiKey === 'sk-secret' && _dirty.refText.length > 0, 'C⑫·纯函数零副作用(不改入参 conf)');
   // 两个 lite 写口都接净化器（saveP 原路径 + 桌面 autoSave 本批路径·同一 tm_P_lite 键·同一泄露面）
-  assert(/conf:\s*_tmLiteSafeConf\(P\.conf\)/.test(utilsSrc), 'C·fix-A(原路径同修)：tm-utils saveP lite 写口 conf 走 _tmLiteSafeConf');
-  assert(/conf:\s*_tmLiteSafeConf\(committedP\.conf\)/.test(slSrc), 'C·fix-A：tm-save-lifecycle 桌面 autoSave lite 只净化 committed snapshot 的 conf');
-  assert(slSrc.indexOf("addEventListener('tm:p-restored'") >= 0 && /_tmReconcileFactionLivingWorld\(GM, \(typeof P/.test(slSrc), 'C·fix2：tm:p-restored 自愈监听已挂 + 调单一真源 _tmReconcileFactionLivingWorld');
-  assert(/_tmReconcileFactionLivingWorld\(GM, \(typeof P/.test(slSrc) && /_tmReconcileFactionLivingWorld\(GM, P\)/.test(slSrc), 'C·单一真源：normalizer 与自愈监听两处同调 _tmReconcileFactionLivingWorld(无逻辑分叉)');
 
   console.log('— C2 总纲勾选推导：真源 _tmSyncLivingWorldMaster·vm 实跑(stub document) —');
   var psSrc = fs.readFileSync(path.join(ROOT, 'tm-player-settings.js'), 'utf8');

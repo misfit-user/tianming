@@ -90,7 +90,6 @@ assert(typeof context.AudioSystem.playDefaultBgm === 'function', 'playDefaultBgm
 assert(typeof context.AudioSystem.playMenuBgm === 'function', 'playMenuBgm missing');
 assert(typeof context.AudioSystem.autoEnsureBgmPlaying === 'function', 'autoEnsureBgmPlaying missing');
 assert(typeof context.AudioSystem.renderShellPanelHtml === 'function', 'renderShellPanelHtml missing');
-assert(audioThemeSource.includes('bgmFailureCooldownMs: 3 * 60 * 1000'), 'BGM load failure cooldown should be 3 minutes');
 
 storage.set('tianming_audio_settings', JSON.stringify({
   sfxVolume: 0.5,

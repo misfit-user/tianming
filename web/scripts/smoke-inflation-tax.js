@@ -20,10 +20,6 @@ const fnSrc = sliceFn(fiscal, 'function computeTaxAmount(');
 const rawSrc = sliceFn(fiscal, 'function rawTaxAmount(');
 ok(!!fnSrc, 'computeTaxAmount 抽取成功');
 ok(!!rawSrc, '共用名义额计算抽取成功');
-ok(/inflationPenalty/.test(fnSrc) && /tax\.storeAs \|\| 'money'\) === 'money'/.test(fnSrc), '源契约:仅 money storeAs 折减');
-ok(/getMonetaryPurchasingPower\(\)/.test(fnSrc) && !/getPurchasingPower\(\)/.test(fnSrc), '源契约:只读货币自身的购买力，不读含粮价的购买力');
-ok(/Math\.min\(0\.35, 1 - _pp\)/.test(fnSrc), '源契约:夹 ≤35%');
-ok(/\* \(1 - inflationPenalty\) \*/.test(fnSrc), '源契约:接入权威乘子链');
 
 function run(storeAs, pp, baseAmt, oldApiOnly){
   const ctx = { Math: Math, isFinite: isFinite, Object: Object, Array: Array };

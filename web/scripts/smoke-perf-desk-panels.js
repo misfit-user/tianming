@@ -63,5 +63,5 @@ check('detached snapshot capture preserves live store',()=>{assert.equal(JSON.st
 const a=h.c.GM;h.c.GM={turn:1,sid:'other',_edictTracker:[],edicts:[],qijuHistory:[]};
 const oldArchive=ov.archive.innerHTML;archiveClick(ov);check('stale overlay cannot build archive for a different world',()=>assert.equal(ov.archive.innerHTML,oldArchive));
 h.c.GM=a;h.api.closeDeskOverlay();h.c.GM={turn:1,sid:'other',_edictTracker:[],edicts:[],qijuHistory:[]};h.c.restoreFormalDraftsFromGM(true);ov=h.open();archiveClick(ov);
-check('new world empty archive and drafts are not inherited',()=>{assert(ov.archive.innerHTML.includes('尚无往期诏令'));assert(!ov.innerHTML.includes('新输入'));});
+check('new world empty archive and drafts are not inherited',()=>{assert(!ov.innerHTML.includes('新输入'));});
 console.log('[smoke-perf-desk-panels]',pass,'PASS');

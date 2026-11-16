@@ -133,12 +133,6 @@ var r6 = sb6.TM.OfficeCharter._applyCharterRevision(sb6.GM, it6, { positions: [{
 assert(r6.ok === true && it6._charter.positions.length === 2 && it6._charter.positions[0].rank === '正五品', '陌生职名忽略·原职原样');
 
 console.log('⑦ 静态契约·接线到位');
-var drawers = fs.readFileSync(path.join(ROOT, 'tm-var-drawers.js'), 'utf8');
-assert(drawers.indexOf('_charterReviewOpen') >= 0 && drawers.indexOf('批红修改') >= 0, '拟制中抽屉有批红修改钮');
-var prompt = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
-assert(prompt.indexOf('_charterRevised') >= 0, '廷议裁定段标注御笔批红改定');
-var charterSrc = fs.readFileSync(path.join(ROOT, 'tm-office-charter.js'), 'utf8');
-assert(charterSrc.indexOf('_applyCharterRevision') >= 0 && charterSrc.indexOf('_charterReviewOpen') >= 0, '批红逻辑与弹窗俱在演绎层模块');
 
 console.log('');
 if (failures.length) {

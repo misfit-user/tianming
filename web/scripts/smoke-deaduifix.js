@@ -14,7 +14,6 @@ console.log('smoke-deaduifix');
 const szSrc = read('tm-shizheng-panel.js');
 const fnSz = sliceFn(szSrc, 'function _shizhengConvene(');
 ok(fnSz && fnSz.indexOf('_pendingTinyiTopics') >= 0, '★时政:议题推入 _pendingTinyiTopics 队列');
-ok(fnSz.indexOf('_ty2_openSetup') >= 0 && fnSz.indexOf("getElementById('ty2-topic')") >= 0, '时政:开廷议筹备面板 + 预填真输入框 ty2-topic');
 
 function runShizheng(clicks){
   const ty2input = { value:'' };

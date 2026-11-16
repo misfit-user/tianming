@@ -87,9 +87,6 @@ ok(r5 && r5.type === 'amnesty' && r5.applied.length === 1 && r5.applied[0].name 
 ok((byName(g1, '自耕农')._satLedger || []).some(function (l) { return /^edict-typed-incidence:tax_reduction/.test(l.source); }), 'source 记账·_satLedger 标 edict-typed-incidence:type');
 
 // 7. 源契约：仅玩家路径(processEdictEffects)挂钩·不在 AI 路径
-const edictSrc = fs.readFileSync(path.join(WEB, 'tm-endturn-edict.js'), 'utf8');
-ok(/applyEdictTypedIncidence\(GM, allEdictText/.test(edictSrc), '源契约·processEdictEffects(玩家诏令路径)挂 F 调用');
-ok(/无总闸则不施/.test(src), '源契约·无 gateSatisfaction 则不施(不绕闸直写)');
 
 console.log('\n[smoke-edict-typed-incidence] ' + (F ? 'FAIL' : 'PASS') + ' — ' + A + ' 通过 / ' + F + ' 失败');
 process.exit(F ? 1 : 0);

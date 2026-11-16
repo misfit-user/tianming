@@ -17,16 +17,6 @@ const PROMPT = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
 
 // ── ① 源码契约 ──
 (function () {
-  assert(/if \(c\.isPlayer\) return;.*深度心声名额/.test(PROMPT), 'A1: 候选排除玩家');
-  assert(/_rk = window\.TMPromotion\.resolveRankLevel\(c, GM\)/.test(PROMPT), 'A2: 走运行时 rank 解析器');
-  assert(/_rk <= 4 \? 30 : \(_rk <= 8 \? 18 : \(_rk <= 12 \? 8 : 0\)\)/.test(PROMPT), 'A2: 品级阶梯权重 30/18/8');
-  assert(/candidates\.push\(\{ ch: c, weight: weight, rk: _rk \}\)/.test(PROMPT), 'A3: rk 挂候选');
-  assert(/var _allScored = candidates\.slice\(\)/.test(PROMPT), 'A4: 留全量已排序');
-  assert(/叙事热度——活跃故事弧/.test(PROMPT), 'A5: 叙事热度加权块存在(活跃弧/极端心绪/近期大事)');
-  assert(/weight \+= \(_heat > 25 \? 25 : _heat\)/.test(PROMPT), 'A5: 热度上限+25(不压过品级主导)');
-  assert(/_injectNeglectedAuthority/.test(PROMPT), 'B: 实权重臣配额块存在');
-  assert(/_cd\.rk == null \|\| _cd\.rk > 8\) continue/.test(PROMPT), 'B: rk<=8 高品闸');
-  assert(/实权重臣[\s\S]{0,40}本回合 npc_actions 应让其中至少 1-2 人有所行止/.test(PROMPT), 'B: 软配额指令文案');
   console.log('  [①] 源码契约 OK');
 })();
 

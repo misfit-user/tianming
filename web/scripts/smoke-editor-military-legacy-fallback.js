@@ -133,7 +133,6 @@ const imp = (raw) => SchemaAdapter.importScenario(raw).scriptData;
 (function () {
   const src = fs.readFileSync(path.join(ROOT, 'editor-military.js'), 'utf8');
   ok(!/_migrateLegacyMilitary/.test(src), 'G: editor-military.js 已无渲染时迁移函数');
-  ok(/数据入口层|纯读渲染器/.test(src), 'G: 注释标明迁移在入口层');
 
   function makeCtx(military) {
     const ctx = {
@@ -187,9 +186,6 @@ const imp = (raw) => SchemaAdapter.importScenario(raw).scriptData;
   ok(SchemaAdapter.needsMilitaryMigration(bucketized) === true, 'H: needsMilitaryMigration=true(补进入口门)');
   ok(imp(bucketized).military.initialTroops.length === 1, 'H: 桶化剧本+旧 military·经 adapter 仍迁移');
 
-  const fg = fs.readFileSync(path.join(ROOT, 'editor-fullgen.js'), 'utf8');
-  ok(/needsMilitaryMigration\(d\)/.test(fg), 'H: editor-fullgen 入口门已纳入 needsMilitaryMigration');
-
   // 已迁移(带标记)→needs=false；官方形态(新字段已有)→needs=false
   ok(SchemaAdapter.needsMilitaryMigration({ military: { troops: [{ name: 'a' }], initialTroops: [], _legacyMigratedV1: true } }) === false, 'H: 带标记→needs=false');
   ok(SchemaAdapter.needsMilitaryMigration({ military: { troops: [{ name: 'a' }], initialTroops: [{ name: 'b' }] } }) === false, 'H: initialTroops 非空→needs=false');
@@ -206,7 +202,6 @@ const imp = (raw) => SchemaAdapter.importScenario(raw).scriptData;
   const bEnd = aiSrc.indexOf(marker, bStart) + marker.length;
   ok(milPos >= 0 && bStart > 0 && bEnd > bStart, 'I: 抽取 military 派发分支体');
   const body = aiSrc.slice(bStart, bEnd);
-  ok(/_rawParsed/.test(body) && /parsedObj/.test(body), 'I: 分支体用 _rawParsed 处理整对象');
   let run;
   try { run = new Function('scriptData', 'arr', '_rawParsed', 'SchemaAdapter', 'renderMilitaryNew', body); }
   catch (e) { ok(false, 'I: 分支体可编译: ' + e.message); }

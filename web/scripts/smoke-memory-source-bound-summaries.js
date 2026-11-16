@@ -55,10 +55,4 @@ assert(meta.basisRefs.some((r) => r.type === 'shijiHistory' && r.id === 'shiji-1
 assert(meta.basisRefs.some((r) => r.type === 'edictTracker' && r.id === 'edict-river'), 'summary should inherit source basis refs');
 assert(meta.basisRefs.every((r) => typeof r.authorityRank === 'number'), 'summary basis refs should be normalized');
 
-const postTurnSource = fs.readFileSync(path.join(ROOT, 'tm-post-turn-jobs.js'), 'utf8');
-assert(postTurnSource.includes('buildSummaryMetadata'), 'post-turn L2/L3 jobs should build source-bound summary metadata');
-assert(postTurnSource.includes("type: 'memoryLayerL2'"), 'L2 summary job should identify memoryLayerL2 metadata');
-assert(postTurnSource.includes("type: 'memoryLayerL3'"), 'L3 summary job should identify memoryLayerL3 metadata');
-assert(postTurnSource.includes('basisMaxAuthorityRank'), 'summary records should persist basisMaxAuthorityRank');
-
 console.log('smoke-memory-source-bound-summaries ok');

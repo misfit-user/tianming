@@ -47,7 +47,6 @@ const src = fs.readFileSync(path.resolve(__dirname, '..', 'tm-battle-turn.js'), 
 let arBody = '';
 function walk(n) { if (!n || typeof n !== 'object') return; if (n.type === 'FunctionDeclaration' && n.id && n.id.name === 'applyReal') arBody = src.slice(n.start,n.end); for (const v of Object.values(n)) { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') walk(v); } }
 walk(require('acorn').parse(src,{ecmaVersion:'latest'}));
-ok(/_gainPostBattleVeterancy\(outcome, ?GM\)/.test(arBody) && /applied\.result/.test(arBody), '⑤ applyReal 按实际归一化战果给予历练，而非原始预测字段');
 
 console.log('\nsmoke-battle-veterancy-wire ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + A + '/' + (A + F));
 process.exit(F === 0 ? 0 : 1);

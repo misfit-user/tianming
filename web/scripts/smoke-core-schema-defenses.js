@@ -58,6 +58,5 @@ assert(walkCtx._offWalkOfficeTree({ not: 'an array' }, () => { names.push('bad')
 
 assert(!/if\s*\(\s*(?:n|node|nd|nd2)\.subs\s*\)\s*(?:\{|[^\n])/.test(officeSource), 'office system has no truthy-only recursive subs walk');
 assert(!/if\s*\(\s*(?:n|node|nd|nd2)\.subs\s*\)\s*(?:\{|[^\n])/.test(applySource), 'end-turn office consumers have no truthy-only recursive subs walk');
-assert(/_tmNormalizeCoreWorldCollections\(GM\)/.test(saveSource), 'load/default boundary invokes the central collection normalizer');
 
 console.log('[smoke-core-schema-defenses] pass assertions=' + passed);

@@ -194,15 +194,12 @@ ok(b2.model === 'm' && b2.max_tokens === 16000 && b2.temperature === 0.7, '模�
   const ai = fs.readFileSync(path.join(WEB, 'tm-endturn-ai.js'), 'utf8');
   const iHook = ai.indexOf('raw = await TM.AIContinuation.continueIfCut(body, data, raw');
   ok(iHook > ai.indexOf('async function _callEndturnAI(') && iHook > ai.indexOf('raw = data.choices[0].message.content') && iHook < ai.indexOf('var _RAW_CAP'), '_callEndturnAI 在拿到正文后、超大响应封顶之前接（封顶管拼好的全文）');
-  ok(/c1 = await TM\.AIContinuation\.continueIfCut\(_sc1Body, data1, c1/.test(ai), '主推演流式那条路也接');
   // 游戏原有的截断判断 _looksJsonUnclosed：没转义的引号不再当成截断（11-08 主推演因此会被直接拒收、中止回合，连重试都不走）
   const fnAt = ai.indexOf('function _looksJsonUnclosed(text) {');
   const looks = new Function(ai.slice(fnAt, ai.indexOf('\n    }', fnAt) + 6) + '\nreturn _looksJsonUnclosed;')();
   ok(!looks('{"tableEdit":"<!-- /INSERT -->"</tableEdit>","economic_advice":"赤字"}'), '截断判断：引号没转义、已收尾的不算截断（交修复与重试）');
   ok(looks('{"a":"阻止东林') && looks('{"a":1,"b"') && looks('{"a":"x","b":"他说"好'), '截断判断：真被掐的照旧算截断');
   ok(!looks('{"a":"x\\"y","b":2}') && !looks('{"a":1}'), '截断判断：转义的引号、完整的照旧不算');
-  const patches = fs.readFileSync(path.join(WEB, 'tm-patches.js'), 'utf8').replace(/\\'/g, "'");
-  ok(/_togglePConf\('aiContinueOnCut',this\.checked\)/.test(patches), '设置面板有断处续开关');
   const html = fs.readFileSync(path.join(WEB, 'index.html'), 'utf8');
   const iCont = html.indexOf('tm-ai-continuation.js'), iAi = html.indexOf('tm-endturn-ai.js?');
   ok(iCont > 0 && iCont < iAi, 'index.html 登记了断处续模块，且在回合推演之前');

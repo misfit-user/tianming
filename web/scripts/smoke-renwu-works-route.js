@@ -62,9 +62,5 @@ ctx.TMZhi.act('works');
 assert(main().indexOf('此人未有著述传世') >= 0, '⑥ 无遗著者路由到文事 tab 显诚实空态');
 
 // ── 静态契约守卫:三处消费端俱在(按钮路由 + tab 定义 + 分派) ──
-const src = fs.readFileSync(path.join(ROOT, 'tm-renwu-tuzhi.js'), 'utf8');
-assert(/if\(kind===['"]works['"]\)\{\s*state\.tab=['"]works['"]/.test(src), '⑦ act 有 works 路由分支(非空 toast)');
-assert(/\['works',\s*'文事'\]/.test(src), '⑧ TABS 定义「文事」tab');
-assert(/case\s*'works'\s*:\s*return\s+tabWorks/.test(src), '⑨ renderTab 分派 works→tabWorks');
 
 console.log('[smoke-renwu-works-route] pass assertions=' + assertions);

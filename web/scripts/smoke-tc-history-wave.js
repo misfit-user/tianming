@@ -88,35 +88,22 @@ function hasClause(s) { return s.indexOf(SHARED) >= 0 && s.indexOf(CLAUSE) >= 0;
 // (A) 源码断言
 // ══════════════════════════════════════════════════════════════
 // 口1 chronicle full — 局部包裹整句(含 try/catch)连续验证·非全文件搜 try
-ok(chronicle.indexOf('时空约束·年度编年正史修史·full') !== -1, '口1 缺注释');
 ok(wsHas(chronicle, "if (typeof _buildTemporalConstraint === 'function') { try { prompt += '\\n' + _buildTemporalConstraint(null, {}); } catch (_) {} }"), '口1 缺 full 注入整句(守卫+try+catch+调用一体·空白不敏感)');
 ok(chronicle.indexOf('clauseOnly') === -1, '口1 应 full·chronicle 不应现 clauseOnly');
 // 口2 monthly full
-ok(core.indexOf('时空约束·月度纪事修史·full') !== -1, '口2 缺注释');
 ok(wsHas(core, "if (typeof _buildTemporalConstraint === 'function') { try { _mPrompt += '\\n' + _buildTemporalConstraint(null, {}); } catch (_) {} }"), '口2 缺 full 注入整句(空白不敏感)');
-ok(core.indexOf('独立callAIMessages不继承主sysP') !== -1, '口2 未标裸口理由');
 ok(count(core, '时空约束·') === 1, '口7 不适用核实：endturn-core 时空约束注释应恰1处(hist_check零注入)');
 // 口3 benji clauseOnly (global.)
-ok(benji.indexOf('时空约束·本纪终局修史·clauseOnly裁剪版') !== -1, '口3 缺注释');
 ok(wsHas(benji, "if (typeof global._buildTemporalConstraint === 'function') { try { s += '\\n' + global._buildTemporalConstraint(null, { clauseOnly: true }); } catch (_) {} }"), '口3 缺 clauseOnly 注入整句(global.·空白不敏感)');
 // 口4 xinshi + 口5 depth (root.)
-ok(depth.indexOf('时空约束·史记四体') !== -1, '口4 缺注释');
 ok(wsHas(depth, "_xinshi += '\\n' + root._buildTemporalConstraint(null, { clauseOnly: true });"), '口4 缺 _xinshi 追加(clauseOnly·空白不敏感)');
-const depthSysComments = ['世界态势快照深析', '人物内心深析', '人物关系深析', '记忆/脉络固化', '人物书信深析', '御案朝务深析', '人物认知深析', '势力/外交深析', '财政经济深析', '军事边防深析'];
-depthSysComments.forEach((c) => ok(depth.indexOf('时空约束·' + c) !== -1, '口5 缺注释: ' + c));
 ok(wsCount(depth, "sys += '\\n' + root._buildTemporalConstraint(null, { clauseOnly: true });") === 10, '口5 十个深析 sys+=clauseOnly 应恰10处(空白不敏感)·实=' + wsCount(depth, "sys += '\\n' + root._buildTemporalConstraint(null, { clauseOnly: true });"));
 ok(wsHas(depth, "_tcBeats = '\\n' + root._buildTemporalConstraint(null, { clauseOnly: true });"), '口5 缺 _tcBeats(clauseOnly·空白不敏感)');
-ok(depth.indexOf('+ _tcBeats }], 900') !== -1, '口5 _tcBeats 未穿进 beats user');
 ok(wsCount(depth, '_buildTemporalConstraint(null,{})') === 0, '口4/5 depth 应全 clauseOnly·不应现 full(null,{})');
 // 口6 agent 128/138 + 主transcript + 脚手架(全 clauseOnly·root.)
-ok(agent.indexOf('时空约束·史记质量审读·clauseOnly') !== -1, '口6-128 缺注释');
 ok(wsHas(agent, "sys += '\\n' + root._buildTemporalConstraint(null, { clauseOnly: true });"), '口6-128 缺 sys+=clauseOnly(空白不敏感)');
-ok(agent.indexOf('时空约束·据审读修订史记正文·clauseOnly') !== -1, '口6-138 缺注释');
 ok(wsHas(agent, "fixSys += '\\n' + root._buildTemporalConstraint(null, { clauseOnly: true });"), '口6-138 缺 fixSys+=clauseOnly(空白不敏感)');
-ok(agent.indexOf('时空约束·agent执政-史官主transcript') !== -1, '口6-主transcript 缺注释');
 ok(wsHas(agent, "_sysP += '\\n' + root._buildTemporalConstraint(null, { clauseOnly: true });"), '口6-主transcript 缺 _sysP+=clauseOnly(空白不敏感)');
-ok(agent.indexOf('时空约束·弱模型动作脚手架') !== -1, '口6-脚手架 缺注释');
-ok(agent.indexOf('scaffoldSystemHasSentinel=false') !== -1, '口6-脚手架 注释未标 Codex 实证');
 ok(count(agent, '时空约束·') === 4, '口6 计数：agent-mode 时空约束注释应恰4处(128/138/主transcript/脚手架)·177 anomaly 零注入·实=' + count(agent, '时空约束·'));
 
 // ══════════════════════════════════════════════════════════════

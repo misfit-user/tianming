@@ -149,7 +149,4 @@ assert(workshopHtml.includes('Pre-Inference Context'), 'full workshop should inc
 assert(workshopHtml.indexOf('Pre-Inference Context') < workshopHtml.indexOf('Injection Trace'), 'pre-inference should appear before trace panels');
 assert(!workshopHtml.includes('STALE_SECRET_BODY'), 'full workshop should not leak hidden suppressed body');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-preinference.js'), 'verify-all should include pre-inference smoke');
-
 console.log('smoke-memory-workshop-preinference ok');

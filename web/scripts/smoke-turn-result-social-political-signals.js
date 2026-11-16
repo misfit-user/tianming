@@ -161,8 +161,4 @@ snap = SPS.snapshot(root, { limit: 10 });
 const prompt = SPS.formatForPrompt(root, { limit: 10 });
 assert(/turn-result/.test(prompt), 'turn-result signals should enter the endturn prompt evidence formatter');
 
-const pipelineSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
-assert(/recordTurnResult/.test(pipelineSource), 'endturn pipeline should call recordTurnResult after AI/system result');
-assert(/turn-result-ai/.test(pipelineSource), 'pipeline turn-result source marker should be stable');
-
 console.log('[smoke-turn-result-social-political-signals] PASS turn-result social political signals');

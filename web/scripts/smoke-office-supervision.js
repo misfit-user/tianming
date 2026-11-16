@@ -45,9 +45,6 @@ load(ctx, 'tm-edict-parser.js');
 console.log('smoke-office-supervision');
 
 // ── 缺a：后缀白名单收「行」类 ──
-const src = fs.readFileSync(path.join(ROOT, 'tm-edict-parser.js'), 'utf8');
-assert(src.split('司|部|院|监|处|局|署|府|所|馆|行|台|寺|卫|厂|库|坊|科|仓|驿').length >= 5,
-  '设立/意图/裁撤四处正则的后缀白名单均已收「行台寺卫厂库坊科仓驿」');
 const EP = ctx.EdictParser;
 assert(EP && typeof EP.superviseInstitution === 'function', 'EdictParser 导出 superviseInstitution');
 const entry = EP.EDICT_TYPES && EP.EDICT_TYPES.office_reform;

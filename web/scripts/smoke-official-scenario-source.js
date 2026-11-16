@@ -55,10 +55,7 @@ files.forEach((file) => {
 });
 
 // 主进程用同一份补回逻辑，而且这个模块随安装包走（漏了的话装好的游戏一启动就找不到模块）
-const mainSource = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf8');
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-ok(mainSource.includes("require('./main-official-scenario.js')"), '主进程引用了补回模块');
-ok(/resolved\.source === 'official'[^\n]*withOfficialMapData\(data\)/.test(mainSource), '主进程读随包官方剧本时补回 mapData');
 ok(pkg.build.files.includes('main-official-scenario.js'), '补回模块列进了安装包文件清单');
 
 console.log('[smoke-official-scenario-source] PASS ' + checks + ' checks');

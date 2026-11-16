@@ -132,12 +132,6 @@ console.log('===== 回合主写回预检：perItem 时剔除而不是判整回�
   ok(out && out.ok === true && out.output.char_updates.length === 1 && out.output.char_updates[0].name === '乙', 'perItem：坏条目剔掉，好条目留下');
   ok(out.dropped && out.dropped.length === 1 && out.dropped[0].field === 'char_updates' && out.dropped[0].index === 0, 'perItem：剔掉的条目随结果交回，供记账');
 
-  const src = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply-stages.js'), 'utf8');
-  ok(/_validateAndRepairMainWriteback\(p1, \{[^}]*perItem:true \}\)/.test(src), '回合主写回调用预检时声明 perItem');
-  ok(/_mainWritebackBatch1 = \{\s*_strictValidation: true,\s*_commitMode: 'per-item',/.test(src), '回合主写回批次标 per-item');
-  ok(/if \(!_applyRes1 \|\| _applyRes1\.ok !== true\) \{/.test(src), '主写回只在整批被拒时中止，不因单条失败抛错');
-  ok(/var _applyRes2 = applyAITurnChanges\(\{\s*_commitMode: 'per-item',/.test(src), '二审补录同样逐条落账');
-
   console.log('===== 央地事件写区划名字 =====');
   const msgs = [];
   // 已过头一回（开局原样的只记不报，见 smoke-warlord-direct-rule）；用直辖的府，羁縻之地不报这些

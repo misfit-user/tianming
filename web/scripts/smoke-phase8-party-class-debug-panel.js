@@ -187,12 +187,6 @@ assert(sandbox.TM.ClassMinxinBridge && typeof sandbox.TM.ClassMinxinBridge.diagn
 assert(bridge.rightrail && bridge.rightrail.renderers && typeof bridge.rightrail.renderers.pcdebug === 'function', 'right rail should export pcdebug renderer');
 assert(bridge.rightrail.titles && bridge.rightrail.titles.pcdebug, 'right rail should title pcdebug renderer');
 
-const bridgeSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-bridge.js'), 'utf8');
-assert(/\.tmrp-pcdebug/.test(bridgeSource), 'party/class debug panel should have explicit styles');
-assert(/\.tmrp-pcdebug-row/.test(bridgeSource), 'debug rows should have explicit styles');
-assert(/\.tmrp-pcdebug-tag/.test(bridgeSource), 'debug tags should have explicit styles');
-assert(/\.tmrp-pcdebug-copy/.test(bridgeSource), 'debug copy action should have explicit styles');
-
 let html = bridge.rightrail.renderers.ol();
 assert(/data-right-action="pcdebug-open"/.test(html), 'outline panel should expose a debug/observability entry');
 

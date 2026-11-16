@@ -73,10 +73,6 @@ const reply = (content) => ({ choices: [{ message: { content }, finish_reason: '
   ok(A2.schemaOK({ a: 1 }, { type: 'object', properties: { a: { type: 'integer' } }, required: ['a'] }) && !A2.schemaOK({}, { type: 'object', required: ['a'] }), '工具参数契约检查还在');
   ok(A2.sourcePreserved('{"a":1}', { parsed: { a: 1 }, raw: '{"a":1}' }) && !A2.sourcePreserved('{"a":1,}', { parsed: { a: 1 }, raw: '{"a":1,}', repaired: true }), '原文核对还在');
 
-  const html = fs.readFileSync(path.join(WEB, 'index.html'), 'utf8');
-  ok(/tm-ai-reply-retry\.js/.test(html) && !/tm-emergency-recovery-/.test(html), 'index.html 只载普通重试，回合复核与应急推演的模块不再加载');
-  const ai = fs.readFileSync(path.join(WEB, 'tm-endturn-ai.js'), 'utf8');
-  ok(/TM\.RecoveryRuntime\.parse\(/.test(ai) && !/finalSC1/.test(ai), '回合子调用的解析仍经普通重试；主推演不再走应急最后一搏');
   const settings = fs.readFileSync(path.join(WEB, 'tm-call-budget-settings.js'), 'utf8') + fs.readFileSync(path.join(WEB, 'tm-patches.js'), 'utf8');
   ok(!/RecoverySettings/.test(settings), '设置里「回合复核与应急推演」那一栏没了');
   const infer = fs.readFileSync(path.join(WEB, 'tm-endturn-ai-infer.js'), 'utf8') + fs.readFileSync(path.join(WEB, 'tm-endturn-apply-stages.js'), 'utf8');

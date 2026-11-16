@@ -15,10 +15,7 @@ function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m
 
 const src = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai-context.js'), 'utf8');
 
-ok(/本朝军力·全貌/.test(src) && /主力军镇/.test(src), 'ai-context 主路径含军力全貌 + 主力军镇');
 ok(/military\|\|_c\.valor|military.*intelligence/.test(src.replace(/\n/g, '')), '主力军镇含主帅武智');
-ok(/编制/.test(src) && /composition/.test(src), '含编制兵种');
-ok(/精锐/.test(src) && /虚弱/.test(src), '含精锐/虚弱概况');
 
 const s1 = src.indexOf('// 本朝军力·全貌(补盲');
 const riskIdx = src.indexOf('var riskArmies = GM.armies.filter');

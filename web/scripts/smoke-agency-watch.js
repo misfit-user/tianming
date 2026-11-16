@@ -86,12 +86,8 @@ ok(CE._agencyWatch(G) > 0, '⑥b 无 currentIssues 数组 → 安全跳过不炸
 ok(CE.CFG.agencyBase === 6 && CE.CFG.agencyCap === 16 && CE.CFG.agencyIndepMax === 30, '⑦ CFG agency* 三项可调');
 
 // ⑧ tick 接线契约：applyPlayerCounterIntel 之后调 _agencyWatch
-const tickSeg = src.slice(src.indexOf('function tick('), src.indexOf('function activePlots'));
-ok(/applyPlayerCounterIntel\(G\);[\s\S]*_agencyWatch\(G\);[\s\S]*_spawn\(/.test(tickSeg), '⑧ tick 内序:反制→常侦→萌发');
 
 // ⑨ 设置面板契约
-const patchesSrc = (fs.readFileSync(path.join(W, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(W, 'tm-patches-start.js'), 'utf8'));
-ok(patchesSrc.indexOf("'agencyWatchEnabled'") >= 0 && /密探常侦/.test(patchesSrc), '⑨ 设置「玩法机制·深化」有开关');
 
 console.log('\n' + (F === 0 ? 'ALL PASS' : 'FAIL') + ' (' + A + ' pass / ' + F + ' fail)');
 process.exit(F === 0 ? 0 : 1);

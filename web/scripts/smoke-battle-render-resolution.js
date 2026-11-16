@@ -12,8 +12,7 @@ const budget=R.create();for(let i=1;i<=80;i++)budget.frame(i*100,false);assert.e
 budget.reset();for(let i=1;i<=80;i++)budget.frame(i*16.7,true);assert.equal(budget.pixels,R.SOFTWARE_PIXELS,'healthy frames retain detail');
 budget.reset();for(let i=1;i<=80;i++)budget.frame(i*100,true);assert.equal(budget.pixels,R.MIN_SOFTWARE_PIXELS,'slow software path adapts to a bounded minimum');
 const low=R.size(1280,800,true,'auto',budget.pixels);assert(low.width*low.height<=R.MIN_SOFTWARE_PIXELS);budget.reset();assert.equal(budget.pixels,R.SOFTWARE_PIXELS);
-const html=fs.readFileSync(require.resolve('../battle/index.html'),'utf8');assert(html.indexOf('src="render-resolution.js')<html.indexOf('const R3D='));assert(html.includes('id="optResolution"'));assert(html.includes("localStorage.setItem('tm_battle_resolution_v1',mode)"));
-assert(html.includes('M4.persp(FOV,W/Math.max(1,H)'),'projection must use CSS aspect, not rounded raster dimensions');
+const html=fs.readFileSync(require.resolve('../battle/index.html'),'utf8');
 const source=html.slice(html.indexOf('function battleGraphicsProfile('),html.indexOf('const $=id=>'));
 for(const renderer of ['SwiftShader Device','llvmpipe','Microsoft Basic Render Driver','ANGLE WARP','NVIDIA RTX','Intel Iris Xe','AMD Radeon']){
   const s={};vm.runInNewContext(source,s);const soft=/SwiftShader|llvmpipe|Microsoft Basic Render|WARP/.test(renderer);

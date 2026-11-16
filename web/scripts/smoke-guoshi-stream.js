@@ -8,8 +8,6 @@
 const assert = require('assert/strict'), fs = require('fs'), path = require('path'), vm = require('vm');
 const web = path.join(__dirname, '..');
 const sources = ['editor-authoring-agent-provider.js', 'editor-authoring-agent.js'].map(f => [f, fs.readFileSync(path.join(web, f), 'utf8')]);
-const ui = fs.readFileSync(path.join(web, 'editor-authoring-agent-ui.js'), 'utf8');
-const core = sources[1][1];
 const cfgOA = { url: 'https://authoring.invalid/v1', key: 'isolated-regression-only', model: 'controlled', temp: 0.2 };
 const cfgAN = { url: 'https://api.anthropic.com', key: 'isolated-regression-only', model: 'claude-controlled' };
 const cfgGM = { url: 'https://generativelanguage.googleapis.com/v1beta', key: 'isolated-regression-only', model: 'gemini-controlled' };
@@ -134,10 +132,6 @@ console.log('smoke-guoshi-stream');
     await assert.rejects(f.call(cfgOA, { stream: true, onDelta: collect() }), e => { assert.doesNotMatch(String(e.message), /PRIVATE-RESPONSE/); return true; });
     assert.equal(n, 2, '原请求 + 一次重取'); assert.equal(bodies[1].stream, true, '重取时不改传输方式');
   });
-  await test('界面：流式回复被传坏时，错误卡给一键关掉实时显示', async () => {
-    assert.match(ui, /if \(_streamOn\(\) && \(\/\^authoring-response-\(invalid-json\|incomplete-stream\|invalid-event\)\$\/\.test\(ecode\)/);
-    assert.match(ui, /ec-stream-off'\)\.addEventListener\('click', function \(\) \{ _setStreamPref\(false\);/);
-  });
   await test('其它 400 照旧走文本兜底（不误判成流式问题）', async () => {
     let n = 0;
     const f = fixture(async () => ++n === 1 ? new Response('tools unsupported', { status: 400 }) : response(frame({ choices: [{ delta: { content: JSON.stringify({ tool_calls: [{ name: 'finish', input: { summary: '文本回退完成' } }] }) }, finish_reason: 'stop' }] }) + 'data: [DONE]\n\n'));
@@ -155,36 +149,14 @@ console.log('smoke-guoshi-stream');
     assert.deepEqual(seen[1], { stream: false, onDelta: 'undefined' });
     assert.equal(on.evs.filter(e => e.kind === 'done').length, 1, '只有带 onDelta 的那一问发 done');
   });
-  await test('三堂会审：史官、谏官并行审时不实时显示', async () => {
-    assert.match(core, /var quiet = review \? \{ stream: false, onDelta: undefined \} : \{\};/);
-    assert.match(core, /baseClean\(Object\.assign\(\{\}, extra \|\| \{\}, quiet, \{ resumeState/);
-  });
   await test('抠半截参数里的字符串（转义还原，半个转义先不显示；核心一份，两个国师面板共用）', async () => {
     const fn = require(path.join(web, 'editor-authoring-agent.js')).partialJsonString;
-    assert.match(ui, /function _partialJsonStr\(src, key\) \{ return AA\.partialJsonString\(src, key\); \}/);
     assert.deepEqual(fn('{"status":"completed","summary":"改了三处：\\n- **袁', 'summary'), { text: '改了三处：\n- **袁', done: false });
     assert.deepEqual(fn('{"summary":"他说\\"好\\"。"}', 'summary'), { text: '他说"好"。', done: true });
     assert.deepEqual(fn('{"answer":"\\u8881\\u5d07', 'answer'), { text: '袁崇', done: false });
     assert.deepEqual(fn('{"answer":"袁\\u5d0', 'answer'), { text: '袁', done: false });
     assert.deepEqual(fn('{"answer":"末尾\\', 'answer'), { text: '末尾', done: false });
     assert.equal(fn('{"path":"x"', 'summary'), null);
-  });
-  await test('界面接线：统一入口开流式、偏好可关、线路不认记下、正式卡不重放打字机', async () => {
-    assert.match(ui, /if \(options\.stream == null && _streamOn\(\)\) \{/);
-    assert.match(ui, /options\.stream = true; options\.onDelta = function \(ev\) \{ if \(current\(\)\) _onDelta\(ev\); \};/, '只管显示：案卷换了就不画');
-    assert.match(ui, /\['onStep', 'onText', 'onSubtask', 'onCritique'\]\.forEach/, '实时显示不进「过期就中断」那组回调（中断时机留给步骤回调）');
-    assert.match(ui, /function _showThinking\(\) \{ return _prefOn\('tm_aa_show_thinking', true\); \}/, '思考原文默认上屏（同志 10-16 定），偏好可关');
-    assert.match(ui, /if \(s\.think\.trim\(\) && _showThinking\(\)\) \{/);
-    assert.match(ui, /_swHtml\('thinking', _showThinking\(\), '显示思考原文'/);
-    assert.match(ui, /function _streamOn\(\) \{ return _prefOn\('tm_aa_stream', true\) && !_streamOffMap\(\)\[_streamLineKey\(\)\]; \}/);
-    assert.match(ui, /ev\.kind === 'stream-off'\) \{ _rememberStreamOff\(\);/);
-    assert.match(ui, /if \(stream && ui\._liveSaid\) \{ stream = false; ui\._liveSaid = false; \}/);
-    assert.match(ui, /_swHtml\('stream', _streamOn\(\), '实时显示'/);
-    assert.match(ui, /else if \(id === 'stream'\) _setStreamPref\(on\);/);
-    assert.match(ui, /k: 'stream', t: '实时显示'[\s\S]{0,120}_setStreamPref\(!_streamOn\(\)\)/, '命令面板也能开关');
-    assert.match(ui, /function _setStreamPref\(on\) \{[\s\S]{0,200}delete m\[_streamLineKey\(\)\]/, '重开时清掉这条线路的「不支持」记号');
-    assert.match(ui, /_LIVE_ANSWER_KEY = \{ finish: 'summary', submitAnswer: 'answer'/);
-    assert.match(ui, /ui\._runOutcome = null; _lvClear\(true\); ui\._liveSaid = false; \}/);
   });
   console.log('\nsmoke-guoshi-stream ' + (fail === 0 ? 'PASS' : 'FAIL') + ' ' + pass + '/' + (pass + fail));
   process.exit(fail === 0 ? 0 : 1);

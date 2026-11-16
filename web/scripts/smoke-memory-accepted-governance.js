@@ -141,7 +141,4 @@ assert(trace.writes.some((write) => write.id === 'WRITEGATE_ACCEPT_DUPLICATE' &&
 assert(trace.writes.some((write) => write.id === 'WRITEGATE_ACCEPT_GOVERNANCE' && write.sourceId === newCanal.id), 'supersedes governance should be traced');
 assert(trace.writes.some((write) => write.id === 'WRITEGATE_ACCEPT_GOVERNANCE' && write.sourceId === playerTreasury.id), 'contradiction governance should be traced');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-accepted-governance.js'), 'verify-all should include accepted governance smoke');
-
 console.log('smoke-memory-accepted-governance ok');

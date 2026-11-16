@@ -70,32 +70,10 @@ console.log('— V4b/V4a · 激进⑥⑦项(行为) —');
 
 /* ── V4a · 政柄格局(契约) ────────────────────────────────────── */
 console.log('— V4a · 政柄格局(契约) —');
-var _tse = read('tm-three-systems-ext.js');
-ok(/standing = 'governing'/.test(_tse) && /oc >= maxOffice \* 0\.7/.test(_tse), '秉政派生=占官榜首及其七成内');
-ok(/standing = 'marginal'/.test(_tse) && /standing = 'opposition'/.test(_tse), '在野/边缘三态齐');
-ok(/gateSatisfaction\(GM, cls, 0\.5/.test(_tse) && /朝中有人/.test(_tse), '齿①秉政党基础阶层缓升·走总闸');
-ok(/_marginalPatronTurn = turn/.test(_tse), '齿②边缘党基础阶层戳离心标');
-ok(/type: 'standing'/.test(_tse), '政柄更迭入 historyLog 近账');
 
 /* ── 曝光面(契约) ────────────────────────────────────────────── */
 console.log('— 曝光面(契约) —');
-var _aic = read('tm-endturn-ai-context.js');
-ok(/政柄=/.test(_aic), '党派数值行带政柄');
-ok(/运动:/.test(_aic) && /_politicalMovements/.test(_aic), '阶层正册带运动');
-var _rr = read('phase8-formal-rightrail.js') + read('phase8-formal-rightrail-social.js');
-ok(/rightPartyStandingTag/.test(_rr) && /秉政/.test(_rr), 'UI 党派卡政柄徽');
-ok(/rightClassMovementChips/.test(_rr), 'UI 阶层详情运动 chips');
-var _cal2 = read('tm-party-class-llm-calibrator.js');
-ok(/movement: movement,/.test(_cal2) && /standing: \(ps && ps\.standing\)/.test(_cal2), '校准器快照带运动/政柄');
 console.log('— 叙事面(契约·V3机制入时政记/实录/戏说) —');
-var _specs = read('tm-endturn-record-specs.js');
-ok(/【党争】/.test(_specs) && /民间请愿运动/.test(_specs), '时政记文体指令带党争民情主线');
-ok(/党派进退、弹劾成败、民请汹汹/.test(_specs), '实录文体指令党派进退入纪');
-ok(/党争朝局/.test(_specs) && /阶层民情与民间运动/.test(_specs), '后人戏说着重呈现党争/民情场景化');
-var _fu2 = read('tm-endturn-followup.js');
-ok(/党争朝局与阶层民情\(据实入场景/.test(_fu2) && /_politicalMovements/.test(_fu2), 'sc2 事实清单供料(政柄/清誉/弹劾/运动/天命权重)');
-var _pr2 = read('tm-endturn-prompt.js');
-ok(/政柄格局（【党派数值】的政柄/.test(_pr2) && /活火山/.test(_pr2), '主推演指令教政柄回响+运动必回应');
 
 console.log('\nsmoke-party-class-v3style ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + P + '/' + (P + F));
 process.exit(F === 0 ? 0 : 1);

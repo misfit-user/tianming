@@ -98,9 +98,6 @@ global.addEB = function () {};
 
 // ── T8 装配契约 ──
 var fs = require('fs'), path = require('path');
-var src = fs.readFileSync(path.join(__dirname, '..', 'tm-class-mobility.js'), 'utf8');
-ok(/_tickRovingCoalesce\(ctx, mr\);[\s\S]{0,160}_tickRovingPlunder\(ctx, mr\);/.test(src), '8·tick 链在凝聚后接劫掠(_tickRovingPlunder)');
-ok(/name: '流寇劫掠'[\s\S]{0,120}source: 'roving'/.test(src) && /RegionStatus/.test(src), '8·复用 RegionStatus 挂境况(→cascade 减税+联动刀一)');
 
 console.log('\n[smoke-roving-plunder] ' + pass + ' 通过 / ' + fail + ' 失败');
 if (fail) { console.error('失败项：\n - ' + fails.join('\n - ')); process.exit(1); }

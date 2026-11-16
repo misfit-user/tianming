@@ -121,11 +121,6 @@ ok(sb._wtResolvePartyHardChange(['后金', 'strength']) === null, '⑭ party 解
 ok(typeof sb._wtResolveClassHardChange === 'function' && sb._wtResolveClassHardChange(['classes', '后金', 'satisfaction']) === null, '⑮ 阶层解析器对势力名(后金)返回 null·不串台');
 
 // ── ⑯ 源契约:prompt 含 facs/parties 路径 + 接入点 ──
-const src = (fs.readFileSync(path.join(WEB, 'tm-game-loop.js'), 'utf8') + fs.readFileSync(path.join(WEB, 'tm-game-loop-wentian-hardchange.js'), 'utf8'));
-ok(/facs\[势力名\]\.strength/.test(src) && /facs\[势力名\]\.playerRelation/.test(src), '⑯ 问天 prompt 常见路径含势力实力/对玩家关系');
-ok(/parties\[党派名\]\.influence/.test(src) && /parties\[党派名\]\.cohesion/.test(src), '⑯ 问天 prompt 常见路径含党派影响力/凝聚力');
-ok(/var facChange = _wtResolveFacHardChange\(parts\)/.test(src), '⑯ _wtApplyHardChange 已接入势力解析');
-ok(/var partyChange = _wtResolvePartyHardChange\(parts\)/.test(src), '⑯ _wtApplyHardChange 已接入党派解析');
 
 console.log('\n结果: ' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

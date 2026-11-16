@@ -150,20 +150,11 @@ function runFacadeSmoke() {
   assert(ctx.GM.factionRelations.every((r) => r.from !== 'B' && r.to !== 'B'), 'removed faction list records still present');
 }
 
-function runStaticEndturnChecks() {
-  const code = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
-  assert(!code.includes('factionRelationsMap[key1]'), 'endturn still writes flat factionRelationsMap[key1]');
-  assert(code.includes('setFactionRelation(rs.from, rs.to'), 'faction_relation_shift does not use setFactionRelation');
-  assert(code.includes("addToIndex('fac'"), 'faction_create does not update fac index');
-  assert(code.includes('TM.Factions') && code.includes('.removeFaction('), 'faction_dissolve does not use the unified lifecycle remover');
-}
-
 function main() {
   const desktop = loadDesktopOfficialScenario();
   if (desktop) assertScenarioFactionConsistency(desktop);
   assertScenarioFactionConsistency(loadBuiltinScenario());
   runFacadeSmoke();
-  runStaticEndturnChecks();
   console.log('[smoke-faction-relations] pass');
 }
 

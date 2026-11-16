@@ -80,10 +80,7 @@ ok(ch._travelElapsedDays === undefined && ch._travelExpectedDays === undefined &
 
 // ── 源契约 ──
 const src = fs.readFileSync(path.join(WEB, 'modules/ai-change-applier/core.js'), 'utf8');
-ok(/_travelElapsedDays\s*=\s*\(Number\(ch\._travelElapsedDays\)/.test(src), '⑤ 源含 _travelElapsedDays 逐 tick 累计(按天)');
-ok(/Math\.max\(ch\._travelExpectedDays \* 2, 40\)/.test(src), '⑤ 源含天数闸 cap=max(应耗×2, 40)');
 ok(!/MAX_TRAVEL_TURNS/.test(src), '⑤ 不再含旧的按回合计硬上限 MAX_TRAVEL_TURNS');
-ok(/delete ch\._travelElapsedDays/.test(src) && /delete ch\._travelExpectedDays/.test(src), '⑤ 源含抵达清新增字段');
 
 console.log('\n结果: ' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

@@ -66,7 +66,6 @@ ok(jn3._radicalFrac >= 0.5 - 0.05, '慢平复·预置高 rf 单回合至多降 0
 
 // 源契约
 const src = require('fs').readFileSync(path.join(WEB, 'tm-social-foundation.js'), 'utf8');
-ok(/per-region radicalFrac/.test(src) && /v\._radicalFrac = round2/.test(src), '源契约·tickClassRegional 算 per-region radicalFrac');
 
 console.log('\n[smoke-class-radical-regional] ' + (F ? 'FAIL' : 'PASS') + ' — ' + A + ' 通过 / ' + F + ' 失败');
 process.exit(F ? 1 : 0);

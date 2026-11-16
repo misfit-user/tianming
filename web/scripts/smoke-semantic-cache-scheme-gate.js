@@ -15,10 +15,6 @@ const WORKER = fs.readFileSync(path.join(ROOT, 'tm-semantic-worker.js'), 'utf8')
 // ── 源契约:两处都改成按协议门控·不再无条件 true ──
 ok(!/transformers\.env\.useBrowserCache = true;/.test(RECALL), '契约:recall 不再无条件 useBrowserCache=true');
 ok(!/transformers\.env\.useBrowserCache = true;/.test(WORKER), '契约:worker 不再无条件 useBrowserCache=true');
-ok(/transformers\.env\.useBrowserCache = _tmCacheOk;/.test(RECALL), '契约:recall 走 _tmCacheOk 门控');
-ok(/transformers\.env\.useBrowserCache = _tmCacheOk;/.test(WORKER), '契约:worker 走 _tmCacheOk 门控');
-ok(/location\.protocol === 'http:' \|\| location\.protocol === 'https:'/.test(RECALL), '契约:recall 仅 http(s) 启用');
-ok(/location\.protocol === 'http:' \|\| location\.protocol === 'https:'/.test(WORKER), '契约:worker 仅 http(s) 启用');
 
 // ── 抽真表达式实跑:不同协议下的门控结果 ──
 const m = RECALL.match(/var _tmCacheOk = (\([\s\S]*?\));\s*\n\s*transformers\.env\.useBrowserCache = _tmCacheOk;/);

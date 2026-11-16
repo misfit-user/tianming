@@ -5,7 +5,6 @@
 //     低乱民不失血；率∝rf 封顶；无源格子/无逃户安全；关键词回退。
 'use strict';
 
-const fs = require('fs');
 const path = require('path');
 const WEB = path.join(__dirname, '..');
 require(path.join(WEB, 'tm-engine-constants.js'));
@@ -68,8 +67,6 @@ run(GM6);
 ok(GM6.population.byLegalStatus.taoohu.mouths > 0, '无 populationKeys·"自耕农"关键词解析→peasant_self·仍失血');
 
 // ── 7. 源契约：tick 调用 _tickRadicalFlight ──
-const src = fs.readFileSync(path.join(WEB, 'tm-class-mobility.js'), 'utf8');
-ok(src.indexOf('try { _tickRadicalFlight(ctx, mr); }') >= 0, '★tick() 调用 _tickRadicalFlight');
 
 // ── 8. C3·财政牙齿：逃亡→population.hiddenCount（huji fugitive/hidden 压力·税基↓输入）──
 ok(GM1.population.hiddenCount === fled1, 'C3·财政·population.hiddenCount += flee (got ' + GM1.population.hiddenCount + ' vs fled ' + fled1 + ')');
@@ -87,9 +84,6 @@ const GM9b = { turn: 7, classes: [{ name: '农户', _radicalFrac: 0.8, populatio
 run(GM9b);
 ok(ebCalls.length === 0, 'C3·非起义(brewing)不报邸报·只静默失血');
 delete global.addEB;
-
-// ── 10. C3 源契约 ──
-ok(src.indexOf('population.hiddenCount = (Number(G.population.hiddenCount)') >= 0 && /addEB[\s\S]{0,90}流民载道/.test(src), 'C3·财政 hiddenCount + 督抚奏报 源契约');
 
 console.log('\n[smoke-class-radical-flight] ' + (failed ? 'FAIL' : 'PASS') + ' — ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed ? 1 : 0);

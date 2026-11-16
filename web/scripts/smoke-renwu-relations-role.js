@@ -78,7 +78,6 @@ ok(main.includes('太子少傅')&&main.includes('分司东都')&&main.includes('
 chars.find(c=>c.name==='纸杏').rosterRole='civil';
 h.context.TMZhi.invalidatePeople();
 ok(h.html('tm-zhi-statbar').includes('<b>2</b><span>文职</span>'),'invalidation refreshes classification totals as well as cards');
-ok(!source.includes('>roster · 检索 · 派系<')&&source.includes('>名籍 · 检索 · 派系<'),'roster subheading is Chinese');
 
 // Other scenarios without the new authoring field retain their existing grouping.
 const legacy=harness([

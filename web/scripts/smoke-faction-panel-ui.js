@@ -10,20 +10,10 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const src = fs.readFileSync(path.join(ROOT, 'tm-three-systems-ui.js'), 'utf8');
-const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg);
 }
-
-assert(src.includes('function openForcesRelationsPanel(selectedFacName)'), 'faction panel should accept selected faction name');
-assert(src.includes('frp-shell'), 'faction panel shell missing');
-assert(src.includes('frp-grid'), 'faction panel two-column grid missing');
-assert(src.includes('frp-relation-board'), 'faction relation board missing');
-assert(src.includes('global.viewFac = function(facName)'), 'viewFac should open selected faction panel');
-assert(css.includes('.frp-shell'), 'faction panel CSS shell missing');
-assert(css.includes('.frp-card'), 'faction card CSS missing');
-assert(css.includes('.frp-relation-cell'), 'relation cell CSS missing');
 
 let captured = null;
 const ctx = {

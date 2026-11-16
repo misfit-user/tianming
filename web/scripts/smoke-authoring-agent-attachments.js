@@ -8,7 +8,6 @@ const vm = require('vm');
 const AA = require(path.join(__dirname, '..', 'editor-authoring-agent.js'));
 const uiSource = fs.readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui.js'), 'utf8');
 assert(!/String\(rt\.result\s*\|\|\s*''\)\.slice\(0,\s*12000\)/.test(uiSource), 'UI must retain complete FileReader text');
-assert(/附件仍在读取/.test(uiSource) && /attachments:\s*_textAttachments/.test(uiSource), 'UI must block pending reads and pass attachments to every mode');
 
 class FakeReader {
   readAsText(file) { setTimeout(() => { this.result = file.__text; if (this.onload) this.onload(); if (this.onloadend) this.onloadend(); }, 10); }

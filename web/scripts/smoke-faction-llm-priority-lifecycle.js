@@ -42,15 +42,6 @@ function makeContext() {
   return ctx;
 }
 
-function manualUiSourceTest() {
-  const uiSrc = fs.readFileSync(path.join(ROOT, 'tm-three-systems-ui.js'), 'utf8');
-  assert(
-    uiSrc.indexOf("decideFor(facName, { source: 'manual'") >= 0
-      || uiSrc.indexOf('decideFor(facName, { source: "manual"') >= 0,
-    'manual faction LLM UI trigger must pass source=manual so the run is written to the ledger'
-  );
-}
-
 function sc16PriorityScoreTest() {
   const ctx = makeContext();
   ctx.GM = {
@@ -91,24 +82,6 @@ function sc16PriorityScoreTest() {
   );
 }
 
-function saveLifecycleTest() {
-  const saveSrc = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
-  [
-    ['_npcFactionAiTurnLedger', '_savedNpcFactionAiTurnLedger'],
-    ['_npcFactionLlmLedger', '_savedNpcFactionLlmLedger'],
-    ['_npcFactionLlmDispatchLedger', '_savedNpcFactionLlmDispatchLedger'],
-    ['_sc16FactionDirectives', '_savedSc16FactionDirectives']
-  ].forEach(function(pair) {
-    const runtimeKey = pair[0];
-    const savedKey = pair[1];
-    assert(saveSrc.indexOf('GM.' + runtimeKey) >= 0, 'save lifecycle should read GM.' + runtimeKey);
-    assert(saveSrc.indexOf('GM.' + savedKey) >= 0, 'save lifecycle should persist GM.' + savedKey);
-    assert(saveSrc.indexOf('delete GM.' + savedKey) >= 0, 'save lifecycle should restore and delete GM.' + savedKey);
-  });
-}
-
-manualUiSourceTest();
 sc16PriorityScoreTest();
-saveLifecycleTest();
 
 console.log('[smoke-faction-llm-priority-lifecycle] all assertions pass');

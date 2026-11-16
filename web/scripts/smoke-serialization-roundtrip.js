@@ -152,25 +152,6 @@ function loadIntoVm(context, file) {
   vm.runInContext(code, context, { filename: file });
 }
 
-function assertSourceContracts() {
-  const editorText = fs.readFileSync(path.join(ROOT, 'editor-fullgen.js'), 'utf8');
-  // 导出已重构:inline JSON.stringify(scriptData) → SchemaAdapter.exportScenario(scriptData)(全量 clone+schema适配·见 editor-schema-adapter.js exportScenario·不丢顶层键)·再 stringify。验当前导出机制序列化全量 scriptData。
-  assert(editorText.indexOf('SchemaAdapter.exportScenario(scriptData)') >= 0, 'editor export should serialize full scriptData (via SchemaAdapter.exportScenario)');
-  assert(editorText.indexOf('scriptData[key] = d[key]') >= 0, 'editor import should merge all own top-level keys');
-
-  const patchesText = (fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8'));
-  assert(patchesText.indexOf('GM.engineConstants = deepClone(sc.engineConstants)') >= 0, 'startGame should copy engineConstants to GM');
-  assert(patchesText.indexOf('P.engineConstants = deepClone(sc.engineConstants)') >= 0, 'startGame should copy engineConstants to P');
-  assert(patchesText.indexOf('GM.influenceGroups = deepClone(sc.influenceGroups)') >= 0, 'startGame should copy influenceGroups to GM');
-  assert(patchesText.indexOf('P.influenceGroups = deepClone(sc.influenceGroups)') >= 0, 'startGame should copy influenceGroups to P');
-
-  const loadText = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
-  assert(loadText.indexOf('GM.engineConstants = deepClone(_scEC.engineConstants)') >= 0, 'fullLoadGame should restore GM.engineConstants from scenario');
-  assert(loadText.indexOf('P.engineConstants = deepClone(_scEC.engineConstants)') >= 0, 'fullLoadGame should restore P.engineConstants from scenario');
-  assert(loadText.indexOf('GM.influenceGroups = deepClone(_scEC.influenceGroups)') >= 0, 'fullLoadGame should restore GM.influenceGroups from scenario');
-  assert(loadText.indexOf('P.influenceGroups = deepClone(_scEC.influenceGroups)') >= 0, 'fullLoadGame should restore P.influenceGroups from scenario');
-}
-
 function runFullLoadGameMirrorFallback() {
   const scenario = makeFixture();
   const GM = { sid: scenario.id };
@@ -264,7 +245,6 @@ function runBootRoundTrip(scenario) {
   assertDeepEqual('P influenceGroups persisted', scenario.influenceGroups, context.P.influenceGroups);
 }
 
-assertSourceContracts();
 runFullLoadGameMirrorFallback();
 const reloadedScenario = runEditorRoundTrip();
 runBootRoundTrip(reloadedScenario);

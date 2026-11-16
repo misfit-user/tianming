@@ -60,10 +60,6 @@ ok(t5b.rate > t1.rate, '5·显式 corveeDemand=45万 覆盖基线（>标准常�
 
 // 6) 单一真相源 + 源契约
 ok(R.assertNoDingInRenli(global.GM).length === 0, '6·GM.renli 无丁计数泄漏');
-var fs = require('fs');
-var src = fs.readFileSync(require('path').join(__dirname, '..', 'tm-renli.js'), 'utf8');
-ok(/BASELINE_CORVEE_FRAC/.test(src) && /STRENGTH_DEMAND_MULT/.test(src), '6·源含 BASELINE_CORVEE_FRAC + STRENGTH_DEMAND_MULT');
-ok(/leaf\.renliSeed\s*\?\s*Math\.round\(num\(pd\.registeredDing/.test(src), '6·基线仅对已种子地域(leaf.renliSeed)生效');
 
 console.log('\n[smoke-renli-corvee-demand-baseline] ' + pass + ' 通过 / ' + fail + ' 失败');
 if (fail) { console.error('失败项：\n - ' + fails.join('\n - ')); process.exit(1); }

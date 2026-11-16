@@ -181,14 +181,7 @@ console.log('— §c · resolveHeir 默认嫡长 —');
 /* ── §d 接线契约 ─────────────────────────────────────────────── */
 console.log('— §d · 接线契约 —');
 (function () {
-  ok(/crownPrince: crownPrince,/.test(hgSrc), 'TM.hougong.crownPrince 导出');
   ok(/gs-harem-heir\.crown\{/.test(hgSrc.replace(/\s/g, '')) || /gs-harem-heir\.crown/.test(hgSrc), '储君 chip 样式在');
-  ok(/onclick="TM\.hougong\.crownPrince/.test(hgSrc), '皇嗣 chip 点击册立在');
-  var pcSrc = read('tm-player-core.js');
-  ok(/_abdRank/.test(pcSrc) && /_kinTag/.test(pcSrc), '退位候选储君/皇嗣置顶+标签(ASCII锚·此文件\\uXXXX存中文)');
-  var adSrc = read('tm-ai-apply-deaths.js');
-  ok(/h === cd\.name \|\| \(h && h\.name === cd\.name\)/.test(adSrc), '级联清理兼容对象条目(原字符串 indexOf 恒-1失效)');
-  ok(/GM\.harem\.crownPrince === cd\.name/.test(adSrc), '储君薨→东宫虚位清理在');
 })();
 
 console.log('\nsmoke-heir-guoben ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));

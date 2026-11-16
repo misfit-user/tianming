@@ -232,7 +232,4 @@ assert.strictEqual(GM._memoryControls['accepted-danger-old'].reason, 'new decisi
 assert(GM._memoryAuditEvents.some((event) => event.id === 'accepted-danger-new' && event.action === 'apply_supersedes' && event.reason === 'new decision supersedes old rumor'), 'apply-supersedes should audit the entered reason');
 assert(body.innerHTML.includes('supersededBy=accepted-danger-new'), 'panel refresh should show supersededBy after guarded apply-supersedes');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-panel-danger-guards.js'), 'verify-all should include Workshop danger guard smoke');
-
 console.log('smoke-memory-workshop-panel-danger-guards ok');

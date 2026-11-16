@@ -208,7 +208,4 @@ assert(Array.isArray(GM._memEdges) && GM._memEdges.some((edge) => edge.type === 
 assert(GM._memoryControls['accepted-click-old'] && GM._memoryControls['accepted-click-old'].supersededBy === 'accepted-click-new', 'clicking Apply Supersedes should mark the old accepted memory');
 assert(body.innerHTML.includes('supersededBy=accepted-click-new'), 'panel refresh should show supersededBy after click');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-panel-click.js'), 'verify-all should include Workshop panel click smoke');
-
 console.log('smoke-memory-workshop-panel-click ok');

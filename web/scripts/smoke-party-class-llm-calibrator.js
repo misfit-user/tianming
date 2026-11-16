@@ -234,17 +234,10 @@ function load(file) {
   assert(calls[calls.length - 1].tier === 'primary', 'missing secondary API should fall back to primary');
 
   const dispatcherSource = fs.readFileSync(path.join(ROOT, 'tm-faction-npc-dispatcher.js'), 'utf8');
-  assert(/PartyClassLlmCalibrator/.test(dispatcherSource), 'NPC LLM dispatcher should schedule party/class calibration alongside faction precision jobs');
-  assert(/partyClassScheduled/.test(dispatcherSource), 'dispatcher diagnostics should expose partyClassScheduled');
-  assert(/detail\.factions/.test(dispatcherSource) && /detail\.courtIssues/.test(dispatcherSource) && /detail\.issueGoalLinks/.test(dispatcherSource), 'dispatcher should count faction/court issue calibration as applied work');
   assert(!/post-endturn-render-finalize/.test(dispatcherSource), 'party/class calibration should not be scheduled after endturn render-finalize');
 
   const endturnSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
-  assert(/pre-submit-player-action/.test(endturnSource), 'player submit entry should run party/class calibration before actual endturn submission');
-  assert(/Party-Class-Faction-Court Calibration Snapshot/.test(endturnSource), 'endturn prompt should include expanded faction/court calibration snapshot');
-  assert(/courtIssueGoalLinks/.test(endturnSource) && /calibratedCourtIssues/.test(endturnSource) && /calibratedFactions/.test(endturnSource), 'endturn prompt should inject calibrated court and faction links');
   assert(!/pre-endturn-player-submit/.test(endturnSource), 'calibration should no longer run after the player has submitted into endturn internals');
-  assert(endturnSource.indexOf('pre-submit-player-action') < endturnSource.indexOf('_showPostTurnCourtPromptAndStartEndTurn'), 'pre-submit calibration should happen before the post-turn submit prompt is opened');
   assert(!/EndTurnHooks\.register\([^)]*PartyClassLlmCalibrator/.test(endturnSource), 'calibrator should not be registered as a generic end-turn hook');
 
   console.log('[smoke-party-class-llm-calibrator] PASS player-action LLM calibration');

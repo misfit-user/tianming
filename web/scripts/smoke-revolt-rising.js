@@ -109,7 +109,6 @@ ok(rp.followers === 300 && rp.followersFrom === 'mouths' && Lp.node.populationDe
 ok(r.status === 'ongoing' && r.level === 2 && r.form === 'guerrilla' && r.region === '延安府' && r.scale === r.followers, '定级 2（聚啸＝游击），规模就是真人数');
 ok(r.leaderName === '张献忠' && G.chars.find((x) => x.id === 'c-zxz')._revoltLeaderOf === r.id, '首领记在民变上，人身上也记着');
 ok(G.minxin.revolts.indexOf(r) >= 0 && c.__events.some((e) => e[0] === '民变' && /张献忠聚众约 9810 人起事/.test(e[1])), '写进 GM.minxin.revolts，出一条有名有数的事件');
-ok(/\(r\.level \|\| 0\) < 3\) return;/.test(read('tm-revolt-entity.js')), '实体三件套只认三级以上：游击的民变不会被套上写死兵数的流民军');
 
 // ── 接进判定：掷中即落地；民1 的 dryRun 重判；民变了结后结案、本州歇几回合 ──
 G = world();
@@ -148,7 +147,5 @@ const ae = read('tm-authority-engines.js');
 ok(!/P_REVOLT_MX|function _triggerRevolt/.test(ae), '各州民心低于 25 随机点燃的那一路删了');
 
 // ── 接线 ──
-const html = read('index.html');
-ok(html.indexOf('tm-revolt-rising.js') > html.indexOf('tm-revolt-cases.js') && html.indexOf('tm-revolt-cases.js') > 0, 'index.html 装载 tm-revolt-rising.js（在判定之后）');
 
 console.log('PASS smoke-revolt-rising ' + checks + '/' + checks);

@@ -157,9 +157,4 @@ const tick = Actors.tick(decayRoot, { turn: 11, source: 'smoke-tuning-tick' });
 assert(tick.escalatedActions >= 1, 'custom memoryEscalationAge should turn escalation memory into action immediately');
 assert(decayRoot.class_actions.some(a => a && a.turn === 11 && a.linkedIssue === 'issue-custom-levy' && (a.actionType === 'strike' || a.actionType === 'revolt_seed')), 'custom actor action thresholds should pick escalated strike/revolt action');
 
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(indexHtml.indexOf('tm-party-class-tuning.js') > 0, 'index should load party/class tuning module');
-assert(indexHtml.indexOf('tm-party-class-tuning.js') < indexHtml.indexOf('tm-social-political-signals.js'), 'tuning should load before social/political signals');
-assert(indexHtml.indexOf('tm-party-class-tuning.js') < indexHtml.indexOf('tm-party-class-actors.js'), 'tuning should load before party/class actors');
-
 console.log('[smoke-party-class-tuning] PASS party/class tuning');

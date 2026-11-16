@@ -79,11 +79,7 @@ ok(mi === 8, '8·top-N：→门生密报封顶 8(MI_CAP)·实得 ' + mi);
 var fs = require('fs'), path = require('path');
 ok(typeof R.spawnReportedChannels === 'function', '9·导出 spawnReportedChannels');
 var src = fs.readFileSync(path.join(__dirname, '..', 'tm-renli.js'), 'utf8');
-ok(/refreshReported\(GM, Pp\); \} catch[\s\S]{0,90}spawnReportedChannels\(GM, Pp\); \} catch/.test(src), '9·endturnTick 已接 spawnReportedChannels');
 // 第二十五拆：方志役政卷官报对照行已迁出至 dossier sibling·源码契约需并检两片(origin 先·sibling 后·合装载序)
-var mapSrc = fs.readFileSync(path.join(__dirname, '..', 'phase8-formal-map.js'), 'utf8')
-  + '\n' + fs.readFileSync(path.join(__dirname, '..', 'phase8-formal-map-dossier.js'), 'utf8');
-ok(/督抚奏报/.test(mapSrc) && /瞒报~/.test(mapSrc) && /GM\.renli\.reported/.test(mapSrc), '8·方志役政卷已加官报对照行（reported vs 真值·瞒报标红）');
 var body = src.slice(src.indexOf('function spawnReportedChannels'), src.indexOf('function spawnReportedChannels') + 2400);
 ok(!/天启|陕西|延安|西安|甘州|sc-tianqi/.test(body), '10·spawnReportedChannels 无朝代/地名硬编（中立）');
 

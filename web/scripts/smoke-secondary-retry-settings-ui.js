@@ -47,7 +47,6 @@ test('performance retry section defaults to one extra attempt without mutating p
   assert(f.walk(f.host).some(node => node.textContent === '最多尝试 2 次'));
   assert(f.walk(f.host).some(node => node.attributes['data-call-retry-id'] === '*'));
   const source = read('tm-patches.js'), position = source.indexOf('id="s-call-budget-controls"');
-  assert(source.slice(position - 160, position).includes('性能·成本控制'));
 });
 
 test('save-all commits zero and a chosen value; reopening displays the saved choice', () => {

@@ -112,11 +112,6 @@ c._wenduiMode = 'private';
 eq(sha(c._wdBuildPrompt(wen, '温体仁')), GOLDEN.private, '私下问对提示词与改造前逐字相同');
 
 // ── 5. 接线与守卫 ──
-const pv = read('tm-wendui-persona-views.js');
-ok(pv.includes('var F = TM.Person.frag;') && !pv.includes('P.traitDefinitions.find'), '问对改从 TM.Person 取人物各块');
-const html = read('index.html');
-ok(html.indexOf('tm-person.js') > 0 && html.indexOf('tm-person.js') < html.indexOf('tm-wendui.js'), 'index.html 在问对之前装载 tm-person.js');
-ok(read('scripts/lint-arch-all.js').includes("'lint-person-assembly.js'"), '棘轮守卫接入 lint-arch-all');
 ok(fs.existsSync(path.join(__dirname, 'arch-baselines', 'person-assembly.json')), '守卫有基线');
 
 console.log('[smoke-person-brief] pass assertions=' + checks);

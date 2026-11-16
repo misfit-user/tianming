@@ -62,7 +62,4 @@ assert(text.indexOf('\u9636\u5c42\u538b\u529b') >= 0 && text.indexOf('38') >= 0,
 assert(text.indexOf('\u58eb\u7ec5') >= 0 && text.indexOf('\u519b\u6237') >= 0, 'AI persona context should name backing and hostile classes');
 assert(text.indexOf('\u79d1\u4e3e\u5ef7\u8bae') >= 0, 'AI persona context should keep evidence');
 
-const npcDecisionSource = (fs.readFileSync(path.join(ROOT, 'tm-npc-decision.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-npc-decision-ai-driven.js'), 'utf8'));
-assert(/buildAiPersonaText/.test(npcDecisionSource) && /buildRecognitionState/.test(npcDecisionSource), 'NPC decision prompt should use PromptComposer persona context');
-
 console.log('[smoke-class-character-ai-context] PASS class-character context reaches AI persona text');

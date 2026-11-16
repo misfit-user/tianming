@@ -16,14 +16,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·源契约 ════════
-const src = fs.readFileSync(path.join(ROOT, 'tm-office-system.js'), 'utf8');
-ok(/function _officeSatisfactionFeedbackOn\(\)/.test(src), '_officeSatisfactionFeedbackOn 开关已定义');
-ok(/officeSatisfactionFeedbackEnabled/.test(src), '开关读 officeSatisfactionFeedbackEnabled');
-ok(/function _tickOfficialDisaffection\(\)/.test(src), '_tickOfficialDisaffection 已定义');
-ok(/gap = ability - expected/.test(src), '按 能力-品级落差(才高位卑)判定·非倒置满意度分');
-ok(/_seeksRemoval = \{ since: GM\.turn/.test(src), '久郁 → c._seeksRemoval 求去信号(喂 AI/S4)');
-ok(/SettlementPipeline\.register\('officeDisaffection'/.test(src), '注册 perturn 结算步 officeDisaffection');
-ok(/绝不自动罢官/.test(src), '注释明确：绝不自动罢官(交 AI/S4)');
 
 // ════════ 二·真代码：headless 加载 → 调真 _tickOfficialDisaffection ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

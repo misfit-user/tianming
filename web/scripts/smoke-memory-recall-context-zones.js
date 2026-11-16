@@ -4,18 +4,8 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
-const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 const traceSrc = fs.readFileSync(path.join(ROOT, 'tm-memory-trace.js'), 'utf8');
 const zonesSrc = fs.readFileSync(path.join(ROOT, 'tm-context-zones.js'), 'utf8');
-
-assert(endturnAi.includes("stage:'sc05-recall'") || endturnAi.includes("stage: 'sc05-recall'"), 'SC_RECALL should record ContextZones injection with stage sc05-recall');
-assert(endturnAi.includes('TM.ContextZones.packZones') || endturnAi.includes('global.TM.ContextZones.packZones'), 'SC_RECALL should use ContextZones.packZones');
-assert(endturnAi.includes('memoryRecallZoneTokenBudget'), 'SC_RECALL zone packing should use a recall zone token budget knob');
-assert(endturnAi.includes('recall-header') && endturnAi.includes('recall-footer'), 'SC_RECALL zones should keep XML wrapper zones');
-assert(endturnAi.includes("lane:'L6_retrieved_evidence'") || endturnAi.includes("lane: 'L6_retrieved_evidence'"), 'SC_RECALL hit zones should use L6_retrieved_evidence lane');
-
-assert(zonesSrc.includes('suppressed: packed.suppressed'), 'ContextZones trace should pass suppressed budget drops');
-assert(traceSrc.includes('suppressed: Array.isArray(data.suppressed)'), 'MemoryTrace injection should persist suppressed dropped zones');
 
 const sandbox = { console, Date, Math, JSON, window: {} };
 sandbox.window.window = sandbox.window;

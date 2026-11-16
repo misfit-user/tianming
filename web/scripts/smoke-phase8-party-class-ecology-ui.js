@@ -185,10 +185,6 @@ vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail.js'), 'utf8'), sandbox, { filename: 'phase8-formal-rightrail.js' });
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail-social.js'), 'utf8'), sandbox, { filename: 'phase8-formal-rightrail-social.js' });
 
-const bridgeSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-bridge.js'), 'utf8');
-assert(/\.tmrp-ecology/.test(bridgeSource), 'ecology relation rows should have explicit right-rail styling');
-assert(/\.tmrp-ecology-edge/.test(bridgeSource), 'ecology relation edge rows should have explicit styling');
-
 let html = bridge.rightrail.renderers.ol();
 assert(!/tmrp-ecology/.test(html), 'class card should not render ecology relation block inline');
 assert(/data-right-action="outline-select"/.test(html), 'class card should remain clickable into detail flyout');

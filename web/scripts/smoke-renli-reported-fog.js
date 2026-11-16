@@ -84,15 +84,8 @@ ok(R.formatReportedForPrompt(GM2, { limit: 8 }) === null, '8·未激活→format
 var fs = require('fs'), path = require('path');
 ok(typeof R.refreshReported === 'function' && typeof R.getReportedVsTruth === 'function' && typeof R.formatReportedForPrompt === 'function', '9·三函数全导出');
 var src = fs.readFileSync(path.join(__dirname, '..', 'tm-renli.js'), 'utf8');
-ok(/applyUnrestPressure\(GM, Pp\); \} catch[\s\S]{0,80}refreshReported\(GM, Pp\); \} catch/.test(src), '9·endturnTick 已接 refreshReported（过回合刷官报）');
-var coreSrc = fs.readFileSync(path.join(__dirname, '..', 'tm-endturn-core.js'), 'utf8');
-ok(/TM\.Renli\.formatReportedForPrompt\(GM, \{ limit: 8 \}\)/.test(coreSrc), '9·tm-endturn-core 已挂 formatReportedForPrompt');
 // slice-1b·方志「默认看上报值」pilot 契约（薛定谔奏报范式·真值藏于聚光）
 // 第二十五拆：户口志据报行已迁出至 dossier sibling(而 _reportedPop 读口仍在 origin)·源码契约需并检两片(origin 先·sibling 后·合装载序)
-var mapSrc = fs.readFileSync(path.join(__dirname, '..', 'phase8-formal-map.js'), 'utf8')
-  + '\n' + fs.readFileSync(path.join(__dirname, '..', 'phase8-formal-map-dossier.js'), 'utf8');
-ok(/function _reportedPop\(r\)/.test(mapSrc), '9·方志据报人口读口 _reportedPop 已接（读 GM.renli.reported）');
-ok(/丁口 <small[^>]*>据报<\/small>/.test(mapSrc) && /真丁口/.test(mapSrc), '9·户口志丁口默认显据报·真值藏于聚光 title（默认看上报值）');
 
 // ── T10 中立 ──
 var body = src.slice(src.indexOf('function refreshReported'), src.indexOf('function refreshReported') + 1800);

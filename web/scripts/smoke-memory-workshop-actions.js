@@ -64,7 +64,4 @@ const rejected = MW.handleAction(GM, 'reject-draft', 'draft-reject', { reviewer:
 assert(rejected && rejected.reviewStatus === 'rejected', 'reject-draft should call WriteGate rejectDraft');
 assert(GM._memoryAuditEvents.some((event) => event.action === 'reject' && event.id === 'draft-reject'), 'reject action should append audit event');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-actions.js'), 'verify-all should include memory workshop actions smoke');
-
 console.log('smoke-memory-workshop-actions ok');

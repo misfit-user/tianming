@@ -4,11 +4,6 @@
  * full application, and an external edit conflict. */
 const assert = require('assert/strict'), fs = require('fs'), path = require('path');
 const AA = require(path.join(__dirname, '..', 'editor-authoring-agent.js'));
-const uiSource = fs.readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui.js'), 'utf8');
-assert(/ui\._recovery && ui\.draft/.test(uiSource));
-assert(/resetResults\(continuing\)/.test(uiSource));
-assert(/AA\.computeDiff\(ui\.baseScenario/.test(uiSource));
-assert(/AA\.applySelectedDiffs\(ui\.adapter\.getScenario\(\), ui\.draft/.test(uiSource));
 const N = 1616;
 const base = { name: '大档', items: Array.from({ length: N }, (_, i) => ({ id: 'item-' + i, value: 'old-' + i })) };
 const draft = AA.makeDraft(base);

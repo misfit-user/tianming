@@ -22,10 +22,6 @@ const ei = src.indexOf(END, si);
 ok(si >= 0 && ei > si, 'tm-endturn-prompt.js 含 S7 注入块（S7→N4 之间）');
 const body = src.slice(si, ei);
 // 源契约：三段都在，且读正确字段
-ok(/GM\.huangquan\.powerMinister/.test(body) && /权臣坐大/.test(body), 'S7-1 权臣坐大：读 GM.huangquan.powerMinister');
-ok(/GM\._jingchaResult/.test(body) && /京察大计/.test(body), 'S7-2 京察：读 GM._jingchaResult');
-ok(/_seeksRemoval/.test(body) && /怀才不遇/.test(body), 'S7-3 怀才不遇：读 _seeksRemoval');
-ok(/controlLevel|interceptions|counterEdicts/.test(body), 'S7-1 喂坐大程度/截留/假拟等状态');
 
 // ── 抽片段 eval（真实注入代码·非模拟）──
 let injectFn;

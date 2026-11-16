@@ -6,7 +6,6 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const lifecycleSource = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
 const edictSource = fs.readFileSync(path.join(ROOT, 'tm-edict-parser.js'), 'utf8');
 const authoritySource = fs.readFileSync(path.join(ROOT, 'tm-authority-complete.js'), 'utf8');
 
@@ -241,8 +240,5 @@ context.GM = {
 context._tickFullLinkage({}, 1);
 assert(Number.isFinite(context.GM.population.national.mouths) && context.GM.population.national.mouths > 100000, 'valid grain gift adds a finite population amount');
 assert(context.GM.neitang.money < 4000000 && context.GM.population.hiddenCount > 0, 'valid linkage updates both grain-gift spending and weak-authority hidden population');
-
-assert(/populationSchema\.normalize\(GM,/.test(lifecycleSource), 'load/save default boundary invokes population normalization');
-assert(/_normalizePopulationBoundary\(G, 'huji-new-game'/.test(hujiSource), 'new-game huji initialization invokes the same population schema');
 
 console.log('[smoke-population-transfer-invariants] pass assertions=' + passed);

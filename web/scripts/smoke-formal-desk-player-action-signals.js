@@ -310,10 +310,5 @@ function load(file) {
   assert(playerItems.some(s => s && s.action === 'shizheng-choice-desk' && /Approve remission/.test(s.text)), 'court issue choice should record chosen option text');
   assert(socialItems.some(s => s && s.sourceSystem === 'player-action' && s.linkedIssue === 'issue-levy' && /Approve remission/.test(s.reason || '')), 'court issue choice should preserve linked issue in social/political ledger');
 
-  const draftsSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-drafts.js'), 'utf8');
-  const signalsSource = fs.readFileSync(path.join(ROOT, 'tm-player-action-signals.js'), 'utf8');
-  assert(/recordDeskActionSignal/.test(draftsSource), 'formal drafts source should have a dedicated desk signal recorder');
-  assert(/formalOperationProfile/.test(signalsSource), 'player action signals should classify formal operations before mirroring');
-
   console.log('[smoke-formal-desk-player-action-signals] PASS formal desk player action signals');
 })()

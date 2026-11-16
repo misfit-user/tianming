@@ -170,12 +170,6 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail-social.
 
 assert(bridge.rightrail && bridge.rightrail.renderers && typeof bridge.rightrail.renderers.ol === 'function', 'right rail outline renderer should be exported');
 
-const bridgeSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-bridge.js'), 'utf8');
-assert(/\.tmrp-social-cause/.test(bridgeSource), 'social near-cause rows should have explicit right-rail styling');
-assert(/\.tmrp-social-actions/.test(bridgeSource), 'social action rows should have explicit right-rail styling');
-assert(/\.tmrp-social-chain/.test(bridgeSource), 'social cause chain should have explicit right-rail styling');
-assert(/\.tmrp-chain-step/.test(bridgeSource), 'social chain steps should have explicit button styling');
-
 let html = bridge.rightrail.renderers.ol();
 assert(/data-right-action="outline-select"/.test(html), 'class card should remain clickable into detail flyout');
 assert(!/tmrp-social-cause/.test(html), 'class card should not render near-cause entries inline');

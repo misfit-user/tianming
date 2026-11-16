@@ -106,11 +106,6 @@ ok(r6.partyState['甲党'].alliedWith.join() === '乙党' && r6.partyState['甲�
 
 // ── ⑦ 校准器源码契约 ──
 const cal = fs.readFileSync(path.join(WEB, 'tm-party-class-llm-calibrator.js'), 'utf8');
-ok(/绝对值通道关闸/.test(cal) && /pushSat\(absTarget - absCur/.test(cal), '⑦ 校准器绝对值→差值过闸');
-ok(/gateSatisfaction === 'function'/.test(cal), '⑦ 校准器 delta 路接总闸');
-ok(/Never return absolute satisfaction or cohesion values/.test(cal), '⑦ 校准器系统提示禁绝对值');
-ok(/never reuse the same demand wording across different classes/.test(cal), '⑦ 校准器系统提示禁诉求雷同');
-ok(/setAiDemand/.test(cal), '⑦ 校准器 demands 走议程槽不覆盖');
 ok(cal.indexOf("demands: ['short demand']") < 0, '⑦ 英文模板诉求示例已除（议程雷同源之一）');
 
 console.log('\n[smoke-class-satisfaction-guard] ' + (failed === 0 ? 'PASS' : 'FAIL') + ' — ' + passed + ' passed, ' + failed + ' failed');

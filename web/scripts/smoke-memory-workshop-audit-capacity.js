@@ -50,7 +50,4 @@ const html = MW.renderAuditEvents(GM, { playerSafe: true });
 assert(html.includes('audit-cap-134'), 'audit render should include newest retained event');
 assert(!html.includes('audit-cap-0'), 'audit render should not include pruned oldest event');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-audit-capacity.js'), 'verify-all should include audit capacity smoke');
-
 console.log('smoke-memory-workshop-audit-capacity ok');

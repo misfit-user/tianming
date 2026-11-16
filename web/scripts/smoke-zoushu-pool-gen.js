@@ -100,11 +100,5 @@ ctx._tickZoushuPool();
 assert(ctx.GM.zoushuPool.length <= 8 + 2, '⑰ 池容封顶(8+本回合新增)');
 
 // ── 静态契约：消费端/开关在位 ──
-const chaoyi = fs.readFileSync(path.join(ROOT, 'tm-chaoyi.js'), 'utf8');
-assert(chaoyi.indexOf('zoushuPool') >= 0, '⑱ 常朝 _cc2_collectAgendaSources 消费 zoushuPool(现成读点)');
-const patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-assert(patches.indexOf("'zoushuGenEnabled'") >= 0, '⑲ tm-patches 设置开关已挂(zoushuGenEnabled)');
-const helpers = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
-assert(helpers.indexOf("zoushuGenEnabled !== true) return") >= 0, '⑳ 引擎闸默认关(===true 才跑)');
 
 console.log('smoke-zoushu-pool-gen OK — ' + N + ' 断言全绿（四信号/对口主官/防重窗/池容/虚悬/flag闸）');

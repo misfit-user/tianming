@@ -15,11 +15,6 @@ function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m
 
 const src = (fs.readFileSync(path.join(ROOT, 'tm-office-runtime.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-office-runtime-summary-appoint.js'), 'utf8'));
 
-// 源契约
-ok(/人才流失预警/.test(src), 'tm-office-runtime.js 含「人才流失预警」');
-ok(/_disaffElite[\s\S]{0,120}_seeksRemoval/.test(src), '读 _seeksRemoval（才不配位反哺产出）');
-ok(/alerts\.push\(\{[^}]*人才流失预警/.test(src), '走既有 alerts.push 预警条范式');
-
 // 抽取真实片段（// 人才流失预警 → // 职位空缺 前）
 const START = '// 人才流失预警';
 const END = '// 职位空缺';

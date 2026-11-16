@@ -154,20 +154,6 @@ console.log('— §B · agent 循环(行为) —');
 })().then(function () {
   /* ── §C 接线契约 ──────────────────────────────────────────── */
   console.log('— §C · 接线契约 —');
-  var gl = (read('tm-game-loop.js') + read('tm-game-loop-wentian-hardchange.js'));
-  ok(/function _wtParseTeachingText\(\)/.test(gl) && (gl.match(/_wtParseTeachingText\(\)/g) || []).length >= 3, '解析教学共源(单发与 agent 同一份·防漂移)');
-  ok(/TM\.WentianAgent\.enabled\(\)/.test(gl) && /TM\.WentianAgent\.run\(content/.test(gl), '_wtSend 接 agent 分支·失败落回单发');
-  ok(/divisions\[府州名\]\.economyBase\.farmland/.test(gl) && /office\[官职名\]\.publicTreasury/.test(gl), '教学补区划/官职常见路径');
-  ok(/_wtHcList/.test(gl) && /dir\.hardChanges = hDone/.test(gl), '确认流支持多笔 hardChanges');
-  ok(/_agentTrace/.test(gl), '确认框展示查证轨迹');
-  ok(/_agentTrace\.join/.test(gl.split('function _wtConfirmPending')[1] || ''), '查证轨迹随确认入问天持久档(刀③)');
-  var wa = read('tm-wentian-agent.js');
-  ok(/_wtDryRunHardChange/.test(wa) && /_validateSubmit/.test(wa), 'agent 接 submit 校验回路(dry-run 探针)');
-  ok(/hc\._dryRun/.test(gl) && /_wtDryRunHardChange\(hc\.path\)/.test(gl), '确认框红绿预标接线(agent 标注复用·单发现场预演)');
-  ok(/clarify:/.test(wa), 'SUBMIT_TOOL 有 clarify 歧义追问字段(刀⑤)');
-  ok(/\nfunction _wtClarifyPending\(/.test(gl) && /onclick="_wtClarifyPending\(/.test(gl) && gl.indexOf('function _wtClarifyPending') > gl.indexOf('function _wtConfirmPending'), '歧义追问按钮接线(顶层函数·点选带澄清重裁)');
-  ok(/wentianAgentMode/.test((read('tm-patches.js') + '\n' + read('tm-patches-start.js'))) && /问天·先查证后裁定/.test((read('tm-patches.js') + '\n' + read('tm-patches-start.js'))), '设置面板开关(默认启用可关)');
-  ok(/tm-wentian-agent\.js/.test(read('index.html')), 'index.html 挂载(在只读工具之后)');
   console.log('\nsmoke-wentian-agent ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
   process.exit(F0 === 0 ? 0 : 1);
 }).catch(function (e) {

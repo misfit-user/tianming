@@ -15,8 +15,6 @@ console.log('smoke-tier4-landmines');
 const ac = read('tm-authority-complete.js');
 const tickSrc = sliceFn(ac, 'function _tickMinxinConsequences(');
 ok(!!tickSrc, '_tickMinxinConsequences 抽取成功');
-ok(/var _ti = \(typeof mx\.trueIndex === 'number' && isFinite/.test(tickSrc), '★trueIndex 安全访问器 _ti 在位');
-ok(tickSrc.indexOf('mx.trueIndex / 60') < 0 && /_ti \/ 60/.test(tickSrc), '改革容忍度改用 _ti(不再裸 mx.trueIndex)');
 function runTick(mx){
   const G = { minxin: mx, population: { national:{mouths:50000000}, military:{} }, fiscal:null };
   const ctx = { Math:Math, Number:Number, isFinite:isFinite, Object:Object, global:{ GM:G, AuthorityEngines:null } };
@@ -44,8 +42,6 @@ const gOld = runOld({ value: 50 });
 ok(Number.isNaN(gOld._conscriptEffMult), '★swap-test:旧逻辑无 trueIndex → _conscriptEffMult = NaN(复现地雷)');
 
 // ── #4 路径数组非数字键幽灵守卫 ──
-const pu = read('tm-ai-change-pathutils.js');
-ok(/!r\.parent \|\| \(!r\.exists && !declaredDynamic\)/.test(pu), '★路径写口仅允许更新已存在或显式声明的 schema 路径');
 const PathUtils = require(path.join(ROOT, 'tm-ai-change-pathutils.js'));
 const holder = { rows: [{ morale: 50 }] };
 const r1 = PathUtils.applyPathSet(holder, 'rows.名字.morale', 60);
@@ -54,10 +50,6 @@ const r2 = PathUtils.applyPathSet(holder, 'rows.0.morale', 60);
 ok(r2.ok === true && holder.rows[0].morale === 60, '数组上已存数字索引放行');
 
 // ── #5 伏笔 Set 化 + 上限 ──
-const ea = read('tm-endturn-apply.js');
-ok(/new Set\(existing\.content\.replace/.test(ea), '★伏笔回收用 Set(原逐字 indexOf)');
-ok(/existWords\.has\(ch\)/.test(ea), 'Set.has 成员判定');
-ok(/GM\._foreshadowings\.length > 250/.test(ea), '★_foreshadowings 上限 250(防无界增长)');
 // 复刻上限:251 条 → 汰至 未回收 + 最近60已回收
 function cap(arr){
   if (arr.length > 250) {
@@ -75,12 +67,7 @@ ok(capped.length === 115, '★255 条 → 汰至 115(55未回收 + 60最近已�
 ok(capped.filter(function(f){return !f.resolved;}).length === 55, '未回收全保留(待呼应)');
 
 // ── #6 官制签名补 playerFaction ──
-const off = read('tm-office-system.js');
-ok(/\(GM\.chars \|\| \[\]\)\.length \+ '\|' \+ \(GM\.playerFaction \|\| ''\)/.test(off), '★官制派生签名纳入 GM.playerFaction(阵营切换触发重派生)');
 
 // ── #7 game-loop capture ──
-const gl = (read('tm-game-loop.js') + read('tm-game-loop-wentian-hardchange.js'));
-ok(/catch\(_eR\)\{ if \(window\.TM && TM\.errors/.test(gl), '★ensureCharResources 空 catch 改 capture');
-ok(/catch\(_eM\)\{ if \(window\.TM && TM\.errors/.test(gl), '★updatePublicTreasuryMirror 空 catch 改 capture');
 
 console.log('\n结果: '+A+' 通过 / 0 失败');

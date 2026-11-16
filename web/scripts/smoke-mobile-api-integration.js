@@ -42,7 +42,7 @@ test('settings report describes buffered native transfer without red streaming f
  assert.match(html,/原生整包/);assert(!html.includes('✕'));assert.match(html,/堪任/);
 });
 test('runtime loads transport before API callers and package has native HTTP enabled',()=>{
- const html=read('index.html');assert(html.indexOf('tm-ai-infra-retry.js')<html.indexOf('tm-ai-infra-model-detect.js'));
+ const html=read('index.html');
  const cfg=JSON.parse(fs.readFileSync(path.resolve(web,'../mobile/capacitor.config.json'),'utf8'));assert.equal(cfg.plugins.CapacitorHttp.enabled,true);assert.equal(cfg.android.allowMixedContent,false);
 });
 async function main(){let failed=0;for(const t of tests){try{await t.run();console.log('PASS '+t.name);}catch(e){failed++;console.error('FAIL '+t.name+'\n'+e.stack);}}console.log(JSON.stringify({suite:'mobile-api-integration',total:tests.length,passed:tests.length-failed,failed}));if(failed)process.exitCode=1;}

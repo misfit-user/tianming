@@ -151,15 +151,4 @@ assert(/Minxin Commitments/.test(prompt), 'commitment prompt should identify its
 assert(/Canal Ward/.test(prompt) && /Farmers/.test(prompt), 'commitment prompt should include region and class');
 assert(/progress|stalled|failed/.test(prompt), 'commitment prompt should include settlement status');
 
-const src = name => fs.readFileSync(path.join(ROOT, name), 'utf8');
-const index = src('index.html');
-assert(index.indexOf('tm-minxin-commitment-tracker.js') > 0, 'index should load commitment tracker');
-assert(index.indexOf('tm-minxin-pressure-actions.js') < index.indexOf('tm-minxin-commitment-tracker.js'), 'commitment tracker should load after pressure actions');
-assert(index.indexOf('tm-minxin-commitment-tracker.js') < index.indexOf('tm-endturn-core.js'), 'commitment tracker should load before endturn core');
-assert(/MinxinCommitmentTracker\.recordFromPressureResponse/.test(src('tm-minxin-pressure-actions.js')), 'pressure response should create commitments');
-assert(/MinxinCommitmentTracker\.tick/.test(src('tm-endturn-core.js')), 'endturn pre-submit should tick commitments');
-assert(/MinxinCommitmentTracker\.formatForPrompt/.test(src('tm-endturn-core.js')), 'endturn prompt should include commitments');
-assert(/Minxin Commitments/.test((src('phase8-formal-rightrail.js') + src('phase8-formal-rightrail-social.js'))), 'right rail debug should expose commitments');
-assert(/_renderMinxinCommitments/.test(src('tm-topbar-vars.js')), 'topbar minxin panel should expose commitments');
-
 console.log('[smoke-minxin-commitment-tracker] PASS minxin governance commitment loop');

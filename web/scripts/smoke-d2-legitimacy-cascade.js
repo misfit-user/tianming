@@ -95,10 +95,8 @@ ok(r4(pmLizin) === r4(0.315), '缙绅离心·权臣坐大 +50%(0.3→0.315) (got
 ok(r4(pmCalm) === r4(0.31), '相安·权臣常速(0.3→0.31) (got ' + pmCalm + ')');
 ok(pmLizin > pmCalm, '★缙绅离心·权臣坐大快于相安');
 ok(r4(pmNone) === r4(0.31), 'swap-test·无 _legitimacy→常速(回归安全) (got ' + pmNone + ')');
-ok(/_pmLegBoost/.test(src) && /缙绅离心/.test(pmSrc), '源契约·权臣坐大门控缙绅离心');
 
 // 源契约
-ok(/_escMult\s*=\s*1/.test(src) && /flag\s*===\s*'缙绅离心'/.test(src), '源契约·_escMult 门控缙绅离心');
 const escUses = (src.match(/\*\s*_escMult/g) || []).length;
 ok(escUses >= 3, '源契约·_escMult 施于≥3 增量(抗疏/合规/外邦) → ' + escUses);
 

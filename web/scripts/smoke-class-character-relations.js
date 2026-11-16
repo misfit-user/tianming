@@ -203,12 +203,4 @@ root.turn = 30;
 const decayed = CCR.run(root, { turn: 30, source: 'smoke-decay', skipDiscovery: true });
 assert(decayed.expired > 0, 'stale edges should expire when no fresh evidence remains');
 
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(indexHtml.indexOf('tm-class-character-relations.js') > indexHtml.indexOf('tm-social-political-signals.js'), 'index should load relation module after social-political signals');
-assert(indexHtml.indexOf('tm-class-character-relations.js') < indexHtml.indexOf('tm-party-class-actors.js'), 'index should load relation module before actor scheduler');
-const coreSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
-assert(/ClassCharacterRelations\.run/.test(coreSource), 'pre-submit should maintain class-character relations');
-assert(coreSource.indexOf('ClassCharacterRelations.run') < coreSource.indexOf('PartyClassActors.run'), 'class-character relations should run before party/class actors');
-assert(coreSource.indexOf('ClassCharacterRelations.run') < coreSource.indexOf('PartyClassLlmCalibrator.flushBeforeSubmit'), 'class-character relations should be ready before LLM calibration snapshot');
-
 console.log('[smoke-class-character-relations] PASS dynamic class-character relations');

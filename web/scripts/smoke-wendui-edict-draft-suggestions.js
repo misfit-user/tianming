@@ -9,7 +9,6 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const wenduiSrc = (fs.readFileSync(path.join(ROOT, 'tm-wendui.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-wendui-persona-views.js'), 'utf8'));
-const formalSrc = fs.readFileSync(path.join(ROOT, 'phase8-formal-drafts.js'), 'utf8');
 
 let passed = 0;
 function assert(cond, msg) {
@@ -100,8 +99,5 @@ assert(manual && manual.draftOnly === true, 'manual excerpt should also be draft
 assert(/严禁私铸/.test(manual.draftText || ''), 'manual excerpt should become draft text');
 assert(parserCalls.length === 0, 'manual excerpt must not execute EdictParser');
 assert(toasts.some(t => /草诏|建议库/.test(t)), 'manual excerpt should notify the suggestion library');
-
-assert(/draftText\s*\|\|\s*x\.text\s*\|\|\s*x\.content/.test(formalSrc), 'formal suggestion rows should prefer draftText');
-assert(/sg\.draftText\s*\|\|\s*sg\.text\s*\|\|\s*sg\.content/.test(formalSrc), 'formal adopt menu should prefer draftText');
 
 console.log(`[smoke-wendui-edict-draft-suggestions] PASS ${passed} assertions`);

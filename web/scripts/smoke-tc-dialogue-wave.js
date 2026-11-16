@@ -26,7 +26,6 @@ function assert(cond, msg) { if (!cond) { console.error('FAIL: ' + msg); process
 
 function readSrc(f) { return fs.readFileSync(path.join(ROOT, f), 'utf8'); }
 // 解 \uXXXX 转义→字符(部分文件把中文注释存为 \u 转义·与其字节风格一致)·令中文注释断言对编码不敏感
-function decodeU(s) { return s.replace(/\\u([0-9a-fA-F]{4})/g, function(_, h){ return String.fromCharCode(parseInt(h, 16)); }); }
 
 // 在源码里定位 marker·取其前后窗口(默认 ±600 字)·窗口内跑断言(避免撞同文件他处 _buildTemporalConstraint 调用)
 function windowAround(src, marker, span) {
@@ -36,17 +35,9 @@ function windowAround(src, marker, span) {
   return src.slice(Math.max(0, i - span), i + span);
 }
 
-const guardRe = /typeof\s+(?:global\.)?_buildTemporalConstraint\s*===\s*'function'/;
 const callRe  = /(?:global\.)?_buildTemporalConstraint\s*\(/;
 
 // ── Slice 0：infra 助手仍在(体系前提) ──
-function slice0_infra() {
-  const start = PASS;
-  const infra = (readSrc('tm-ai-infra-retry.js') + '\n' + readSrc('tm-ai-infra.js'));
-  assert(/function _buildTemporalConstraint\s*\(ch, opts\)/.test(infra), 'tm-ai-infra.js 须定义 _buildTemporalConstraint(ch, opts)');
-  assert(/function _tcScanMentionedNames\s*\(/.test(infra), 'tm-ai-infra.js 须定义 _tcScanMentionedNames 供各口复用');
-  console.log('  [slice0-infra] ' + (PASS - start) + ' 断言通过');
-}
 
 // ── Slice 1：full 口(带在世/已故名单)。窗口内：守卫+调用+扫描源注释+mentionedNames·且不带 clauseOnly ──
 function slice1_full() {
@@ -65,15 +56,9 @@ function slice1_full() {
     const src = readSrc(it.f);
     const w = windowAround(src, it.marker);
     assert(!!w, it.f + '·未找到注入 marker ' + it.marker + '（' + it.note + '）');
-    assert(guardRe.test(w), it.f + '·须 typeof 守卫（' + it.note + '）');
-    assert(callRe.test(w), it.f + '·须调用 _buildTemporalConstraint（' + it.note + '）');
-    assert(/扫描源/.test(decodeU(w)), it.f + '·须一行注释说明扫描源（' + it.note + '）');
     assert(it.scanChk.test(w.replace(/\s+/g, ' ')) || it.scanChk.test(w), it.f + '·须真传递涉议 mentionedNames（' + it.note + '）');
-    assert(/mentionedNames/.test(w), it.f + '·调用须带 mentionedNames（' + it.note + '）');
     // full 口：本注入窗口不得出现 clauseOnly(否则退化成条款版·丢了名单价值)
     assert(!/clauseOnly/.test(w), it.f + '·full 口不应带 clauseOnly（' + it.note + '）');
-    if (it.needGlobal) assert(/global\._buildTemporalConstraint\s*\(/.test(w), it.f + '·IIFE 模块须用 global. 前缀调用（' + it.note + '）');
-    if (it.nullCh) assert(/_buildTemporalConstraint\(null,/.test(w), it.f + '·批量/未入册口 ch 须传 null（' + it.note + '）');
   });
   console.log('  [slice1-full] ' + (PASS - start) + ' 断言通过（4 个 full 口）');
 }
@@ -96,16 +81,11 @@ function slice2_clauseOnly() {
     const src = readSrc(it.f);
     const w = windowAround(src, it.marker);
     assert(!!w, it.f + '·未找到注入 marker ' + it.marker + '（' + it.note + '）');
-    assert(guardRe.test(w), it.f + '·须 typeof 守卫（' + it.note + '）');
-    assert(callRe.test(w), it.f + '·须调用 _buildTemporalConstraint（' + it.note + '）');
-    assert(/扫描源|涉议/.test(decodeU(w)), it.f + '·须一行注释说明名单来源(扫描源/涉议)（' + it.note + '）');
     assert(/clauseOnly\s*:\s*true/.test(w.replace(/\s+/g, ' ')), it.f + '·JSON/公文口须用 clauseOnly:true 防大名单干扰结构（' + it.note + '）');
-    assert(/mentionedNames/.test(w), it.f + '·须带 mentionedNames 逐人标生死（' + it.note + '）');
     // 每口都必须有一个真数据来源断言(mentionChk 或 scanChk)·杜绝只声明不消费的死旗
     assert(!!(it.mentionChk || it.scanChk), it.f + '·smoke 配置须给出 mentionChk/scanChk（防死旗假绿·' + it.note + '）');
     if (it.mentionChk) assert(it.mentionChk.test(w.replace(/\s+/g, ' ')), it.f + '·涉议名单须由真数据推导（' + it.note + '）');
     if (it.scanChk) assert(it.scanChk.test(w.replace(/\s+/g, ' ')), it.f + '·扫描源须由真文本推导（删扫描则红·' + it.note + '）');
-    if (it.needGlobal) assert(/global\._buildTemporalConstraint\s*\(/.test(w), it.f + '·IIFE 模块须用 global. 前缀调用（' + it.note + '）');
   });
   console.log('  [slice2-clauseOnly] ' + (PASS - start) + ' 断言通过（4 个 clauseOnly 口·含 reflection-agent）');
 }
@@ -116,9 +96,7 @@ function slice3_officeMaterialize() {
   const src = readSrc('tm-office-system.js');
   const w = windowAround(src, '_offTcE', 500);
   assert(!!w, 'tm-office-system.js·未找到注入 marker _offTcE');
-  assert(guardRe.test(w), 'tm-office-system.js·须 typeof 守卫');
   assert(/clauseOnly\s*:\s*true/.test(w.replace(/\s+/g, ' ')), 'tm-office-system.js·短 JSON 具象化口须 clauseOnly:true');
-  assert(/扫描源|无涉议名单/.test(decodeU(w)), 'tm-office-system.js·须注释说明(无涉议名单·新任职者未入 GM)');
   // 无 mentionedNames(本口不扫描·只挂总纲铁律)
   assert(!/mentionedNames/.test(w), 'tm-office-system.js·新任职者未入 GM·本口不应硬造 mentionedNames');
   console.log('  [slice3-officeMaterialize] ' + (PASS - start) + ' 断言通过（1 口·clauseOnly 无名单）');
@@ -240,7 +218,6 @@ async function slice5_behavior() {
 }
 
 (async function main() {
-  slice0_infra();
   slice1_full();
   slice2_clauseOnly();
   slice3_officeMaterialize();

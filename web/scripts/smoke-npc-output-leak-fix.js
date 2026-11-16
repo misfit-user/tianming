@@ -53,13 +53,8 @@ function assert(c, m) { if (c) pass++; else { fail++; console.error('  ✗ ' + m
 // ── ④ 源码契约:call sites 走 helper + pushOffice no-op 守卫 ──
 (function () {
   const ap = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
-  assert(/'施以' \+ _npcBehaviorVerbCN\(act\.behaviorType\)/.test(ap), '同僚记忆走 _npcBehaviorVerbCN');
-  assert(/act\.name \+ _npcBehaviorVerbCN\(act\.behaviorType\)/.test(ap), '涟漪记忆走 _npcBehaviorVerbCN');
-  assert(/'党议反对诏令' \+ _edictTypeCN\(u\.edictType\)/.test(ap), '党议反对走 _edictTypeCN');
   assert(!/'施以' \+ act\.behaviorType\b/.test(ap), '不再裸拼英文 behaviorType(施以)');
   assert(!/党议反对诏令\(' \+ \(u\.edictType/.test(ap), '不再裸拼英文 edictType');
-  const nb = fs.readFileSync(path.join(ROOT, 'tm-faction-npc-news-bridge.js'), 'utf8');
-  assert(/pf === pt\) return false/.test(nb), 'pushOffice 应跳过 old===new no-op 擢升');
   console.log('  [④] 源码契约(call sites + pushOffice 守卫) OK');
 })();
 

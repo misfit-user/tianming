@@ -22,14 +22,6 @@ function assert(cond, msg) {
 console.log('smoke-endturn-speed-batch2');
 
 // ── ① SC1 修复预算帽（tm-endturn-ai.js 源契约）──
-const ai = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
-assert(/var _sc1ExtraPassUsed = false;/.test(ai), '预算帽闩 _sc1ExtraPassUsed 在');
-assert(/_sc1ExtraPassUsed = true;\s*\n\s*var _incFilled = await _runIncrementalSc1Retry/.test(ai),
-  '增量修补起跑即占用预算（不看成败·防双吃）');
-assert(/\(!p1 \|\| !_hasSc1StructuredResult\(p1\)\) && \(!_sc1ExtraPassUsed \|\| \(P\.conf && P\.conf\.sc1RepairUncapped === true\)\)/.test(ai),
-  '救援门=未用过预算才放行·sc1RepairUncapped 逃生阀在');
-assert(/P\.conf && P\.conf\.aiSubcallConcurrency/.test(ai) && /_confLimit > 0 \? _confLimit/.test(ai),
-  '消费端仍尊重玩家显式并发值（>0 覆盖平台默认）');
 
 // ── ② setter 真行为（vm 沙箱跑 tm-player-settings.js 中的函数体）──
 const ps = fs.readFileSync(path.join(ROOT, 'tm-player-settings.js'), 'utf8');
@@ -52,13 +44,6 @@ if (m) {
 }
 
 // ── ③ 设置面板 UI + 兜底（tm-patches.js 源契约）──
-const tp = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-assert(/window\._setAiSubcallConcurrency = function/.test(tp), 'tm-patches 兜底副本在（防被回滚）');
-assert(/_setAiSubcallConcurrency\(this\.value\)/.test(tp), '并发档位 select 接线 setter');
-assert(/回合推演并发档位/.test(tp) && /安卓/.test(tp.slice(tp.indexOf('回合推演并发档位'), tp.indexOf('回合推演并发档位') + 400)),
-  'UI 文案点明安卓提速语境');
-assert(/_togglePConf\('sc1RepairUncapped',this\.checked\)/.test(tp.replace(/\\'/g, "'")),
-  'SC1 修复帽逃生阀有设置开关（设 conf 必配开关纪律）');
 
 console.log('smoke-endturn-speed-batch2 ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + A + '/' + (A + F));
 process.exit(F === 0 ? 0 : 1);

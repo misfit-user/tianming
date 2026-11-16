@@ -84,7 +84,4 @@ assert(auditHtml.includes('mark_false_rollup'), 'audit render should show rollup
 assert(auditHtml.includes('clear_rollup_control'), 'audit render should show rollup clear action');
 assert(auditHtml.includes('undone'), 'audit render should show undone state for rollup events');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-rollup-undo.js'), 'verify-all should include rollup undo smoke');
-
 console.log('smoke-memory-workshop-rollup-undo ok');

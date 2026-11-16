@@ -46,11 +46,6 @@ console.log('— §A1 · 点名必入+相关性选忆 —');
   var lowRelevant = { event: '琐事', importance: 3, who: '袁崇焕' };
   ok((lowRelevant.importance || 0) < 6, '低 imp 记忆即便相关·仍会被 impMin 门槛挡(过滤在排序之外·质量闸不放水)');
 
-  var src = read('tm-endturn-prompt.js');
-  ok(/_edictHay = \[edicts\.decree, edicts\.political/.test(src), '契约:点名 haystack 取六字段诏令');
-  ok(/_edictHay\.indexOf\(c\.name\) >= 0\) weight \+= 40/.test(src), '契约:点名 +40 加权在选人评分内');
-  ok(/if \(_present\[w\]\) s \+= 2\.5;/.test(src), '契约:同场对手戏 +2.5 在 _memScore 内');
-  ok(/_memScore\(b\) - _memScore\(a\)/.test(src), '契约:选忆排序走 _memScore(替换纯 importance 排序)');
 })();
 
 /* ── §A2 · 在场恩怨对照(逻辑副本) ─────────────────────────────── */
@@ -85,9 +80,6 @@ console.log('— §A2 · 在场恩怨对照 —');
   var ws2 = buildWith(mem, '某', present, topAlready);
   ok(ws2.some(function(w) { return w.who === '甲' && w.importance === 6; }), '已入 <memory> 的不重挂·退取次条(甲 imp6)');
 
-  var src = read('tm-endturn-prompt.js');
-  ok(/<with name="/.test(src) && /_withCount\+\+/.test(src), '契约:<with> 注入+计数在源');
-  ok(/对手戏优先于独角戏/.test(src) && /if \(_withCount > 0\)/.test(src), '契约:演出指令仅在有对照时注入');
 })();
 
 /* ── §B1 · 政柄更迭入党人记忆(真实消费者与写口) ─────────────── */
@@ -252,10 +244,6 @@ console.log('— §B3 · 目击者传播 —');
   ok(Math.max(3, 4 - 2) === 3, '重要度地板3');
 
   // 第十九拆：_applyMwList 迁 tm-endturn-followup-helpers.js·读 helper+origin 拼接(契约随人走)
-  var src = read('tm-endturn-followup-helpers.js') + '\n' + read('tm-endturn-followup.js');
-  ok(/目击者传播/.test(src) && /亲见：' \+ String\(mw\.event\)\.slice\(0, 60\)/.test(src), '契约:传播段在 _applyMwList 内');
-  ok(/witTotal < 12/.test(src) && /slice\(0, 3\)/.test(src), '契约:双封顶(3/条·12/批)');
-  ok(/source: 'witnessed'/.test(src) && !/covered\[wn\]/.test(src), '契约:witnessed 源·不占 covered(续写去重语义只属当事人)');
 })();
 
 console.log('\nsmoke-memory-strengthen ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));

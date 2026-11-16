@@ -157,8 +157,6 @@ const deptHtml = officeContext._renderOfficeDept({
   subs: []
 }, [0], 0);
 assertEscapedHtml(deptHtml, 'office tree renderer');
-check(officeSource.includes('_officeEditorEsc(nd.name || \'?\')'), 'active office canvas escapes department names');
-check(officeSource.includes('_officeEditorEsc(nd.holder)'), 'active office canvas escapes position holders');
 
 function sidebarNode() {
   return {

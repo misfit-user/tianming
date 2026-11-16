@@ -115,9 +115,5 @@ assert(closed.length === 12, '⑴ 已结台账瘦身留12条');
 assert(pend.length === 1 && pend[0].task === '新事', '⑵ pending 一律保留');
 
 // ── 静态契约：设置开关已挂 ──
-const patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-assert(patches.indexOf("'deptReplyEnabled'") >= 0, '⑶ tm-patches 设置开关已挂(deptReplyEnabled)');
-const helpers = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
-assert(helpers.indexOf("deptReplyEnabled !== true) return") >= 0, '⑷ 引擎闸默认关(===true 才跑)');
 
 console.log('smoke-dept-tasks-reply OK — ' + N + ' 断言全绿（递减/回奏三档/封顶/瘦身/flag闸）');

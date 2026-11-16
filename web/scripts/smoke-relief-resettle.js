@@ -57,11 +57,6 @@ ok(r6.success && r6.resettled === 0, '6·逃户池空→回迁0(不崩)');
 
 // ── T7 不碰派生 hukou.fugitives + T8 装配 ──
 var fs = require('fs'), path = require('path');
-var src = fs.readFileSync(path.join(__dirname, '..', 'tm-guoku-engine.js'), 'utf8');
-ok(/刀五·赈济→灾民回迁/.test(src), '8·openGranary 含刀五回迁块');
-var body = src.slice(src.indexOf('刀五·赈济→灾民回迁'), src.indexOf('刀五·赈济→灾民回迁') + 900);
-ok(/_bls\.taoohu/.test(body) && /huangji/.test(body) && !/hukou\.fugitives\s*=/.test(body), '7·只动 byLegalStatus 流亡池→编户·不写派生 hukou.fugitives(改之无效)');
-ok(/与刀B粮荒欠征.*不同轴.*非双算/.test(body), '7·注明与刀B(扣库粮)不同轴·非双算');
 
 console.log('\n[smoke-relief-resettle] ' + pass + ' 通过 / ' + fail + ' 失败');
 if (fail) { console.error('失败项：\n - ' + fails.join('\n - ')); process.exit(1); }

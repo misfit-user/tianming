@@ -13,10 +13,8 @@ function ok(c, m) { if (c) { pass++; } else { fail++; console.error('  ✗ ' + m
 
 const relSrc = fs.readFileSync(path.join(ROOT, 'tm-relations.js'), 'utf8');
 const applySrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
-const aiSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 const tuzhiSrc = fs.readFileSync(path.join(ROOT, 'tm-renwu-tuzhi.js'), 'utf8');
 const memSrc = fs.readFileSync(path.join(ROOT, 'tm-memorials.js'), 'utf8');
-const ledgerSrc = fs.readFileSync(path.join(ROOT, 'tm-npc-action-ledger.js'), 'utf8');
 
 // ════════ ① tm-relations.js 整体 vm 实跑：八新型 effect 落账 + effectActor 不对称 ════════
 function mkRelSandbox() {
@@ -118,9 +116,6 @@ ok(missDt.length === 0, '契约:每型均在 _DT_BEHAVIOR_CN 有词条·缺=' + 
   var e = applySrc.indexOf('NPC 对玩家行为的分发', s);
   ok(s >= 0 && e > s, '能定位 involvedOthers 轻边切片');
   var block = applySrc.slice(s, e);
-  ok(/AffinityMap\.add\(it\.actor, n, 2/.test(block), '契约:轻边 AffinityMap.add(actor,n,+2) 存在');   // 建边
-  ok(/_tieN < 6/.test(block), '契约:封顶 6 人(_tieN<6)');
-  ok(/_invCh\.alive !== false/.test(block), '契约:死者跳过(alive!==false)');
   var ctx = { Math: Math, Array: Array, String: String };
   vm.createContext(ctx);
   vm.runInContext('function tieBuild(it,_pName,typeInfo,env){var NpcMemorySystem=env.NpcMemorySystem,AffinityMap=env.AffinityMap,findCharByName=env.findCharByName;\n' + block + '\n}', ctx, { filename: 'tieBuild.js' });
@@ -146,16 +141,6 @@ ok(missDt.length === 0, '契约:每型均在 _DT_BEHAVIOR_CN 有词条·缺=' + 
   ok(!env.adds.some(function (x) { return x.b === '王'; }), '玩家王 不建边');
   ok(!env.adds.some(function (x) { return x.b === '主'; }), 'actor 不自建边');
 })();
-
-// ════════ ⑤ 四新面 dispatch 路由：源码契约（谢表/讼冤/乞休 memorials + condole 族在京求见/在外鸿雁 + giftPurpose）════════
-ok(/it\.type === 'express_gratitude' \|\| it\.type === 'intercede' \|\| it\.type === 'petition_retire'/.test(applySrc), 'dispatch:谢恩/求情/乞休分支存在');
-ok(/express_gratitude' \? '谢表'/.test(applySrc), 'dispatch:express_gratitude→谢表');
-ok(/intercede' \? '讼冤'/.test(applySrc), 'dispatch:intercede→讼冤');
-ok(/: '乞休'/.test(applySrc) && /type: _m4t/.test(applySrc), 'dispatch:petition_retire→乞休(入 GM.memorials)');
-ok(/it\.type === 'condole' \|\| it\.type === 'celebrate_birthday' \|\| it\.type === 'farewell_feast' \|\| it\.type === 'welcome_feast'/.test(applySrc), 'dispatch:吊唄/贺寿/饯行/接风分支存在');
-ok(/_isSameLocation === 'function'/.test(applySrc) && /GM\._pendingAudiences = GM\._pendingAudiences/.test(applySrc), 'dispatch:在京→求见(按在京与否路由)');
-ok(/GM\.letters = GM\.letters \|\| \[\]\)\.push\(\{ id: 'letter_auto_/.test(applySrc), 'dispatch:在外→鸿雁附书');
-ok(/it\.giftPurpose \? '（' \+ it\.giftPurpose \+ '之礼）'/.test(applySrc), 'gift_present 扩 giftPurpose 进鸿雁文案');
 
 // ════════ ⑥ 乞休批红接线：真源切片实跑（准→_retired+饯行忆·留→挽留忆+忠诚+3）════════
 (function () {
@@ -229,29 +214,9 @@ ok(/it\.giftPurpose \? '（' \+ it\.giftPurpose \+ '之礼）'/.test(applySrc), 
   ok(ctx.adaptWuweiRels({}).length === 0 && ctx.adaptWuweiRels(null).length === 0, '无 relations→空数组');
 })();
 // tuzhi 渲染契约：观感五维段挂在关系 tab·adaptChar 已喂 wuweiRels
-ok(/wuweiRels:adaptWuweiRels\(c\)/.test(tuzhiSrc), '契约:adaptChar 已喂 wuweiRels');
-ok(/观 感 五 维/.test(tuzhiSrc), '契约:关系 tab 渲「观感五维」段');
 
 // ════════ ⑧ sc1b prompt 注入段：囚者至交 / 关系网 cue / 前瞻 / 预算截断 / 路由提示 ════════
-ok(/function _netRelCueSC\(c\)/.test(aiSrc), 'sc1b:_netRelCueSC 关系网线索函数存在');
-ok(/_netRelCueSC\(c\)/.test(aiSrc) && /_netBudget/.test(aiSrc), 'sc1b:_netRelCueSC 接入简报 + _netBudget 预算');
-ok(/if \(_netCue\.length > _netBudget\) _netCue = _netCue\.slice\(0, _netBudget\)/.test(aiSrc), 'sc1b:关系网 cue 超 600 字截断');
-ok(/座主\/同年\/血亲\/党派压缩版/.test(aiSrc), 'sc1b:座主/同年/血亲/党派压缩注释');
-ok(/intercede 求情素材/.test(aiSrc), 'sc1b:囚者至交注入段(intercede 求情素材)');
-ok(/_imprisonedTurn/.test(aiSrc) && /_exileTurn/.test(aiSrc) && /_pkNow - c\._imprisonedTurn <= 3/.test(aiSrc), 'sc1b:扫 _imprisoned/_exiled 近 3 回合');
-ok(/群臣前瞻意图/.test(aiSrc) && /ensurePlans/.test(aiSrc) && /不建机械执行器/.test(aiSrc), 'sc1b:前瞻意图注入(active plans·不建执行器)');
 // 路由提示行含中文·tp1b 块统一 \u 转义风格·故按 ASCII 型名锚点断言(转义无关)
-ok(/condole[^']*celebrate_birthday[^']*welcome_feast[^']*express_gratitude[^']*intercede[^']*petition_retire/.test(aiSrc), 'sc1b:新型路由提示(11 新型词汇齐列)');
-ok(/express_gratitude[^']*\)\/intercede[^']*\)\/petition_retire/.test(aiSrc), 'sc1b:谢恩(受赏/升迁/得赦者宜)/求情/乞休 面向君主奏疏提示');
-ok(/involvedOthers[^']*giftPurpose/.test(aiSrc), 'sc1b:宴集/诗会/饯行可带 involvedOthers + gift_present 带 giftPurpose 提示');
-
-// ════════ ⑨ 散点登记补充契约：fengwen 归类 / memory 情绪 / ledger uiRoutes / tone 表 ════════
-ok(/'耳报'/.test(applySrc) && /condole','celebrate_birthday','propose_match','entrust_orphan','seek_instruction','gift_medicine','farewell_feast','welcome_feast'/.test(applySrc), 'fengwen:新社交型归耳报');
-ok(/'celebrate_birthday','propose_match','seek_instruction','gift_medicine','welcome_feast','express_gratitude'/.test(applySrc), 'memory:喜类新型入 _friendly');
-ok(/condole\|celebrate_birthday\|farewell_feast\|welcome_feast\|seek_instruction\|entrust_orphan\|propose_match/.test(ledgerSrc), 'ledger:audience 路由含新社交型');
-ok(/gift_medicine/.test(ledgerSrc), 'ledger:letters 路由含 gift_medicine');
-ok(/express_gratitude\|intercede/.test(ledgerSrc), 'ledger:memorials 路由含 express_gratitude/intercede');
-ok(/condole:1,celebrate_birthday:1/.test(tuzhiSrc) && /petition_retire:1/.test(tuzhiSrc), 'tuzhi:_DT_TONE_FRIENDLY 含新型');
 
 console.log('[smoke-npc-interaction-enrich] ' + pass + ' passed / ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

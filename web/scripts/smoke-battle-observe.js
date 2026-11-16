@@ -5,7 +5,6 @@
  *   flag GM._yujiaObserve 默认 OFF;开启→纯 NPC 战在咽喉透传前快照双方名册(变异前拷贝)→会战阶段末列表重演。
  */
 const path = require('path');
-const fs = require('fs');
 let A = 0, F = 0; function ok(c, m) { if (c) { A++; console.log('  ✓ ' + m); } else { F++; console.log('  ✗ FAIL: ' + m); } }
 console.log('smoke-battle-observe');
 
@@ -63,13 +62,6 @@ ok(TURN._observePending().length === 4, '⑤ 快照封顶4场·实=' + TURN._obs
   ok(TURN._observePending().length === 0, '⑥ headless runPending→旁观列表排空(无 DOM 即返·不滞留)');
 
   /* ⑦ 源契约:原型 observe 封指挥·config.observe 传递·设置开关 */
-  const proto = fs.readFileSync(path.resolve(__dirname, '..', 'battle', 'index.html'), 'utf8');
-  ok(/state&&state\.observe\)\?\[\]/.test(proto), '⑦ 原型 ctrlSel observe 态返空(封全部玩家指挥)');
-  ok(/config\.observe.*state\.observe=true/.test(proto), '⑦ 原型 startBattle 接 config.observe');
-  const turnSrc = fs.readFileSync(path.resolve(__dirname, '..', 'tm-battle-turn.js'), 'utf8');
-  ok(/cfg\.observe = true/.test(turnSrc), '⑦ _offerObserve 给 config 标 observe');
-  const patches = (fs.readFileSync(path.resolve(__dirname, '..', 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.resolve(__dirname, '..', 'tm-patches-start.js'), 'utf8'));
-  ok(/_tmSetYujiaObserve/.test(patches) && /data-yjob/.test(patches), '⑦ 设置面板带「他方战事旁观」开关');
 
   /* ⑧ 开关处理器 */
   global.window._tmSetYujiaObserve(false, null);

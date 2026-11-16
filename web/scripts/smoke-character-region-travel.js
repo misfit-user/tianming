@@ -237,8 +237,6 @@ sandbox.GM = world();
 y = who('袁崇焕');
 sandbox.applyAITurnChanges({ char_updates: [{ name: '袁崇焕', updates: { location: '广州府' }, reason: '调任' }] });
 assert(y.location === '蓟州·三屯营' && y._travelTo === '广州府', 'AI 直接改所在地：也得走');
-assert(/_tmMoveCharToward\(_flCh/.test(read('tm-endturn-apply.js')) && /_tmMoveCharToward\(_nlCh/.test(read('tm-endturn-apply.js')) && /_tmMoveCharToward\(ch, cu\.new_location/.test(read('tm-endturn-apply.js')), 'new_location 三处都走这里');
-assert(/_tmMoveCharToward\(ch, loc/.test(read('tm-endturn-agent-write-tools.js')), 'move_char 工具也走这里');
 assert(!/_flCh\.location = act\.new_location; if \(window/.test(read('tm-endturn-apply.js').replace(/else \{[^}]*\}/g, '')), '不留瞬移的老写法');
 
 console.log('六、没有地图、老档、坏地图');

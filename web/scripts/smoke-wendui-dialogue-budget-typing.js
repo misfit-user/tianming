@@ -17,7 +17,6 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const utils = fs.readFileSync(path.join(ROOT, 'tm-utils.js'), 'utf8');
-const wendui = (fs.readFileSync(path.join(ROOT, 'tm-wendui.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-wendui-persona-views.js'), 'utf8'));
 const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');
 
 let passed = 0;
@@ -62,18 +61,7 @@ assert(makeTok([150, 300], 1000)('wd', 1) === 4050, '设置 1000(<默认4050)→
 // 设置 0/auto → 用默认
 assert(makeTok([150, 300], 0)('wd', 1) === 4050, '设置 0(auto)→ 默认 4050');
 
-// 源码层:基线×2.5 保留 + 缓冲 + ×3 + 取 max(默认, 设置 maxOutputTokens)
-assert(/var tok = Math\.max\(500, Math\.round\(totalChars \* 2\.5\)\);/.test(utils), '基线 ×2.5 公式须保留');
-assert(/tok \+= \(category === 'wd'\) \? 600 : 250;/.test(utils), 'JSON 元数据缓冲须 category-aware 加在基线之上');
-assert(/tok = tok \* 3;/.test(utils), '默认须翻三倍(owner 要求)');
-assert(/P\.conf\.maxOutputTokens/.test(utils) && /Math\.max\(tok, _setOutCap\)/.test(utils), '须取 max(翻三倍默认, 设置 maxOutputTokens) 让设置生效');
-
 // ── #2 打字:_wdUpdateCounter rAF 合帧 ────────────────────────────────────────
-const counterFn = wendui.slice(wendui.indexOf('function _wdDoUpdateCounter'), wendui.indexOf('function _wdRenderHistory'));
-assert(counterFn.indexOf('requestAnimationFrame(_wdDoUpdateCounter)') >= 0, '_wdUpdateCounter 须 rAF 合帧');
-assert(/if \(_wdCounterRaf\) return;/.test(counterFn), '须有 _wdCounterRaf 在途守卫(每帧至多一次)');
-assert(counterFn.indexOf("cnt.textContent = inp.value.length + '/5000'") >= 0, '计数器实写仍在(只是搬进合帧回调)');
-assert(/setTimeout\(_wdDoUpdateCounter, 16\)/.test(counterFn), '无 rAF 环境须回退 setTimeout');
 
 // ── #2 打字:CSS containment ───────────────────────────────────────────────────
 const inner = css.match(/\.wd-modal-inner\{[^}]*\}/);

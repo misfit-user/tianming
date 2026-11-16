@@ -4,7 +4,6 @@
  * 跑：node scripts/smoke-renli-edict-trigger.js
  */
 'use strict';
-var fs = require('fs');
 var pass = 0, fail = 0, fails = [];
 function ok(c, m) { if (c) pass++; else { fail++; fails.push(m); console.error('  ✗ ' + m); } }
 function eq(a, b, m) { ok(a === b, m + ' (得 ' + JSON.stringify(a) + '·期 ' + JSON.stringify(b) + ')'); }
@@ -94,8 +93,6 @@ ok(R.assertNoDingInRenli(global.GM).length === 0, '11·GM.renli 无丁泄漏');
 
 // 12) 源契约：导出 + 钩子接线
 ok(typeof R.recognizeEdictReform === 'function', '12·tm-renli 导出 recognizeEdictReform');
-var edictSrc = fs.readFileSync(__dirname + '/../tm-endturn-edict.js', 'utf8');
-ok(/TM\.Renli\.recognizeEdictReform/.test(edictSrc), '12·tm-endturn-edict processEdictEffects 已挂 recognizeEdictReform 钩子');
 
 console.log('\n[smoke-renli-edict-trigger] ' + pass + ' 通过 / ' + fail + ' 失败');
 if (fail) { console.error('失败项：\n - ' + fails.join('\n - ')); process.exit(1); }

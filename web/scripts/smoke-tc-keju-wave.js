@@ -60,105 +60,8 @@ function sliceA() {
 
 // ── Slice B：逐口注入断言 + 顺序锚定 ──
 // mode: 'full'|'clauseOnly'|'na'; scan:用_tcScanMentionedNames; mention:传mentionedNames; pv:prompt变量; sk:LLM sink 子串
-const PORTS = [
-  { f:'tm-keju-runtime.js', m:'科举体系初始化配置',              mode:'clauseOnly', pv:'prompt', sk:'callAISmart(prompt, 800, {maxRetries: 2})' },
-  { f:'tm-keju-runtime.js', m:'开科到期判定',                    mode:'clauseOnly', pv:'prompt', sk:'callAISmart(prompt, 300,' },
-  { f:'tm-keju-runtime.js', m:'地方选拔模拟',                    mode:'clauseOnly', pv:'prompt', sk:'callAISmart(prompt, 1000, {maxRetries: 2})' },
-  { f:'tm-keju-runtime.js', m:'扫描主考+旧题涉议人物',           mode:'full',       scan:true, mention:true, pv:'prompt', sk:'callAISmart(prompt, 800, {minLength: 100' },
-  { f:'tm-keju-runtime.js', m:'扫描会试题面涉议人物·批卷统计',   mode:'clauseOnly', scan:true, mention:true, pv:'prompt', sk:'callAISmart(prompt, 800, {maxRetries: 2})' },
-  { f:'tm-keju-runtime.js', m:'扫描近期事件涉议人物·殿试策问',   mode:'clauseOnly', scan:true, mention:true, pv:'prompt', sk:'callAISmart(prompt, 500,' },
-  { f:'tm-keju-runtime.js', m:'扫描殿试题面涉议人物·考生档案',   mode:'clauseOnly', scan:true, mention:true, pv:'metaPrompt', sk:'callAISmart(metaPrompt' },
-  { f:'tm-keju-runtime.js', m:'扫描殿试题面涉议人物·答卷essay',  mode:'clauseOnly', scan:true, mention:true, pv:'batchPrompt', sk:'callAISmart(batchPrompt' },
-  { f:'tm-keju-runtime.js', m:'扫描殿试题面涉议人物·主考逐卷批语', mode:'clauseOnly', scan:true, mention:true, pv:'prompt', sk:'callAISmart(prompt, _tokC' },
-  { f:'tm-keju-runtime.js', m:'扫描殿试题面涉议人物·考官排序建议', mode:'clauseOnly', scan:true, mention:true, pv:'prompt', sk:'callAISmart(prompt, 3000' },
-  { f:'tm-keju.js', m:'扫描时局背景涉议人物·主考题本',           mode:'clauseOnly', scan:true, mention:true, pv:'prompt', sk:'callAISmart(prompt, 2000' },
-  { f:'tm-keju.js', m:'不适用：此口为史实检索器',                mode:'na' },
-  { f:'tm-keju-reform-llm.js', m:'不适用：纯 descriptor',        mode:'na' },
-  { f:'tm-keju-reform-llm.js', m:'试点候选推荐',                 mode:'clauseOnly', pv:'prompt', sk:"callAISmart(prompt, 800, { maxRetries: 1, priority: 'low', timeoutMs: 30000 }" },
-  { f:'tm-keju-reform-llm.js', m:'扫描议题文本涉议人物·朝议预判', mode:'clauseOnly', scan:true, mention:true, pv:'prompt', sk:'callAISmart(prompt, 600,' },
-  { f:'tm-keju-reform-llm.js', m:'扫描议题+召对大臣涉议人物·私谈', mode:'clauseOnly', scan:true, mention:true, pv:'prompt', sk:"callAISmart(prompt, 800, { maxRetries: 1, priority: 'low', timeoutMs: 30000 }" },
-  { f:'tm-keju-reform-llm.js', m:'两策对大臣涉议人物·advisor合并', mode:'clauseOnly', mention:true, pv:'prompt', sk:'callAISmart(prompt, 2500' },
-  { f:'tm-keju-reform-llm.js', m:'新科目推荐',                   mode:'clauseOnly', pv:'prompt', sk:'callAISmart(prompt, 1500' },
-  { f:'tm-keju-reform-llm.js', m:'科目合理化',                   mode:'clauseOnly', pv:'prompt', sk:"callAISmart(prompt, 800, { maxRetries: 1, priority: 'low', timeoutMs: 25000 }" },
-  { f:'tm-keju-reformer-bio.js', m:'改革者本人涉议人物·改革者小传', mode:'clauseOnly', mention:true, pv:'prompt', sk:'callAISmart(prompt, 1000,' },
-  { f:'tm-keju-reform-evolution.js', m:'改革逐年演进',           mode:'clauseOnly', mention:true, pv:'prompt', sk:'callAISmart(prompt, 1000,' },
-  { f:'tm-keju-reform-evolution.js', m:'跨代承袭诏书',           mode:'clauseOnly', pv:'prompt', sk:'callAISmart(prompt, 1500,' },
-  { f:'tm-keju-reform-evolution.js', m:'主导者(entry.by)+史评涉议人物·改革命名', mode:'clauseOnly', mention:true, pv:'prompt', sk:'callAISmart(prompt, 600,' },
-  { f:'tm-keju-reform-evolution.js', m:'改革黑天鹅',            mode:'clauseOnly', mention:true, pv:'prompt', sk:'callAISmart(prompt, 900,' },
-  { f:'tm-keju-activation.js', m:'开科/改革5档评估',            mode:'clauseOnly', pv:'prompt', sk:'callAISmart(prompt, Math.min(tokBudget' },
-  { f:'tm-keju-enke.js', m:'主考涉议人物·恩科题面',            mode:'clauseOnly', mention:true, pv:'prompt', sk:'callAI(prompt, 800)' },
-  { f:'tm-keju-enke.js', m:'主考涉议人物·恩科谢恩奏疏',        mode:'full',       mention:true, pv:'prompt', sk:'callAI(prompt, 600)' },
-  { f:'tm-keju-wuju.js', m:'主考涉议人物·武举校阅奏疏',        mode:'full',       mention:true, pv:'prompt', sk:'callAI(prompt, 600)' },
-  { f:'tm-keju-tongzi.js', m:'受抚童子涉议人物·抚摩大典纪事',   mode:'full',       mention:true, pv:'prompt', sk:'callAI(prompt, function(err, text)' },
-  { f:'tm-keju-school-network.js', m:'扫描讲会主稿涉议人物',     mode:'full',       scan:true, mention:true, pv:'prompt', sk:'callAI(prompt, 600)' },
-  { f:'tm-keju-runtime-keyi.js', m:'扫描议题+已发言涉议人物·廷议大臣发言', mode:'full',       scan:true, mention:true, pv:'prompt', sk:'content: prompt' },
-  { f:'tm-keju-runtime-keyi.js', m:'扫描议程发言涉议人物·廷议表决精修',   mode:'clauseOnly', scan:true, mention:true, pv:'prompt', sk:'callAISmart(prompt, _tokBudget' },
-  { f:'tm-keju-runtime-keyi.js', m:'扫描殿试题面+考生涉议人物·考生答卷',   mode:'clauseOnly', scan:true, mention:true, pv:'prompt', sk:'callAISmart(prompt, 1500,' },
-  { f:'tm-keju-runtime-keyi.js', m:'考生本人涉议人物·进士人物卡',         mode:'clauseOnly', mention:true, pv:'prompt', sk:'callAISmart(prompt, 3000,' }
-];
-
-function findPortIdx(src, m) {
-  let from = 0, idx;
-  while ((idx = src.indexOf(m, from)) >= 0) {
-    const ls = src.lastIndexOf('\n', idx) + 1;
-    let le = src.indexOf('\n', idx); if (le < 0) le = src.length;
-    if (src.slice(ls, le).indexOf('时空约束') >= 0) return idx;
-    from = idx + 1;
-  }
-  return -1;
-}
-
-function sliceB() {
-  const start = PASS;
-  const cache = {};
-  const guardRe = /typeof\s+_buildTemporalConstraint\s*===\s*'function'/;
-  PORTS.forEach(function(p) {
-    const src = cache[p.f] || (cache[p.f] = readSrc(p.f));
-    const mi = findPortIdx(src, p.m);
-    assert(mi >= 0, p.f + ' 缺注入 marker：' + p.m);
-    const win = src.slice(mi, mi + 700);
-    if (p.mode === 'na') {
-      assert(win.indexOf('_buildTemporalConstraint(') < 0, p.f + '「不适用」口不应注入约束调用：' + p.m);
-      assert(/不适用/.test(win) && /故不注入|不成立/.test(win), p.f + '「不适用」口须给出理由：' + p.m);
-      return;
-    }
-    assert(guardRe.test(win), p.f + ' 口缺 typeof 守卫：' + p.m);
-    assert(win.indexOf('_buildTemporalConstraint(') >= 0, p.f + ' 口缺 _buildTemporalConstraint 调用：' + p.m);
-    if (p.mode === 'clauseOnly') assert(/clauseOnly:\s*true/.test(win), p.f + ' 口应为 clauseOnly：' + p.m);
-    else assert(!/clauseOnly/.test(win.split('_buildTemporalConstraint(')[1].slice(0, 160)), p.f + ' full 口不应带 clauseOnly：' + p.m);
-    if (p.scan) assert(win.indexOf('_tcScanMentionedNames(') >= 0, p.f + ' 口应用 _tcScanMentionedNames 扫描：' + p.m);
-    if (p.mention) assert(/mentionedNames\s*:/.test(win), p.f + ' 口应传 mentionedNames：' + p.m);
-    // 顺序锚定：约束改写同一 prompt 变量·且在 LLM sink 之前（防注入被挪到 sink 之后而静默失效）
-    const mutIdx = src.indexOf(p.pv + ' += _buildTemporalConstraint', mi);
-    assert(mutIdx >= 0 && mutIdx < mi + 700, p.f + ' 口未见「' + p.pv + ' += _buildTemporalConstraint」紧随 marker：' + p.m);
-    const skIdx = src.indexOf(p.sk, mi);
-    assert(skIdx >= 0, p.f + ' 口找不到 LLM sink「' + p.sk + '」：' + p.m);
-    assert(skIdx > mutIdx, p.f + ' 口约束注入须在 LLM sink 之前（防失效）：' + p.m);
-  });
-  console.log('  [sliceB] ' + (PASS - start) + ' 断言通过（' + PORTS.length + ' 口逐口 + 顺序锚定）');
-}
 
 // ── Slice C：每文件注入计数对账 ──
-function sliceC() {
-  const start = PASS;
-  const expect = {
-    'tm-keju-runtime.js': 10, 'tm-keju.js': 1, 'tm-keju-reform-llm.js': 6,
-    'tm-keju-reform-evolution.js': 4, 'tm-keju-reformer-bio.js': 1, 'tm-keju-activation.js': 1,
-    'tm-keju-enke.js': 2, 'tm-keju-wuju.js': 1, 'tm-keju-tongzi.js': 1,
-    'tm-keju-school-network.js': 1, 'tm-keju-runtime-keyi.js': 4
-  };
-  let total = 0;
-  Object.keys(expect).forEach(function(f) {
-    const src = readSrc(f);
-    const n = (src.match(/\+=\s*_buildTemporalConstraint\(/g) || []).length;
-    assert(n === expect[f], f + ' 注入计数应=' + expect[f] + '（实=' + n + '）');
-    total += n;
-  });
-  assert(total === 32, '科举族总注入应=32（实=' + total + '）');
-  const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
-  assert(/function _tcScanMentionedNames\s*\(/.test(infra), 'tm-ai-infra.js 须定义 _tcScanMentionedNames');
-  console.log('  [sliceC] ' + (PASS - start) + ' 断言通过（32 口计数对账）');
-}
 
 // ── Slice D：条1(异名穿透)+条2(死者段独立)+条4(era-gate 后置) 行为锁·VM 实调 pickHistoricalCandidates ──
 async function sliceD() {
@@ -305,8 +208,6 @@ async function sliceE() {
 
 (async function main() {
   sliceA();
-  sliceB();
-  sliceC();
   await sliceD();
   await sliceE();
   console.log('PASS smoke-tc-keju-wave · 共 ' + PASS + ' 断言');

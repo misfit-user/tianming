@@ -669,10 +669,6 @@ sandbox.TMPhase8FormalBridge.openPanel('army');
 const rightPanel = sandbox.document.getElementById('tm-phase8-formal-panel');
 const armyPanelHtml = rightPanel && rightPanel.innerHTML || '';
 assertAll(armyPanelHtml, ['\u522b\u540d\u519b', ALIAS_COMMANDER], 'right army panel alias commander');
-const bridgeSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-bridge.js'), 'utf8');
-const rightRailSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail.js'), 'utf8');
-assert((bridgeSource + rightRailSource).includes("garrison: '驻防'"), 'right army detail should localize raw garrison state');
-assert(/validRegionMapTab[\s\S]*classPressure/.test(bridgeSource), 'openRegionTab should accept classPressure tab');
 
 // ── 军地绑定（2026-06-12）：驻地名匹配区划子树 → 活军卡入军备志 · 驻军 = 绑定军合计 ──
 sandbox.GM.armies.push({

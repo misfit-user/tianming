@@ -13,8 +13,6 @@ console.log('smoke-class-roster-ai-inject');
 const src = fs.readFileSync(path.join(ROOT,'tm-endturn-ai-context.js'),'utf8');
 const fnSrc = sliceFn(src, 'function appendPromptPolicyContext(');
 ok(!!fnSrc, 'appendPromptPolicyContext 抽取成功');
-ok(fnSrc.indexOf('【阶层正册】') >= 0, '★活路径函数含【阶层正册】块(回归修复)');
-ok(fnSrc.indexOf('class_changes 须以正册为准') >= 0, '含 class_changes 正册指令');
 
 function run(GM){
   const ctx = { Math:Math, Number:Number, String:String, Array:Array, isFinite:isFinite, console:console, Object:Object, global:{}, window:{}, TM:{} };

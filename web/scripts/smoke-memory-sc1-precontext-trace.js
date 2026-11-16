@@ -8,21 +8,14 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
 
 const sc1PreIdx = endturnAi.indexOf('SC1_PRE_CONTEXT');
 const sc1qIdx = endturnAi.indexOf('sc1q.required_sc1_actions');
 const sc1BodyIdx = endturnAi.indexOf('var _sc1Body');
 
 assert(sc1PreIdx >= 0, 'SC1 should inject a SC1_PRE_CONTEXT memory block');
-assert(endturnAi.includes('memorySc1ContextTokenBudget'), 'SC1 memory context should have a dedicated token budget knob');
-assert(endturnAi.includes('compileFromGM(GM, _sc1MemCompileOpts)'), 'SC1 should compile turn_inference context from GM');
-assert(endturnAi.includes('recordCompiledContext'), 'SC1 should record compiled context trace details');
-assert(endturnAi.includes("stage: 'sc1-pre-inference'"), 'SC1 trace should use sc1-pre-inference stage');
-assert(endturnAi.includes("lane: 'memory_context_compiler'"), 'SC1 trace should use memory_context_compiler lane');
 assert(sc1qIdx < 0 || sc1PreIdx < sc1qIdx, 'SC1 memory context should stay before final sc1q requirements');
 assert(sc1BodyIdx < 0 || sc1PreIdx < sc1BodyIdx, 'SC1 memory context should be injected before the SC1 API body is built');
-assert(verifyAll.includes('smoke-memory-sc1-precontext-trace.js'), 'verify-all should include SC1 precontext trace smoke');
 
 const sandbox = { console, Date, Math, JSON, window: {} };
 sandbox.window = sandbox;

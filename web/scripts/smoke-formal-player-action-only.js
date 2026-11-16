@@ -213,8 +213,5 @@ function load(file) {
   assert((sandbox.GM._playerActionSignals.items || []).length > playerCountBeforeEdict, 'edict plus xinglu should add more structured player action evidence');
   assert(parserCalls.length === 0, 'formal desk xinglu handling should not call EdictParser directly');
 
-  const draftsSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-drafts.js'), 'utf8');
-  assert(/recordDeskPlayerActionHistory/.test(draftsSource), 'formal drafts should keep a dedicated xinglu history writer');
-
   console.log('[smoke-formal-player-action-only] PASS formal xinglu-only player action path');
 })();

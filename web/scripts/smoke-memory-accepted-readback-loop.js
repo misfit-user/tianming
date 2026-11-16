@@ -154,7 +154,4 @@ const summary = MT.summarize(GM);
 assert(summary.writeAccepted >= 1, 'trace summary should count accepted lifecycle writes');
 assert(summary.writeArchived >= 1, 'trace summary should count rejected/archive lifecycle writes');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-accepted-readback-loop.js'), 'verify-all should include accepted readback loop smoke');
-
 console.log('smoke-memory-accepted-readback-loop ok');

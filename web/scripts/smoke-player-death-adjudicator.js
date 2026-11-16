@@ -91,12 +91,7 @@ var r9 = c9.adjudicatePlayerDeath(emp9, '为乱兵所弑', { kind: 'regicide' })
 assert(r9.outcome === 'succession' && r9.heir === '皇长子', '⑴ 遇弑+储君在→继统续玩不受门拦');
 
 // ── 静态契约：两产地皆委托·旧内联镜像已拆 ──
-const econ = fs.readFileSync(path.join(ROOT, 'tm-char-economy-engine.js'), 'utf8');
 const aid = fs.readFileSync(path.join(ROOT, 'tm-ai-apply-deaths.js'), 'utf8');
-assert(econ.indexOf("adjudicatePlayerDeath(ch, cause, { kind: 'natural'") >= 0, '⑬ 自然死产地委托(kind=natural)');
-assert(aid.indexOf("adjudicatePlayerDeath(ch, cd.reason, { kind: 'narrative' })") >= 0, '⑭ AI 叙事产地委托(kind=narrative)');
 assert(aid.indexOf('_successionEvent') < 0, '⑮ apply-deaths 旧内联传承镜像已拆(单一裁决口)');
-const helpers = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
-assert((helpers.match(/GM\._playerDead = true/g) || []).length >= 2, '⑯ 终局信号写点收拢在裁决器(含异常回落)');
 
 console.log('smoke-player-death-adjudicator OK — ' + N + ' 断言全绿（继统续玩/绝嗣终局/死因分类/两产地一口）');

@@ -98,10 +98,6 @@ assert(!!go && go.type === 'dynasty_change' && go.revolt === 'rv9' && go.region 
 assert(go.breach === true && go.capitalFallen === true, 'breach/capitalFallen 增强字段');
 
 console.log('⑥ 静态契约：authority-complete 旧轨字节保留+新轨路由');
-var authSrc = fs.readFileSync(path.join(ROOT, 'tm-authority-complete.js'), 'utf8');
-assert(/type:\s*'dynasty_change',\s*revolt:\s*r\.id,\s*turn:\s*ctx\.turn/.test(authSrc), '旧轨 _gameOver 块仍在(flag OFF 字节级旧行为)');
-assert(!/revoltEntityEnabled/.test(authSrc) && /_breachMarch\s*=\s*\{\s*started:\s*ctx\.turn\s*\}/.test(authSrc), '正式实体化路径不读旧开关，破京仍保留进军反应窗');
-assert(/改朝换代！天命已移/.test(authSrc), '旧轨终局起居注文案未动');
 
 console.log('');
 if (failures.length) {

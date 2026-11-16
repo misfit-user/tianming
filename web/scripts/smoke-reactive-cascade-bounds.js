@@ -116,9 +116,6 @@ async function main() {
   assert(independentCalls === 1 && ctx.GM._changeQueue.length === 0, '终止后下一个独立 cascade 正常运行');
 
   const source = fs.readFileSync(path.join(ROOT, 'tm-change-queue.js'), 'utf8');
-  assert(/REACTIVE_CASCADE_MAX_EVENTS\s*=\s*10000/.test(source) &&
-    /REACTIVE_CASCADE_MAX_BATCHES\s*=\s*64/.test(source) &&
-    /REACTIVE_YIELD_EVERY_BATCHES\s*=\s*4/.test(source), '生产队列固定事件/批次/让步上限');
   assert(!/ChangeQueue\.applyAll\s*\([^)]*processChangeQueue|processChangeQueue\s*\([^)]*ChangeQueue/.test(source), '两类 Change Queue 仍无互相消费路径');
 
   console.log('PASS assertions=' + assertions);

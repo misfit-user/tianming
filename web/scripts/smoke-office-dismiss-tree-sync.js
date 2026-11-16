@@ -76,10 +76,7 @@ const clearChar = c => { c.officialTitle = ''; c.title = ''; c.officialTitles = 
     return src.slice(a, next < 0 ? src.length : next);
   }
   const strip = fnBody('_ty3_actionStrip'), revoke = fnBody('_ty3_actionRevoke');
-  assert(/_offSyncHoldersFromChars\(\)/.test(strip), '④ _ty3_actionStrip 含树同步调用');
-  assert(/_offSyncHoldersFromChars\(\)/.test(revoke), '④ _ty3_actionRevoke 含树同步调用');
   // 同步须在清 concurrentTitles 之后(清完才同步)
-  assert(strip.indexOf('concurrentTitles = []') < strip.indexOf('_offSyncHoldersFromChars'), '④ strip:先清char再同步');
   console.log('  [④] 源码契约:tinyi strip/revoke 清char后调树同步');
 })();
 

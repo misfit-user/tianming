@@ -29,22 +29,10 @@ function extractFn(anchor) {
 }
 
 // ① 应用同源
-ok(/var _applyNpcDeepResult = function\(pND\) \{/.test(src), '① _applyNpcDeepResult 已定义');
-ok(/_applyNpcDeepResultAtomic\(_applyNpcDeepResult,\s*p15\)/.test(src), '① sc15 走共享原子应用');
-ok(/_applyNpcDeepResultAtomic\(_applyNpcDeepResult,\s*p15n\)/.test(src), '① sc15n 走共享原子应用(原只存不用)');
 ok(src.indexOf('p15.mood_shifts.forEach') < 0 && src.indexOf('p15.cascade_effects') < 0, '① sc15 旧内联应用块已删(无双算)');
 ok(src.indexOf('GM._factionUndercurrents.push(Object.assign({ turn: GM.turn||1, _fromSc15n: true }, fu))') < 0, '① sc15n 旧 append 版 undercurrents 已删(共享函数接管)');
 
-// ② 阴谋引擎知情
-ok(/var _cb15 = ConspiracyEngine\.aiContextBlock\(GM\);/.test(src), '② sc15 喂入阴谋引擎 aiContextBlock');
-ok(/var _cb15n = ConspiracyEngine\.aiContextBlock\(GM\);/.test(src), '② sc15n 喂入阴谋引擎 aiContextBlock');
-
-// ③ scOl 暗流形状兼容
-ok(/_p15ol\.common && Array\.isArray\(_p15ol\.common\.hidden_moves\)/.test(src), '③ scOl 兼容 {core,common,extended} 嵌套镜像(原恒空)');
-ok(/\(\(_hmOl && _hmOl\.length\) \? Math\.min\(_hmOl\.length, 3\) : 0\)/.test(src), '③ 场景伸缩 _factN 同步用 _hmOl');
-
 // ④ memwrite expectedKeys
-ok(src.indexOf("expectedKeys: ['memory_writes', 'arc_updates', 'causal_edges']") >= 0, '④ memwrite expectedKeys 修为真产出三键');
 ok(src.indexOf("expectedKeys: ['memory_writes', 'arc_updates', 'relationship_notes']") < 0, '④ 幽灵键 relationship_notes 已除');
 
 // ⑤ 行为:抽真 _applyNpcDeepResult 喂假闭包跑

@@ -41,16 +41,8 @@ ok(Array.isArray(cand({ name: 'x' })) && cand({ name: 'x' }).length === 0, '⑦ 
 
 // 接线:确认易将与防选死人守卫在源
 const fs = require('fs'), path = require('path');
-const src = fs.readFileSync(path.resolve(__dirname, '..', 'tm-three-systems-ui.js'), 'utf8');
-ok(/ch\.alive === false \|\| ch\.dead === true.*不可拜将|不可拜将/.test(src), '⑧ _tsConfirmAppoint 含死人/幽灵守卫');
-ok(/ts_appoint_sel/.test(src) && /_tsConfirmAppoint/.test(src), '⑨ 易将下拉 + 确认接线在源');
 
 // 接线:右栏部队详情易将钮(2026-07-11·玩家反馈行13——新版右栏漏易将入口)
-const rrSrc = fs.readFileSync(path.resolve(__dirname, '..', 'phase8-formal-rightrail.js'), 'utf8');
-ok(/data-command="appoint"/.test(rrSrc) && /rightArmyBelongsToPlayer\(a\)\s*\?\s*'<button[^']*data-command="appoint"/.test(rrSrc), '⑩ 右栏部队详情有易将钮·仅玩家军显示');
-ok(/cmd === 'appoint'/.test(rrSrc) && /_tsAppointGeneral\(army\.name \|\| name, \{ ret: 'rightrail' \}\)/.test(rrSrc), '⑪ appoint 分支调 _tsAppointGeneral 带 rightrail 来源标记');
-ok(/_tsAppointRet === 'rightrail'/.test(src) && /refreshArmyFlyout/.test(src), '⑫ 确认后 rightrail 来源回刷飞出层而非旧军务面板');
-ok(/_tsAppointRet = \(opts && opts\.ret\) \|\| null/.test(src), '⑬ 来源标记每次打开重置(取消不残留)');
 
 console.log('\nsmoke-appoint-commander-living ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + A + '/' + (A + F));
 process.exit(F === 0 ? 0 : 1);

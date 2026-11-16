@@ -76,9 +76,6 @@ const shell = read('tm-shell-extras.js');
 const shellApply = /window\._tmApplyTheme = function[\s\S]*?\n  \};/.exec(shell)[0];
 const shellTouched = PALETTE.filter((name) => shellApply.includes(`--${name}:`));
 assert.ok(shellTouched.length >= 7, `tm-shell-extras.js 兜底主题应改到七个色板令牌，实为 ${shellTouched.length}`);
-shellTouched.forEach((name) => {
-  assert.ok(shellApply.includes(`--${name}-rgb:`), `tm-shell-extras.js 兜底主题改 --${name} 须同步 -rgb`);
-});
 const hc = overrides(/\[data-theme="highcontrast"\]\s*\{([\s\S]*?)\}/.exec(styles)[1]);
 PALETTE.filter((name) => name in hc).forEach((name) => {
   assert.strictEqual(hc[`${name}-rgb`], triplet(hc[name]), `高对比主题改了 --${name} 却没同步 --${name}-rgb`);

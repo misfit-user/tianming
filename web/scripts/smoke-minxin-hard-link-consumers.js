@@ -149,14 +149,4 @@ assert(/hukouConsumer/.test(prompt) && /executionConsumer/.test(prompt), 'prompt
 const snap = HC.snapshot(sandbox.GM, { limit: 4 });
 assert(snap.summary && snap.events.length >= 4, 'snapshot should expose summary and events');
 
-const src = name => fs.readFileSync(path.join(ROOT, name), 'utf8');
-const index = src('index.html');
-assert(index.indexOf('tm-minxin-hard-link-consumers.js') > 0, 'index should load consumers');
-assert(index.indexOf('tm-minxin-hard-links.js') < index.indexOf('tm-minxin-hard-link-consumers.js'), 'consumers should load after hard links');
-assert(index.indexOf('tm-minxin-hard-link-consumers.js') < index.indexOf('tm-endturn-core.js'), 'consumers should load before endturn core');
-assert(/MinxinHardLinkConsumers\.consume/.test(src('tm-endturn-core.js')), 'endturn should consume hard links before LLM');
-assert(/MinxinHardLinkConsumers\.formatForPrompt/.test(src('tm-endturn-core.js')), 'endturn prompt should include consumers');
-assert(/Minxin Hard Link Consumers/.test((src('phase8-formal-rightrail.js') + src('phase8-formal-rightrail-social.js'))), 'right rail debug should expose consumers');
-assert(/_renderMinxinHardLinkConsumers/.test(src('tm-topbar-vars.js')), 'topbar minxin panel should expose consumers');
-
 console.log('[smoke-minxin-hard-link-consumers] PASS hard-link consumers');

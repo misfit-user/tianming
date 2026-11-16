@@ -134,7 +134,7 @@ SC_RECALL 注入规则：
 
 每次扩展记忆系统至少检查：
 
-- 新增 `smoke-memory-*.js` 必须被 `smoke-memory-manifest.js` 强制纳入 `verify-all.js`。
+- 新增 `smoke-memory-*.js` 放进 `web/scripts/` 即可：`run-smokes.js` 与 CI 按文件名自动发现，不必再往 `verify-all.js` 登记（原先强制登记的 `smoke-memory-manifest.js` 已于 2026-11-16 撤掉）。
 - Envelope schema、retrieval governance、injection lineage、context zones、WriteGate、Controls/Edges 的 smoke 不得回退。
 - 端到端黄金场景必须覆盖：
   - CourtRecord 优先于 rumor。

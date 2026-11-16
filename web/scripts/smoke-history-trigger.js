@@ -64,9 +64,6 @@ var objMiss = { id:'obj_miss', trigger:{ year:1700 }, narrative:'z' };
 ok(runTurn(1, [objHit], 1627).indexOf('obj_hit') >= 0, '④ object trigger year 命中→触发(向后兼容)');
 ok(runTurn(1, [objMiss], 1627).indexOf('obj_miss') < 0, '④ object trigger year 不符→不触发');
 
-// ⑤ narrative 显示契约
-ok(/event\.narrative \|\| event\.description/.test(hist), '⑤ modal 正文取 narrative||description(原只读 description 致空白)');
-
 // ⑥ ★还账·演义模式一键关注定史实事件(P.conf.rigidHistEventsOff=true)→注定事件不触发(由玩家改写历史)
 var t3off = runTurn(3, [wei, ke], 1627, { gameMode:'yanyi', rigidHistEventsOff:true });
 ok(t3off.indexOf('rh_weiSuicide') < 0, '⑥ ★演义 rigidHistEventsOff=true → turn 3 魏忠贤注定事件不触发(一键全关)');

@@ -166,7 +166,5 @@ function manifestWith(rows) {
 // ── ⑥ 势力调度一次问完 ──
 ok(B.tools === undefined, '政治行动不再导出按需取数工具');
 ok(!fs.existsSync(path.join(WEB, 'tm-faction-decision-tools.js')), 'tm-faction-decision-tools.js 已删');
-const llmSrc = fs.readFileSync(path.join(WEB, 'tm-faction-npc-llm-decision.js'), 'utf8');
-ok(/_callLLMDecision\(_buildPrompt\(/.test(llmSrc) && !/_decideViaTools/.test(llmSrc), '势力调度只走一次问完');
 
 console.log('[smoke-faction-scheduling-actors] pass assertions=' + passed);

@@ -62,17 +62,9 @@ assert(!c2._imprisoned, 'onDismissal「幸免诏狱」不应设 _imprisoned');
 
 // ── F. 单一真源·migration 运行时用导出正则(防漂移) + 确定性 reason 含关键词 ──
 console.log('===== F·单一真源 + 确定性 reason =====');
-const mig = fs.readFileSync(path.join(ROOT, 'tm-migration.js'), 'utf8');
-assert(/global\._TM_IMPRISON_RE/.test(mig), 'migration v3 应运行时取导出的 _TM_IMPRISON_RE(单一真源)');
-const applierSrc = fs.readFileSync(path.join(ROOT, 'generated/tm-ai-change-applier.bundle.js'), 'utf8');
-assert(/imprison:\s*\[[^\]]*诏狱/.test(applierSrc), '叙事扫描器 imprison 列表应含诏狱');
 // 确定性 reason 必含关键词(否则 migration 清洗器会误放)
 assert(ctx._TM_IMPRISON_RE.test('廷杖下诏狱·重伤候勘'), '廷杖入狱 reason 应被单一真源识别(防 migration 误清)');
 assert(ctx._TM_IMPRISON_RE.test('谋逆事发·下诏狱待勘'), '谋反下狱 reason 应被单一真源识别(防 migration 误清)');
-const tinyi = (fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-persona.js'), 'utf8') + '\n' + (fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-edict-personnel.js'), 'utf8')) + '\n' + fs.readFileSync(path.join(ROOT, 'tm-tinyi-v3-parties.js'), 'utf8'));
-assert(/廷杖下诏狱/.test(tinyi), '廷杖路径 reason 应含诏狱');
-const endturn = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-endturn-apply-stages.js'), 'utf8'); // apply解构S2·_imprisonReason 等迁 stages·拼接 origin→stages
-assert(/谋逆事发[^']*下诏狱/.test(endturn), '谋反路径应设含诏狱的 _imprisonReason');
 
 console.log('');
 console.log('[smoke-imprison-recognition] ' + pass + ' passed / ' + fail + ' failed');

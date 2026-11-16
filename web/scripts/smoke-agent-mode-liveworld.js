@@ -53,11 +53,6 @@ async function main() {
   assert(r3 && r3.skipped && ctx.TM.FactionNpcLlmDecision.calls.length===2, '无 API 不发起调用');
 
   // ⑤ run() 活世界 job wired(源码静态验·不跑 run)
-  const amSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-agent-mode.js'), 'utf8');
-  assert(/_agentLiveWorldOn/.test(amSrc), 'agent-mode 含 _agentLiveWorldOn 开关 helper');
-  assert(/FactionNpcInTurnDriver\._runOneInTurn/.test(amSrc), 'agent-mode run() 活世界阶段复用 _runOneInTurn');
-  assert(/agent-lw-/.test(amSrc), 'agent-mode 活世界 job 用 agent-lw- 标签(可观测)');
-  assert(/_agentLiveWorldRan/.test(amSrc), 'agent-mode 记 _agentLiveWorldRan(观测落地势力数)');
 
   const patchSrc = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
   assert(!/s-agent-liveworld/.test(patchSrc), '已移除 Agent 活世界的独立设置区');

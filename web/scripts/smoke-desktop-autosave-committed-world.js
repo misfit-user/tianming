@@ -349,15 +349,6 @@ async function main() {
   context.GM.busy = false;
   context.GM._endTurnCommitPending = false;
 
-  const memoryStart = coreSource.indexOf('(function _aiMemoryCompress()');
-  const chronicleStart = coreSource.indexOf('(function _monthlyChronicle()');
-  const chronicleEnd = coreSource.indexOf('\n  })();', chronicleStart);
-  const memoryBlock = coreSource.slice(memoryStart, chronicleStart);
-  const chronicleBlock = coreSource.slice(chronicleStart, chronicleEnd);
-  check('后台摘要和月度纪事都请求正式串行保存队列', /requestBackgroundAutosave/.test(memoryBlock) && /requestBackgroundAutosave/.test(chronicleBlock));
-  check('月度纪事关闭时在任何 AI 调用前退出', chronicleBlock.indexOf('if (!_mCfg.monthlyEnabled) return;') >= 0
-    && chronicleBlock.indexOf('if (!_mCfg.monthlyEnabled) return;') < chronicleBlock.indexOf('callAIMessages'));
-
   console.log('[smoke-desktop-autosave-committed-world] pass=' + pass);
 }
 

@@ -6,7 +6,6 @@ const vm = require('vm');
 const ROOT = path.join(__dirname, '..');
 const retrievalSrc = fs.readFileSync(path.join(ROOT, 'tm-memory-retrieval.js'), 'utf8');
 const traceSrc = fs.readFileSync(path.join(ROOT, 'tm-memory-trace.js'), 'utf8');
-const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 
 const sandbox = { console, Date, Math, JSON, window: {} };
 sandbox.window.window = sandbox.window;
@@ -100,7 +99,5 @@ const trace = MT.recordRetrieval(GM, {
 });
 assert(trace.budget.kept.some((k) => k.id === 'hard-wei' && k.stage === 'guarantee:hard_state'), 'MemoryTrace should persist kept budget diagnostics');
 assert(trace.suppressed.some((s) => s.reason === 'budget_exceeded' && s.budgetStage), 'MemoryTrace should persist budget stage for dropped hits');
-
-assert(endturnAi.includes('diagnostics: _packedRecall.diagnostics'), 'SC_RECALL budget trace should include pack diagnostics');
 
 console.log('smoke-memory-injection-guarantees ok');

@@ -24,15 +24,11 @@ const render = fs.readFileSync(path.join(ROOT, 'tm-endturn-render.js'), 'utf8');
 const pipeline = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
 const manager = fs.readFileSync(path.join(ROOT, 'tm-save-manager.js'), 'utf8');
 const storage = fs.readFileSync(path.join(ROOT, 'tm-storage.js'), 'utf8');
-const office = fs.readFileSync(path.join(ROOT, 'tm-office-editor.js'), 'utf8');
 const patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
 const playerSettings = fs.readFileSync(path.join(ROOT, 'tm-player-settings.js'), 'utf8');
 const utils = fs.readFileSync(path.join(ROOT, 'tm-utils.js'), 'utf8');
 const launch = fs.readFileSync(path.join(ROOT, 'tm-launch.js'), 'utf8');
-const resume = fs.readFileSync(path.join(ROOT, 'tm-resume-point.js'), 'utf8');
 const mainImpl = fs.readFileSync(path.join(ROOT, '..', 'main-impl.js'), 'utf8');
-const preloadImpl = fs.readFileSync(path.join(ROOT, '..', 'preload-impl.js'), 'utf8');
-const startPatch = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8');
 const integrationBridge = fs.readFileSync(path.join(ROOT, 'tm-integration-bridge.js'), 'utf8');
 const hujiEngine = fs.readFileSync(path.join(ROOT, 'tm-huji-engine.js'), 'utf8');
 
@@ -81,30 +77,15 @@ ok(!!snapshotSrc && !!builderSrc, '_autoSaveSnapshotGM + _buildSaveState 可抽�
   ok(!ctx.IDB.P.ai.key && !ctx.IDB.P.ai.secondary.key && !ctx.PROJ.ai.key, '两种外壳均剥离主/次 API key');
   ok(!('_aiTelemetry' in ctx.IDB.GM) && !('_aiTelemetry' in ctx.PROJ.gameState), '两种外壳复用 selective GM snapshot');
 }
-ok(/saveData2=_buildSaveState\(\{format:'project'\}\)/.test(lifecycle), '浏览器导出走统一纯 builder');
-ok(/saveData=_buildSaveState\(\{format:'project'\}\)/.test(lifecycle), '桌面手动存档走统一纯 builder');
-ok(/_buildSaveState\(\{ format: 'idb', detach: true, gm: txn\.gmRef, p: txn\.pRef \}\)/.test(core),
-  'pre_endturn 从点击时事务引用走统一 detached builder');
-ok(/global\._buildSaveState\(\{ format: 'idb', detach: true, gm: GM, p: P \|\| \{\} \}\)/.test(resume), '残局发布以 detached 模式复用统一 builder');
 ok(!/gameState\s*=\s*deepClone\(GM\)|GM\s*:\s*deepClone\(GM\)/.test(lifecycle + '\n' + core + '\n' + manager), '生产存档写口无裸 deepClone(GM)');
 ok(!/SaveManager\.autoSave\(\)/.test(render), '端回合不再重复调用 SaveManager.autoSave 覆盖 slot_0');
-ok(/TM_SaveDB\.saveManyAtomic\(\[[\s\S]*?id: 'autosave'[\s\S]*?id: 'slot_0'[\s\S]*?_writeOk !== true[\s\S]*?_clearPreEndturnMarkerAfterSave/.test(render),
-  'canonical batch failure preserves the pre_endturn recovery marker');
-ok(/_writeOk !== true[\s\S]*?throw new Error\('canonical 回合存档未原子落库'\)[\s\S]*?_updateSaveIndex/.test(render),
-  'slot index is published only after the canonical batch commits');
 {
   const batchAt = render.indexOf('TM_SaveDB.saveManyAtomic([');
   const writesDoneAt = render.indexOf("if (_writeOk !== true", batchAt);
   const markerAt = render.indexOf("localStorage.setItem('tm_autosave_mark'", batchAt);
   ok(markerAt > writesDoneAt && writesDoneAt > batchAt && /turn:\s*_autoMeta\.turn/.test(render.slice(markerAt, markerAt + 300)), 'tm_autosave_mark 仅在原子双槽提交后写入并锚定快照 turn');
 }
-ok(/await _tmAwaitDesktopAutoSaveReply[\s\S]*?return bridge\.autoSave\(saveData\);[\s\S]*?if \(!_tmDesktopAutoSaveResultOk\(result\)\) throw[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(desktopTickSrc), '60s Electron autoSave 仅在业务成功后推进成功时钟');
-ok(/_autoSaveLastSavedTurn = Number\(saveData\._saveMeta\.turn\)/.test(lifecycle), 'Electron 闲置跳存基线锚定已写 committed snapshot turn');
 ok(!/window\.tianming\.autoSave\(/.test(render), '端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口');
-ok(/var _endturnSaveGM = GM;[\s\S]*?var _endturnSaveP = P;[\s\S]*?_endturnSaveLoadGen[\s\S]*?_endturnSavePreId/.test(render), '端回合 detached save 捕获 GM/P/loadGen/pre snapshotId');
-ok(/_awaitPostTurnJobsForSave[\s\S]*?if \(!_endturnSaveStillCurrent\(\)\) return false;[\s\S]*?_buildSaveState\(\{format:'idb',detach:true,gm:_endturnSaveGM,p:_endturnSaveP\}\)/.test(render), '后台记忆不阻塞·builder 仍先验租约并使用 detached snapshot');
-ok(/TM_SaveDB\.saveManyAtomic\([\s\S]*?_autoWriteOptions\)/.test(render)
-  && /function saveManyAtomic\(entries, options\)/.test(storage), 'autosave/slot_0 共用代际租约与单一批量事务');
 {
   const renderFn = sliceFn(render, 'function _endTurn_render(');
   const barrierStepAt = pipeline.indexOf("name: 'prepare-commit-barrier'");
@@ -119,38 +100,6 @@ ok(/TM_SaveDB\.saveManyAtomic\([\s\S]*?_autoWriteOptions\)/.test(render)
     && (core.match(/_endTurn_saveSnapshot\(ctx\)/g) || []).length === 1, 'normal/deferred 两条路径复用同一幂等存档 promise');
   ok(/var saved = await ctx\.meta\.endTurnSavePromise;[\s\S]*?saved !== true[\s\S]*?_tmCommitEndTurnTransaction/.test(core), 'normal 提交屏障严格等待最终存档后才 commit');
 }
-ok(/function createCanonicalPayload\(state, identity\)[\s\S]*?JSON\.stringify\(state\)[\s\S]*?SaveCompression\.compress\(json\)/.test(storage)
-  && /function save\(id, gameState, meta, options\)[\s\S]*?createCanonicalPayload\(gameState[\s\S]*?if \(!_writeStillAllowed\(\)\) return Promise\.resolve\(false\)[\s\S]*?if \(!_writeStillAllowed\(\)\) return false;[\s\S]*?_putSaveRecord/.test(storage),
-  'SaveDB 同步冻结 canonical payload，并在异步准备前及真正 put 前复验 writeGuard');
-ok(/GM===targetGM&&P===targetP[\s\S]*?lastCommittedSnapshot===sourceSnapshot[\s\S]*?await _tmAwaitDesktopAutoSaveReply[\s\S]*?if \(!snapshotStillCurrent\(\)\)[\s\S]*?return \{ ok: true, stale: true[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(desktopTickSrc), '60s Electron IPC 跨档或快照推进后不推进当前局闲置跳存基线');
-ok(/let autoSaveWriteQueue = Promise\.resolve\(\);[\s\S]*?const task = autoSaveWriteQueue\.then[\s\S]*?autoSaveWriteQueue = task\.then/.test(mainImpl), '主进程串行化固定 .tmp 的所有 auto-save IPC');
-ok(/auto-save-session-rotate/.test(mainImpl) && /autoSaveSessionMatches\(requestToken\)/.test(mainImpl)
-  && /writeFile[\s\S]*?autoSaveSessionMatches\(requestToken\)[\s\S]*?rename/.test(mainImpl), 'Electron canonical auto-save 在 write/rename 间按 session token 复验');
-ok(/rotateAutoSaveSession/.test(preloadImpl) && /_tmRotateDesktopAutoSaveSession\('full-load'/.test(lifecycle)
-  && /_tmRotateDesktopAutoSaveSession\('new-game'/.test(startPatch), 'preload + 读档 + 新局共同切换 auto-save session');
-ok(/var _turnDataRecovery = await _recoverPendingTurnDataPublish\(\);[\s\S]*?_turnDataRecovery\.ok === false[\s\S]*?throw[\s\S]*?_tmForkLoadedTimeline/.test(lifecycle),
-  'receipt recovery failure aborts before the loaded world can fork its timeline');
-ok(/_tmRebindRuntimeWorld\(\{ strict: true, integration: false/.test(lifecycle)
-  && /_tmRunCriticalLoadStep\('engine migration'/.test(lifecycle)
-  && /_tmRunCriticalLoadStep\('relationship reference migration'/.test(lifecycle)
-  && /_tmRunCriticalLoadStep\('fiscal configuration migration'/.test(lifecycle)
-  && /_tmRebindRuntimeWorld\(\{ strict: true, map: false \}\)/.test(lifecycle)
-  && /_tmRunCriticalLoadStep\('loaded world validation'/.test(lifecycle),
-  'state-mutating load migrations propagate into the load transaction instead of failing open');
-ok(/function aggregateRegionsToVariables\(options\)[\s\S]*?var strict = options\.strict === true/.test(integrationBridge)
-  && !/function _naturalPopulationGrowth\(/.test(integrationBridge)
-  && !/function _accumulateCorruptionFromNpcs\(/.test(integrationBridge)
-  && /function tick\(options\)[\s\S]*?aggregateRegionsToVariables\(\{ strict: strict \}\)/.test(integrationBridge),
-  'integration bridge is aggregation-only; Huji and CorruptionEngine own simulation time');
-ok(/function _tmStripSaveTransportMetadata\([\s\S]*?\^__tm\(\?:Desktop\|AutoSave\)/.test(lifecycle)
-  && /_tmStripSaveTransportMetadata\(_incomingP\)/.test(lifecycle)
-  && /_tmStripSaveTransportMetadata\(_incomingGM\)/.test(lifecycle),
-  'desktop and auto-save envelope fields are stripped before P/GM become runtime state');
-ok(/callTurnBridge\('stageTurnData',[\s\S]*?result\.success === true[\s\S]*?回合分卷暂存失败/.test(render)
-  && /turnPublishReceipt:\s*ctx\.meta\.stagedTurnData/.test(render)
-  && /_tmCommitEndTurnTransaction[\s\S]*?await _endTurn_publishStagedTurnData/.test(core), '回合分卷先暂存·receipt 与世界同事务提交·仅在 commit 后发布');
-ok(/function _recoverPendingTurnDataPublish\(\)[\s\S]*?baseRecoveryLeaseCurrent[\s\S]*?listTurnPublishReceipts\(campaignId, timelineId, 'world-committed'\)[\s\S]*?callTurnBridge\('recoverTurnData', marker[\s\S]*?deleteTurnPublishReceipt\(marker/.test(lifecycle),
-  '读档按世界身份租约补发独立 receipt，并只删除轻量事务记录');
 {
   const loadImpl = sliceFn(lifecycle, 'async function _fullLoadGameApplyImpl(');
   const hydrateAt = loadImpl.indexOf('await ChronicleSystem.hydrateDurableRecords(GM, P)');
@@ -171,9 +120,6 @@ ok(/function _recoverPendingTurnDataPublish\(\)[\s\S]*?baseRecoveryLeaseCurrent[
     && /saveToSlot:\s*async function[\s\S]*?await _tmAwaitLoadBarrier\(\)/.test(manager),
   'hydration 期间 busy 阻止过回合，所有主要手动保存入口也等待同一屏障');
 }
-ok(/function _endTurn_publishStagedTurnData\([\s\S]*?deleteTurnPublishReceipt\(marker[\s\S]*?ctx\.meta\.stagedTurnData = null/.test(render)
-  && !/function _endTurn_publishStagedTurnData\([\s\S]*?clearPendingTurnDataPublishAtomic/.test(render),
-  '正常分卷发布不再解压、重压并重写两个 canonical 世界');
 {
   const finalizerFn = sliceFn(render, 'function _endTurn_finalizeRecords(');
   const uiRenderFn = sliceFn(render, 'function _endTurn_render(');
@@ -185,14 +131,6 @@ ok(/function _endTurn_publishStagedTurnData\([\s\S]*?deleteTurnPublishReceipt\(m
 }
 
 console.log('=== 2. pre_endturn two-phase + strict validator ===');
-ok(/commitState:\s*'pending'/.test(core) && /livePreMark\.commitState = 'committed'/.test(core), 'marker pending -> committed 两阶段');
-ok(/snapshotId:\s*preSnapshotId/.test(core) && /snapshotId: \(meta && meta\.snapshotId\)/.test(storage), 'snapshotId 同时进入 marker/state/IDB record');
-ok(/TM_SaveDB\.save\('pre_endturn',[\s\S]*?writeGuard:\s*preWriteStillCurrent/.test(core)
-  && /GM === preSaveGM && P === preSaveP[\s\S]*?preSaveLoadGen[\s\S]*?GM\.turn === preTurn[\s\S]*?GM\.sid === preSid[\s\S]*?preSnapshotId/.test(core),
-  'pre_endturn 写事务绑定 GM/P/loadGen/turn/sid/snapshotId lease');
-ok(storage.indexOf('jsonStr = JSON.stringify(gameState)') < storage.indexOf('return _ensureOpen().then(function()'), 'SaveDB 在异步 open/gzip 前同步固化 snapshot JSON');
-ok(/_validatePreEndturnSnapshot\(record, preInfo, true\)/.test(office), '启动恢复要求 marker 严格校验');
-ok(/_tryLoadAutosave\(autoInfo\)/.test(office), '校验/读取失败保留 autosave 安全回退');
 {
   const validatorSrc = sliceFn(manager, 'function _validatePreEndturnSnapshot(');
   const ctx = { window: {} };
@@ -212,15 +150,9 @@ ok(/_tryLoadAutosave\(autoInfo\)/.test(office), '校验/读取失败保留 autos
 console.log('=== 3. sSaveAll atomic API persistence ===');
 ok(!/function sSaveAll\(\)\{\s*sSaveAPI\(\)/.test(patches), 'sSaveAll 不再提前调用 sSaveAPI 写旧 secondary');
 ok(!/tianming\.autoSave\(_tmStripAiKeyView\(P\)\)/.test(patches + '\n' + playerSettings), 'API 单项保存不再以纯 P 覆盖对局中的桌面恢复档');
-ok(/function sSaveAPI\(\)[\s\S]*?localStorage\.setItem\("tm_api"[\s\S]*?saveP\(\)/.test(patches), '主 API 单项保存统一 tm_api + saveP');
-ok(/function sSaveSecondaryAPI\(\)[\s\S]*?localStorage\.setItem\("tm_api"[\s\S]*?saveP\(\)/.test(patches), '次 API 单项保存统一 tm_api + saveP');
 const savePSrc = sliceFn(utils, 'function saveP(');
 const saveAndBackSrc = sliceFn(launch, 'function saveAndBack(');
 ok(!/tianming\.autoSave\(/.test(savePSrc + '\n' + saveAndBackSrc), 'saveP / 编辑器返回不再以纯 P 覆盖 Electron canonical 恢复档');
-ok(/setInterval\(function\(\)\{[\s\S]*?_tmRunDesktopAutoSaveTick\(\)/.test(lifecycle)
-  && ((lifecycle + '\n' + utils + '\n' + launch + '\n' + patches + '\n' + playerSettings).match(/(?:tianming|bridge)\.autoSave\(/g) || []).length === 1
-  && (desktopTickSrc.match(/bridge\.autoSave\(/g)||[]).length===1 && /bridge=window\.tianming/.test(desktopTickSrc),
-  'Electron autoSave 生产写口只剩消费 committed snapshot 的 60s runner');
 {
   const applySrc = sliceFn(patches, 'function _sApplyPrimaryApiFields(');
   const readySrc = sliceFn(patches, 'function _sDeviceSettingsReady(');

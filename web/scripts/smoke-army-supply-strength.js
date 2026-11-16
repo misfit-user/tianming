@@ -14,8 +14,6 @@ const mil = fs.readFileSync(path.join(ROOT,'tm-military.js'),'utf8');
 const strengthSource = fs.readFileSync(path.join(ROOT,'tm-battle-contract.js'),'utf8');
 const fnSrc = sliceFn(strengthSource, 'function calculateArmyStrength(');
 ok(!!fnSrc, 'calculateArmyStrength 抽取成功');
-ok(/else if \(army\.supply != null\)/.test(fnSrc), '★含 army.supply(0-100) 兜底分支');
-ok(/Math\.max\(0, Math\.min\(100, Number\(army\.supply\)/.test(fnSrc), 'supply 夹 0-100 后折算');
 
 function strength(army){
   const ctx = { Math:Math, Number:Number, console:console, P:{}, findCharByName:function(){return null;}, _armyMorale:function(a){return (a&&a.morale!=null)?a.morale:60;} };

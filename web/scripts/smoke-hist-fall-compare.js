@@ -70,9 +70,7 @@ var h10 = c10._histFallCompareHtml({ historicalFallYear: 1644, historicalFallMon
 ok(h10.indexOf('<b>') < 0 && h10.indexOf('&lt;b&gt;') >= 0, '注文 escHtml 转义(防剧本数据注入)');
 
 /* ── 契约 ─────────────────────────────────────────────────────── */
-ok(/if \(!isVictory\) \{\s*\n\s*var _hfLine = _histFallCompareHtml\(sc\);/.test(src), '契约:终局屏败局分支调用(胜局不显)');
 // ★tm-endturn-helpers.js 以 \uXXXX 转义存中文·Edit 落盘自动归一化→中文正则断言在此文件不可靠·契约用 ASCII 锚
-ok(/isFinite\(Number\(sc\.historicalFallYear\)\)/.test(src), '契约:字段名 historicalFallYear 拼写钉在守卫里');
 function readOfficial(key) {
   var entry = officialSync.ENTRIES.find(function (item) { return item.key === key; });
   return JSON.parse(fs.readFileSync(path.join(officialSync.SOURCE_DIR, entry.filename), 'utf8'));

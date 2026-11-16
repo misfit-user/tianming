@@ -124,8 +124,6 @@ check('showPrompt on a formal panel: cancel=null, submit=value, no delayed focus
   context.showPrompt('案卷命名', '新卷', v => got.push(v)); const next = context._tmTopModalLayer().node; next.querySelector('.bt.bp').click(); assert.deepEqual(got, [null, '新卷']); assert.equal(document.activeElement, drafts[2]);
 });
 check('save manager creation and comparison are wired to the common layer', () => {
-  const open = saves.slice(saves.indexOf('function openSaveManager()'), saves.indexOf('function _renderSaveManagerUI(')); assert(open.includes('_tmPresentModal(ov, closeSaveManager)'));
-  const compare = saves.slice(saves.indexOf('function openSaveCompare()'), saves.indexOf('function _doSaveCompare()')); assert(compare.includes('_tmPresentModal(ov, closeCompare)')); assert(compare.includes('_tmCloseModalLayer(ov)'));
   const save = document.createElement('div'); save.className = 'generic-modal-overlay'; save.id = 'save-manager-overlay'; document.body.appendChild(save); drafts[0].focus(); context._tmPresentModal(save, context.closeSaveManager); assert(Number(save.style.zIndex) > zFormal); key('Escape'); assert(!save.isConnected); assert.equal(document.activeElement, drafts[0]);
 });
 check('save confirmation uses its higher base layer and cancels once', () => {

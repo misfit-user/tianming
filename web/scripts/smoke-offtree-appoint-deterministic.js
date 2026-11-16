@@ -16,16 +16,9 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 const applySrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
-const panelSrc = fs.readFileSync(path.join(ROOT, 'tm-office-panel.js'), 'utf8');
-const aiSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 
 // ── 源契约:三处改动 ──
-ok(/_offTreeAppoint:\s*true/.test(panelSrc), '① _offPickerConfirm edictTracker 打 _offTreeAppoint 标记');
-ok(/_appointmentAction:\s*\{[^}]*mode:\s*mode/.test(panelSrc), '① _appointmentAction 带 mode(辞旧/兼任)');
-ok(/!e\._offTreeAppoint/.test(aiSrc), '③ tm-endturn-ai L2568 pending filter 排除官制树任命(不交 AI)');
-ok(/官制树确定性任命/.test(applySrc) && /_offApplied/.test(applySrc), '② tm-endturn-apply 含确定性重申块');
 // 重申必须在 sync 之前(顺序:重申 → _offSyncHoldersFromChars)
-ok(applySrc.indexOf('官制树确定性任命') < applySrc.indexOf('office_changes 处理后从人物 officialTitle 重建'), '② 重申块在 _offSyncHoldersFromChars 之前(先重申再重建 holder)');
 
 // ── 抽真实重申片段 eval ──
 const START = '// ── 官制树确定性任命·过回合权威落地';

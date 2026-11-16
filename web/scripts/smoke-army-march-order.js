@@ -117,17 +117,5 @@ console.log('— §a · orderMarch 引擎行为 —');
   ok(c8.GM.marchOrders.length === 0, '到达单清理');
 })();
 
-/* ── §b 接线契约 ─────────────────────────────────────────────── */
-console.log('— §b · 接线契约 —');
-(function () {
-  ok(/orderMarch: orderMarch/.test(src), 'MarchSystem 导出 orderMarch');
-  ok(/P\.conf\.marchSystemEnabled/.test(src), '引擎闸带设置旁路');
-  var se = read('tm-shell-extras.js');
-  ok(/data-march-army/.test(se) && /_tmShellMarchPrompt/.test(se), '军事要务面板移防钮+目的地模态在');
-  ok(/addEventListener\('click', function\(ev\)\{[\s\S]{0,400}data-march-army[\s\S]{0,400}\}, true\)/.test(se), 'capture 段拦截(防触发整行详情 onclick)');
-  ok(/MarchSystem\.orderMarch/.test(se), 'UI 走引擎校验口(不绕闸)');
-  ok(/marchSystemEnabled/.test(read('tm-patches.js')), '设置面板开关在(玩法机制·深化)');
-})();
-
 console.log('\nsmoke-army-march-order ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
 process.exit(F0 === 0 ? 0 : 1);

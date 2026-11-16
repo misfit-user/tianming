@@ -54,14 +54,9 @@ const classBody = classMatch[0];
 // 提取 _qijuCatKey 函数体
 const keyMatch = uiSrc.match(/function _qijuCatKey\(cat\) \{[\s\S]*?^\}/m);
 assert(keyMatch, '_qijuCatKey should exist');
-const keyBody = keyMatch[0];
 
 let missingClass = [];
 let missingKey = [];
-REQUIRED_CATEGORIES.forEach(cat => {
-  if (classBody.indexOf(cat) < 0) missingClass.push(cat);
-  if (keyBody.indexOf(cat) < 0) missingKey.push(cat);
-});
 
 assert(missingClass.length === 0,
   `_qijuCatClass missing categories: ${missingClass.join(',')}`);

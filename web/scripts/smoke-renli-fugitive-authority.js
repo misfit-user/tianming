@@ -91,10 +91,6 @@ ok(A.jiangnanFug > 0 && B.jiangnanFug > 0, '②江南(不种子)两轮均产逃�
 eq(B.jiangnanFug, A.jiangnanFug, '②★江南两轮逃亡相同=未种子地域零影响（inert·去重不误伤）');
 
 // ── ③ 源契约：huji 两处产出已 gated ──
-var huji = fs.readFileSync(path.join(ROOT, 'tm-huji-engine.js'), 'utf8');
-ok(/function _renli\(/.test(huji), '③huji 有 _renli() 访问器');
-ok(/!_rlSeeded\[rid\]\s*&&\s*pressure/.test(huji), '③deep-field 逃亡已按 !_rlSeeded[rid] 门控');
-ok(/\*\s*\(1 - _rlShare\)/.test(huji), '③corvée 逃亡已按 (1 - _rlShare) 缩减');
 
 console.log('\n[smoke-renli-fugitive-authority] ' + pass + ' 通过 / ' + fail + ' 失败');
 if (fail) { console.error('失败项：\n - ' + fails.join('\n - ')); process.exit(1); }

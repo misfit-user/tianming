@@ -230,13 +230,6 @@ ensureFn(GMf);
 assert(GMf._feudalSchemes.length === 1 && GMf.activeSchemes.length === 1, 'C 迁移幂等·再跑不重复');
 
 // ═══ D · 六写者 origin/lastTurn 契约（真源存在性） ═══
-const aiSrc = readSrc('tm-endturn-ai.js');
-assert(/origin: 'sc15'/.test(followupSrc), 'D 契约·sc15 落 origin');
-assert(/lastTurn: GM\.turn, origin: 'sc1c'/.test(aiSrc), 'D 契约·sc1c 落 origin+lastTurn');
-assert(/origin: 'yuqian'/.test(readSrc('tm-chaoyi-yuqian.js')), 'D 契约·御前(yuqian) 落 origin');
-assert(/origin: 'yuqian'/.test(readSrc('tm-chaoyi-tinyi.js')), 'D 契约·廷议(yuqian) 落 origin');
-assert(/lastTurn: turn, origin: 'agent'/.test(readSrc('tm-endturn-agent-depth-tools.js')), 'D 契约·agent 落 origin+lastTurn');
-assert(/origin: 'feudal'/.test(feudalSrc), 'D 契约·feudal 落 origin');
 
 // ═══ E · save-lifecycle _feudalSchemes mirror 往返（真源抽取） ═══
 const saveSrc = readSrc('tm-save-lifecycle.js');
@@ -262,9 +255,6 @@ runSA({ schemeId: 's1', action: 'expose', reason: '败露' }, GMsa, () => {}, un
 assert(schemeF.status === 'exposed' && schemeF.discovered === true, 'F apply·expose 设 status=exposed');
 
 // ═══ G · R-3 prompt 注入去重（滤 _seededPlotId） ═══
-assert(/filter\(function\(_s\)\{return !_s\._seededPlotId;\}\)\.slice\(-8\)/.test(followupSrc), 'G R-3·followup 认知注入滤 _seededPlotId');
-assert(/filter\(function\(_s\)\{return !_s\._seededPlotId;\}\)\.slice\(-15\)/.test(followupSrc), 'G R-3·followup 活跃阴谋注入滤 _seededPlotId');
-assert(/!s\._seededPlotId && s\.source !== /.test(aiSrc), 'G R-3·ai sc1 非御前段注入滤 _seededPlotId');
 const g3 = [{ schemer: 'a' }, { schemer: 'b', _seededPlotId: 'p1' }].filter(function (_s) { return !_s._seededPlotId; });
 assert(g3.length === 1 && g3[0].schemer === 'a', 'G R-3·过滤剔除已播种条目');
 

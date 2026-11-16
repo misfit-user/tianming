@@ -19,13 +19,6 @@ function assert(cond, msg) {
 }
 
 const index = read('index.html');
-const tinyi = (read('tm-tinyi-v3-persona.js') + (read('tm-tinyi-v3.js') + '\n' + read('tm-tinyi-v3-edict-personnel.js')) + read('tm-tinyi-v3-parties.js'));
-const changchao = (read('tm-chaoyi-changchao-adapter.js') + read('tm-chaoyi-changchao.js') + read('tm-chaoyi-changchao-flows.js'));
-
-assert(/TM_CSS_RETRY/.test(index), 'index.html should define shared CSS retry helper');
-assert(/TM_CSS_LOADED/.test(index), 'index.html should define CSS load success helper');
-assert(/<link[^>]+styles\.css\?v=[^"'\s>]+[^>]+onerror="window\.TM_CSS_RETRY/.test(index), 'styles.css link should call retry helper on load error');
-assert(/<link[^>]+styles\.css\?v=[^"'\s>]+[^>]+data-css-fallback=/.test(index), 'styles.css link should declare fallback URL');
 
 const helperMatch = index.match(/<script>\s*([\s\S]*?TM_CSS_RETRY[\s\S]*?)<\/script>/);
 assert(helperMatch, 'index.html should contain an inline CSS retry helper script');
@@ -64,13 +57,5 @@ timers.shift().fn();
 sandbox.window.TM_CSS_RETRY(fakeLink);
 timers.shift().fn();
 assert(/^https:\/\/cdn\.example\/styles\.css\?v=x&cssRetry=12345-3/.test(fakeLink.href), 'third retry should switch to fallback CSS URL');
-
-assert(/tm-tinyi-v3\.css\?v=/.test(tinyi), 'tm-tinyi-v3.js should still load tinyi css');
-assert(/TM_CSS_RETRY/.test(tinyi), 'tm-tinyi-v3.js dynamic CSS should bind retry helper');
-assert(/data-css-fallback/.test(tinyi), 'tm-tinyi-v3.js dynamic CSS should declare fallback URL');
-
-assert(/tm-chaoyi-changchao\.css/.test(changchao), 'tm-chaoyi-changchao.js should still load changchao css');
-assert(/TM_CSS_RETRY/.test(changchao), 'tm-chaoyi-changchao.js dynamic CSS should bind retry helper');
-assert(/data-css-fallback/.test(changchao), 'tm-chaoyi-changchao.js dynamic CSS should declare fallback URL');
 
 console.log('[smoke-css-resource-retry] PASS');

@@ -165,16 +165,4 @@ assert(/民情执行·责任链/.test(prompt), 'prompt should identify responsib
 assert(/officialReports/.test(prompt) && /rumors/.test(prompt), 'prompt should include reports and rumors');
 assert(/Canal Ward/.test(prompt), 'prompt should include target region');
 
-const src = name => fs.readFileSync(path.join(ROOT, name), 'utf8');
-const index = src('index.html');
-assert(index.indexOf('tm-minxin-responsibility-chain.js') > 0, 'index should load responsibility chain');
-assert(index.indexOf('tm-minxin-commitment-tracker.js') < index.indexOf('tm-minxin-responsibility-chain.js'), 'responsibility chain should load after commitments');
-assert(index.indexOf('tm-minxin-responsibility-chain.js') < index.indexOf('tm-endturn-core.js'), 'responsibility chain should load before endturn core');
-assert(/MinxinResponsibilityChain\.tick/.test(src('tm-endturn-core.js')), 'endturn should tick responsibility chain');
-assert(/MinxinResponsibilityChain\.formatForPrompt/.test(src('tm-endturn-core.js')), 'endturn prompt should include responsibility chain');
-assert(/MinxinResponsibilityChain\.recordPlayerIntervention/.test((src('phase8-formal-rightrail.js') + src('phase8-formal-rightrail-social.js'))), 'wendui should feed responsibility intervention');
-assert(/MinxinResponsibilityChain\.recordPlayerIntervention/.test(src('phase8-formal-drafts.js')), 'hongyan should feed responsibility intervention');
-assert(/Minxin Responsibility Chain/.test((src('phase8-formal-rightrail.js') + src('phase8-formal-rightrail-social.js'))), 'right rail debug should expose responsibility chain');
-assert(/_renderMinxinResponsibility/.test(src('tm-topbar-vars.js')), 'topbar minxin panel should expose responsibility chain');
-
 console.log('[smoke-minxin-responsibility-chain] PASS minxin responsibility chain');

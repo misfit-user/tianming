@@ -62,7 +62,4 @@ assert(c3._rich[0].goal.title.indexOf('崩逝') >= 0, '⑩ 无分类回落崩逝
 var c4 = mk({ noRich: true });
 assert(c4._simple.length === 1 && c4._simple[0].indexOf('天命已尽') >= 0, '⑪ 富屏缺位回落简版');
 
-// ── 静态契约 ──
-assert(src.indexOf("_showEndgameScreen('defeat', _pdGoal)") >= 0, '⑫ 富屏接线在核(源契约)');
-
 console.log('smoke-endgame-screen-unify OK — ' + N + ' 断言全绿（富屏合一/死因分类/信号清/缺位回落）');

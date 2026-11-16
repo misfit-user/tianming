@@ -5,7 +5,6 @@
 //     ③幂等 ④无人口模型不抛只固化键 ⑤显式 populationKeys 优先；现生落地点调用 + 导出契约。
 'use strict';
 
-const fs = require('fs');
 const path = require('path');
 const WEB = path.join(__dirname, '..');
 require(path.join(WEB, 'tm-engine-constants.js'));
@@ -56,8 +55,6 @@ const kE = CE.ensureClassPopulationCell(clsE, gmE);
 ok(kE === 'custom_key' && gmE.population.byClass.custom_key.mouths === 999, 'E·显式 populationKeys 优先·复用其格子·mouths 不改');
 
 // ── 源契约：现生落地点调用 + 导出 ──
-const applySrc = fs.readFileSync(path.join(WEB, 'tm-endturn-apply.js'), 'utf8');
-ok(applySrc.indexOf('TM.SocialFormation.apply(GM, p1') >= 0, '现生阶层经统一登记写口');
 const pendingClass = {name:'未核计新阶层',populationKeys:['new_pending'],_populationPending:true,size:'约5%'};
 const pendingWorld = {turn:3,population:{national:{mouths:1000},byClass:{old:{mouths:1000}}}};
 CE.ensureClassPopulationCell(pendingClass,pendingWorld);

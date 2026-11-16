@@ -235,15 +235,6 @@ ok(s1.zoushu.length === 4 && s1.issues.length === 3, '双跑落点计数稳定�
 
 // ── 6. 静态契约：三旗设置开关与引擎默认关闸在位 ──
 section('6. 三旗设置开关与默认关闸静态契约');
-var patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-ok(patches.indexOf("'deptReplyEnabled'") >= 0, 'tm-patches 挂 deptReplyEnabled 开关');
-ok(patches.indexOf("'zoushuGenEnabled'") >= 0, 'tm-patches 挂 zoushuGenEnabled 开关');
-ok(patches.indexOf("'massAmnestyEnabled'") >= 0, 'tm-patches 挂 massAmnestyEnabled 开关');
-var helpers = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
-ok(helpers.indexOf('deptReplyEnabled !== true) return') >= 0, '部议引擎闸默认关(===true 才跑)');
-ok(helpers.indexOf('zoushuGenEnabled !== true) return') >= 0, '上奏引擎闸默认关(===true 才跑)');
-var edict = fs.readFileSync(path.join(ROOT, 'tm-endturn-edict.js'), 'utf8');
-ok(edict.indexOf('massAmnestyEnabled === true') >= 0, '大赦引擎闸默认关(===true 才跑)');
 
 // ════════════════════════════════════════════════════════════════
 console.log('\n' + CHECKS + ' 检查·' + (CHECKS - FAILS) + ' 通过·' + FAILS + ' 失败');

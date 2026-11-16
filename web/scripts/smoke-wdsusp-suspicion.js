@@ -14,12 +14,6 @@ console.log('smoke-wdsusp-suspicion');
 
 // ───────────── A. prompt 源契约 ─────────────
 const ps = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
-assert(ps.indexOf('君上疑窦') >= 0, 'A① prompt 含「君上疑窦」注入块');
-assert(/GM\._wdSuspicions && GM\._wdSuspicions\.length > 0/.test(ps), 'A② 真读 GM._wdSuspicions');
-assert(/_suspWin[\s\S]{0,80}turnsForMonths\(3\)/.test(ps), 'A③ 近 3 回合窗口(turnsForMonths(3))');
-assert(/_suspByWho/.test(ps) && />= \(prev\.turn/.test(ps), 'A④ 每人只取最近一条(去重防刷屏)');
-assert(ps.indexOf('当面识破') >= 0 && ps.indexOf('隐隐觉出') >= 0, 'A⑤ caught→当面识破/否则隐隐觉出');
-assert(ps.indexOf('被疑之臣本回合应有反应') >= 0, 'A⑥ 要求被疑之臣有反应(惶恐自辩/隐忍/离心)');
 // CRLF 保持 + 无裸 LF 混入
 assert((ps.match(/[^\r]\n/g) || []).length === 0, 'A⑦ prompt 文件 CRLF 保持(无裸 LF)');
 
@@ -72,7 +66,5 @@ ctx.TMZhi.switchTab('relations');
 assert(main().indexOf('君 上 之 疑') < 0, 'B⑦ ★玩家(朱由检)守卫:不显君上之疑(!p.isPlayer)');
 
 // 源契约
-const rs = fs.readFileSync(path.join(ROOT, 'tm-renwu-tuzhi.js'), 'utf8');
-assert(/_wdSuspicions\)\|\|\[\]\)\.filter\(function\(s\)\{return s&&s\.who===p\.name/.test(rs), 'B⑧ tabRelations 真读 GM._wdSuspicions 中 who===本人');
 
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

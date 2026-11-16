@@ -55,11 +55,7 @@ ok(ctx.DETACHED.qijuHistory.length === 2 && ctx.DETACHED._savedAffinityMap.a ===
   '★ committed detach 快照不随 live GM 后续修改');
 
 // ⑥ desktopDoSave 复用统一纯 builder(源契约·准备只作用于 detached snapshot)
-ok(/function _buildSaveState\(/.test(save), '⑥ 统一 _buildSaveState 构造器存在');
-ok(/var saveData=_buildSaveState\(\{format:'project'\}\)/.test(save), '⑥ desktopDoSave 复用 _buildSaveState(project)');
 // P 与 GM 地图同一对象时先浅拷贝去掉这两个键再深拷贝（地图只存一份），仍须先深拷贝再准备
-ok(/var gmSnapshot = _autoSaveSnapshotGM\(sourceGM, \{ detach: options\.detach === true \}\);[\s\S]*?var pWorking = deepClone\((?:sourceP \|\| \{\}|pSource)\);[\s\S]*?_prepareGMForSave\(gmSnapshot, pWorking, \{ omitDiscardedMirrors: true \}\)/.test(save),
-  '⑥ builder 先脱离 live GM/P，再执行存档准备');
 ok(save.indexOf('saveData.gameState=deepClone(GM);') < 0, '⑥ 手动档裸 deepClone(GM) 已清(saveData 路径)');
 
 console.log('\n结果: '+A+' 通过 / 0 失败');

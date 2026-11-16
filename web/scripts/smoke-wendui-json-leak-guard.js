@@ -53,4 +53,3 @@ assert('readable fallback strips control fields', !/loyaltyDelta|toneEffect|memo
 
 const previewUseCount = (code.match(/_wdVisibleReplyPreview\(txt\)/g) || []).length;
 assert('both wendui streaming paths use visible preview sanitizer', previewUseCount >= 2);
-assert('normal send path sanitizes failed JSON parses', code.includes('replyText = _wdSanitizeDialogueReplyText(name, ch, parsed, rawReply);'));

@@ -75,18 +75,7 @@ const first = lrv({ id: 'rc' }, tree);
 ctx.window.GM.turn = 1;
 ok(lrv({ id: 'rc' }, tree) === first, '同回合命中缓存（同引用）');
 
-// ── 源码契约：regionBundle 把 vitals 置于 firstValue 首位 + 覆盖死字段 ──
-ok(/var vitals = liveRegionVitals\(r, liveDivision\);/.test(SRC), 'regionBundle 调 liveRegionVitals');
-ok(/var minxin = firstValue\(\s*vitals\.minxin,/.test(SRC), 'minxin 取 vitals 首位（压过省节点死值）');
-ok(/var corruption = firstValue\(\s*vitals\.corruption,/.test(SRC), 'corruption 取 vitals 首位');
-ok(/var prosperity = firstValue\(\s*vitals\.prosperity,/.test(SRC), 'prosperity 取 vitals 首位');
-ok(/data\.minxinLocal = minxin; data\.minxin = minxin;/.test(SRC), '活民心覆盖 minxinLocal+minxin 双键');
-ok(/data\.liveVitals = vitals;/.test(SRC), 'vitals 挂 data 供册页直取');
-ok(/vitals: vitals \}/.test(SRC), 'regionBundle 返回带 vitals');
-
 // ── 军务视图读活军（兵变险/欠饷/低气/缺粮）──
-ok(/b\.army && b\.army\.liveArmies/.test(SRC), 'armyViewScore 读绑定活军');
-ok(/_a\.mutinyRisk/.test(SRC) && /_a\.payArrearsMonths/.test(SRC), '军务计活态兵变险+欠饷');
 const armySource = SRC.match(/ {2}(function armyViewScore\([^)]*\)\{[\s\S]*?\n {2}\})/)[1];
 const levelSource = SRC.match(/ {2}(function parseLevelWord\([^)]*\)\{[\s\S]*?\n {2}\})/)[1];
 ctx.firstValue = function(){return Array.from(arguments).find(v=>v!==undefined&&v!==null&&v!=='');};

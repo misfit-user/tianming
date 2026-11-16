@@ -144,11 +144,4 @@ assert(calSnap.partyClassActorMemory && calSnap.partyClassActorMemory.memories.l
 assert(calSnap.partyActions && calSnap.partyActions.length === root.party_actions.length, 'LLM calibration snapshot should include party actions');
 assert(calSnap.classActions && calSnap.classActions.length === root.class_actions.length, 'LLM calibration snapshot should include class actions');
 
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(indexHtml.indexOf('tm-party-class-actors.js') > indexHtml.indexOf('tm-social-political-signals.js'), 'index should load actor module after signal ledger');
-assert(indexHtml.indexOf('tm-party-class-actors.js') < indexHtml.indexOf('tm-party-class-llm-calibrator.js'), 'index should load actor module before calibrator');
-const endturnSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
-assert(/PartyClassActors\.run/.test(endturnSource), 'pre-submit should run party/class actors before LLM calibration');
-assert(endturnSource.indexOf('PartyClassActors.run') < endturnSource.indexOf('PartyClassLlmCalibrator.flushBeforeSubmit'), 'actor run should happen before LLM calibration snapshot is flushed');
-
 console.log('[smoke-party-class-actors] PASS party/class actors and memory ledger');

@@ -85,7 +85,6 @@ try {
   assert(parser.isCommittedVersion('HEAD', '不存在.json', path.join(TMP, '不存在.json'), TMP) === false, '文件不存在时不误判');
 
   const source = fs.readFileSync(path.join(ROOT, 'scripts', 'dev-sync-latest.js'), 'utf8');
-  assert(/status'\s*,\s*'--porcelain=v1'\s*,\s*'-z'/.test(source) && /'--name-status'\s*,\s*'-z'/.test(source), '生产同步调用固定使用 NUL 分隔');
   assert(!/line\.split\(['"]\\t['"]\)|replace\(\/\^"\|"\$/.test(source), '生产同步不再手拆 tab 或剥 Git 引号');
 
   console.log('PASS assertions=' + assertions);

@@ -47,11 +47,8 @@ ok(CE.aiContextBlock(ctx.GM) === '', '无活跃阴谋 → 返空（不污染 pro
 // ════════ ② 腐败九源 breakdown（源契约 + 逻辑仿真）════════
 const aiSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 // 源契约：块存在、标题、紧邻 6 部门之后、九个中文标签齐全
-ok(/吏治·九源（因何而腐）/.test(aiSrc), '源含「吏治·九源（因何而腐）」prompt 块');
-ok(/lowSalary:'俸薄'[\s\S]*?lumpSumSpending:'巨支'/.test(aiSrc), '源含九源中文标签映射（俸薄…巨支）');
 const nineLabels = ['俸薄', '监弛', '急征', '鬻官', '荐幸', '宠信', '冗员', '制弊', '巨支'];
 ok(nineLabels.every(function (l) { return aiSrc.indexOf("'" + l + "'") >= 0; }), '九源标签全（俸薄/监弛/急征/鬻官/荐幸/宠信/冗员/制弊/巨支）');
-ok(aiSrc.indexOf('吏治·九源') > aiSrc.indexOf('吏治·6部门'), '九源块在 6 部门块之后（腐败数据归一组）');
 
 // 逻辑仿真：复刻 prompt 块的转换（降序取前6·中文标签·符号·四舍一位），验产出
 const _corrSrcCN = { lowSalary:'俸薄', laxSupervision:'监弛', emergencyLevy:'急征', officeSelling:'鬻官', nepotism:'荐幸', innerCircle:'宠信', redundancy:'冗员', institutional:'制弊', lumpSumSpending:'巨支' };

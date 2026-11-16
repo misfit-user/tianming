@@ -96,12 +96,6 @@ Promise.all([
   });
 }).then(function () {
   // ── 静态契约 ──
-  const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert(idx.indexOf('tm-benji.js') >= 0, '⑳ index.html 已载 tm-benji');
-  const helpers = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
-  assert(helpers.indexOf('TM.Benji.composeForEndgame') >= 0, '⑴ 终局富屏挂修纂钩(玩家死或亡国都走太史公+本纪)');
-  const patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-  assert(patches.indexOf("'benjiEnabled'") >= 0, '⑵ 设置开关已挂(benjiEnabled)');
   console.log('smoke-benji-compose OK — ' + N + ' 断言全绿（12回合一卷/串行衔接/末卷赞曰/散佚短卷/断卷保成/战绩留存/flag闸）');
 }).catch(function (e) {
   console.error('SMOKE ERROR:', e && e.stack || e);

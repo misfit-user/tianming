@@ -131,14 +131,6 @@ var planLoosePack = TMZipStore.planLoosePack;   // 已随 buildZip 同居打包�
 })();
 
 // ── B1 接线守门（源码锁死关键行）──
-assert(/LOOSE_MAX_SINGLE = 20 \* 1024 \* 1024/.test(zipSrc), 'B1: 单文件 20MB 阈值常量在 tm-zip-store');
-assert(/LOOSE_MAX_TOTAL = 60 \* 1024 \* 1024/.test(zipSrc), 'B1: 总量 60MB 硬闸常量在 tm-zip-store');
-assert(/planLoosePack: planLoosePack/.test(zipSrc), 'B1: TMZipStore 导出 planLoosePack');
-assert(cmSrc.includes('TMZipStore.planLoosePack('), 'B1: 处理器走 TMZipStore.planLoosePack');
-assert(cmSrc.includes('TMZipStore.LOOSE_MAX_TOTAL'), 'B1: 处理器用 TMZipStore.LOOSE_MAX_TOTAL 守门');
-assert(cmSrc.includes('网页安装端上限约 64MB'), 'B1: 总量超限醒目提示文案在');
-assert(cmSrc.includes('onPublishLooseFiles: onPublishLooseFiles'), 'B1: onPublishLooseFiles 已导出');
-assert(cmSrc.includes("onPublishPackageFile({ files: [packFile] })"), 'B1: 打好的 .tm-pack 喂给现有 onPublishPackageFile 流程');
 {
   assert(communitySrc.includes('onPublishLooseFiles(this)') && communitySrc.includes('没有现成包'),
     'B1: 创作中心第 1 步有「选散文件，我来打包」入口');
@@ -207,13 +199,6 @@ assert.strictEqual(shouldRender(3, 1, 200), false, 'B2③: <500ms 且 <5% → �
 assert.strictEqual(shouldRender(3, 1, 600), true, 'B2③: ≥500ms → 渲');
 assert.strictEqual(shouldRender(8, 1, 100), true, 'B2③: 百分比变化 ≥5 → 渲');
 // B2 接线守门
-assert(onlineSrc.includes('xhr.upload.onprogress'), 'B2: XHR 分支用 xhr.upload.onprogress 报进度');
-assert(onlineSrc.includes('function sendUpload('), 'B2: uploadPack/uploadScenario 走统一 sendUpload');
-assert(/uploadPack\(meta, contentBase64, apiUrl, onProgress\)/.test(onlineSrc), 'B2: uploadPack 增 onProgress 形参');
-assert(/uploadScenario\(meta, content, apiUrl, onProgress\)/.test(onlineSrc), 'B2: uploadScenario 增 onProgress 形参');
-assert(cmSrc.includes('正在上传投稿包… '), 'B2: 上传进度回写 publishMessage');
-assert(cmSrc.includes('大包上传可能较久，请勿关闭页面'), 'B2: >30MB 提醒勿关页文案在');
-assert(/bytes\.length > 30 \* 1024 \* 1024/.test(cmSrc), 'B2: >30MB 阈值判定在');
 
 // ════════════════════════════════════════════════════════════════════════
 //  突变自检（≥3 枚）：内存副本上真跑验红——证上面断言真吃对应的实现
@@ -254,9 +239,6 @@ assert(/bytes\.length > 30 \* 1024 \* 1024/.test(cmSrc), 'B2: >30MB 阈值判定
 })();
 
 // 突变自检未污染真源（fresh-read 证真源标记原样·工作树对这几文件保持干净）。
-assert(read('tm-zip-store.js').includes('0xEDB88320'), '收尾: tm-zip-store CRC 多项式原样（未被突变污染）');
-assert(read('tm-zip-store.js').includes('u16(0x0800)'), '收尾: tm-zip-store UTF-8 旗标原样');
-assert(read('tm-zip-store.js').includes('entries.length > 65535'), '收尾: tm-zip-store 条目数闸原样');
 assert.strictEqual(read('tm-content-manager.js'), cmSrc, '收尾: tm-content-manager 与测试开始时字节一致（突变自检未落盘）');
 assert.strictEqual(read('tm-content-manager-community.js'), communitySrc, '收尾: community 源与测试开始时字节一致');
 assert.strictEqual(read('tm-online-client.js'), onlineSrc, '收尾: online client 源与测试开始时字节一致');

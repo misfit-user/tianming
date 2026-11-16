@@ -102,9 +102,5 @@ const gm5 = mkGM({ population: { byClass: { peasant_self: { mouths: 6000000 }, g
 runFlow(gm5, {}, { length: 20 });
 ok(gm5.classes[0]._aspirationBlock === undefined && gm5.population.byClass.peasant_self.mouths === 6000000, '无 classRatio→全 no-op(怨望/人口流皆不动)');
 
-// 8. 源契约
-ok(/var aspirationComp = clamp\(Number\(cls\._aspirationBlock\)/.test(fs.readFileSync(path.join(WEB, 'tm-social-foundation.js'), 'utf8')), '源契约·tickClassRadical 含 aspirationComp');
-ok(/_kejuMobilityFlow\(exam, stats, results\)/.test(src), '源契约·finishKeju 挂 _kejuMobilityFlow 调用');
-
 console.log('\n[smoke-keju-mobility-flow] ' + (F ? 'FAIL' : 'PASS') + ' — ' + A + ' 通过 / ' + F + ' 失败');
 process.exit(F ? 1 : 0);

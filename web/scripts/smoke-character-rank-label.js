@@ -50,14 +50,9 @@ if (fs.existsSync(scenarioFile)) {
   scenario.characters.forEach(label);
   assert.strictEqual(JSON.stringify({ chars: scenario.characters, officeTree: scenario.officeTree }), before, '显示不修改人物数值或官制');
 }
-const zhi = fs.readFileSync(path.join(root, 'tm-renwu-tuzhi.js'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'tm-shell-extras.js'), 'utf8');
 const formal = fs.readFileSync(path.join(root, 'phase8-formal-modules.js'), 'utf8');
-const player = fs.readFileSync(path.join(root, 'tm-player-core.js'), 'utf8');
-assert(zhi.includes('getCharacterRankLabel(c,_g())'));
-assert(shell.includes('getCharacterRankLabel(c,GM)'));
 assert(!shell.includes("c.rankLevel<=3?'正一品'"));
 assert(!formal.includes("['品秩', p.rank || p.role"));
 // (cc,GM) 那一处原在 tm-player-core.js 的旧人物志页里（被 tm-renwu-tuzhi.js 整个换掉，2026-11-16 已删）；现行页由上面 zhi 那条守着。
-assert(player.includes('getCharacterRankLabel(ch,GM)'));
 console.log('[smoke-character-rank-label] PASS: 空值、普通人、外臣、实官、多员官、加衔、本朝秩禄及晚唐样本');

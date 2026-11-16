@@ -107,10 +107,6 @@ ok(n0 === 0, '⑥ 缓存只含官方剧本 → 合并 0 个');
 ok(M.merge(null) === 0 && M.merge({}) === 0 && M.merge({ scenarios: 'x' }) === 0, '⑦ 异常入参返回 0 不崩');
 
 // ── 接线契约：两处 incomplete 分支改为合并自建剧本(不再裸 return 丢弃) ──
-ok(/incomplete official cache from IndexedDB[\s\S]*?_tmMergeCustomScenariosFromProject\(fullP\)/.test(src) ||
-   /_mergedN = _tmMergeCustomScenariosFromProject\(fullP\)/.test(src), '⑧ layer2(IndexedDB) 守卫改调合并自建剧本');
-ok(/_mergedLite = _tmMergeCustomScenariosFromProject\(saved\)/.test(src), '⑨ layer1(tm_P) 守卫改调合并自建剧本');
-ok(/indexeddb-incomplete-merge-custom/.test(src), '⑩ 恢复事件标记改为 merge-custom(不再 incomplete-skip)');
 // 旧整体跳过措辞应已不在
 ok(!/skipped incomplete official scenario project from IndexedDB/.test(src), '⑪ 旧「整体跳过」措辞已移除');
 

@@ -12,13 +12,6 @@ function ok(c, m) { if (c) pass++; else { fail++; console.error('  ✗ ' + m); }
 
 const PROMPT = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
 
-// ── 源契约 ──
-ok(/驱动目标——该 NPC 当前所求/.test(PROMPT), '契约:goal 注释块存在');
-ok(PROMPT.indexOf('c.personalGoals.slice().sort(') >= 0 && PROMPT.indexOf('(_y.priority||5) - (_x.priority||5)') >= 0, '契约:取最高优先级目标(按 priority 降序取 [0])');
-ok(/xmlLines\.push\('    <goal '/.test(PROMPT), '契约:输出 <goal> 行');
-ok(PROMPT.indexOf('驱动目标——该 NPC 当前所求') < PROMPT.indexOf('var sorted = _cleanMem'), '契约:goal 在 memory 之前(注入 heart 内)');
-ok(PROMPT.indexOf("xmlLines.push('  <heart char=") < PROMPT.indexOf('驱动目标——该 NPC 当前所求'), '契约:goal 在 heart 开标签之后');
-
 // ── 抽真片段实跑 ──
 const a = PROMPT.indexOf('// 驱动目标——该 NPC 当前所求');
 const b = PROMPT.indexOf('var sorted = _cleanMem.slice().sort', a);

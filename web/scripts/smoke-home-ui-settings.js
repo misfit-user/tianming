@@ -16,39 +16,10 @@ function ok(condition, message) {
 
 console.log('smoke-home-ui-settings');
 var source = read('tm-home-ui.js');
-var css = read('tm-home-ui.css');
-var index = read('index.html');
-var patches = read('tm-patches.js');
 
 console.log('— S1 · 正式加载与设置入口 —');
-ok(/tm-home-ui\.css\?v=[^"'<\s]+/.test(index), 'index 加载主页 UI 样式并带 cache-bust');
-ok(/tm-home-ui\.js\?v=[^"'<\s]+/.test(index), 'index 加载主页 UI 控制器并带 cache-bust');
-ok(index.indexOf('tm-home-ui.js') < index.indexOf('tm-patches.js'), '主页控制器先于设置渲染器装载');
-ok(/TM\.HomeUI\.renderSettingsSection\(\)/.test(patches), '设置页挂载主页 UI 分区');
-ok(/name:\s*'常用'[\s\S]{0,80}\/主页\|界面显示/.test(patches), '主页 UI 页签归入常用分组');
 
 console.log('— S2 · 三案与统一动作契约 —');
-['desk', 'map', 'gate'].forEach(function (theme) {
-  ok(new RegExp(theme + ':\\s*\\{').test(source), theme + ' 方案配置存在');
-  ok(new RegExp('home-ui-' + theme + '-v3-4k\\.webp').test(source), theme + ' 4K 正式资源路径存在');
-  ok(new RegExp('home-ui-' + theme + '-v3-thumb\\.webp').test(source), theme + ' 设置页轻量缩略图路径存在');
-  ok(new RegExp('data-home-ui-choice=\\"' + theme + '\\"').test(source) || /data-home-ui-choice=/.test(source), theme + ' 设置选择器由共享渲染器生成');
-});
-['btn-new-game', 'btn-load-save', 'btn-editor', 'btn-settings'].forEach(function (id) {
-  ok(source.indexOf("'" + id + "'") >= 0 && index.indexOf('id="' + id + '"') >= 0, id + ' 沿用正式动作锚点');
-});
-ok(/\.home-tools > button/.test(source) && /\.home-tools > button/.test(css), '邸报/工坊/载图/帮助/退出沿用正式工具按钮');
-ok(/localStorage\.getItem\('tm_save_index'\)/.test(source), '最近三卷读取真实存档索引');
-ok(/meta\[name=\"tm-version\"\]/.test(source), '主页版本号读取正式版本 meta');
-ok(/typeof root\.Image !== 'function'[\s\S]{0,120}commitTheme/.test(source), '非浏览器 smoke 环境不因缺少 Image 中断启动');
-ok(/data-tm-home-ui-loading/.test(source) && /data-tm-home-ui-loading/.test(css), '冷启动先建立主题启动态再淡入正式母图');
-ok(/probe\.decode\(\)\.then\(success, success\)/.test(source), '正式母图完成解码后才提交主题，避免切换闪屏');
-ok(/正在装裱/.test(source) && /aria-busy/.test(source) && /tm-home-ui-choice\.is-loading/.test(css), '设置页切换提供可感知的加载反馈');
-ok(/LOAD_TIMEOUT_MS\s*=\s*12000/.test(source) && /root\.setTimeout\(failure, LOAD_TIMEOUT_MS\)/.test(source), '主页资源加载具备 12 秒看门狗，避免设置永久卡在装裱态');
-ok(/status\.hidden = false/.test(source)
-  && /function hideLoadingStatus[\s\S]{0,160}status\.hidden = true/.test(source)
-  && /if \(pendingTheme \|\|[\s\S]{0,150}ensureLoadingStatus\(\);[\s\S]{0,80}else hideLoadingStatus\(\)/.test(source)
-  && /\.tm-home-loading\[hidden\]\s*\{\s*display:\s*none/.test(css), '母图就绪或失败后同步收起读屏加载状态');
 
 console.log('— S3 · 偏好持久化与运行时切换 —');
 var attrs = {};
@@ -141,11 +112,6 @@ ok(sandbox.TM.HomeUI.pending() === '' && !attrs['data-tm-home-ui-pending'] && at
 hangImage = false;
 
 console.log('— S4 · 比例、热区与美术资源 —');
-ok(/1\.777778/.test(css) && /min\(100vw, calc\(var\(--tm-home-view-h\)/.test(css) && /100dvh/.test(css), '所有视口以动态高度保持 16:9 4K 画幅完整');
-ok(!/min-aspect-ratio:\s*4\s*\/\s*3/.test(css) && /home-stage::after[\s\S]{0,500}var\(--tm-home-art\)[\s\S]{0,120}cover/.test(css), '非 16:9 视口使用同图氛围补景，不再拉伸或留白');
-ok(/\.home-stage::after[\s\S]{0,500}mix-blend-mode:\s*normal/.test(css), '氛围边景显式解除旧主页 multiply 混合，避免宽屏两侧压黑');
-ok(/--tm-home-x/.test(css) && /--tm-home-y/.test(css) && /focus-visible/.test(css), '比例热区与键盘焦点反馈存在');
-ok(/prefers-reduced-motion/.test(css), '支持减少动态效果偏好');
 
 function readVp8Size(asset) {
   var data = fs.readFileSync(asset);

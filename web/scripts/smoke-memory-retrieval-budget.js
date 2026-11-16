@@ -6,7 +6,6 @@ const vm = require('vm');
 const ROOT = path.join(__dirname, '..');
 const src = fs.readFileSync(path.join(ROOT, 'tm-memory-retrieval.js'), 'utf8');
 const traceSrc = fs.readFileSync(path.join(ROOT, 'tm-memory-trace.js'), 'utf8');
-const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 
 const sandbox = { console, Date, Math, JSON, window: {} };
 sandbox.window.window = sandbox.window;
@@ -53,8 +52,5 @@ const trace = MT.recordRetrieval(GM, {
 assert(trace.suppressed.some((s) => s.reason === 'budget_exceeded'), 'budget drops should persist into MemoryTrace');
 assert.strictEqual(trace.budget.maxTokens, 90, 'MemoryTrace should persist recall budget cap');
 assert(trace.budget.tokenEstimate <= 90, 'MemoryTrace should persist recall budget estimate');
-
-assert(endturnAi.includes('packForInjection'), 'SC_RECALL injection path should call packForInjection');
-assert(endturnAi.includes('budget_exceeded'), 'SC_RECALL trace should preserve budget_exceeded diagnostics');
 
 console.log('smoke-memory-retrieval-budget ok');

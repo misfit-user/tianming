@@ -33,14 +33,8 @@ ok(grepCount(/StoryEventBus\.(serialize|deserialize)/g) === 2, '② serialize/de
 
 // ── ③ @vestigial 头注到位 + 指向真系统 ──
 const src = fs.readFileSync(path.join(ROOT, 'tm-event-system.js'), 'utf8');
-ok(/@vestigial/.test(src), '③ 头注含 @vestigial 标注');
-ok(/tm-history-events\.js/.test(src), '③ 头注指向真事件系统 tm-history-events.js');
-ok(/checkHistoryEvents|checkRigidTriggers/.test(src), '③ 头注点明真驱动(checkHistoryEvents/checkRigidTriggers)');
-ok(/存档兼容|save-compat|serialize\/deserialize/.test(src), '③ 头注说明保留原因(存档兼容)');
 
 // ── ④ 真系统每回合驱动确认(tm-endturn-systems) ──
-const sys = fs.readFileSync(path.join(ROOT, 'tm-endturn-systems.js'), 'utf8');
-ok(/checkHistoryEvents\(\)/.test(sys) && /checkRigidTriggers\(\)/.test(sys), '④ tm-endturn-systems 每回合驱动真事件系统');
 
 // ── ⑤ 模块仍正常加载 ──
 const ctx = { console: { log() {}, warn() {}, error() {} }, Math, JSON, String, Array, Object, Date: { now: () => 0 } };

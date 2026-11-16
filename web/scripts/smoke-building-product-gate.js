@@ -3,12 +3,8 @@
 /* smoke-building-product-gate — 营建增强二/三（2026-07-03）防腐线。
  * 增强二 物产gate(内陆无盐不产盐·行为级)  增强三 工竣立制(smoke-globalrules-build 已锁)
  * + mod('reform_success') 三消费端(契约)  + AI直落 completed 补入账(契约) */
-var fs = require('fs');
-var path = require('path');
-var ROOT = path.resolve(__dirname, '..');
 var P = 0, F = 0;
 function ok(c, m) { if (c) { P++; console.log('  ✓ ' + m); } else { F++; console.log('  ✗ FAIL: ' + m); } }
-function read(p) { return fs.readFileSync(path.join(ROOT, p), 'utf8'); }
 console.log('smoke-building-product-gate');
 
 global.window = global;
@@ -50,19 +46,6 @@ BW.applyCompletion(south, b6, P, GM);
 ok(!(south.economyBase.horseProduction > 0), '非牧地建马场→马政不入账');
 
 console.log('— 增强三 · mod 硬通道与全路径(契约) —');
-var _clSrc = read('tm-central-local-engine.js');
-var _ecSrc = (read('tm-economy-engine-currency.js') + '\n' + read('tm-economy-engine.js'));
-var _tvSrc = (read('tm-tinyi-v3-persona.js') + (read('tm-tinyi-v3.js') + '\n' + read('tm-tinyi-v3-edict-personnel.js')) + read('tm-tinyi-v3-parties.js'));
-var _apSrc = read('tm-endturn-apply.js');
-var _cbSrc = read('tm-custom-build-agent.js');
-var _bwSrc = read('tm-building-works.js');
-ok(/mod\('reform_success'\)/.test(_clSrc), '央地变法成功率接 mod(reform_success)');
-ok(/mod\('reform_success'\)/.test(_ecSrc), '币制财政变法成功率接 mod(reform_success)');
-ok(/mod\('reform_success'\)/.test(_tvSrc), '廷议变法议题封驳率接 mod(reform_success)');
-ok(/Math\.min\(0\.12,/.test(_clSrc) && /Math\.min\(0\.12,/.test(_ecSrc) && /Math\.min\(0\.25,/.test(_tvSrc), '三处皆有幅度封顶');
-ok(/_globalRuleSpec = \{/.test(_cbSrc) && !/GR\.register\(\{/.test(_cbSrc), '自拟营建准奏只存 spec 不立制');
-ok(/_globalRuleSpec && !bld\._globalRule && _GRC/.test(_bwSrc), '工竣立制钩在 applyCompletion（全路径）');
-ok(/_newBld\.status === 'completed'/.test(_apSrc) && /applyCompletion === 'function'\) _BW\.applyCompletion\(_targetDiv, _newBld/.test(_apSrc), 'AI直落 completed 建筑即时补入账（治绕过 tick 缺口）');
 
 console.log('\nsmoke-building-product-gate ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + P + '/' + (P + F));
 process.exit(F === 0 ? 0 : 1);

@@ -100,14 +100,9 @@ ok(fn('sc_unknown_x') === ctx.prompt.sysP, '⑥ 未知 scId → 整条');
 
 // ⑦ 漏斗契约：sc1b/sc1c 已走 sysPFor
 const aiSrc = fs.readFileSync(path.join(W, 'tm-endturn-ai.js'), 'utf8');
-ok(/sysPFor\('sc1b'\)/.test(aiSrc), '⑦ sc1b 已入漏斗 sysPFor(原硬拿整条)');
-ok(/sysPFor\('sc1c'\)/.test(aiSrc), '⑦ sc1c 已入漏斗 sysPFor(原硬拿整条)');
-ok(/_sc1cSys\.length > 1500/.test(aiSrc), '⑦ sc1c 手工 cache 包装同步改用分级后串');
 ok(!/content:_maybeCacheSys\(sysP\)\}.*tp1b/.test(aiSrc), '⑦ sc1b 旧直拿写法已不存');
 
 // ⑧ 设置开关契约
-const patchesSrc = (fs.readFileSync(path.join(W, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(W, 'tm-patches-start.js'), 'utf8'));
-ok(patchesSrc.indexOf("'sysPTieringEnabled'") >= 0 && /省流/.test(patchesSrc), '⑧ 设置「玩法机制·深化」有 AI 省流开关');
 
 console.log('\n' + (F === 0 ? 'ALL PASS' : 'FAIL') + ' (' + A + ' pass / ' + F + ' fail)');
 process.exit(F === 0 ? 0 : 1);

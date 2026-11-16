@@ -57,7 +57,6 @@ assert(typeof AM._stage === 'string', 'AgentMode._stage 存在(进度标记)'); 
   const listMatch = flagsSrc.match(/LIST\s*:\s*\[([^\]]*)\]/);
   assert(listMatch, 'tm-agent-flags 有 LIST');
   assert(listMatch[1].indexOf('agentModeEnabled') === -1, 'agentModeEnabled 不在 LIST(独立于总闸)');
-  assert(/function agentModeOn\s*\(/.test(flagsSrc), 'agentModeOn 在 tm-agent-flags 定义');
 
   const stepsSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
   const aiIdx = stepsSrc.indexOf("name: 'ai'");
@@ -66,17 +65,10 @@ assert(typeof AM._stage === 'string', 'AgentMode._stage 存在(进度标记)'); 
   assert(aiIdx >= 0 && aiEndIdx > aiIdx, '定位到 ai 步区间');
   const aiBlock = stepsSrc.slice(aiIdx, aiEndIdx);
 
-  // ModeContract 只选择一个正式入口；Agent 失败抛出，不回落 LLM。
-  assert(/_selectedMode === 'agent'/.test(aiBlock), 'ai 步由 selectedMode 选择唯一 Agent 入口');
-  assert(/TM\.Endturn\.AgentMode\.run/.test(aiBlock), 'ai 步调用 AgentMode.run');
-  assert(/_agentModeRan/.test(aiBlock), 'ai 步标记 _agentModeRan');
-  assert(/throw new _mc\.ModeExecutionError\('agent'/.test(aiBlock), 'Agent 失败抛出且不穿越 LLM');
-
   // 分叉点在原 _endTurn_aiInfer 调用之前(=顶部 fork)·且原调用仍在(未删=零回归)
   const branchPos = aiBlock.indexOf("_selectedMode === 'agent'");
   const inferPos = aiBlock.indexOf('_endTurn_aiInfer(');
   assert(branchPos >= 0 && inferPos > branchPos, '分叉在原 _endTurn_aiInfer 调用之前(顶部 fork)');
-  assert(/var aiResult = await _endTurn_aiInfer\(/.test(aiBlock), '原 sc0-sc28 主调用 _endTurn_aiInfer 仍在(未删·零回归)');
 
   // index.html 注册·且在 tm-agent-flags 之后
   const indexSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');

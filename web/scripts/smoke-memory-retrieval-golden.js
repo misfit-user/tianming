@@ -5,7 +5,6 @@ const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
 const src = fs.readFileSync(path.join(ROOT, 'tm-memory-retrieval.js'), 'utf8');
-const endturnAi = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 
 const sandbox = { console, Date, Math, JSON, window: {} };
 sandbox.window.window = sandbox.window;
@@ -59,7 +58,5 @@ const ranked = MR.rankHits(hits.concat([
 assert.notStrictEqual(ranked[0].id, 'vec-hot', 'deterministic priority hits should outrank pure vector similarity');
 assert(ranked.slice(0, 3).some((h) => h.source === 'activeEdict'), 'top recall set should include active edict evidence');
 assert(ranked.slice(0, 4).some((h) => h.source === 'commitment'), 'top recall set should include live commitments');
-
-assert(endturnAi.includes('TM.MemoryRetrieval.collectPriorityHits'), 'SC_RECALL should collect priority deterministic hits before other sources');
 
 console.log('smoke-memory-retrieval-golden ok');

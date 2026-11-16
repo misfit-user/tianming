@@ -19,7 +19,6 @@ function read(f) { return fs.readFileSync(path.join(ROOT, f), 'utf8'); }
 const dmSrc = read('tm-data-model.js');
 const helperMatch = dmSrc.match(/function _tmActiveScenarioRows\(arr\)\{[\s\S]*?\n\}/);
 assert(helperMatch, 'tm-data-model.js 必须定义 _tmActiveScenarioRows 助手');
-assert(/window\._tmActiveScenarioRows\s*=\s*_tmActiveScenarioRows/.test(dmSrc), '助手必须挂到 window（供各文件运行时取用）');
 let GM = { sid: null };
 (0, eval)(helperMatch[0].replace('function _tmActiveScenarioRows(arr){',
   'globalThis._tmActiveScenarioRows = function(arr){').replace(/\n\}$/, '\n};'));
@@ -76,16 +75,7 @@ assert(_tmActiveScenarioRows('not-array').length === 0 && _tmActiveScenarioRows(
 // ── 7. 根治契约：刚性史事/事件有了 GM 单剧本之家·gameplay 读 GM 不读 P 库 ──
 //   ① doActualStart 给当前局建 GM.rigidHistoryEvents(单剧本干净副本)——补上唯一缺 GM 之家的 gameplay 数组
 const patchesSrc = (read('tm-patches.js') + '\n' + read('tm-patches-start.js'));
-assert(/GM\.rigidHistoryEvents\s*=\s*\(P\.rigidHistoryEvents\s*\|\|\s*\[\]\)\.filter\([\s\S]{0,80}\.sid\s*===\s*sid/.test(patchesSrc),
-  '根治: doActualStart 必须建当前剧本的 GM.rigidHistoryEvents 单一真相源');
 //   ② rigidHistoryEvents/events 的 gameplay 消费方读 GM·不读 P 库
-const gmContracts = [
-  ['tm-history-events.js', /Array\.isArray\(GM\.rigidHistoryEvents\)\s*\)\s*\?\s*GM\.rigidHistoryEvents/, 'rigidHistoryEvents 处理器读 GM'],
-  ['tm-ai-planning.js', /Array\.isArray\(GM\.rigidHistoryEvents\)\s*\)\s*\?\s*GM\.rigidHistoryEvents/, 'AI 预设史事提示读 GM'],
-  ['tm-three-systems-ext.js', /Array\.isArray\(GM\.events\)\s*\)\s*\?\s*GM\.events/, '开局事件激活读 GM'],
-  ['tm-endturn-prompt.js', /Array\.isArray\(GM\.events\)[\s\S]{0,40}\?\s*GM\.events/, 'endturn 提示 events 读 GM']
-];
-gmContracts.forEach(([f, re, why]) => assert(re.test(read(f)), '根治: ' + f + ' 必须 ' + why + '(不读多剧本 P 库)'));
 //   ③ 防回归：gameplay 处理器不得再出现「裸读多剧本 P 库去 forEach/filter/find」而无 GM/sid 收口
 const noRawLib = [
   ['tm-history-events.js', /P\.rigidHistoryEvents\.forEach/, '裸 P.rigidHistoryEvents.forEach'],
@@ -120,19 +110,8 @@ assert(scopedP.goals.length === 0 && Object.keys(scopedP.playerInfo).length === 
 assert(scopedP.time.year === -356 && scopedP.mechanicsConfig && Object.keys(scopedP.mechanicsConfig).length === 0,
   '时间和机制配置恢复确定默认值而非沿用 A');
 //   ④ 这 3 处补漏确实改走 GM/收口
-assert(/Array\.isArray\(GM\.facs\)\s*&&\s*GM\.facs\.length/.test(read('tm-military-ui.js')), '根治: 军务势力下拉读 GM.facs');
-assert(/_rigids\s*=\s*\(GM\s*&&\s*Array\.isArray\(GM\.rigidHistoryEvents\)\)/.test(read('tm-history-events.js')) && /_rigids\.find\(/.test(read('tm-history-events.js')), '根治: applyEventBranch 从 GM.rigidHistoryEvents 查');
-assert(/_tmActiveScenarioRows\(P\.parties\)/.test(read('tm-char-autogen.js')), '根治: autogen 党派收口');
 
 // ── 8. 字符/势力消费方契约：GM 优先 + sid 收口的 P 兜底(预览/无局时)走 _tmActiveScenarioRows ──
-const helperContracts = [
-  ['phase8-formal-bridge.js', /_tmActiveScenarioRows\(P\.characters\)/],
-  ['tm-renwu-tuzhi.js', /_tmActiveScenarioRows\(P\.characters\)/],
-  ['tm-chaoyi.js', /_tmActiveScenarioRows\(P\.factions\)/],
-  ['tm-char-autogen.js', /_tmActiveScenarioRows/],
-  ['tm-wendui.js', /_tmActiveScenarioRows/]
-];
-helperContracts.forEach(([f, re]) => assert(re.test(read(f)), f + ' 人物/势力消费方必须按 sid 收口 P 兜底'));
 
 // ── 9. 刚性史事按剧本隔离(GM 单一真相源)──
 function buildGMRigid(sid, pRigid) { return (pRigid || []).filter(e => e && e.sid === sid).map(e => JSON.parse(JSON.stringify(e))); }
@@ -151,20 +130,11 @@ assert(av.indexOf('阉党权势') === -1, '变量隔离: 绍宋局变量定义�
 assert(av.indexOf('民心') >= 0 && av.indexOf('党争') >= 0, '变量隔离: 仍取到当前局 GM.vars 变量');
 globalThis.GM = { sid: null, vars: {} };
 assert(globalThis._tmActiveVars().some(v => v.name === '阉党权势'), '无局时回退 P.variables(预览/编辑不变)');
-const varContracts = [
-  ['tm-utils.js', /_tmActiveVars\(\)/, 'buildCoreMetricLabels 读 GM.vars'],
-  ['tm-endturn-shiji-compose.js', /_tmActiveVars\(\)/, 'inversed 升降方向读 GM.vars'],  // 2026-07-06 delta 判向迁 compose 总览卷
-  ['tm-endturn-helpers.js', /_tmActiveVars\(\)/, '核心指标建议读 GM.vars']
-];
-varContracts.forEach(([f, re, why]) => assert(re.test(read(f)), '根治: ' + f + ' 必须 ' + why));
 
 // ── 10. bug② 归去来兮黑屏：backToLaunch 必须还原启动页 hero + 收起 #main-view ──
 const launchSrc = read('tm-launch.js');
 const btl = launchSrc.match(/function backToLaunch\(\)\{[\s\S]*?GameHooks\.run\('backToLaunch:after'\);\}/);
 assert(btl, '找到 backToLaunch');
-assert(/\.home-stage[\s\S]*?\.style\.display\s*=\s*['"]['"]/.test(btl[0]) || /_hero[\s\S]*?display\s*=\s*['"]['"]/.test(btl[0]),
-  'bug②: backToLaunch 必须把 hero(.home-stage) display 还原为可见');
-assert(/main-view[\s\S]*?display\s*=\s*['"]none['"]/.test(btl[0]), 'bug②: backToLaunch 必须收起 #main-view');
 
 console.log('✓ smoke-scenario-isolation PASS — ' + A + ' assertions');
 console.log('  绍宋名册 ' + r1.length + ' 人(0 天启漏) · 天启名册 ' + r3.length + ' 人(0 绍宋漏) · 旧范式漏 ' + oldLeak.length + ' 天启人');

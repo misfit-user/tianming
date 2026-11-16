@@ -184,8 +184,4 @@ const snap = Actors.snapshot(root, { turn: 20, limit: 20 });
 assert(!snap.memories.some(m => m && m.id === 'old-memory'), 'snapshot should hide expired inactive memories');
 assert(snap.memories.some(m => m && m.linkedIssue === 'issue-levy'), 'snapshot should keep unresolved escalated memory visible');
 
-const endturnSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
-assert(/SocialPoliticalSignals\.decayAndResolve/.test(endturnSource), 'pre-submit should maintain signal decay/resolution');
-assert(/PartyClassActors\.tick/.test(endturnSource), 'pre-submit should maintain actor memory/action decay');
-
 console.log('[smoke-party-class-decay-escalation] PASS party/class decay and escalation');

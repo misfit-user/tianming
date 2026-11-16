@@ -152,17 +152,5 @@ console.log('— §d · 终局屏具名消费 —');
   ok(r2 && r2.title.indexOf('权臣篡位') >= 0, '外朝信号→原「权臣篡位」文案零回归');
 })();
 
-/* ── §e 接线契约 ──────────────────────────────────────────────── */
-console.log('— §e · 接线契约 —');
-(function () {
-  var ne = read('tm-neitang-engine.js');
-  ok(/try \{ applyInnerCourtParasitism\(mr\); \}/.test(ne), '寄生挂内帑引擎 tick(与宗禄压力同段)');
-  var ac = read('tm-authority-complete.js');
-  ok(/recordConfiscation/.test(ac) && /_pmPartyBoost/.test(ac), '追赃走内帑现成抄家入口·政柄耦合在坐大式内');
-  ok(/innerCourt: _pmInner/.test(ac), '_gameOver 信号带 innerCourt 字段');
-  var eh = read('tm-endturn-helpers.js');
-  ok(/fresh\.innerCourt/.test(eh), '终局消费体读 innerCourt 分流');
-})();
-
 console.log('\nsmoke-eunuch-inner-court-s2 ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
 process.exit(F0 === 0 ? 0 : 1);

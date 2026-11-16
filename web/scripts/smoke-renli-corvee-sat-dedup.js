@@ -65,9 +65,6 @@ global.P = { adminHierarchy: { player: { divisions: [ { id: '陕西', name: '陕
 ok(Rr.seededDingShare(global.P) === 0, '①无种子→seededDingShare 0（huji minxinDelta 不缩减·inert）');
 
 // ── 源契约 ──
-var src = fs.readFileSync(path.join(ROOT, 'tm-huji-runtime-bridge.js'), 'utf8');
-ok(/TM\.Renli/.test(src) && /seededDingShare/.test(src), '③bridge 引用 TM.Renli.seededDingShare');
-ok(/minxinDelta\s*=\s*round2\(minxinDelta\s*\*\s*\(1 - _rlShare\)\)/.test(src), '③役负满意度扣减已按 (1 - _rlShare) 缩减');
 
 console.log('\n[smoke-renli-corvee-sat-dedup] ' + pass + ' 通过 / ' + fail + ' 失败');
 if (fail) { console.error('失败项：\n - ' + fails.join('\n - ')); process.exit(1); }

@@ -120,8 +120,6 @@ TURN.runPending(GM).then(function () {
     /* ⑩ UI 源契约:军卡带 stance 三态按钮 + 命令分支 + 刷新 */
     var fs2 = require('fs');
     var rr = fs2.readFileSync(path.resolve(__dirname, '..', 'phase8-formal-rightrail.js'), 'utf8');
-    ok(/data-command="stance"/.test(rr) && /rightArmyStanceLabel/.test(rr), '⑩ 军卡渲染带「若接战」预勾按钮(仅玩家军)');
-    ok(/cmd === 'stance'/.test(rr) && /_battleStance/.test(rr) && rr.indexOf("cur === 'always' ? 'delegate'") >= 0, '⑩ stance 命令分支三态轮换+refreshArmyFlyout');
 
     console.log('\n结果: ' + A + ' 通过 / ' + F + ' 失败');
     process.exit(F ? 1 : 0);

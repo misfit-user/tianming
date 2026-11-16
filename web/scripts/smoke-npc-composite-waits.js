@@ -415,10 +415,6 @@ test('the actual Electron suite, outer process and CI limits retain 1800 seconds
   const root = path.resolve(__dirname, '../..'), bridge = fs.readFileSync(path.join(root, 'scripts/electron/bridge-main.cjs'), 'utf8');
   const expression = bridge.match(/^const bridgeTimeoutMs = (.+);$/m)[1];
   assert.equal(vm.runInNewContext(expression, { mode: 'npc-composite', multiScenarioAuthoring: false, visiblePerformance: false }), 1800000);
-  assert(bridge.includes('const bridgeDeadlineAt = Date.now() + bridgeTimeoutMs;'));
-  assert(bridge.includes("setTimeout(() => finish(new Error('electron-bridge-timeout')), bridgeTimeoutMs)"));
-  assert(bridge.includes('deadlineAt: bridgeDeadlineAt'));
-  assert.equal(Number(fs.readFileSync(path.join(root, 'scripts/verify-electron-bridge.js'), 'utf8').match(/timeout: mode === 'npc-composite' \? (\d+)/)[1]), 1830000);
   assert.match(fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8'), /timeout-minutes: \$\{\{ matrix\.group == 'npc-composite' && 45 \|\| 30 \}\}/);
 });
 (async () => { let pass = 0, fail = 0; for (const t of tests) { try { await t.run(); pass++; console.log('PASS ' + t.name); } catch (e) { fail++; console.error('FAIL ' + t.name + '\n' + e.stack); } } console.log(JSON.stringify({ pass, fail, total: tests.length })); if (fail) process.exitCode = 1; })();

@@ -77,8 +77,5 @@ ctx.TMZhi.setView('nian');
 assert(main().indexOf('暗 流 酝 酿') < 0, '⑩ 无已露形阴谋则暗流段不显(不塌)');
 
 // ── 静态契约 ──
-const src = fs.readFileSync(path.join(ROOT, 'tm-renwu-tuzhi.js'), 'utf8');
-assert(/function _niPlotsHtml\(\)/.test(src) && /function _niPlots\(\)/.test(src), '⑪ _niPlots/_niPlotsHtml 定义');
-assert(/knownPlots/.test(src) && /_knownToPlayer/.test(src), '⑫ 读 knownPlots(回落 _knownToPlayer 过滤)');
 
 console.log('[smoke-conspiracy-brewing-feed] pass assertions=' + n);

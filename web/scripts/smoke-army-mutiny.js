@@ -68,9 +68,6 @@ ok(true, '7·无 armies→不崩');
 
 // ── T8 装配/导出契约 ──
 var fs = require('fs'), path = require('path');
-var src = fs.readFileSync(path.join(__dirname, '..', 'tm-class-mobility.js'), 'utf8');
-ok(/_tickRovingPlunder\(ctx, mr\);[\s\S]{0,160}_tickArmyMutiny\(ctx, mr\);/.test(src), '8·tick 链接入 _tickArmyMutiny');
-ok(/taoohu\.mouths = \(Number\(taoohu\.mouths\) \|\| 0\) \+ scatter/.test(src), '8·哗变守恒入逃户(逃户→流寇·串刀三)');
 
 console.log('\n[smoke-army-mutiny] ' + pass + ' 通过 / ' + fail + ' 失败');
 if (fail) { console.error('失败项：\n - ' + fails.join('\n - ')); process.exit(1); }

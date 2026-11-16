@@ -133,17 +133,8 @@ function load(file) {
   assert(signalScript >= 0, 'index.html should load tm-player-action-signals.js');
   assert(calibratorScript >= 0 && signalScript < calibratorScript, 'player action signals script should load before the LLM calibrator');
 
-  const endturnSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
-  assert(/party-class-calibration/.test(endturnSource), 'endturn prompt fragments should include party-class-calibration');
-  assert(/PlayerActionSignals\.formatForPrompt/.test(endturnSource), 'endturn prompt fragment should inject formatted player action signals');
-
   const moduleSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-modules.js'), 'utf8');
   const rightSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail.js'), 'utf8');
-  assert(/recordUiActionSignal/.test(moduleSource), 'formal module actions should explicitly record player action signals');
-  assert(/recordRightActionSignal/.test(rightSource), 'right rail actions should explicitly record player action signals');
-  assert(/function moduleActionData\(btn\)/.test(moduleSource), 'formal module handler should preserve clicked button context');
-  assert(/function rightActionData\(btn\)/.test(rightSource), 'right rail handler should preserve clicked button context');
-  assert(/data\.buttonText/.test(moduleSource) && /data\.buttonText/.test(rightSource), 'UI action signals should include visible button text');
   const moduleEmitMatch = /function emitPlayerActionSignal\(payload(?:,\s*options)?\)/.exec(moduleSource);
   const moduleEmit = moduleEmitMatch ? moduleEmitMatch.index : -1;
   const moduleRecord = moduleSource.indexOf('TM.PlayerActionSignals.record(GM, payload)', moduleEmit);
@@ -153,8 +144,6 @@ function load(file) {
   const rightRecord = rightSource.indexOf('TM.PlayerActionSignals.record(GM, payload)', rightEmit);
   const rightNotify = rightSource.indexOf('skipSignalRecord: recorded', rightEmit);
   assert(rightEmit >= 0 && rightRecord > rightEmit && rightNotify > rightRecord, 'right rail should record structured evidence before scheduling LLM without duplication');
-  assert(/rightAddEdictSuggestion[\s\S]{0,520}recordRightActionSignal\('edict-suggestion'[\s\S]{0,120}source, from, topic, content/.test(rightSource), 'right rail edict suggestions should record the actual suggestion content, not only the button label');
-  assert(/draftText[\s\S]{0,260}recordUiActionSignal\(action, data,[\s\S]{0,120}draftText/.test(moduleSource), 'formal add-edict should record the generated draft text as player-operation evidence');
 
   console.log('[smoke-player-action-signals] PASS structured player action signals');
 })().catch((e) => {

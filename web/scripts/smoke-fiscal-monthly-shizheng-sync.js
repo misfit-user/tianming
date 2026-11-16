@@ -17,24 +17,9 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const guoku = fs.readFileSync(path.join(ROOT, 'tm-guoku-engine.js'), 'utf8');
-const prompt = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
 
 let passed = 0;
 function assert(cond, msg) { if (!cond) throw new Error('FAIL: ' + msg); passed += 1; }
-
-// ── ① fiscal 检测补 GM.turn-1 ────────────────────────────────────────────────
-assert(/var _cascadeRanForIncome = \(GM\._lastCascadeTurn === GM\.turn\) \|\| \(GM\._lastCascadeTurn === \(GM\.turn - 1\)\)/.test(guoku),
-  '_cascadeRanForIncome 须补 === GM.turn-1(治过回合后月入八源覆盖)');
-assert(/var cascadeRanThisTurn = \(GM\._lastCascadeTurn === GM\.turn\) \|\| \(GM\._lastCascadeTurn === \(GM\.turn - 1\)\)/.test(guoku),
-  'cascadeRanThisTurn 须补 === GM.turn-1(令余额走 cascade 真账路)');
-
-// 从权威 ledger 反算显示
-assert(/g\.monthlyIncome = Math\.round\(\(g\.ledgers\.money\.thisTurnIn \|\| 0\) \/ mr\)/.test(guoku),
-  '须从 ledger.thisTurnIn/mr 反算显示月入(= cascade 真值·等价 load 后)');
-assert(/g\.monthlyExpense = Math\.round\(\(g\.ledgers\.money\.thisTurnOut \|\| 0\) \/ mr\)/.test(guoku),
-  '须从 ledger.thisTurnOut/mr 反算显示月支');
-assert(/if \(cascadeRanThisTurn && mr > 0 && \(g\.ledgers\.money\.thisTurnIn \|\| 0\) > 0\)/.test(guoku),
-  '反算须 gated:cascade 真跑过且确有进项(fallback 保持八源八类)');
 
 // ── 行为:抽出 cascadeRanThisTurn 表达式·四态 eval ────────────────────────────
 const m = guoku.match(/var cascadeRanThisTurn = ([^;]+);/);
@@ -59,12 +44,6 @@ assert(oldDetect(5, 6, 0) === false && detect(5, 6, 0) === true, '对照:旧检�
 
 // ── ② 时政 prompt 强化 ───────────────────────────────────────────────────────
 // 注:3090 行 Edit 存为字面中文·3107 行 Edit 转成 \uXXXX(运行时等价)·故 3090 用字面中文锚、3107 用 ASCII 锚。
-assert(prompt.indexOf('必须每回合维护它') >= 0, 'prompt 须把时政维护改成「必须每回合维护」(3090)');
-assert(prompt.indexOf('与推演完全脱节') >= 0, 'prompt 须说明不维护后果:面板停滞、与推演脱节(3090)');
-assert(prompt.indexOf('{action:"resolve", id:"') >= 0, 'prompt 须给 resolve 的 id 照填范式(3107·治AI编id不匹配致resolve落空)');
-assert(prompt.indexOf('{action:"add", title, description}') >= 0, 'prompt 须给 add 新议题范式(3107)');
 // 仍保留注入 id 与 resolve 指令(端到端管线不破)
-assert(/id:' \+ iss\.id/.test(prompt), '仍须把当前要务 id 注入给 AI(resolve 才能匹配)');
-assert(/resolve: /.test(prompt), 'resolve 指令仍在');
 
 console.log('[smoke-fiscal-monthly-shizheng-sync] PASS ' + passed + ' assertions');

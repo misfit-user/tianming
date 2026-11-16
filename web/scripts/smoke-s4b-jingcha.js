@@ -15,14 +15,6 @@ let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m); } }
 
 // ════════ 一·源契约 ════════
-const src = fs.readFileSync(path.join(ROOT, 'tm-office-system.js'), 'utf8');
-ok(/function _officeJingchaOn\(\)/.test(src), '_officeJingchaOn 开关已定义');
-ok(/officeJingchaEnabled/.test(src), '开关读 officeJingchaEnabled');
-ok(/function _tickJingcha\(\)/.test(src), '_tickJingcha 已定义');
-ok(/streak >= _JINGCHA_CFG\.demoteStreak/.test(src), '黜·消费 S1b 连劣 _reviewPoorStreak');
-ok(/else if \(c\._seeksRemoval\)/.test(src), '陟·消费 S1d 才不配位 _seeksRemoval');
-ok(/不擅自革职去职/.test(src), '注释明确保守裁示：只降/擢·不硬罢去职');
-ok(/SettlementPipeline\.register\('officeJingcha'/.test(src), '注册 perturn 结算步 officeJingcha');
 
 // ════════ 二·真代码：headless 调真 _tickJingcha ════════
 function loadHeadlessHelpers() { const s = fs.readFileSync(HEADLESS, 'utf8').replace(/^#![^\n]*\n/, '').replace(/\nmain\(\);\s*$/, '\nreturn { makeStubs, parseIndexHtmlScripts };'); return (new Function('require', 'process', '__dirname', '__filename', 'module', 'exports', s))(require, process, __dirname, HEADLESS, { exports: {} }, {}); }

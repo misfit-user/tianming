@@ -12,14 +12,6 @@ function ok(c, m) { if (c) pass++; else { fail++; console.error('  ✗ ' + m); }
 
 const PROMPT = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
 
-// ── 源契约 ──
-ok(/当前亲疏立场——top 盟友\/宿敌/.test(PROMPT), '契约:ties 注释块存在');
-ok(/var _ties = AffinityMap\.getRelations\(c\.name\)/.test(PROMPT), '契约:走 AffinityMap.getRelations(c.name)');
-ok(/Math\.abs\(_tr\.value \|\| 0\) < 20\) continue/.test(PROMPT), '契约:|value|<20 噪声过滤');
-ok(/xmlLines\.push\('    <ties>' \+ _tl\.join\(''\) \+ '<\/ties>'\)/.test(PROMPT), '契约:输出 <ties> 行');
-ok(/<ally name=/.test(PROMPT) && /<foe name=/.test(PROMPT), '契约:ally/foe 标签');
-ok(PROMPT.indexOf('当前亲疏立场') < PROMPT.indexOf("xmlLines.push('  </heart>')"), '契约:ties 块在 heart 闭合之前(注入每个 heart 内)');
-
 // ── 抽真片段实跑 ──
 const a = PROMPT.indexOf('// 当前亲疏立场——top 盟友');
 const b = PROMPT.indexOf('} catch (_tiesE) {}', a);

@@ -22,25 +22,8 @@ function ok(cond, msg) {
 }
 
 // ── 源码契约：四公式与渲染管线接线齐全（防回退成死函数） ──
-ok(/function moodViewScore\(/.test(SRC), '源码含 moodViewScore');
-ok(/function armyViewScore\(/.test(SRC), '源码含 armyViewScore');
-ok(/function officeViewScore\(/.test(SRC), '源码含 officeViewScore');
-ok(/function taxViewScore\(/.test(SRC), '源码含 taxViewScore');
-ok(/function yizhengViewScore\(/.test(SRC), '源码含 yizhengViewScore（R7-a 役政视图）');
-ok(/mode === 'yizheng'/.test(SRC), '役政 mode 接入 regionColor/modeScore dispatcher');
-ok(/modeScore\(r, _sentinelMode\)/.test(SRC), '哨牌值进 dirty 签名（防档内变分不重渲）');
-ok(/tmf-sentinel-layer/.test(SRC), '哨牌层挂进 renderFormalMap');
-ok(/mapTipHtml\(r\)/.test(SRC), '签注接 hover tick');
-ok(/tip-verdict/.test(SRC), '签注含判语');
-ok(/tmf-grade-bar/.test(SRC), '图例五档条接线');
-ok(/function bkYingzao\(/.test(SRC) && /data-bk-build/.test(SRC), '营造志+兴造按钮接线');
-ok(/_dfBuildModal/.test(SRC), '兴造按钮复活 _dfBuildModal（孤儿入葬→还阳）');
 ok(!/function heatColor\(/.test(SRC), '旧 heatColor 三档插值已删（不留死函数）');
 ok(!/function ppRegionGridV2\(/.test(SRC) && !/function factionTabDetail\(/.test(SRC), '旧 codex 渲染链已删');
-
-// ── 抽出纯函数段 vm 实算 ──
-ok(/getTerritoryBuildingsCompat/.test(SRC) && /pushBuildCard/.test(SRC), 'building panel reads compat division.buildings after approval');
-ok(/tm-yingzao-submitted', function\(e\)/.test(SRC) && /detail\.divName/.test(SRC), 'building submit event can refresh panel by division name');
 
 function extract(name) {
   const m = SRC.match(new RegExp('  (function ' + name + '\\([^)]*\\)\\{[\\s\\S]*?\\n  \\})'));

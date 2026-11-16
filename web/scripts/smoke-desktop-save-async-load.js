@@ -5,7 +5,6 @@ const os = require('os');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..', '..');
-const mainImpl = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf8');
 const packageJson = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 const { readJsonFileOffMainThread } = require(path.join(ROOT, 'main-json-file.js'));
 
@@ -55,10 +54,6 @@ async function run() {
     }
     ok(parseError instanceof Error, 'worker parse failures reject instead of returning partial data');
 
-    ok(/ipcMain\.handle\('load-project',[\s\S]*?await readJsonFileOffMainThread\(ref\.path\)/.test(mainImpl),
-      'project loading uses the off-main-thread JSON reader');
-    ok(/ipcMain\.handle\('load-auto-save',[\s\S]*?await readJsonFileOffMainThread\(AUTO_SAVE_FILE\)/.test(mainImpl),
-      'desktop auto-save loading uses the off-main-thread JSON reader');
     ok(Array.isArray(packageJson.build && packageJson.build.files)
       && packageJson.build.files.includes('main-json-file.js'),
     'the packaged Electron app includes the JSON worker module');

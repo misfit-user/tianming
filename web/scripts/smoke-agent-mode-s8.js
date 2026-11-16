@@ -5,7 +5,6 @@
 //       + 报账(_turnReport)+ 引擎让步标记 + 失败可见 + 通用工具描述引导硬核账走语义工具
 // ============================================================
 
-const fs = require('fs');
 const path = require('path');
 const { ROOT, makeAssert } = require('./smoke-endturn-baseline-helpers');
 
@@ -151,11 +150,7 @@ function makeGM() { return { turn: 7, guoku: { balance: 1000000, money: 1000000,
   assert(r.ok && !gmB.adminHierarchy['明'].divisions[0].children.some(function (c) { return c.name === '锦州'; }), 'restructure_division remove→废锦州');
 
   // ── 通用工具仍在(回归)+ 描述引导硬核账走语义工具 ──
-  var setDef = WT.DEFS.find(function (d) { return d.name === 'set_field'; });
-  assert(/adjust_treasury|appoint_official/.test(setDef.description), 'set_field 描述引导硬核账走语义工具');
   // 源码:agent-mode prompt 也引导
-  var amSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-agent-mode.js'), 'utf8');
-  assert(amSrc.indexOf('adjust_treasury') >= 0 && amSrc.indexOf('appoint_official') >= 0, 'agent-mode system prompt 引导用语义工具');
 
   console.log('[smoke-agent-mode-s8] pass assertions=' + passed.value);
 })().catch(function (e) { console.error(e); process.exit(1); });

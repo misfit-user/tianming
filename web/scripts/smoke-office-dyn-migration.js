@@ -112,14 +112,6 @@ assert(sb2._jobs.length === 2 && sb2._jobs.every(function (j) { return j.id.inde
   assert(qs && qs.positions.length === 1, '挂靠节点(清吏司)亦获补章');
 
   console.log('⑤ 静态契约·接线到位');
-  var parser = fs.readFileSync(path.join(ROOT, 'tm-edict-parser.js'), 'utf8');
-  assert(parser.indexOf('_migratedToTree') >= 0, '岁支 tick 见 _migratedToTree 即跳(旧账停走)');
-  var drawers = fs.readFileSync(path.join(ROOT, 'tm-var-drawers.js'), 'utf8');
-  assert(drawers.indexOf('已归官制树') >= 0, '制度志抽屉标注已归树(留痕不隐)');
-  var flagsSrc = fs.readFileSync(path.join(ROOT, 'tm-office-flags.js'), 'utf8');
-  assert(flagsSrc.indexOf("'officeDynMigrationEnabled'") >= 0, 'officeDynMigrationEnabled 入 OfficeFlags.LIST');
-  var patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-  assert(patches.indexOf('officeDynMigrationEnabled') >= 0, '设置面板有旧衙归树开关行');
 
   console.log('');
   if (failures.length) {

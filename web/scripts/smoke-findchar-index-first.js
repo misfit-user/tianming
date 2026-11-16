@@ -17,7 +17,6 @@ console.log('smoke-findchar-index-first');
 const idx = fs.readFileSync(path.join(ROOT,'tm-indices.js'),'utf8');
 const findSrc = sliceFn(idx, 'function findCharByName(');
 ok(!!findSrc, 'findCharByName 抽取成功');
-ok(/GM\._indices\.charByName\.get\(rawName\)/.test(findSrc) && findSrc.indexOf('if (fast) return fast') < findSrc.indexOf('var canonName = canonicalizeCharName'), '源契约:fast-path 索引查/返回在 canonicalize 调用之前');
 
 const ctx = { canonCalls: 0 };
 ctx._tmCleanCharLookupName = function(n){ return (n||'').trim(); };

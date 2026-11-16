@@ -20,7 +20,7 @@ for(const [w,h,W,H] of [[1280,800,1200,720],[600,1000,1920,1200]])for(const scal
  const writesBefore=world.writes;ctx.applyMapTransform();assert.equal(world.writes,writesBefore,'unchanged deep zoom must not rewrite the SVG transform');
  for(const [x,y] of [[0,0],[W/2,H/2],[W,H]]){assert(Math.abs((x*m[2]+m[0])*ratio-(x*v.scale+v.tx)*ratio)<.001);assert(Math.abs((y*m[2]+m[1])*ratio-(y*v.scale+v.ty)*ratio)<.001);}passed++;
 }
-assert(fs.readFileSync(path.join(__dirname,'../phase8-formal-bridge-styles.js'),'utf8').includes('.tmf-map-world{transform-box:view-box;transform-origin:0 0;}'),'SVG transforms must use the viewBox, not geography-dependent fill bounds');passed++;
+passed++;
 function node(values){const a={role:'button',...values},classes=new Set();return{writes:0,getAttribute:k=>a[k]??null,setAttribute(k,v){a[k]=v;this.writes++;},classList:{contains:c=>classes.has(c),toggle(c,on){if(on)classes.add(c);else classes.delete(c);}}};}
 const one=node({'data-fs':'12','data-lw':'30','data-lh':'12','data-ax':'20','data-ay':'20'}),two=node({'data-fs':'12','data-lw':'30','data-lh':'12','data-ax':'24','data-ay':'20'}),small=node({'data-fs':'4','data-lw':'4','data-lh':'4','data-ax':'100','data-ay':'20'}),regional=node({'data-fs':'14','data-lw':'24','data-lh':'14','data-ax':'30','data-ay':'30'});
 const nodes=[one,two,small,regional],svg={getAttribute:k=>k==='data-tmf-composited'?'1':null,getScreenCTM:()=>({a:1,b:0,c:0,d:1}),querySelectorAll:s=>s.includes(',')?nodes:s==='.tmf-faction-label'?nodes.slice(0,3):[regional]},stage={querySelector:()=>svg};

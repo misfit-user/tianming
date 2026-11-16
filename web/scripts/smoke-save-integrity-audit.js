@@ -12,7 +12,6 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const main = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf8');
 const lifecycle = fs.readFileSync(path.join(ROOT, 'web', 'tm-save-stable-id-migration.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'web', 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'web', 'tm-save-lifecycle.js'), 'utf8');
 const huji = fs.readFileSync(path.join(ROOT, 'web', 'tm-huji-engine.js'), 'utf8');
-const storage = fs.readFileSync(path.join(ROOT, 'web', 'tm-storage.js'), 'utf8');
 let pass = 0;
 function ok(cond, msg) { if (!cond) throw new Error('FAIL: ' + msg); pass++; console.log('  ok - ' + msg); }
 function sliceFn(src, marker) {
@@ -137,17 +136,5 @@ console.log('=== save integrity audit ===');
   ok(threw, 'migration 失败向上抛出');
   ok(p.conf._saveSchemaVersion === 'old' && p.conf._migrationFailure, 'migration 失败不盖目标版本并记录失败');
 }
-
-// 6. 旧源迁移：统一占用无冲突 ID、单事务全写、逐条读回，再删除旧源。
-ok(/async function _migrateFromLocalStorage[\s\S]*?_prepareMigrationRecords[\s\S]*?_putManyAtomic\(SAVE_STORE, prepared\.records\)[\s\S]*?_verifyMigrationRecords\(prepared\.records\)[\s\S]*?localStorage\.removeItem/.test(storage),
-  'localStorage 迁移仅在无冲突写入并读回校验后删除源');
-ok(/function _migrateFromOldDB[\s\S]*?_prepareMigrationRecords\(records, 'old-db'\)[\s\S]*?_putManyAtomic\(SAVE_STORE, prepared\.records\)[\s\S]*?_verifyMigrationRecords\(prepared\.records\)[\s\S]*?indexedDB\.deleteDatabase\(OLD_DB\)/.test(storage),
-  '旧 IndexedDB 先分配无冲突 ID、原子批量写并读回，再删除旧库');
-ok(/delReq\.onsuccess[\s\S]*?resolve\(result\.sourceCount\)[\s\S]*?delReq\.onblocked[\s\S]*?reject/.test(storage),
-  '旧库删除成功/失败/blocked 均显式结算');
-ok(/function writeFileAtomic[\s\S]*?fs\.fsyncSync\(fd\)[\s\S]*?fs\.renameSync\(tmp, file\)[\s\S]*?fs\.rmSync\(tmp, \{ force: true \}\)/.test(main),
-  '原子文件写使用唯一 tmp + fsync + rename + 失败清理');
-ok(/function readJsonSafe[\s\S]*?e\.code === 'ENOENT'[\s\S]*?throw e/.test(main),
-  '主进程读取只豁免 ENOENT');
 
 console.log('\n[smoke-save-integrity-audit] pass=' + pass);

@@ -93,15 +93,6 @@ function loadApplier() {
   assert(/PhaseF5\.openInstitutionsChronicle/.test(el.innerHTML), '空态按钮 onclick 应调 PhaseF5.openInstitutionsChronicle');
 })();
 
-// ── B) 源码字符串断言（防孤儿化·辅）──
-(function sourceContract() {
-  const officeSrc = fs.readFileSync(path.join(ROOT, 'tm-office-runtime.js'), 'utf8');
-  assert(/PhaseF5\.openInstitutionsChronicle\s*\(/.test(officeSrc),
-    '官制面板须存在调用 PhaseF5.openInstitutionsChronicle 的入口（防再孤儿化）');
-  assert(/_offInstitutionsChronicleBar/.test(officeSrc),
-    '制度志入口按钮 helper _offInstitutionsChronicleBar 须存在');
-})();
-
 // ── C) 弹窗本体真渲染：对象池形状 + 阶段中文化 ──
 function makeToolsSandbox(dynamicInstitutions) {
   const created = [];

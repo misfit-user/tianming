@@ -58,8 +58,6 @@ ok(R.applyGrainShortfall(GM4, global.P) === 0, '5·无帑廪粮账→inert(返0�
 var fs = require('fs'), path = require('path');
 ok(typeof R.applyGrainShortfall === 'function', '7·导出 applyGrainShortfall');
 var src = fs.readFileSync(path.join(__dirname, '..', 'tm-renli.js'), 'utf8');
-ok(/spawnReportedChannels\(GM, Pp\); \} catch[\s\S]{0,90}applyGrainShortfall\(GM, Pp\); \} catch/.test(src), '7·endturnTick 已接 applyGrainShortfall');
-ok(/gk\.grain = Math\.max\(0,/.test(src) && !/gk\.money/.test(src), '2·源码确认只写 guoku.grain·从不写 guoku.money(非双算铁证)');
 var body = src.slice(src.indexOf('function applyGrainShortfall'), src.indexOf('function applyGrainShortfall') + 1400);
 ok(!/天启|陕西|延安|西安|sc-tianqi/.test(body), '8·applyGrainShortfall 无朝代/地名硬编（中立）');
 

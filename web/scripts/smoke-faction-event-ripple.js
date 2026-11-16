@@ -20,16 +20,7 @@ const EXT = fs.readFileSync(path.join(ROOT, 'tm-three-systems-ext.js'), 'utf8');
 const RECON = fs.readFileSync(path.join(ROOT, 'generated/tm-ai-change-applier.bundle.js'), 'utf8');
 
 // ═══════════════════ ① 源契约 ═══════════════════
-ok(/function _factionEventRipple\(\)/.test(SRC), '契约:_factionEventRipple 定义存在');
-ok(/SettlementPipeline\.register\('factionEventReact', '势力大事涟漪'.*90.*'perturn'\)/.test(SRC), '契约:C1 注册 factionEventReact/priority90/perturn');
-ok(/function _factionCollapseRipple\(facName\)/.test(SRC), '契约:_factionCollapseRipple 定义存在');
-ok(/GameEventBus\.on\('faction:defeated'/.test(SRC) && /GameEventBus\.on\('faction:collapse'/.test(SRC), '契约:C2 订阅 faction:defeated + faction:collapse 两 emitter');
-ok(/_collapseRippleReacted/.test(SRC), '契约:C2 共享幂等标记 _collapseRippleReacted');
-ok(/var CAP = 24/.test(SRC), '契约:单回合总封顶 24');
 // 六类事件对象幂等标记
-['_occupyRippleReacted', '_invRippleReacted', '_rippleReacted', '_upriseRippleReacted', '_amnestyRippleTurn', '_amnestyOkRippleReacted'].forEach(function (mk) {
-  ok(SRC.indexOf(mk) >= 0, '契约:幂等标记打在事件对象上 — ' + mk);
-});
 
 // ═══════════════════ 花括号配平抽真函数 ═══════════════════
 function extractFn(src, decl) {
@@ -377,10 +368,8 @@ function memCount(ctx) { return (ctx.GM.chars || []).reduce(function (s, c) { re
 
 // ═══════════════════ ② apply.js C2 去重裁定契约 ═══════════════════
 ok(!/_membersBefore/.test(APPLY), 'apply.js:原内联成员覆灭记忆写已摘(无 _membersBefore 残留)');
-ok(/faction:defeated/.test(APPLY) && /_factionCollapseRipple|C2/.test(APPLY), 'apply.js:保留 faction:defeated emit + 指向 _factionCollapseRipple 去重注释');
 
 // ═══════════════════ ③ C3 死链退役契约(反双扣) ═══════════════════
-ok(/army:defeat/.test(EXT) && /C3/.test(EXT) && /world-reactors|onBattleResolved/.test(EXT), 'ext.js:C3 裁定注释在 army:defeat 死链处(指向 world-reactors 承载)');
 ok(!/emit\(\s*['"]army:defeat['"]/.test(EXT) && !/emit\(\s*['"]army:defeat['"]/.test(RECON), 'C3:army:defeat 无 emitter(死链保持退役·未在 ext/reconcile 复活·反与 world-reactors 双扣)');
 
 console.log('[smoke-faction-event-ripple] ' + pass + ' passed / ' + fail + ' failed');

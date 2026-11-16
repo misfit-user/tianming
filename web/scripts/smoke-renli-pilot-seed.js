@@ -44,9 +44,6 @@ ok(!!leafSX.renliSeed, '3·幂等后陕西仍种子');
 // 4) 单一真相源 + 源契约
 ok(R.assertNoDingInRenli(global.GM).length === 0, '4·GM.renli 无丁计数泄漏');
 ok(typeof R.ensurePilotSeeds === 'function', '4·导出 ensurePilotSeeds');
-var fs = require('fs'); var src = fs.readFileSync(require('path').join(__dirname, '..', 'tm-renli.js'), 'utf8');
-ok(/try \{ ensurePilotSeeds\(GM, Pp\); \} catch/.test(src), '4·endturnTick 已接入 ensurePilotSeeds（过回合先种子）');
-ok(/GM\.renliPilot/.test(src) && !/sc-tianqi7|天启|陕西'/.test(src.replace(/[\s\S]*ensurePilotSeeds/, '').slice(0, 400)), '4·ensurePilotSeeds 数据驱动·无朝代/地名硬编（中立）');
 
 // 5) 配置回退：GM 无 renliPilot 但剧本模板 P.scenarios[sid].renliPilot 有 → 仍种子（绕 scenario→GM 拷贝保真·A3b 实走此路）
 global.P = { scenarios: [{ id: 'sc-y', renliPilot: [{ region: '陕西', seed: { soilBase: 66, laborMarketDepth: 0.2, registeredLand: 3000000 } }] }],

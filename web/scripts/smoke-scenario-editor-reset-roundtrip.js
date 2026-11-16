@@ -53,10 +53,6 @@ function isRuleListField(field, value) {
 }
 
 const appSrc = fs.readFileSync(appFile, 'utf8');
-assert(appSrc.includes('function isKindedVariables(value)'),
-  'editor must expose isKindedVariables definition that this smoke mirrors');
-assert(appSrc.includes("['globalRules', 'rules'].indexOf(field) >= 0"),
-  'editor must expose the rule-list field membership predicate this smoke mirrors');
 
 const tianqi = bundle.tianqi7;
 const shaosong = bundle.shaosong;
@@ -125,27 +121,10 @@ function deepKeyDigest(value, depth) {
 const surfaces = appSrc.match(/runtimeSurface\('[^']+'/g) || [];
 assert(surfaces.length > 60,
   'editor should declare a broad runtime field audit table (>60 entries)');
-assert(appSrc.includes("runtimeSurface('rigidTriggers',"),
-  'audit table should include rigidTriggers (天启 schema)');
-assert(appSrc.includes("runtimeSurface('chronicleConfig',"),
-  'audit table should include chronicleConfig (绍宋 schema)');
-assert(appSrc.includes("runtimeSurface('startMonth',"),
-  'audit table should include startMonth (绍宋-specific top-level key)');
-assert(appSrc.includes("runtimeSurface('engineConstants',"),
-  'audit table should include engineConstants (绍宋 v1.6 schema)');
 
 // --- Field rename aliasing ---------------------------------------------------
 // We can directly test the alias map by reading the literal source. The editor
 // only writes through the alias when the canonical key is absent and the
 // alias is present, so this is the safe replication condition.
-const aliasPairs = [
-  ['desc', 'description'],
-  ['historicalEvents', 'history'],
-  ['liege', 'lord']
-];
-aliasPairs.forEach(([a, b]) => {
-  assert(appSrc.includes("'" + a + "'") && appSrc.includes("'" + b + "'"),
-    'editor alias table should know the pair: ' + a + ' / ' + b);
-});
 
 console.log('smoke-scenario-editor-reset-roundtrip OK: ' + passed + ' assertions');

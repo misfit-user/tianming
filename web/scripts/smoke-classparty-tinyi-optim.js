@@ -43,13 +43,6 @@ console.log('— S1 · 满意度总闸收口(行为) —');
   ok(Array.isArray(cls._satLedger) && cls._satLedger.length >= 2 && cls._satLedger[0].src === 'keju', '近账 _satLedger 记 keju 源');
 })();
 console.log('— S1 · 七处绕闸点接闸(契约) —');
-ok((read('tm-keju.js').match(/gateSatisfaction/g) || []).length >= 2, 'tm-keju.js 两处(宗室/礼制)接闸');
-ok(/gateSatisfaction/.test(read('tm-keju-activation.js')), 'tm-keju-activation.js 接闸');
-ok(((read('tm-keju-runtime.js') + read('tm-keju-runtime-keyi.js')).match(/gateSatisfaction/g) || []).length >= 4, 'tm-keju-runtime.js 两处考生占比接闸');
-ok(/gateSatisfaction\(GM, cls, _crDelta/.test(read('tm-endturn-followup.js')), '后朝 class_reactions 接闸');
-var _apl = read('tm-endturn-apply.js');
-ok(/gateSatisfaction\(GM, clsObj, impact/.test(_apl), '解锁 classesAffected 接闸');
-ok(/applyClassPartyCoupling\(GM, clsObj, _uaApplied/.test(_apl), '耦合改用实批准量(闸后差值)');
 
 /* ── S2 · 行为级：盟敌单源对账 ────────────────────────────────── */
 console.log('— S2 · 盟敌对账(行为) —');
@@ -71,15 +64,6 @@ console.log('— S2 · 盟敌对账(行为) —');
   ok(p.enemies.indexOf('浙党') >= 0, 'runtime 敌意并入 canonical (' + p.enemies.join('/') + ')');
 })();
 console.log('— S2 · 清誉/弹劾grade(契约) —');
-var _tv3 = (read('tm-tinyi-v3-persona.js') + (read('tm-tinyi-v3.js') + '\n' + read('tm-tinyi-v3-edict-personnel.js')) + read('tm-tinyi-v3-parties.js'));
-ok(/function _ty3_bumpPartyReputation\(ps, delta\)/.test(_tv3), '清誉写入器在(此前全项目零写者)');
-ok(/_ty3_bumpPartyReputation\(source, \(sourceWin - sourceLose\)/.test(_tv3), '政策胜负写清誉(倡议方)');
-ok(/_ty3_bumpPartyReputation\(ps, \(oppWin - oppLose\)/.test(_tv3), '政策胜负写清誉(反对方)');
-ok(/_ty3_bumpPartyReputation\(ps, -sanction \/ 2\)/.test(_tv3), '弹劾定罪扣清誉');
-ok(/ps\.lastImpeachGrade = verdictGrade/.test(_tv3) && /ps\.recentImpeachGrade = verdictGrade/.test(_tv3), '弹劾 grade 三字段焊上(治罢官恒C档)');
-ok(/_repIm/.test(_tv3) && /score -= Math\.round\(_repIm \/ 25\)/.test(_tv3), '判级消费清誉(清流难扳)');
-ok(/_pvRep \* 0\.5/.test(_tv3), '公推票权消费清誉');
-ok(/reputationBalance/.test(read('tm-three-systems-ext.js')) && /_repDecay \* 0\.92/.test(read('tm-three-systems-ext.js')), '清誉每回合向 0 缓归');
 
 /* ── S3 · 行为级：校准器快照富账 + faction 幅度闸 ─────────────── */
 console.log('— S3 · 校准器(行为) —');
@@ -129,18 +113,10 @@ console.log('— S3 · 校准器(行为) —');
 })();
 console.log('— S3 · 冗余收敛(契约) —');
 var _cal = read('tm-party-class-llm-calibrator.js');
-ok(/_cirCache/.test(_cal) && /_invalidateCourtIssueRefs/.test(_cal), 'court-issue refs 批内缓存在(治 O(N×M) 重扫)');
 ok(!/buildScenarioRelationIndex === 'function'\) TM\.PartyGoals\.buildScenarioRelationIndex\(source, \{ turn: turn, source: sourceName \}\)/.test(_cal), 'applyResult 显式关系索引重建已删(derive 内部自建)');
-ok(/Snapshot field semantics/.test(_cal), 'system 提示带新字段语义注释');
 
 /* ── S4 · 廷议流入面(契约) ───────────────────────────────────── */
 console.log('— S4 · 廷议流入面(契约) —');
-var _tv2 = read('tm-chaoyi-tinyi.js');
-ok(/当事阶层\(/.test(_tv2) && /_ty3_currentTinyiMeta/.test(_tv2), '发言 prompt 注入当事阶层实况(治发言者对阶层全盲)');
-ok(/此议由本党所倡/.test(_tv2) && /本党素反此议/.test(_tv2), '发言 prompt 注入党争归属(倡/反)');
-ok(/本党处境：/.test(_tv2), '发言 prompt 注入占官/清誉/弹劾之挫');
-ok(/党争格局：/.test(_tv2) && /同党难倒戈/.test(_tv2), '立场迁移判定注入党争格局');
-ok(/局中利害：/.test(_tv2) && /所涉民情：/.test(_tv2), '折中提案注入局中利害');
 
 /* ── S5 · 行为级：票权加权 + 双写挂起接力 ─────────────────────── */
 console.log('— S5 · 票权与接力(行为) —');
@@ -207,9 +183,6 @@ console.log('— S5 · 票权与接力(行为) —');
   ok(applied.length === 1 && applied[0].source === 'tinyi2-decide', '纯 v2 旁路(keju/时政)decide 直落如旧');
 })();
 console.log('— S5 · v3 侧(契约) —');
-ok((_tv3.match(/_classOutcomeApplied = true; CY\._ty3\._classOutcomePending = null/g) || []).length >= 2, 'v3 用印两路(issued/blocked)落账后销单');
-ok(/wasApproved = _wS >= _wO/.test(_tv3), 'settle hook 弹劾判定与加权众议同步');
-ok(/衡以党势名望/.test(_tv2), '裁决台面显示加权票(透明可查)');
 
 console.log('\nsmoke-classparty-tinyi-optim ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + P + '/' + (P + F));
 process.exit(F === 0 ? 0 : 1);

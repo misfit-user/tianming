@@ -79,10 +79,6 @@ function J(x) { return JSON.stringify(x); }
   ok(eOther && eOther.fileKey === 'proj:b', '别的案卷各记各的');
 
   // UI 接线（源码契约）
-  const ui = fs.readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui.js'), 'utf8');
-  ok(/ui\._onApplied = function/.test(ui) && /L\.record\(entry\)/.test(ui), 'UI：应用后记一笔账');
-  ok(/function _undoEntry\(/.test(ui) && /chainFor\(/.test(ui) && /applyChain\(/.test(ui), 'UI：撤销走连带链 + 反向差异');
-  ok(/data-lg-undo/.test(ui) && /data-lg-redo/.test(ui), 'UI：改动史逐笔撤销/恢复');
   for (const page of ['preview/scenario-editor-reset-preview.html', 'editor.html']) {
     const html = fs.readFileSync(path.join(__dirname, '..', page), 'utf8');
     const a = html.indexOf('editor-authoring-agent.js'), b = html.indexOf('editor-authoring-agent-ledger.js'), c = html.indexOf('editor-authoring-agent-ui.js');

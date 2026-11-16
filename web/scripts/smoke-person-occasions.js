@@ -534,12 +534,6 @@ async function prompts(c) {
   ok(topic11 === own11 + '。议题相关原始记忆：会推前夜与周延儒密议', 'personalOnly 也照样按议题回想');
 
   // ── 12. 接线与守卫 ──
-  ok(read('tm-patches.js').includes("_togglePConf(\\'personUnifiedEnabled\\'"), '设置面板有「人物统一底子」开关');
-  ok(read('tm-player-settings.js').includes('personUnifiedEnabled:'), '开关有提示语');
   const fl = read('tm-faction-npc-llm-decision.js'), pa = read('tm-political-actions.js');
-  ok(fl.includes('if(global.TM&&TM.PoliticalActions)return TM.PoliticalActions.prompt(fac,_politicalBindings.get(fac));')
-    && fl.includes("if(!boundary||!world)return {skipped:true,reason:'political_boundary_unavailable'};"), '势力调度走政治行动那套：绑不到真人不调模型；「历史推演大师」那段只在缺这套时才走');
-  ok(pa.includes("var own=typeof global.buildNpcBehaviorContext==='function'?global.buildNpcBehaviorContext(actor,") && pa.includes('person:own'),
-    '势力调度的「本人」就是 NPC 单独决策那份（人2-7）：开关开着时同读人格核与画像');
   console.log('[smoke-person-occasions] pass assertions=' + checks);
 })().catch((e) => { console.error('[smoke-person-occasions] FAIL', e && e.message || e); process.exit(1); });

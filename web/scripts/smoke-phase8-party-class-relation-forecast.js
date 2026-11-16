@@ -191,7 +191,6 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail.js'), '
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'phase8-formal-rightrail-social.js'), 'utf8'), sandbox, { filename: 'phase8-formal-rightrail-social.js' });
 
 const bridgeSource = fs.readFileSync(path.join(ROOT, 'phase8-formal-bridge.js'), 'utf8');
-assert(/\.tmrp-ecology-forecast/.test(bridgeSource), 'forecast rows should have explicit right-rail styling');
 assert(!/\.tmrp-ecology-actions/.test(bridgeSource), 'forecast rows should not style direct relation command buttons');
 
 let html = bridge.rightrail.renderers.ol();

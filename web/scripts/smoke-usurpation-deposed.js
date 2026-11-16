@@ -62,8 +62,6 @@ c.ctx._powerMinisterEndgame({ name: '某珰', innerCourt: true, embezzled: 0 }, 
 assert(c.G.huangquan.powerMinister === null && !c.G._playerDeposed, '⑫ purged 路原样零回归');
 
 // ── 旧档兼容：helpers 消费分支留存(躺着旧信号的存档不塌) ──
-const helpers = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
-assert(helpers.indexOf("'usurped_by_power_minister'") >= 0, '⑬ helpers 旧信号消费分支留作旧档兼容');
 assert(src.indexOf("type: 'usurped_by_power_minister'") < 0, '⑭ 写入端已退役(全文件零此信号写点)');
 
 console.log('smoke-usurpation-deposed OK — ' + N + ' 断言全绿（傀儡/废帝态/告警指引/数值照旧/purged零回归/旧档兼容）');

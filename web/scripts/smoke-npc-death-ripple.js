@@ -12,13 +12,6 @@ function ok(c, m) { if (c) pass++; else { fail++; console.error('  ✗ ' + m); }
 
 const SRC = fs.readFileSync(path.join(ROOT, 'tm-endturn-helpers.js'), 'utf8');
 
-// ── 源契约 ──
-ok(/function _npcDeathRipple\(\)/.test(SRC), '契约:_npcDeathRipple 定义存在');
-ok(/SettlementPipeline\.register\('npcDeathReact', 'NPC死亡涟漪'.*'perturn'\)/.test(SRC), '契约:注册为 perturn 结算步骤');
-ok(/\(\(GM\.turn \|\| 0\) - dt\) > 1\) return/.test(SRC), '契约:deathTurn 近1回合闸(避历史死者/首上线刷屏)');
-ok(/d\._deathReacted = true/.test(SRC), '契约:幂等标记');
-ok(/typeof d\._deathTurn === 'number'/.test(SRC), '契约:兼容 _deathTurn(AI 死亡路径下划线字段)');
-
 // ── 花括号配平抽真函数 ──
 const startIdx = SRC.indexOf('function _npcDeathRipple()');
 ok(startIdx >= 0, '定位函数起点');

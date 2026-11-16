@@ -154,7 +154,4 @@ assert(!compiled.text.includes('remains unresolved and blocks grain transport'),
 assert(compiled.text.includes('Treasury reserve is 800 taels.'), 'next-turn context should include accepted SC1 contradiction source');
 assert(!compiled.text.includes('Treasury reserve is 500 taels.'), 'next-turn context should suppress contradicted accepted memory');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-sc1-governance-markers.js'), 'verify-all should include SC1 governance markers smoke');
-
 console.log('smoke-memory-sc1-governance-markers ok');

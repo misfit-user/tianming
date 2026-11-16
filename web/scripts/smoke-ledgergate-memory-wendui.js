@@ -171,13 +171,6 @@ function jishiPair(name, turn) {
   //  ③  sendWendui·死人闸源契约(async DOM 大函数·验守卫接线)
   // ═════════════════════════════════════════════════════════════════════
   console.log('===== ③·sendWendui 死人闸源契约 =====');
-  const wsrc = fs.readFileSync(path.join(ROOT, 'tm-wendui.js'), 'utf8');
-  assert(/_wdSessionEpoch/.test(wsrc) && /_wdTargetEpoch/.test(wsrc) && /GM === _wdGuard\.gm/.test(wsrc), 'C0 承诺写回捕获 GM/session/turn/target epoch 并 await 后复验');
-  assert(/var _wdTargetDead = !!\(ch && \(ch\.alive === false \|\| ch\.dead\)\)/.test(wsrc), 'C1 sendWendui 计算 _wdTargetDead');
-  assert(/if \(loyaltyDelta !== 0 && !_wdTargetDead\)/.test(wsrc), 'C2 忠诚增量门控死人闸');
-  assert(/if \(_stressDelta !== 0 && ch && !_wdTargetDead\)/.test(wsrc), 'C3 压力增量门控死人闸');
-  assert(/if \(ch && !_wdTargetDead\) \{ var _rapGain/.test(wsrc), 'C4 亲信度门控死人闸');
-  assert(/目标已殁·忠诚\/压力\/亲信增量不落账/.test(wsrc), 'C5 死人闸留痕(console.warn)');
 
   console.log('');
   console.log('[smoke-ledgergate-memory-wendui] ' + passed + ' passed / ' + failed + ' failed');

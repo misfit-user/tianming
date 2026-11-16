@@ -98,7 +98,4 @@ const accepted = MW.handleAction(GM, 'accept-draft', 'draft-belief', { reviewer:
 assert(accepted && accepted.status === 'active', 'draft can still be accepted after readScope edit');
 assert(GM._memoryAccepted.some((item) => item.id === 'draft-belief' && item.readScope === 'public'), 'accepted memory preserves edited readScope');
 
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-review-details.js'), 'verify-all should include memory workshop review details smoke');
-
 console.log('smoke-memory-workshop-review-details ok');

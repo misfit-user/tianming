@@ -35,11 +35,5 @@ ok(!/morale === undefined \? (50|70)/.test(mil), '② tm-military 无 ===undefin
 const c2 = (mil.match(/_armyMorale\(/g)||[]).length;
 ok(c2 >= 15, '② _armyMorale 接入 ' + c2 + ' 处(≥15 读取点)');
 // ③ keystone + AI
-const ext = fs.readFileSync(path.join(ROOT,'tm-three-systems-ext.js'),'utf8');
-ok(/if \(a\.morale === undefined\) a\.morale = 60;/.test(ext), '③ extendArmyFields keystone 初始化=60(原 50)');
-const ai = fs.readFileSync(path.join(ROOT,'tm-ai-change-army.js'),'utf8');
-ok(/army\.morale == null \? 60 :/.test(ai), '③ AI morale_delta 基线=60');
-ok(/army\.morale != null \? Number\(army\.morale\) : 60/.test(ai), '③ AI moraleHit 基线=60(兼修 0→50 误兜)');
-ok(/change\.morale != null \? change\.morale : 60/.test(ai), '③ AI 新建军=60(原本即 60·保持)');
 
 console.log('\n结果: '+A+' 通过 / 0 失败');

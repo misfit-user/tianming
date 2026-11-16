@@ -49,8 +49,6 @@ function run(markers) {
 
 console.log('smoke-startup-autorestore');
 ok(!!block, '提取启动恢复 IIFE');
-ok(source.indexOf('if (!preInfo) return;') > source.indexOf("localStorage.removeItem('tm_pre_endturn_mark')"), '普通 autosave 前先要求真实 pre_endturn 异常标记');
-ok(source.indexOf('过回合前快照无法恢复。检测到最近自动存档') >= 0, '仅异常快照失败时才提供 autosave 安全回退');
 
 var normal = run({
   tm_autosave_mark: JSON.stringify({ scenarioName: '天启七年·九月', turn: 4, eraName: '天启' })

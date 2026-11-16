@@ -198,16 +198,7 @@ sbF.GM._pendingReforms.push(itemF);
   assert(sb7.GM.guoku.balance === 100000 && !sb7.GM._edictSuggestions, '无章程→不扣开办费·无荐单');
 
   console.log('⑧ 静态契约·接线到位');
-  var idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert(idx.indexOf('tm-office-charter.js') >= 0, 'index.html 装载 tm-office-charter.js');
-  var flagsSrc = fs.readFileSync(path.join(ROOT, 'tm-office-flags.js'), 'utf8');
-  assert(flagsSrc.indexOf("'officeCharterEnabled'") >= 0, 'officeCharterEnabled 入 OfficeFlags.LIST');
-  var patches = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
-  assert(patches.indexOf("officeCharterEnabled") >= 0, '设置面板有设衙章程开关行');
   var prompt = fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8');
-  assert(prompt.indexOf('_charter') >= 0, '廷议裁定段携章程供 AI 参酌');
-  var drawers = fs.readFileSync(path.join(ROOT, 'tm-var-drawers.js'), 'utf8');
-  assert(drawers.indexOf('_charter') >= 0, '拟制中抽屉可御览章程');
 
   console.log('');
   if (failures.length) {

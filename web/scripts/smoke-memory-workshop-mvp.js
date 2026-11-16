@@ -191,10 +191,4 @@ const workshopHtml = MW.renderWorkshop(GM, { playerSafe: true });
 assert(!workshopHtml.includes('SECRET_HEAVEN_TEXT'), 'workshop should not leak hidden body');
 assert(!workshopHtml.includes('QUARANTINED_PROMPT_SECRET'), 'workshop should not leak quarantined body');
 
-const index = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert(index.includes('tm-memory-workshop.js'), 'index.html should load tm-memory-workshop.js');
-
-const verifyAll = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-all.js'), 'utf8');
-assert(verifyAll.includes('smoke-memory-workshop-mvp.js'), 'verify-all should include memory workshop smoke');
-
 console.log('smoke-memory-workshop-mvp ok');

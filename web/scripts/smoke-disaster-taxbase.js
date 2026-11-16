@@ -69,10 +69,6 @@ CT.applyDisasterEconomyReduction(ctx.GM);
 ok(!!jiangnan()._disasterEconomyReduce, '⑦ 精确名「江南」匹配命中');
 
 // ── 源契约:权威路径(computeTaxAmount)+ collect 接生产者 ──
-const src = fs.readFileSync(path.join(ROOT, 'tm-fiscal-engine.js'), 'utf8');
-ok(/div\._disasterEconomyReduce\)\s*\{[\s\S]{0,160}disasterPenalty \+=/.test(src), '⑧ computeTaxAmount 权威路径加读 _disasterEconomyReduce(灾真削征税)');
-ok(/applyDisasterEconomyReduction\(G\);[^\n]*per-division 征税前|applyDisasterEconomyReduction\(G\);/.test(src), '⑧ cascadeCollect 开头调 applyDisasterEconomyReduction');
-ok(/applyDisasterEconomyReduction: applyDisasterEconomyReduction/.test(src), '⑧ 已导出');
 
 // ── 全国产量只汇总叶子；父级可持同一份合计，灾减和筛选仍在叶子执行 ──
 const leafA = { name: '甲府', tags: { mineralRegion: true }, economyBase: { farmland: 100000, mineralProduction: 3000 }, _disasterEconomyReduce: { farmland: 0.2 } };

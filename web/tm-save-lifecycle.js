@@ -1734,6 +1734,80 @@ async function _fullLoadGameApplyImpl(data, loadOptions, _loadTxn){
           console.log('[fullLoadGame] GM.adminHierarchy 从 P 恢复·keys=' + Object.keys(GM.adminHierarchy).join(','));
         }
       }
+      // 2026-11-15 区划只留游戏里那份（GM）。旧档里有一部分写进了剧本库那份（P）：封藩自治、地块状态、营造
+      //   （含完工效果），游戏那份看不到、算税看不到。读档按编号（没有编号按势力加地名）并一次：
+      //   · 封藩自治：旧代码里只写在剧本库那份上（推导、AI 封授削夺、袭爵都落那边），游戏那份只有开局时剧本写明的；
+      //     故剧本库那份有类型、又与游戏那份不同，就以剧本库那份为准（含读档前一步刚给游戏那份推导补上的）。
+      //   · 地块状态：游戏那份没有的才补（到期按 expiresTurn 绝对回合算，补进来的旧状态到点照常撤）。
+      //   · 营造：游戏那份没有的才补。AI 兴工的建筑没有编号，按名字加开工回合认同一座（状态会变，不拿来比）；
+      //     两边都没记开工回合就只按名字认——宁可少并一座，不重复记效果。完工的按 appliedDelta 补加长期效果。
+      //   地方主官不并（P 上可能还挂着已故之人）。只在剧本库那份独有的区划（旧的增设、侨置等）从没进过户口与
+      //   税基账，不并，记名备查。并过打 GM._adminTreeUnified，下次不再并；11-15 以后的存档不带剧本库那份，读档无可并，也打上。
+      if (!GM._adminTreeUnified && P.adminHierarchy && GM.adminHierarchy && P.adminHierarchy !== GM.adminHierarchy) {
+        var _mg = { autonomy: 0, status: 0, buildings: 0, reapplied: 0 }, _mgLibOnly = [];
+        var _mgIdx = {};
+        Object.keys(GM.adminHierarchy).forEach(function(fk) {
+          var fh = GM.adminHierarchy[fk];
+          (function _w(ds) {
+            (ds || []).forEach(function(d) {
+              if (!d) return;
+              if (d.id && !_mgIdx['id|' + d.id]) _mgIdx['id|' + d.id] = d;
+              if (d.name && !_mgIdx['nm|' + fk + '|' + d.name]) _mgIdx['nm|' + fk + '|' + d.name] = d;
+              _w(d.children); _w(d.divisions);
+            });
+          })(fh && fh.divisions);
+        });
+        var _mgBW = (typeof TM !== 'undefined' && TM.BuildingWorks && typeof TM.BuildingWorks.reapplyCompletedDelta === 'function') ? TM.BuildingWorks : null;
+        Object.keys(P.adminHierarchy).forEach(function(fk) {
+          var fh = P.adminHierarchy[fk];
+          (function _w(ds) {
+            (ds || []).forEach(function(pd) {
+              if (!pd) return;
+              var gd = (pd.id && _mgIdx['id|' + pd.id]) || (pd.name && _mgIdx['nm|' + fk + '|' + pd.name]) || null;
+              if (!gd) { if (pd.name) _mgLibOnly.push(pd.name); return; }   // 其下级同样不在游戏账上，不往下钻
+              if (pd.autonomy && pd.autonomy.type) {
+                var ga = gd.autonomy || {};
+                if (ga.type !== pd.autonomy.type || (ga.holder || null) !== (pd.autonomy.holder || null) || (ga.subtype || null) !== (pd.autonomy.subtype || null)) {
+                  gd.autonomy = deepClone(pd.autonomy); _mg.autonomy++;
+                }
+              }
+              if (Array.isArray(pd.statusEffects) && pd.statusEffects.length) {
+                if (!Array.isArray(gd.statusEffects)) gd.statusEffects = [];
+                pd.statusEffects.forEach(function(st) {
+                  if (!st) return;
+                  var dupSt = gd.statusEffects.some(function(x) { return x && (st.id ? x.id === st.id : x.name === st.name); });
+                  if (!dupSt) { gd.statusEffects.push(deepClone(st)); _mg.status++; }
+                });
+              }
+              if (Array.isArray(pd.buildings) && pd.buildings.length) {
+                if (!Array.isArray(gd.buildings)) gd.buildings = [];
+                pd.buildings.forEach(function(b) {
+                  if (!b) return;
+                  var dupB = gd.buildings.some(function(x) { return x && (b.id ? x.id === b.id : (x.name === b.name && (x.startTurn == null || b.startTurn == null || x.startTurn === b.startTurn))); });
+                  if (dupB) return;
+                  var nb = deepClone(b);
+                  gd.buildings.push(nb);
+                  _mg.buildings++;
+                  if (_mgBW && _mgBW.reapplyCompletedDelta(gd, nb)) _mg.reapplied++;
+                });
+              }
+              _w(pd.children); _w(pd.divisions);
+            });
+          })(fh && fh.divisions);
+        });
+        GM._adminTreeUnified = { turn: GM.turn || 0, merged: true, stat: _mg, libraryOnly: _mgLibOnly.slice(0, 50), libraryOnlyCount: _mgLibOnly.length };
+        console.log('[fullLoadGame] 区划并为一份：' + JSON.stringify(_mg) + (_mgLibOnly.length ? '·剧本库独有未并 ' + _mgLibOnly.length + ' 处' : ''));
+      } else if (!GM._adminTreeUnified && GM.adminHierarchy) {
+        GM._adminTreeUnified = { turn: GM.turn || 0, merged: false };
+      }
+      // 存档自 2026-11-15 起不带剧本库那份区划（见 _buildSaveState）：从剧本补回一份，给编辑器、旧档侨置用，玩法不读。
+      //   放在并档之后：并档只认旧档自己存的那份；拿剧本原样补回的去并，会把早已到期、拆掉的开局内容又并回来。
+      if (!P.adminHierarchy || typeof P.adminHierarchy !== 'object' || !Object.keys(P.adminHierarchy).length) {
+        var _scLib = (typeof findScenarioById === 'function' && GM.sid) ? findScenarioById(GM.sid) : null;
+        if (_scLib && _scLib.adminHierarchy && typeof _scLib.adminHierarchy === 'object' && Object.keys(_scLib.adminHierarchy).length) {
+          P.adminHierarchy = deepClone(_scLib.adminHierarchy);
+        }
+      }
     });
 
     // 老存档兼容：GM.fiscal.{royalClanPressure,huangzhuangIncome,imperialBusinesses} 缺失时从 P.fiscalConfig.neicangRules 镜像
@@ -2403,6 +2477,14 @@ function _buildSaveState(options){
   if (mapAliases.length) {
     pSource = Object.assign({}, sourceP);
     mapAliases.forEach(function(key) { delete pSource[key]; });
+  }
+  // 区划只留游戏里那份（GM·2026-11-15）：剧本库那份（P.adminHierarchy）开局后不参与玩法，存档不再带它
+  //   （天启一档约 1.2MB）；读档时从剧本补回给编辑器与旧档侨置用（fullLoadGame「admin hierarchy migration」）。
+  //   游戏那份为空时照旧带上：读档还要靠它恢复游戏那份。
+  if (pSource.adminHierarchy && sourceGM.adminHierarchy && typeof sourceGM.adminHierarchy === 'object'
+      && Object.keys(sourceGM.adminHierarchy).length) {
+    if (pSource === sourceP) pSource = Object.assign({}, sourceP);
+    delete pSource.adminHierarchy;
   }
   var pWorking = deepClone(pSource);
   if (options.prepare !== false && typeof _prepareGMForSave === 'function') {

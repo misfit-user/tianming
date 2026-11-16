@@ -208,6 +208,14 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
 - 要测一段逻辑，就把它装起来跑（vm 装文件 / require 模块），断言它算出来的结果。
 - 确实只能看文字的（某个旧写法不得再出现）写成否定式 `ok(!src.includes(…))`、`ok(!/…/.test(src))`——否定式不计数。
 - 只是静态地数（变量来自 `readFileSync` 或包了它的本地小函数），数不到的写法不追究；数目变少后跑 `--update` 收紧，`--top 15` 看最多的几支。
+### ⑫ 区划只留一份 `lint-admin-tree.js`（2026-11-16）
+区划有两份：游戏里那份 `GM.adminHierarchy`（开局从剧本深拷贝，算税、户口、央地、营造、AI 写回都认它）和剧本库那份
+`P.adminHierarchy`（只给开局与编辑器）。11-15 以前 AI 封的藩、建的楼、挂的地块状态落在剧本库那份死拷贝上，算税看不到；
+同志定「区划只留一份」，玩法全部迁到 GM，存档也不再带剧本库那份（读档从剧本补回）。
+- 守卫按语法树找 `P.adminHierarchy`、`window.P` / `global.P` / `root.P` / `ctx.P` 再点 `adminHierarchy`、方括号写法；注释与字符串不算。
+- 名单（脚本里的 `ALLOW`，各写明理由）：开局 `tm-patches-start.js`、存读档 `tm-save-lifecycle.js`、空树兜底 `tm-integration-bridge.js`、
+  旧档侨置 `tm-endturn-qiaozhi.js`、地图编辑器导入 `map-editor-to-game.js`。名单里的文件不再碰剧本库那份了也报，免得名单越放越宽。
+- 盯不住先存别名再取（`var lib = P; lib.adminHierarchy`），审代码时留意。范围同 ⑩。
 
 ### runner 附注：flake 自愈（2026-07-06）
 `run-smokes.js` 全量并行下 DOM-stub/AI 超时类假阳性反复出现——失败 ≤15 个时自动

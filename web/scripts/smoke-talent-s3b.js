@@ -26,7 +26,7 @@ function world(scale) {
   };
 }
 var P1 = world(1);
-var t = BN.aggregate(null, P1);
+var t = BN.aggregate(P1, null);   // 区划挂在 GM 上（区划只留游戏里那份·2026-11-15）
 
 // 1-5. 聚合（叶级·跳父）
 ok('聚合 divs=2（叶级·父跳过不重复）', t.divs === 2);
@@ -39,16 +39,16 @@ ok('governance 需求 = divs×20 = 40', near(BN.demandForKind('governance', t), 
 ok('military 需求 = recruits×density', near(BN.demandForKind('military', t), t.recruits * BN.DENSITY.military));
 ok('industry 需求 = (mineral+commerce)×density', near(BN.demandForKind('industry', t), (t.mineral + t.commerce) * BN.DENSITY.industry));
 // 9-10. ctx.absorptionDemandFor 按范式 absorptionKind 求和
-var ctx1 = BN.buildCtx(null, P1);
+var ctx1 = BN.buildCtx(P1, {});
 ok('absorptionDemandFor[industry] = industry 需求', near(ctx1.absorptionDemandFor({ absorptionKind: ['industry'] }), BN.demandForKind('industry', t)));
 ok('absorptionDemandFor[industry+military] = 两者之和', near(ctx1.absorptionDemandFor({ absorptionKind: ['industry', 'military'] }), BN.demandForKind('industry', t) + BN.demandForKind('military', t)));
 // 11. institutionalRoomFor 读 conf.talentInstitutionalRoom
-var ctxRoom = BN.buildCtx(null, { adminHierarchy: P1.adminHierarchy, conf: { talentInstitutionalRoom: 0.5 } });
+var ctxRoom = BN.buildCtx({ adminHierarchy: P1.adminHierarchy }, { conf: { talentInstitutionalRoom: 0.5 } });
 ok('institutionalRoomFor 读 conf.talentInstitutionalRoom=0.5', near(ctxRoom.institutionalRoomFor({}), 0.5));
 
 // 12. 端到端产业约束：富产业国吸纳得了→失业少渗透高；荒产业国没岗位→毕业即大量失业
 function runWorld(P) {
-  var GM = { turn: 0 }; P.conf = P.conf || {}; P.conf.talentCohortEnabled = true;
+  var GM = { turn: 0, adminHierarchy: P.adminHierarchy }; P.conf = P.conf || {}; P.conf.talentCohortEnabled = true;
   TC.init(GM, P);
   TC.registerParadigm(GM, { label: '旧', kind: 'established', stock: 300000 });
   var e = TC.registerParadigm(GM, { label: '工技新学', kind: 'emergent', maturityTurns: 3, absorptionKind: ['industry'] });

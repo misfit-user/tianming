@@ -11,13 +11,11 @@ var passed = 0, failed = 0;
 function ok(desc, cond) { if (cond) { passed++; console.log('  PASS ' + desc); } else { failed++; console.log('  FAIL ' + desc); } }
 
 // 富工矿商贸国（叶级 economyBase）→ 岗位需求 > 招生 → 吸纳得了
-var P = {
-  conf: { talentCohortEnabled: true },
-  adminHierarchy: { F: { divisions: [
+// 区划只留游戏里那份（GM·2026-11-15）：人才瓶颈按 GM 的区划算全国产业，P 只给设置
+var P = { conf: { talentCohortEnabled: true } };
+var GM = { turn: 0, adminHierarchy: { F: { divisions: [
     { name: '工矿大府', economyBase: { mineralProduction: 5000000, commerceVolume: 10000000 }, populationDetail: { mouths: 2000000 }, troops: 20000 }
-  ] } }
-};
-var GM = { turn: 0 };
+  ] } } };
 TC.init(GM, P);
 TC.registerParadigm(GM, { label: '科举经义', kind: 'established', stock: 800000 });   // 旧式庞大
 // 一座新式学堂完工（造价 10 万 → 年毕业封 8000）→ 教「格致之学」（利于科技/工业）

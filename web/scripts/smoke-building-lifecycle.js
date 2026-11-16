@@ -61,8 +61,9 @@ function ok(c, m) { if (c) pass++; else { fail++; console.error('  ✗ ' + m); }
     fortLevel: 3, publicTreasury: { money: { stock: 20000 } },
     buildings: [{ name: '城', status: 'completed', costActual: 50000, appliedDelta: { 'fortLevel': 2 } }]
   };
-  var GM = { turn: 5 };
-  var P = { conf: {}, adminHierarchy: { player: { divisions: [div] } } };
+  // 区划只留游戏里那份（GM·2026-11-15）：营造结算只扫 GM 的区划，P 只供设置与建筑类型表
+  var GM = { turn: 5, adminHierarchy: { player: { divisions: [div] } } };
+  var P = { conf: {} };
   var orig = Math.random; Math.random = function () { return 0; };   // 0 < 0.4 → 重灾必损
   var st = BW.tick(GM, P);
   Math.random = orig;
@@ -78,10 +79,11 @@ function ok(c, m) { if (c) pass++; else { fail++; console.error('  ✗ ' + m); }
     fortLevel: 3, publicTreasury: { money: { stock: 20000 } },
     buildings: [{ name: '城', status: 'completed', costActual: 50000, appliedDelta: { 'fortLevel': 2 } }]
   };
-  var P = { conf: {}, adminHierarchy: { player: { divisions: [div] } } };
+  var P = { conf: {} };
+  var AH = { player: { divisions: [div] } };   // 区划挂在 GM 上（区划只留游戏里那份）
   var orig = Math.random; Math.random = function () { return 0; };
-  BW.tick({ turn: 5 }, P);                 // 回合5·灾损
-  var st2 = BW.tick({ turn: 6 }, P);       // 回合6·无新灾(startTurn=5≠6)→修缮
+  BW.tick({ turn: 5, adminHierarchy: AH }, P);                 // 回合5·灾损
+  var st2 = BW.tick({ turn: 6, adminHierarchy: AH }, P);       // 回合6·无新灾(startTurn=5≠6)→修缮
   Math.random = orig;
   ok(div.buildings[0].status === 'completed', 'tick·次回合修缮复完(status=completed)');
   ok(div.fortLevel === 3, 'tick·修缮·城防复满(2→3)·实=' + div.fortLevel);

@@ -704,7 +704,7 @@ function _renderDifangPanel(force) {
   var grid = _$('difang-grid'); if (!grid) return;
   if(!force&&!_dfIsPanelVisible()){_dfNeedsRender=true;return;}
   _dfNeedsRender=false;
-  // 优先读运行时 GM.adminHierarchy（与左侧栏一致·含推演更新的民心/腐败/人口）·回退剧本 P.adminHierarchy
+  // 读运行时 GM.adminHierarchy（与左侧栏一致·含推演更新的民心/腐败/人口）
   var ah = (GM && GM.adminHierarchy) || {};   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）
   if (!ah) { grid.innerHTML = '<div style="color:var(--txt-d);text-align:center;">未设置行政区划</div>'; return; }
 

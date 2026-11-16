@@ -408,8 +408,7 @@ function calcLetterDays(fromLoc, toLoc, urgency) {
   return Math.max(1, Math.ceil(li / speed));
 }
 /** 检查两地是否在同一顶级行政区
- * R: 优先读 GM.adminHierarchy（运行时·会反映领土得失/侨置等动态变迁）·
- *    回退 P.adminHierarchy（剧本静态）·与 _renderDifangPanel 等模块一致
+ * R: 读 GM.adminHierarchy（运行时·会反映领土得失等动态变迁）·与 _renderDifangPanel 等模块一致
  */
 function _ltCheckSameProvince(loc1, loc2) {
   var src = (typeof GM !== 'undefined' && GM.adminHierarchy) ? GM.adminHierarchy : null;   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）

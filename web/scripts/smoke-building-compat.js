@@ -17,7 +17,15 @@ const ctx = { console };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-indices.js'), 'utf8'), ctx, { filename: 'tm-indices.js' });
 
+// 区划只留游戏里那份（GM·2026-11-15）：兼容视图只收游戏那份区划上的建筑；剧本库那份（P）放一座「死拷贝楼」，验证不收
 ctx.P = {
+  adminHierarchy: { player: { divisions: [{ name: '旧档', buildings: [{ name: '死拷贝楼', level: 1, status: 'completed' }] }] } }
+};
+ctx.GM = {
+  buildings: [
+    { id: 'old1', type: 'granary', name: '旧仓', territory: '宁远', level: 1 },
+    { id: 'dup1', type: '镇边堡', name: '镇边堡', territory: '宁远', level: 1 }
+  ],
   adminHierarchy: {
     player: {
       divisions: [
@@ -27,19 +35,13 @@ ctx.P = {
     }
   }
 };
-ctx.GM = {
-  buildings: [
-    { id: 'old1', type: 'granary', name: '旧仓', territory: '宁远', level: 1 },
-    { id: 'dup1', type: '镇边堡', name: '镇边堡', territory: '宁远', level: 1 }
-  ],
-  adminHierarchy: {}
-};
 
 const all = vm.runInContext('getAllBuildingsCompat()', ctx);
 ok(Array.isArray(all), 'getAllBuildingsCompat 返回数组');
 ok(all.some((b) => b.name === '旧仓' && !b._divisionBuilding), '兼容视图保留旧 GM.buildings');
 ok(all.some((b) => b.name === '敌台' && b.territory === '关城' && b._divisionBuilding), '兼容视图收集嵌套 division.buildings[]');
 ok(all.filter((b) => b.name === '镇边堡' && b.territory === '宁远').length === 1, '同地同名旧账/新账不重复展示');
+ok(!all.some((b) => b.name === '死拷贝楼'), '剧本库那份区划上的建筑不收（区划只留游戏里那份）');
 
 const guancheng = vm.runInContext('getTerritoryBuildingsCompat("关城")', ctx);
 ok(guancheng.length === 1 && guancheng[0].name === '敌台', 'getTerritoryBuildingsCompat 可按新主链 territory 查询');

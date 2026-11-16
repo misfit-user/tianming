@@ -19,12 +19,14 @@ function r2(n) { return Math.round(Number(n) * 100) / 100; }
 // 命名分区：陕西(苛政·旱灾·低民心·低基线) vs 江南(轻税·无灾·高民心·高基线)
 function harshLeaves() { var a = []; for (var i = 0; i < 6; i++) a.push({ name: '陕县' + i, taxRate: 1.55, minxin: 12, statusEffects: [{ kind: 'disaster' }] }); return a; }
 function goodLeaves() { var a = []; for (var i = 0; i < 6; i++) a.push({ name: '苏县' + i, taxRate: 1.0, minxin: 55, statusEffects: [] }); return a; }
-const P = { adminHierarchy: { player: { divisions: [
+// 区划只留游戏里那份（GM·2026-11-15）：社会基础的地域输入读 GM 的区划，P 只给开局与编辑器
+const AH = { player: { divisions: [
   { name: '陕西', children: harshLeaves() },
   { name: '江南', children: goodLeaves() }
-] } } };
+] } };
+const P = {};
 function mkGM() {
-  return { turn: 0, minxin: { trueIndex: 35 },
+  return { turn: 0, minxin: { trueIndex: 35 }, adminHierarchy: AH,
     population: { national: { mouths: 1e7 }, byClass: { peasant_self: { mouths: 6e6 } }, byLegalStatus: { taoohu: { mouths: 0 } } },
     classes: [{ name: '自耕农', economicRole: '生产', influence: 10, satisfaction: 50,
       regionalVariants: [{ region: '陕西', satisfaction: 40 }, { region: '江南', satisfaction: 55 }] }] };

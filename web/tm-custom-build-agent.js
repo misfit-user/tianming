@@ -25,20 +25,21 @@
   // 恒开（玩家点按钮才触发·成本可控·2026-07 斩旗转正删 customBuildAgentEnabled flag·仍导出供 UI 判显）
   function enabled() { return true; }
 
-  // adminHierarchy 双源：代码库两套约定并存——建筑系统读 P.adminHierarchy（tm-building-works/tm-endturn-apply）、
-  //   边警/官缺读 GM.adminHierarchy（tm-border-risk/tm-office-vacancy）。某些 save/剧本下二者不同步（真机逮到：
-  //   无疆域 save 里 P.adminHierarchy={} 而 GM.adminHierarchy 缺）。故搜两者·非空·按引用去重（镜像 _adminHierarchySources 范式）。
-  function _adminSources(P) {
+  // 区划只留游戏里那份（GM.adminHierarchy·2026-11-15）：营造、边警、官缺、算税都读它；剧本库那份（P）只给开局与编辑器。
+  //   旧写法 P、GM 两份都搜，营造会落进剧本库那份死拷贝；现只收游戏那份，非空才收。
+  //   调用方显式传了游戏世界（ctx.GM）就先认它，再退回全局 GM。
+  function _adminSources(G) {
     var srcs = [];
     function add(ah) { if (ah && typeof ah === 'object' && Object.keys(ah).length && srcs.indexOf(ah) < 0) srcs.push(ah); }
-    add(root.GM && root.GM.adminHierarchy);   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）（旧双源搜索撤去）
+    add(G && G.adminHierarchy);
+    add(root.GM && root.GM.adminHierarchy);
     return srcs;
   }
 
-  // ── 找区划（按名·走 adminHierarchy 全 faction 下钻·跨 P/GM 双源·镜像 tm-endturn-apply 的 _walk）──
-  function _findDivByName(P, name) {
+  // ── 找区划（按名·走游戏里那份 adminHierarchy 全 faction 下钻·镜像 tm-endturn-apply 的 _walk）──
+  function _findDivByName(G, name) {
     if (!name) return null;
-    var sources = _adminSources(P);
+    var sources = _adminSources(G);
     var target = null;
     sources.forEach(function (ah) {
       if (target) return;
@@ -93,7 +94,7 @@
     ctx = ctx || {};
     var P = ctx.P || root.P || {};
     var GM = ctx.GM || root.GM || null;
-    var div = ctx.div || _findDivByName(P, divName);
+    var div = ctx.div || _findDivByName(GM, divName);
     if (!div) return { ok: false, name: divName, text: '（未找到此地：' + divName + '·无从勘报，请按通则核议）', data: null };
     var scene = _talentScene(GM, div);
     var eb = div.economyBase || {};
@@ -542,7 +543,7 @@
     var GM = ctx.GM || root.GM;
     if (!GM) { out.reason = 'no-GM'; return out; }
     if (appraisal.feasibility === '不合理') { out.reason = 'infeasible'; return out; }
-    var div = ctx.div || _findDivByName(P, divName);
+    var div = ctx.div || _findDivByName(GM, divName);
     if (!div) { out.reason = 'no-div'; return out; }
 
     // 扣银（国库·皇帝准奏出帑）——走真引擎·有欠账不阻断（同募兵/军工）

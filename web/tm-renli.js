@@ -72,15 +72,15 @@
   // ── 叶子枚举 / 人口对象 ────────────────────────────────────────────────
   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）：人力读写区划一律取 GM 那份——
   //   原先读的是剧本库那份，在册、隐匿、逃亡、优免诸丁都记在死拷贝上，从没进过户口真账。
-  //   GM 尚无区划（单测只给 P 时）才退回传进来的那份。
-  function _liveAH(Pp) {
+  //   调用方传进来的 GM 优先，其次全局 GM；GM 尚无区划（单测只给 P 时）才退回传进来的那份。
+  function _liveAH(Pp, G) {
+    function _tree(g) { return (g && g.adminHierarchy && typeof g.adminHierarchy === 'object' && Object.keys(g.adminHierarchy).length) ? g.adminHierarchy : null; }
     var g = (typeof GM !== 'undefined' && GM) || (typeof window !== 'undefined' && window.GM) || (typeof global !== 'undefined' && global.GM) || null;
-    if (g && g.adminHierarchy && typeof g.adminHierarchy === 'object' && Object.keys(g.adminHierarchy).length) return g.adminHierarchy;
-    return (Pp && Pp.adminHierarchy) || null;
+    return _tree(G) || _tree(g) || (Pp && Pp.adminHierarchy) || null;
   }
-  function leaves(Pp) {
+  function leaves(Pp, G) {
     Pp = Pp || _P();
-    var _ah0 = _liveAH(Pp); if (!_ah0) return [];
+    var _ah0 = _liveAH(Pp, G); if (!_ah0) return [];
     var IB = (typeof IntegrationBridge !== 'undefined' && IntegrationBridge)
       || (typeof window !== 'undefined' && window.IntegrationBridge)
       || (typeof global !== 'undefined' && global.IntegrationBridge) || null;
@@ -185,14 +185,14 @@
     if (!GM) return null;
     Pp = Pp || _P();
     if (!GM.renli) GM.renli = { byRegion: {}, reported: {} };
-    leaves(Pp).forEach(function (leaf) { ensureLeafFields(leaf); ensureRegion(GM, regionIdOf(leaf), leaf && leaf.renliSeed); });
+    leaves(Pp, GM).forEach(function (leaf) { ensureLeafFields(leaf); ensureRegion(GM, regionIdOf(leaf), leaf && leaf.renliSeed); });
     return GM.renli;
   }
 
   function seedRegion(GM, Pp, regionId, seed) {
     Pp = Pp || _P();
     seed = Object.assign({}, SEED_DEFAULTS, seed || {});
-    var ls = leaves(Pp), leaf = null;
+    var ls = leaves(Pp, GM), leaf = null;
     for (var i = 0; i < ls.length; i++) { if (regionIdOf(ls[i]) === String(regionId) || String(ls[i].name || '') === String(regionId)) { leaf = ls[i]; break; } } // 按 id 或 name 配（天启叶 id 可能 div_xxx·name 陕西）
     if (!leaf) return null;
     leaf.renliSeed = seed;
@@ -429,7 +429,7 @@
     if (!GM.renli) GM.renli = { byRegion: {}, reported: {} };
     var farmers = findFarmerClass(GM);
     var accW = 0, accSig = 0;
-    leaves(Pp).forEach(function (leaf) {
+    leaves(Pp, GM).forEach(function (leaf) {
       var res; try { res = tickLeaf(GM, leaf); } catch (_) { res = null; }
       if (!res) return;
       if (res.present > 0 && res.signal !== 0) { accW += res.present; accSig += res.signal * res.present; }
@@ -450,7 +450,7 @@
   function _seededRegionMatch(GM, Pp, name) {
     if (!name) return null;
     name = String(name);
-    var ls = leaves(Pp);
+    var ls = leaves(Pp, GM);
     for (var i = 0; i < ls.length; i++) {
       var leaf = ls[i]; if (!leaf || !leaf.renliSeed) continue;
       var rid = regionIdOf(leaf);
@@ -462,7 +462,7 @@
   // 对单地域施加兵燹：平民逃散(→既有 fugitives·不写 ding 总量) + 地力/水利毁损。仅已种子地域。
   function warScar(GM, Pp, regionId, opts) {
     Pp = Pp || _P(); opts = opts || {};
-    var ls = leaves(Pp), leaf = opts.leaf || null;
+    var ls = leaves(Pp, GM), leaf = opts.leaf || null;
     if (!leaf) { for (var i = 0; i < ls.length; i++) { if (regionIdOf(ls[i]) === String(regionId)) { leaf = ls[i]; break; } } }
     if (!leaf || !leaf.renliSeed) return null; // 仅已种子前线（live 安全）
     var pd = popOf(leaf); if (!pd) return null;
@@ -518,7 +518,7 @@
   function refreshExempt(GM, Pp) {
     if (!GM) return;
     Pp = Pp || _P();
-    var ls = leaves(Pp).filter(function (l) { return l && l.renliSeed; }); // 仅已种子（live 安全）
+    var ls = leaves(Pp, GM).filter(function (l) { return l && l.renliSeed; }); // 仅已种子（live 安全）
     if (!ls.length) return;
     var gentry = {}; ls.forEach(function (l) { gentry[regionIdOf(l)] = 0; });
     var chars = (GM && Array.isArray(GM.chars)) ? GM.chars : [];
@@ -563,7 +563,7 @@
     Pp = Pp || _P();
     var pilot = _pilotConfig(GM, Pp);
     if (!pilot) return;                                                        // 无试点配置(GM 或剧本)→inert
-    var ls = leaves(Pp);
+    var ls = leaves(Pp, GM);
     pilot.forEach(function (entry) {
       if (!entry) return;
       var region = (typeof entry === 'string') ? entry : entry.region;
@@ -585,7 +585,7 @@
     if (typeof global !== 'undefined' && global.IntegrationBridge) return global.IntegrationBridge;
     return null;
   }
-  // GM.adminHierarchy 的玩家叶（= 民变点火/民心稳定器读的同一份·与 Renli 读的 P.adminHierarchy 可能 deepClone 分叉）
+  // GM.adminHierarchy 的玩家叶（= 民变点火/民心稳定器读的同一份；Renli 自 2026-11-15 起也只读这一份，见 _liveAH）
   function _gmLeaves(GM) {
     var IB = _intBridge();
     if (IB && typeof IB.getLeafDivisions === 'function' && GM && GM.adminHierarchy) {
@@ -623,7 +623,7 @@
     Pp = Pp || _P();
     if (!GM || !GM.renli || !GM.renli.byRegion) return;
     var farmers = findFarmerClass(GM);
-    leaves(Pp).forEach(function (leaf) {
+    leaves(Pp, GM).forEach(function (leaf) {
       if (!leaf || !leaf.renliSeed) return;                 // 仅已种子（live 安全·未激活省零行为）
       var pd = popOf(leaf); if (!pd) return;
       var rid = regionIdOf(leaf);
@@ -676,7 +676,7 @@
     if (!GM || !GM.renli) return;
     var natLevel = (GM.vars && isFinite(Number(GM.vars.disasterLevel))) ? clamp(Number(GM.vars.disasterLevel), 0, 1) : 0;
     var natDrag = -clamp(natLevel * NAT_DISASTER_W, 0, 0.25);
-    leaves(Pp).forEach(function (leaf) {
+    leaves(Pp, GM).forEach(function (leaf) {
       if (!leaf || !leaf.renliSeed) return;                       // 仅已种子（live 安全·未激活省不动）
       var rid = regionIdOf(leaf), r = getRegion(GM, rid); if (!r) return;
       var cc = leaf.carryingCapacity;
@@ -719,7 +719,7 @@
     if(!GM)return {ready:0,missing:[]}; Pp=Pp||_P();
     ensurePilotSeeds(GM,Pp);
     var out={ready:0,missing:[],unconfigured:0};
-    var seedLeaves = leaves(Pp).filter(function(leaf) { return leaf && leaf.renliSeed; });
+    var seedLeaves = leaves(Pp, GM).filter(function(leaf) { return leaf && leaf.renliSeed; });
     var primeLeaves = _allAdminLeaves(GM,Pp).map(function(leaf) {
       if (leaf.renliSeed) return leaf;
       return seedLeaves.find(function(seedLeaf) { return regionIdOf(seedLeaf) === regionIdOf(leaf); }) || leaf;
@@ -759,7 +759,7 @@
   // 施行一项变法（type 支持中英别名）。仅已种子地域；返回结果供邸报/AI 叙述。
   function applyReform(GM, Pp, regionId, type, opts) {
     Pp = Pp || _P(); opts = opts || {};
-    var ls = leaves(Pp), leaf = null;
+    var ls = leaves(Pp, GM), leaf = null;
     for (var i = 0; i < ls.length; i++) { if (regionIdOf(ls[i]) === String(regionId)) { leaf = ls[i]; break; } }
     if (!leaf || !leaf.renliSeed) return { ok: false, reason: '未种子地域' };
     var pd = popOf(leaf); if (!pd) return { ok: false, reason: '无人口对象' };
@@ -840,7 +840,7 @@
   function recognizeEdictReform(GM, Pp, text, opts) {
     if (!GM || !text) return null;
     Pp = Pp || _P(); opts = opts || {};
-    var seeded = leaves(Pp).filter(function (l) { return l && l.renliSeed; });
+    var seeded = leaves(Pp, GM).filter(function (l) { return l && l.renliSeed; });
     if (!seeded.length) return null;                       // ★ 无已种子地域 → 零工作早返回（live 零风险·不扫文本）
     text = String(text);
     var hits = [];
@@ -910,7 +910,7 @@
     var fld = WT_FIELDS[rawF] || WT_FIELDS[_wtNorm(rawF)];
     if (!name || !fld) return false;
     Pp = Pp || _P();
-    var ls = leaves(Pp), leaf = null;
+    var ls = leaves(Pp, GM), leaf = null;
     for (var i = 0; i < ls.length; i++) { var rid = regionIdOf(ls[i]); if (rid === String(name) || rid.indexOf(name) >= 0 || String(name).indexOf(rid) >= 0) { leaf = ls[i]; break; } }
     if (!leaf) return false;
     var pd = popOf(leaf); if (!pd) return false;
@@ -972,7 +972,7 @@
     opts = opts || {};
     var Pp = _P();
     if (!GM || !GM.renli || !GM.renli.byRegion) return null;
-    var ls = leaves(Pp).filter(function (l) { return l && l.renliSeed; });
+    var ls = leaves(Pp, GM).filter(function (l) { return l && l.renliSeed; });
     if (!ls.length) return null;                                   // 未推行役政→零注入（休眠态 AI 不见）
     var limit = num(opts.limit, 10), rows = [];
     ls.forEach(function (leaf) {
@@ -1041,7 +1041,7 @@
     Pp = Pp || _P();
     if (!GM || !GM.renli) return;
     if (!GM.renli.reported) GM.renli.reported = {};
-    var ls = leaves(Pp).filter(function (l) { return l && l.renliSeed; });
+    var ls = leaves(Pp, GM).filter(function (l) { return l && l.renliSeed; });
     if (!ls.length) return;
     var govMap = _governorMap(Pp);
     ls.forEach(function (leaf) {
@@ -1089,7 +1089,7 @@
     opts = opts || {};
     if (!GM || !GM.renli || !GM.renli.reported) return null;
     var Pp = _P();
-    var ls = leaves(Pp).filter(function (l) { return l && l.renliSeed; });
+    var ls = leaves(Pp, GM).filter(function (l) { return l && l.renliSeed; });
     if (!ls.length) return null;
     var limit = num(opts.limit, 8), rows = [];
     ls.forEach(function (leaf) {
@@ -1118,7 +1118,7 @@
   function spawnReportedChannels(GM, Pp) {
     Pp = Pp || _P();
     if (!GM || !GM.renli) return;
-    var ls = leaves(Pp).filter(function (l) { return l && l.renliSeed; });
+    var ls = leaves(Pp, GM).filter(function (l) { return l && l.renliSeed; });
     if (!ls.length) return;
     var govMap = _governorMap(Pp);
     var cands = [];
@@ -1201,7 +1201,7 @@
     var accounting=(GM && GM.fiscalConfig && GM.fiscalConfig.accounting) || (Pp && Pp.fiscalConfig && Pp.fiscalConfig.accounting);
     if(accounting && accounting.schema==='tm-fiscal-ledger/2')return 0; // 统一财政已算实际税粮，民食缺口不再直接扣国库库存
     var gk = _guoku(GM); if (!gk || typeof gk.grain !== 'number') return 0;  // 无帑廪粮账→inert
-    var ls = leaves(Pp).filter(function (l) { return l && l.renliSeed; });
+    var ls = leaves(Pp, GM).filter(function (l) { return l && l.renliSeed; });
     if (!ls.length) return 0;
     var raws = [], rawTotal = 0;
     ls.forEach(function (leaf) {

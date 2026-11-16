@@ -175,6 +175,7 @@ const SPARSE_REGION = '\u6d77\u897f\u8bd5\u5730';
 const UNOWNED_REGION = '\u65e0\u4e3b\u8bd5\u5730';
 const EMPTY_FACTION_LABEL = '\u7a7a\u767d\u8bd5\u52bf';
 const APPROVED_BUILDING = 'LIVE approved building field 980';
+const STALE_LIBRARY_BUILDING = 'STALE library-tree building field 981';
 
 const sandbox = loadGame();
 installTrackedDom(sandbox);
@@ -345,6 +346,7 @@ sandbox.GM.adminHierarchy = {
       armyDetail: { troops: 1234 },
       minxinLocal: 33,
       corruptionLocal: 66,
+      buildings: [{ name: APPROVED_BUILDING, status: 'building', remainingTurns: 2 }],
       economyBase: {
         farmland: 971,
         commerceVolume: 972,
@@ -359,11 +361,12 @@ sandbox.GM.adminHierarchy = {
     }]
   }
 };
+// 区划只留游戏里那份（GM·2026-11-15）：营造卷读 GM 的区划；剧本库那份放一座旧楼，验证不读
 sandbox.P.adminHierarchy = {
   player: {
     divisions: [{
       name: LIAODONG,
-      buildings: [{ name: APPROVED_BUILDING, status: 'building', remainingTurns: 2 }]
+      buildings: [{ name: STALE_LIBRARY_BUILDING, status: 'building', remainingTurns: 2 }]
     }]
   }
 };
@@ -479,7 +482,8 @@ assert(regionHtml.includes(HOUJIN) || regionHtml.includes(LIVE_HOUJIN_LABEL), 'r
 assert(regionHtml.includes('9000') || regionHtml.includes('9,000'), 'region panel did not show live population');
 assert(regionHtml.includes('777'), 'region panel did not show live revenue');
 assert(regionHtml.includes('66'), 'region panel did not show live corruption');
-assert(regionHtml.includes(APPROVED_BUILDING), 'region construction panel did not read approved P-admin building');
+assert(regionHtml.includes(APPROVED_BUILDING), 'region construction panel did not read approved building on the live admin tree');
+assert(!regionHtml.includes(STALE_LIBRARY_BUILDING), 'region construction panel still reads the scenario-library admin tree');
 assertAll(regionHtml, [
   LIVE_TERRAIN,
   'LIVE region level field 935',

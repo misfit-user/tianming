@@ -2,7 +2,7 @@
 //
 // 把一个府州从本方一个省道划到本方另一个省道。三处一起改，玩家与 AI 走同一个写口：
 //   ① 行政树：州节点从原省道节点下挪到新省道节点下，节点 parentId 随之改。
-//      P.adminHierarchy 与 GM.adminHierarchy 若是两份（营造推进读 P 树，其余读 GM 树），两份都改。
+//      只改游戏里那份（GM.adminHierarchy）；剧本库那份（P）只给开局与编辑器，不参与玩法（2026-11-15 区划只留一份）。
 //   ② 地图地块：parentId、circuitId（原来有才写）、circuitName、circuitTitle（新道成员有才写），
 //      经 TMMapRuntime.updateRegion 写，记进地图变更账。地图分组、通志、描金边都按 parentId 走，写完即按新省道重画。
 //   ③ 省道登记：从原条目的 memberRegionIds 删去，加进新条目。

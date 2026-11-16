@@ -11,7 +11,8 @@ const lease = ['_tmCaptureWorldLease', '_tmWorldLeaseCurrent'].map(n => function
 const adopt = ['_showEdictAdoptMenu', '_closeEdictMenu'].map(n => functionSource(read('tm-hongyan-edict-ui.js'), n)).join('\n');
 function world(id) {
   const div = { name: '同名府', buildings: [] };
-  return { GM: { turn: 1, _campaignId: id, _timelineId: id, guoku: { money: 10000 }, _edictSuggestions: [] }, P: { ai: { key: 'controlled-only' }, buildingSystem: { buildingTypes: [{ name: '义仓', baseCost: 1000, buildTime: 3 }] }, adminHierarchy: { player: { divisions: [div] } } }, div };
+  // 区划只留游戏里那份（GM·2026-11-15）：营造订单与营造 agent 只认 GM 的区划
+  return { GM: { turn: 1, _campaignId: id, _timelineId: id, guoku: { money: 10000 }, _edictSuggestions: [], adminHierarchy: { player: { divisions: [div] } } }, P: { ai: { key: 'controlled-only' }, buildingSystem: { buildingTypes: [{ name: '义仓', baseCost: 1000, buildTime: 3 }] } }, div };
 }
 function harness() {
   let nodes = {}, pending = [], signals = 0, approvals = 0;

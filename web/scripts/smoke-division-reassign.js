@@ -3,7 +3,7 @@
 //
 // 用三部官方剧本的原始地图与行政树（不开整局）核对：府州在本方省道之间改隶时，行政树、地图地块、
 // 省道登记三处一起改，地图分组（通志、省道边界、描金边都按它走）随之归到新省道；首府不许改出、
-// 他方省道不许改入、不接壤可改但提示飞地；任一步失败三处全部撤回；P 与 GM 两份行政树都改；
+// 他方省道不许改入、不接壤可改但提示飞地；任一步失败三处全部撤回；只改游戏里那份行政树（剧本库那份只给开局与编辑器）；
 // 回合末写工具 restructure_division 走同一写口。
 'use strict';
 
@@ -163,18 +163,20 @@ for (const file of SCENARIOS) {
   });
 }
 
-check('P 与 GM 两份行政树都改；共用节点时不重复挪动', () => {
+check('只改游戏里那份行政树，剧本库那份不动；共用节点时不重复挪动', () => {
   const world = loadWorld(SCENARIOS[0]);
   const owner = playerOwner(world);
   const pick = pickMovable(world, owner);
   const prevP = globalThis.P;
   try {
-    // 两份独立的树
+    // 两份独立的树：区划只留游戏里那份（2026-11-15），改隶只改它；剧本库那份（P）原样不动
     globalThis.P = { adminHierarchy: clone(world.gm.adminHierarchy) };
+    const parentBefore = adminOf({ adminHierarchy: globalThis.P.adminHierarchy }, pick.region).parent.id;
     const res = DR.apply(pick.region, pick.target.key, { map: world.map, gm: world.gm });
     assert.equal(res.ok, true, res.reason);
     const inP = adminOf({ adminHierarchy: globalThis.P.adminHierarchy }, pick.region), inGM = adminOf(world.gm, pick.region);
-    assert.equal(inP.parent.id, inGM.parent.id, 'P 树与 GM 树挂到同一道');
+    assert.equal(inP.parent.id, parentBefore, '剧本库那份行政树不动');
+    assert.notEqual(inGM.parent.id, parentBefore, '游戏里那份挂到新道');
     assert.ok(isCircuitNode(inGM.parent, entryOf(world.map, pick.target.key)));
     // 共用同一棵树
     const world2 = loadWorld(SCENARIOS[0]);

@@ -11,8 +11,9 @@ const sources = ['tm-fiscal-engine.js', 'tm-building-works.js', 'tm-custom-build
   .map(file => [file, read(file)]);
 function fixture() {
   const div = { name: '测试府', buildings: [], fortLevel: 0, economyBase: { commerceVolume: 20000 }, publicTreasury: { money: { stock: 100000, available: 100000 } } };
-  const P = { conf: {}, buildingSystem: { buildingTypes: [] }, adminHierarchy: { player: { divisions: [div] } } };
-  const GM = { turn: 1, guoku: { balance: 10000, money: 10000, grain: 0, cloth: 0 } };
+  const P = { conf: {}, buildingSystem: { buildingTypes: [] } };
+  // 区划只留游戏里那份（GM·2026-11-15）：营造 agent 先认传进来的 GM 的区划
+  const GM = { turn: 1, guoku: { balance: 10000, money: 10000, grain: 0, cloth: 0 }, adminHierarchy: { player: { divisions: [div] } } };
   const grants = [], c = { P, GM, TM: {}, console, Date, Math, Set, Map, WeakMap, addEB() {} };
   c.window = c; vm.createContext(c);
   sources.forEach(([file, source]) => vm.runInContext(source, c, { filename: file }));

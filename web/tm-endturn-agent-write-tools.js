@@ -291,8 +291,8 @@
   }
 
   // 区划树查找(adminHierarchy 递归·按名/id)·返回 {div, parentArr, idx}
-  // P/GM 双源并存：BuildingWorks.tick 消费 P.adminHierarchy，而部分旧/agent 路径只给 GM.adminHierarchy。
-  // 写工具优先落 P 树，避免 agent 兴工写到建筑 tick 看不到的镜像树。
+  // 只认游戏里那份区划（GM.adminHierarchy·2026-11-15 区划只留一份）：营造结算、算税都读它，
+  // 剧本库那份（P）只给开局与编辑器，写工具不落那边。
   function _adminSources(gm) {
     var srcs = [];
     function add(ah, label) {

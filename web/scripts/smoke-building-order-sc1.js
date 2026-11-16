@@ -12,7 +12,7 @@ const infer=functionSource(read('tm-endturn-ai-infer.js'),'_endTurn_aiInfer');
 function fixture(){
   const c={console,Date,Math,Set,Map,crypto:require('crypto').webcrypto,TM:{Endturn:{AI:{}}},P:{conf:{},ai:{model:'controlled'}},GM:{turn:2,_campaignId:'c',_timelineId:'t',_turnAiResults:{}},_dbg(){},_tok:n=>n,_modelFamily:'openai',_sc1ExtraPassUsed:false,p1:{events:[]},tp1:'历史材料'.repeat(18000)+'\n\n=== 输出格式强约束 (FINAL RULE·不可违反) ===\n'};c.window=c;vm.createContext(c);
   vm.runInContext(read('tm-building-orders.js'),c);vm.runInContext(read('tm-endturn-ai-sc1-budget.js'),c);
-  c.P.adminHierarchy={a:{divisions:[{id:'r',name:'府',buildings:[]}]}};
+  c.GM.adminHierarchy={a:{divisions:[{id:'r',name:'府',buildings:[]}]}}; // 区划只留游戏里那份（GM·2026-11-15）：营造订单只认 GM 的区划
   const pr=c.TM.BuildingOrders.propose(c.GM,c.P,'府',{name:'书院'},{costActual:5000,timeActual:3},'兴造书院');
   c.ctx={input:{buildingOrders:c.TM.BuildingOrders.collect(c.GM,c.P,{economic:pr.content})}};vm.runInContext(retry,c);
   return {c,pr,async run(){await vm.runInContext('(async()=>{'+repair+'})()',c);}};

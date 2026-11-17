@@ -3101,8 +3101,8 @@
     },
     {
       "path": "editor-schema-adapter.js",
-      "sha256": "6b8038af64205b4716a1ecfca984770d43b4580dfd5269a200bb6fdb58c9caec",
-      "size": 16453
+      "sha256": "a3072f79f34bc8b7d8aa115728bd19aeb1226ad377b5f22ce2c18e8d3a30bca8",
+      "size": 16460
     },
     {
       "path": "editor.html",
@@ -3136,8 +3136,8 @@
     },
     {
       "path": "INDEX.md",
-      "sha256": "17ee3cde56dc6c577e6e3dfbe840f0d58bcde77d3ff89db62127b74e1043d81e",
-      "size": 7764
+      "sha256": "24ef77de19c727dd51e834e40b6acce34fb074f8aa9b16c952857160329d6dbc",
+      "size": 7681
     },
     {
       "path": "libs/polygon-clipping-0.15.7.min.js",
@@ -4241,8 +4241,8 @@
     },
     {
       "path": "tm-chaoyi-changchao.js",
-      "sha256": "1db5d70f25fbea974cb8121d08b687c47818c2f8c7ec7d2bae96e628091a3a3e",
-      "size": 134588
+      "sha256": "0c3ca92ab53880c0d07b72da23c768dea95658d88ee94d65ebada6a6a2feefa2",
+      "size": 134601
     },
     {
       "path": "tm-chaoyi-tinyi.js",
@@ -4251,13 +4251,13 @@
     },
     {
       "path": "tm-chaoyi-yuqian.js",
-      "sha256": "635f5c7c9d6bf37d98d08e234ac17c97943ed67eaa4d2634e211bf567d24cf10",
-      "size": 52844
+      "sha256": "42bda957411ea6a18f759ac9ead222395ab063e44b9f1ab07f49e9b4ef475794",
+      "size": 52859
     },
     {
       "path": "tm-chaoyi.js",
-      "sha256": "26d2f9c691e22011f75a2ba70979b63cb163bb0082b690f1b534a2a28587675f",
-      "size": 62899
+      "sha256": "2516fe919947d5225036428fa3484506ef9f528ed3967d756479019fcf49140f",
+      "size": 62918
     },
     {
       "path": "tm-char-arcs.js",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "d4fda2947824dbffb3ffd92cc6892af17b0500f1b3cf0d55b54edd0715172c48",
+      "sha256": "5a05202f353357a64ffc7ce025109e60a722377f5d8bc19603158cfb327672a8",
       "size": 142847
     },
     {

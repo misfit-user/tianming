@@ -91,14 +91,13 @@ Ctrl+Shift+/    速查卡浮层
 node scripts/lint-arch-all.js && node scripts/run-smokes.js --changed   # 架构守卫 + 与改动相关的冒烟（verify-all.js 已于 2026-11-17 撤掉）
 ```
 
-**4 道防线**：
+**检查工具**：
 
 | 工具 | 引入 | 作用 |
 |------|------|------|
 | `syntax-check.js` | R121 | node --check 全扫 180 个 .js |
 | `headless-smoke.js` | R121 | vm 加载 + TM.test 套件 (baseline ≥207 pass / ≤4 fail) |
 | `ref-check.js` | R136 | 跨 HTML 引用断链 |
-| `find-orphans.js` | R139 | 真孤岛识别 (R139 删 2 个共 801 行死代码) |
 
 **审计 + 改写**：
 

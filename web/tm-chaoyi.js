@@ -9,7 +9,7 @@
 // Exports: openChaoyi·closeChaoyi·_cy*·showChaoyiSetup·_cy_pickMode·addCYBubble·_cc2_buildAgendaPrompt·_cc2_fallbackAgenda
 // Used by: tm-chaoyi-changchao.js·tm-chaoyi-tinyi.js·tm-chaoyi-yuqian.js
 // Side effects: DOM modal (chaoyi-modal)·GM._chaoyiCount·CY 状态
-// Test: web/scripts/cc3-smoke.js·boot-smoke·render-smoke
+// Test: web/scripts/smoke-chaoyi-v3.js·smoke-boot-chain·smoke-render-panels
 // Notes: R112 v1·Phase 3 吸 v2 _cc2 prompts (L165+)·v3 changchao 调
 // 姊妹·tm-chaoyi-changchao.js·tm-chaoyi-tinyi.js·tm-chaoyi-yuqian.js
 //

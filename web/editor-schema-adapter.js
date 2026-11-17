@@ -22,7 +22,7 @@
 //   - editor.html script include
 // Tests:
 //   - syntax-check
-//   - render-smoke (boot loads OK)
+//   - smoke-render-panels (boot loads OK)
 // Refactor notes:
 //   - Phase 0 implemented (sc18 schema unify·event/variable bucket-ize)
 //   - Phase 5 namespace·TM.Editor.SchemaAdapter

@@ -23,11 +23,11 @@ node scripts/lint-arch-all.js            # 架构守卫，推送钩子也跑这�
 node scripts/run-smokes.js --changed      # 只跑与这次改动相关的冒烟
 ```
 
-原先的一键脚本 `verify-all.js` 已于 2026-11-17 撤掉：它是一份手工登记的清单，CI 与推送钩子都不调用，登记的两项（`find-orphans`、`official-scenario-smoke`）早已跑不通而没人发现。冒烟放进 `scripts/` 按文件名自动发现，不需要登记。
+原先的一键脚本 `verify-all.js` 已于 2026-11-17 撤掉：它是一份手工登记的清单，CI 与推送钩子都不调用，登记的两项（`find-orphans`、`official-scenario-smoke`）早已跑不通而没人发现；其中 `find-orphans.js` 把按需装载的脚本误报成孤岛，已删，`boot-smoke.js`、`render-smoke.js` 改名为 `smoke-boot-chain.js`、`smoke-render-panels.js` 进自动发现。冒烟放进 `scripts/` 按文件名自动发现，不需要登记。
 
 ---
 
-## 检查工具（4 道防线）
+## 检查工具
 
 ### `syntax-check.js` (R121)
 
@@ -53,10 +53,6 @@ node scripts/headless-smoke.js --verbose    # 详细错误栈
 ### `ref-check.js` (R136)
 
 扫描所有 `*.html` / `*.js` 里的 `<script src>` 和 `fetch()` 本地引用·验证目标存在。防止拆分时漏改某个 HTML（R136 就是修这种 bug）。
-
-### `find-orphans.js` (R139)
-
-扫描 HTML `<script>` + JS `importScripts/import/Worker`·自动过滤 .gitignore 中 dev-only 的脚本。识别从未被引用的真孤岛文件——R139 删 2 个孤岛共 801 行。
 
 ---
 
@@ -107,14 +103,13 @@ node scripts/bump-cache-bust.js v20260425v        # 不传则用今日
 
 ---
 
-## 工具清单（10 个 + 1 个 README）
+## 工具清单
 
 | 类型 | 工具 | 引入 | 用途 |
 |---|---|---|---|
 | 检查 | `syntax-check.js` | R121 | node --check 全扫 |
 | 检查 | `headless-smoke.js` | R121 | vm 跑 TM.test |
 | 检查 | `ref-check.js` | R136 | 跨文件引用断链 |
-| 检查 | `find-orphans.js` | R139 | 真孤岛识别 |
 | 审计 | `lint-empty-catch.js` | R144 | R86 豁免规则审计 |
 | 审计 | `lint-catch-console.js` | R145 | catch 内 console.* 分型 |
 | 改写 | `migrate-catch-console.js` | R145 | try-catch console → TM.errors |

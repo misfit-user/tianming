@@ -337,7 +337,7 @@ function main() {
   const bootCutoffName = 'tm-test-harness.js';
   const bootCutoffIndex = bootOnly ? scripts.findIndex(s => path.basename(s) === bootCutoffName) : -1;
   if (bootOnly && bootCutoffIndex < 0) {
-    console.error('[boot-smoke] cannot find ' + bootCutoffName + ' in index.html script order');
+    console.error('[smoke-boot-chain] cannot find ' + bootCutoffName + ' in index.html script order');
     process.exit(2);
   }
   const loadScripts = bootOnly ? scripts.slice(0, bootCutoffIndex + 1) : scripts;
@@ -419,7 +419,7 @@ function main() {
 
     try {
       var onboardNote = TM.onboard();
-      if (flag('--diag')) console.log('[boot-smoke] onboard note:', JSON.stringify(onboardNote));
+      if (flag('--diag')) console.log('[smoke-boot-chain] onboard note:', JSON.stringify(onboardNote));
     } catch (e) {
       bootIssues.push('TM.onboard threw: ' + (e && e.message ? e.message : String(e)));
     }
@@ -439,12 +439,12 @@ function main() {
     }
 
     if (bootIssues.length) {
-      console.error('[boot-smoke] boot gate failed:');
+      console.error('[smoke-boot-chain] boot gate failed:');
       bootIssues.forEach(function(msg) { console.error('  ✗ ' + msg); });
       process.exit(1);
     }
 
-    console.log('[boot-smoke] pass: boot chain loaded and core entrypoints are present');
+    console.log('[smoke-boot-chain] pass: boot chain loaded and core entrypoints are present');
     process.exit(0);
   }
 

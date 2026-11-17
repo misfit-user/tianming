@@ -10,7 +10,7 @@
 // Exports: 76 _cc3_* functions·主入口 _cc3_open·_cc3_createModal·_cc3_close 等
 // Used by: tm-chaoyi.js (_cy_pickMode 'changchao' → _cc3_open)
 // Side effects: DOM modal (cc3-*)·CSS dynamic load (tm-chaoyi-changchao.css)·CY 状态·GM
-// Test: web/scripts/smoke-chaoyi-v3.js (56 assertions)·boot-smoke·render-smoke
+// Test: web/scripts/smoke-chaoyi-v3.js (56 assertions)·smoke-boot-chain·smoke-render-panels
 // Notes: Phase 3 (2026-05-03) 5→4 文件·原 tm-chaoyi-v3.js·rename → changchao·_cc2 prompts 已入 chaoyi.js
 // 姊妹·tm-chaoyi.js·tm-chaoyi-tinyi.js·tm-chaoyi-yuqian.js
 //

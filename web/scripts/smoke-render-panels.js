@@ -1,5 +1,9 @@
 #!/usr/bin/env node
-// scripts/render-smoke.js — UI panel render smoke·v0
+// scripts/smoke-render-panels.js — 把 17 个面板的渲染函数真跑一遍
+//
+// 原名 render-smoke.js，只登记在已撤掉的 verify-all.js 里，没有任何自动调用。
+// 2026-11-17 改名进 run-smokes 的自动发现，同时收紧：面板函数缺席、没画出东西、
+// 画出 undefined/null 字面，原先只算「跳过」或「警告」，现在一律算失败。
 //
 // 目的·验证 17 个 panel render fn 在 mock GM 下·
 //   1. 不 throw
@@ -11,7 +15,7 @@
 // Strategy·复用 headless-smoke pattern·boot 全 scripts (vm.runInContext)
 //          → setup mock GM → 调 render fns → assert
 //
-// Usage·node scripts/render-smoke.js [--verbose-boot] [--strict]
+// Usage·node scripts/smoke-render-panels.js [--verbose-boot]
 
 'use strict';
 const fs = require('fs');
@@ -201,23 +205,23 @@ function makeMockGM() {
 // 17 Render targets·真实 fn 名 (grep 验证)
 // ─────────────────────────────────────────────
 const RENDER_TARGETS = [
-  { name: '朝政中心', fn: '_renderZhaozhengCenter', optional: true },           // tm-game-loop:1300
-  { name: '人物志', fn: 'renderRenwu', optional: true },                          // tm-renwu-ui:57
-  { name: '地方', fn: '_renderDifangPanel', optional: true },                     // tm-player-core:614
-  { name: '国库 panel', fn: 'renderGuokuPanel', optional: true },                 // tm-guoku-panel:67
-  { name: '内帑 panel', fn: 'renderNeitangPanel', optional: true },               // tm-neitang-panel:53
-  { name: '礼制·腐败 panel', fn: 'renderCorruptionPanel', optional: true },       // tm-lizhi-panel:105
-  { name: '编年史', fn: 'renderBiannian', optional: true },                       // tm-office-panel:1111
-  { name: '时机', fn: 'renderShijiList', optional: true },                        // tm-shiji-qiju-ui:23
-  { name: '起居', fn: 'renderQiju', optional: true },                             // tm-shiji-qiju-ui:268
-  { name: '侧栏 panels', fn: 'renderSidePanels', optional: true },                // tm-sidebar-ui:353
-  { name: '科技', fn: 'renderGameTech', optional: true },                         // tm-sidebar-ui:29
-  { name: '民政', fn: 'renderGameCivic', optional: true },                        // tm-sidebar-ui:50
-  { name: 'topbar 国库', fn: '_renderGuoku', optional: true },                    // tm-topbar-vars:41
-  { name: '官制树', fn: 'renderOfficeTree', optional: true },                     // tm-office-runtime:524
-  { name: '奏疏', fn: 'renderMemorials', optional: true },                        // tm-memorials:543
-  { name: '士议榜 (bench)', fn: 'renderBench', optional: true },                  // tm-chaoyi-v3:1918
-  { name: '文园', fn: 'renderWenyuan', optional: true }                           // tm-player-core:385
+  { name: '朝政中心', fn: '_renderZhaozhengCenter' },           // tm-game-loop:1300
+  { name: '人物志', fn: 'renderRenwu' },                          // tm-renwu-ui:57
+  { name: '地方', fn: '_renderDifangPanel' },                     // tm-player-core:614
+  { name: '国库 panel', fn: 'renderGuokuPanel' },                 // tm-guoku-panel:67
+  { name: '内帑 panel', fn: 'renderNeitangPanel' },               // tm-neitang-panel:53
+  { name: '礼制·腐败 panel', fn: 'renderCorruptionPanel' },       // tm-lizhi-panel:105
+  { name: '编年史', fn: 'renderBiannian' },                       // tm-office-panel:1111
+  { name: '时机', fn: 'renderShijiList' },                        // tm-shiji-qiju-ui:23
+  { name: '起居', fn: 'renderQiju' },                             // tm-shiji-qiju-ui:268
+  { name: '侧栏 panels', fn: 'renderSidePanels' },                // tm-sidebar-ui:353
+  { name: '科技', fn: 'renderGameTech' },                         // tm-sidebar-ui:29
+  { name: '民政', fn: 'renderGameCivic' },                        // tm-sidebar-ui:50
+  { name: 'topbar 国库', fn: '_renderGuoku' },                    // tm-topbar-vars:41
+  { name: '官制树', fn: 'renderOfficeTree' },                     // tm-office-runtime:524
+  { name: '奏疏', fn: 'renderMemorials' },                        // tm-memorials:543
+  { name: '士议榜 (bench)', fn: 'renderBench' },                  // tm-chaoyi-v3:1918
+  { name: '文园', fn: 'renderWenyuan' }                           // tm-player-core:385
 ];
 
 // ─────────────────────────────────────────────
@@ -254,7 +258,7 @@ function totalRenderedContent(elements) {
 }
 
 function main() {
-  console.log('[render-smoke] v0·' + RENDER_TARGETS.length + ' panel render assertion');
+  console.log('[smoke-render-panels] v0·' + RENDER_TARGETS.length + ' panel render assertion');
   console.log('');
 
   const { win, elements } = makeStubs();
@@ -262,7 +266,7 @@ function main() {
 
   // 1. Boot
   const scripts = parseIndexHtmlScripts();
-  console.log('[render-smoke] boot·' + scripts.length + ' scripts loading...');
+  console.log('[smoke-render-panels] boot·' + scripts.length + ' scripts loading...');
   let loaded = 0;
   const bootErrs = [];
   const bootStart = Date.now();
@@ -279,7 +283,7 @@ function main() {
     }
   }
   const bootMs = Date.now() - bootStart;
-  console.log('[render-smoke] boot·' + loaded + '/' + scripts.length + ' loaded·' + bootMs + 'ms·' + bootErrs.length + ' errors');
+  console.log('[smoke-render-panels] boot·' + loaded + '/' + scripts.length + ' loaded·' + bootMs + 'ms·' + bootErrs.length + ' errors');
   if (flag('--verbose-boot') && bootErrs.length) {
     bootErrs.slice(0, 5).forEach(e => console.log('  boot ✗ ' + e.src + ': ' + e.msg));
   }
@@ -289,7 +293,7 @@ function main() {
   sandbox.GM = makeMockGM();
   if (typeof sandbox.P === 'undefined') sandbox.P = {};
   // fallback assignments
-  console.log('[render-smoke] mock GM·characters=' + sandbox.GM.characters.length + ' armies=' + sandbox.GM.armies.length);
+  console.log('[smoke-render-panels] mock GM·characters=' + sandbox.GM.characters.length + ' armies=' + sandbox.GM.armies.length);
   console.log('');
 
   // 3. Render assertion
@@ -299,7 +303,7 @@ function main() {
     const result = { name: tgt.name, fn: tgt.fn, status: 'unknown', err: null, htmlDelta: 0 };
 
     if (typeof fn !== 'function') {
-      result.status = tgt.optional ? 'skip-no-fn' : 'fail-no-fn';
+      result.status = 'fail-no-fn';
       result.err = 'function not defined';
       results.push(result);
       continue;
@@ -322,12 +326,12 @@ function main() {
         /\s(undefined|null|\[object Object\])(?=\s|<|$)/    // free-standing
       ];
       for (const node of elements.values()) {
-        const html = node._innerHTML || '';
+        const rendered = node._innerHTML || ''; // 面板画出来的内容，不是源码
         for (const re of BAD_PATTERNS) {
-          const m = html.match(re);
+          const m = rendered.match(re);
           if (m) {
-            const idx = html.indexOf(m[0]);
-            bad = html.substr(Math.max(0, idx - 20), 60);
+            const idx = rendered.indexOf(m[0]);
+            bad = rendered.substr(Math.max(0, idx - 20), 60);
             break;
           }
         }
@@ -358,7 +362,7 @@ function main() {
     else counts.fail++;
   });
 
-  console.log('[render-smoke] results·');
+  console.log('[smoke-render-panels] results·');
   results.forEach(r => {
     const icon = r.status === 'pass' ? '✓' : r.status.startsWith('warn') ? '⚠' : r.status.startsWith('skip') ? '○' : '✗';
     let line = '  ' + icon + ' ' + r.name + ' (' + r.fn + ')·' + r.status;
@@ -368,17 +372,13 @@ function main() {
   });
 
   console.log('');
-  console.log('[render-smoke] summary·' + counts.pass + ' pass / ' + counts.warn + ' warn / ' + counts.skip + ' skip / ' + counts.fail + ' fail');
-  console.log('[render-smoke] mode·v0·warn-tolerant·hard failures exit 1');
+  console.log('[smoke-render-panels] summary·' + counts.pass + ' pass / ' + counts.warn + ' warn / ' + counts.skip + ' skip / ' + counts.fail + ' fail');
 
-  if (counts.fail > 0) {
-    console.log('[render-smoke] hard failure·exit 1 (fail=' + counts.fail + ')');
+  if (counts.fail > 0 || counts.warn > 0 || counts.skip > 0) {
+    console.log('FAIL smoke-render-panels·fail=' + counts.fail + ' warn=' + counts.warn + ' skip=' + counts.skip);
     process.exit(1);
   }
-  if (counts.warn > 0 && flag('--strict')) {
-    console.log('[render-smoke] strict mode·exit 1 (warn=' + counts.warn + ')');
-    process.exit(1);
-  }
+  console.log('smoke-render-panels PASS ' + counts.pass + '/' + results.length);
   process.exit(0);
 }
 

@@ -9,7 +9,7 @@
 // Exports: _yq2_openSetup·_yq2_triggerExcludedFeelings·_yq2_phaseQuestion·_yq2_offerFollowUp·_yq2_pickAdvisor·_yq2_askAdvisor·_yq2_enterDecide·_yq2_decide·_yq2_finalEnd·_yq2_doCloseSession·_yq2_globalFooter
 // Used by: tm-chaoyi.js (_cy_pickMode 调 _yq2_openSetup)
 // Side effects: DOM (yq2-setup-bg)·CY 状态
-// Test: web/scripts/cc3-smoke·boot-smoke
+// Test: web/scripts/smoke-chaoyi-v3.js·smoke-boot-chain
 // Notes: Phase 3 (2026-05-03) 5→4 文件·从 v2 抽·议题类型·诛戮/托孤/军机/罢相/宫禁/人事/其他·屏退宫人 → 帝出疑问 → 逐人问对 → 密谈 → 决断与保密
 // 姊妹·tm-chaoyi.js·tm-chaoyi-changchao.js·tm-chaoyi-tinyi.js
 // ============================================================

@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-16T14:17:09.010Z",
-  "total": 925,
+  "updatedAt": "2026-11-17T06:00:45.278Z",
+  "total": 924,
   "files": {
     "smoke-agency-covert-report.js": 2,
     "smoke-agent-mode-s1.js": 7,
@@ -48,7 +48,7 @@
     "smoke-d2-legitimacy-cascade.js": 1,
     "smoke-dangling-signal-fixes.js": 4,
     "smoke-dead-char-no-memorial-revoke-alive.js": 4,
-    "smoke-dead-code-removal-guards.js": 47,
+    "smoke-dead-code-removal-guards.js": 46,
     "smoke-deadcode-bugfix.js": 4,
     "smoke-deepen2.js": 1,
     "smoke-design-token-palette.js": 1,

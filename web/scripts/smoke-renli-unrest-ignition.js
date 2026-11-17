@@ -1,6 +1,6 @@
 /* smoke-renli-unrest-ignition.js — 刀A·物理亏空→既有民变/流寇点火（激活·门控种子省）
  * 验：种子省持续粮荒/逃亡→
- *   ① 民心通道：有界压低 GM 叶 div.minxin（民变真值源·★绕 P/GM adminHierarchy 分叉=落对 GM 那份而非 P）
+ *   ① 民心通道：有界压低 GM 叶 div.minxin（民变真值源·区划只留游戏里那份：人力读写都落 GM，剧本库那份 P 不读不写）
  *   ② 流寇通道：§5 全崩(逃亡>20% ∧ 连续亏空≥2 ∧ 农户满意度<35)→本回合新逃丁入既有逃户池 taoohu(→流寇凝聚)
  *   ③ deficitTurns 连续亏空计数（缺粮不结转）④ 有界(≤UNREST_MX_STEP/回合·不跳楼)
  *   ⑤ swap-test 摘掉满意度条件→流寇不点火（证 §5 三条 gate）⑥ 未种子地域 inert（零行为）
@@ -15,11 +15,12 @@ function near(a, b, eps) { return Math.abs(Number(a) - Number(b)) <= (eps == nul
 global.TM = global.TM || {};
 var R = require('../tm-renli.js');
 
-// ── P（Renli 读·有 renliSeed+populationDetail·无 minxin） 与 GM.adminHierarchy（民变读·有 minxin） 故意分叉为两套对象
-//    （模拟 tm-save-lifecycle deepClone 后 P≠GM 的真实运行态——民心压力必须落到 GM 那份才被民变看到） ──
+// ── 区划只留游戏里那份（GM·2026-11-15）：人力读的种子、丁口与民变读的民心挂在同一份区划（GM）上。
+//    P 只给开局与编辑器——这里给 P 放一棵同名、带种子的旧树当诱饵（西安府逃丁 9 万，读了它压降就会不同），
+//    验证人力既不读它也不写它 ──
 function mkP() {
   return { adminHierarchy: { player: { divisions: [
-    { id: 'div_xian', name: '西安府', renliSeed: { soilBase: 60 }, populationDetail: { mouths: 200000, households: 40000, ding: 100000, fugitives: 20000 } },
+    { id: 'div_xian', name: '西安府', renliSeed: { soilBase: 60 }, populationDetail: { mouths: 200000, households: 40000, ding: 100000, fugitives: 90000 } },
     { id: 'div_song', name: '松江府', populationDetail: { mouths: 200000, households: 40000, ding: 100000, fugitives: 5000 } } // 未种子
   ] } } };
 }
@@ -28,8 +29,8 @@ function mkGM() {
     turn: 5, sid: 'sc-x',
     classes: [{ name: '农户', economicRole: '生产', satisfaction: 30, regionalVariants: [{ region: 'div_xian', satisfaction: 30 }] }],
     adminHierarchy: { player: { divisions: [
-      { id: 'div_xian', name: '西安府', minxin: 50, minxinLocal: 50 },
-      { id: 'div_song', name: '松江府', minxin: 70, minxinLocal: 70 }
+      { id: 'div_xian', name: '西安府', minxin: 50, minxinLocal: 50, renliSeed: { soilBase: 60 }, populationDetail: { mouths: 200000, households: 40000, ding: 100000, fugitives: 20000 } },
+      { id: 'div_song', name: '松江府', minxin: 70, minxinLocal: 70, populationDetail: { mouths: 200000, households: 40000, ding: 100000, fugitives: 5000 } } // 未种子
     ] } },
     population: { byLegalStatus: {} },
     renli: { byRegion: {
@@ -46,7 +47,7 @@ var gmXian = GM.adminHierarchy.player.divisions[0];
 ok(near(gmXian.minxin, 46.8), '1·役政崩坏→GM 叶西安府 div.minxin 50→46.8（-3.2·落 GM 那份=民变真值源）·实得 ' + gmXian.minxin);
 ok(gmXian.minxinLocal === gmXian.minxin, '1·minxinLocal 同步');
 var pXian = P.adminHierarchy.player.divisions[0];
-ok(pXian.minxin === undefined, '1·★P 那份叶子未被写 minxin（分叉安全·压力没写飞到 Renli 读的 P 上）');
+ok(pXian.minxin === undefined && pXian.populationDetail._renliFugSeen === undefined, '1·剧本库那份（P）的叶子不被写民心、不被记逃丁基线（只认游戏那份）');
 ok((50 - gmXian.minxin) <= 4 + 1e-9, '1·有界：单回合压降 ≤ UNREST_MX_STEP(4)·不跳楼');
 ok(GM.renli.byRegion.div_xian.deficitTurns === 1, '1·deficitTurns 0→1（本回合有亏空）');
 ok((GM.population.byLegalStatus.taoohu == null) || (GM.population.byLegalStatus.taoohu.mouths === 0), '1·首回合无 backlog 倾泻入逃户池（deficitTurns<2 且 inc=0）');
@@ -58,7 +59,7 @@ ok(near(GM2.adminHierarchy.player.divisions[0].minxin, 46), '1b·极端崩坏 se
 
 // ── T2 流寇通道（2 回合全崩→新逃丁入既有逃户池）──
 // 续 T1（_renliFugSeen 已=20000·deficitTurns=1）。本回合新逃 5000、逃亡率 .25>.20、满意度30<35、亏空连续→全崩
-P.adminHierarchy.player.divisions[0].populationDetail.fugitives = 25000;
+GM.adminHierarchy.player.divisions[0].populationDetail.fugitives = 25000;
 GM.turn = 6;
 R.applyUnrestPressure(GM, P);
 ok(GM.renli.byRegion.div_xian.deficitTurns === 2, '2·deficitTurns 1→2（连续亏空·达 §5 阈）·实得 ' + GM.renli.byRegion.div_xian.deficitTurns);
@@ -75,8 +76,8 @@ ok(GM.renli.byRegion.div_xian.deficitTurns === 0, '3·亏空消失→deficitTurn
 var P4 = mkP(), GM4 = mkGM();
 GM4.classes[0].satisfaction = 60; GM4.classes[0].regionalVariants[0].satisfaction = 60; // 满意度高
 GM4.renli.byRegion.div_xian.deficitTurns = 2;                                            // 亏空已够
-P4.adminHierarchy.player.divisions[0].populationDetail._renliFugSeen = 20000;            // 基线
-P4.adminHierarchy.player.divisions[0].populationDetail.fugitives = 26000;                // inc 6000>0·逃亡率 .26>.20
+GM4.adminHierarchy.player.divisions[0].populationDetail._renliFugSeen = 20000;           // 基线
+GM4.adminHierarchy.player.divisions[0].populationDetail.fugitives = 26000;               // inc 6000>0·逃亡率 .26>.20
 R.applyUnrestPressure(GM4, P4);
 var t4 = GM4.population.byLegalStatus.taoohu;
 ok((t4 == null) || (t4.mouths === 0), '4·swap-test：满意度 60≥35→全崩条件不成立→逃户池不增（§5 gate 生效·非无条件点火）·实得 ' + (t4 ? t4.mouths : 0));

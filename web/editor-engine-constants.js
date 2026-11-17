@@ -22,7 +22,7 @@
 // Used by:
 //   - editor.html "官制·引擎元规则" sidebar group
 // Tests:
-//   - syntax-check (verify-all)
+//   - syntax-check
 // Refactor notes:
 //   - Phase 6 系统翻新 我做 (Phase 0 时)
 //   - Phase 3·rename → editor-form-office-engine.js (与 model-requirements 合 form-meta? 待 audit)

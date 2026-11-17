@@ -16,13 +16,14 @@ npm ci --ignore-scripts
 
 审计附件的工作树适配器：`node web/scripts/audit-repro.cjs --repo <repo> --expect-clean`。它保持原 11 个缺陷判据及两个对照不变，仅适配生产模块依赖和故障注入接口；原附件的固定旧夹具不作修改。`smoke-audit-*.js` 另行验证正常行为和恢复不变量，包括原附件没有覆盖的大文件导入。
 
-## 一键检查（最常用）
+## 日常检查（最常用）
 
 ```bash
-node scripts/verify-all.js
+node scripts/lint-arch-all.js            # 架构守卫，推送钩子也跑这一条
+node scripts/run-smokes.js --changed      # 只跑与这次改动相关的冒烟
 ```
 
-依次跑 syntax-check → ref-check → find-orphans → headless-smoke·任一失败即停。smoke 的退出码用 baseline (≥207 pass / ≤4 fail) 判断·允许改善但不允许退步。完整跑一遍约 18 秒。
+原先的一键脚本 `verify-all.js` 已于 2026-11-17 撤掉：它是一份手工登记的清单，CI 与推送钩子都不调用，登记的两项（`find-orphans`、`official-scenario-smoke`）早已跑不通而没人发现。冒烟放进 `scripts/` 按文件名自动发现，不需要登记。
 
 ---
 
@@ -102,9 +103,7 @@ node scripts/bump-cache-bust.js v20260425v        # 不传则用今日
 
 ## 建议工作流
 
-**重构前**：`node scripts/verify-all.js` → 记录 baseline。
-
-**重构后每个 commit**：`node scripts/verify-all.js` → 全绿才提交。任一项失败即回滚或修正·绝不带病提交。
+**每个 commit 之前**：`node scripts/lint-arch-all.js` 与 `node scripts/run-smokes.js --changed` → 全绿才提交。全量冒烟由 CI 兜底。
 
 ---
 
@@ -112,7 +111,6 @@ node scripts/bump-cache-bust.js v20260425v        # 不传则用今日
 
 | 类型 | 工具 | 引入 | 用途 |
 |---|---|---|---|
-| 一键 | `verify-all.js` | R149 | 跑齐 4 项检查·smoke 用 baseline 判定 |
 | 检查 | `syntax-check.js` | R121 | node --check 全扫 |
 | 检查 | `headless-smoke.js` | R121 | vm 跑 TM.test |
 | 检查 | `ref-check.js` | R136 | 跨文件引用断链 |

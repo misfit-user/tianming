@@ -3031,8 +3031,8 @@
     },
     {
       "path": "editor-engine-constants.js",
-      "sha256": "a1d02ba231c34e815f52df3b51839b87f953c3c570174cc716da3839cb574713",
-      "size": 19408
+      "sha256": "628a0dac80b469f39dee9f0e0f69d0685bd3892471b7505800672d362d0fc98d",
+      "size": 19395
     },
     {
       "path": "editor-fiscal.js",
@@ -3086,8 +3086,8 @@
     },
     {
       "path": "editor-model-requirements.js",
-      "sha256": "810bf3b17f0196fb42dcb52eec99b2aa8ee5d3ef07f79765ddc3fb2a26d8968f",
-      "size": 5163
+      "sha256": "ffb09fec50e659a3ce651096d31dbac63432fea86ca6a136a75ee50f40d8bd5c",
+      "size": 5150
     },
     {
       "path": "editor-office-deep.js",
@@ -3101,8 +3101,8 @@
     },
     {
       "path": "editor-schema-adapter.js",
-      "sha256": "d409bbf12b935f7a7e4959da166ede5be5a3d2e0210c681fa8969b65aa1fcf12",
-      "size": 16466
+      "sha256": "6b8038af64205b4716a1ecfca984770d43b4580dfd5269a200bb6fdb58c9caec",
+      "size": 16453
     },
     {
       "path": "editor.html",
@@ -3136,8 +3136,8 @@
     },
     {
       "path": "INDEX.md",
-      "sha256": "5b2b798bcedd2453a0dada25af86afeed72cae63ad0a3a55a5e5e6e5adfd3e15",
-      "size": 7716
+      "sha256": "17ee3cde56dc6c577e6e3dfbe840f0d58bcde77d3ff89db62127b74e1043d81e",
+      "size": 7764
     },
     {
       "path": "libs/polygon-clipping-0.15.7.min.js",
@@ -4296,63 +4296,63 @@
     },
     {
       "path": "tm-char-historical-wave-01.js",
-      "sha256": "5665d55f83f9e65323382dc889cc0d68303cbc3317b7cecb00952b671e67712e",
-      "size": 72109
+      "sha256": "b0f7a9234c52652850fd4211f53582781341803b9675a830ed8ff30a9da2dd30",
+      "size": 72096
     },
     {
       "path": "tm-char-historical-wave-02.js",
-      "sha256": "1749b73b471e46cc126bc0d098aa0b56637ac3a795a6c543325cb7cc085285e7",
-      "size": 53411
+      "sha256": "f029526d696f08529e4570a8102fdc0ab4513d568b7bdc7d7c0d54dabcf8750f",
+      "size": 53398
     },
     {
       "path": "tm-char-historical-wave-03.js",
-      "sha256": "77d34a220b0115485977f001c1c11ab1406635c88a6c831552388ea17d0274bd",
-      "size": 51640
+      "sha256": "7a228b7a7377511695e0a653f616844a93108c3846c40fe1adc47f3970837eaa",
+      "size": 51627
     },
     {
       "path": "tm-char-historical-wave-04.js",
-      "sha256": "77f72929caa59c9fdfa674e3c5117870b1edee618d8d7c3822242261f8228889",
-      "size": 46603
+      "sha256": "2134e56d7059ec648d4a52cd9733bef62f73d70b06967943b5d5adacdecec588",
+      "size": 46590
     },
     {
       "path": "tm-char-historical-wave-05.js",
-      "sha256": "16fe7f090eb0f40e2fa6ac023750836c8fd593cca6a1f55a89ce936530758947",
-      "size": 43572
+      "sha256": "ad378b067675871eb5cd9b25a66098645970c0abefa8be60e395107364cdc9fa",
+      "size": 43559
     },
     {
       "path": "tm-char-historical-wave-06.js",
-      "sha256": "b118fd4ada7c9a0d5579f42ba88cc8d5fa565f939c72eb2fe6fe5c85e4bb60f6",
-      "size": 42492
+      "sha256": "0be59286457390c59b86bf3f709541732c785962c65074bcce450f5cb3926d01",
+      "size": 42479
     },
     {
       "path": "tm-char-historical-wave-07.js",
-      "sha256": "0af5425f9049c8e68d6745e288e3aad932757c1ae0222ee396f4836f4815e2fe",
-      "size": 34664
+      "sha256": "9578bc863f381b759f77ac30e10e90d3ea5f161f9270056681a4e53ab66a5d2a",
+      "size": 34651
     },
     {
       "path": "tm-char-historical-wave-08.js",
-      "sha256": "f53acd0f5ea4ce7cac6283291a222cdd2a41c4237547cea69f022d0e8d328fc4",
-      "size": 44305
+      "sha256": "29e4d2170638f03235fef87fd07b23ced718b63dbef028847ed61042457b114c",
+      "size": 44292
     },
     {
       "path": "tm-char-historical-wave-09.js",
-      "sha256": "985d9643e85aadc3facaf3bee505cf5fcbdf3d7fd1cc5e661442d064ffe946d5",
-      "size": 35538
+      "sha256": "d062b1fc702e20321dd4718c5ad20c20674b1d15d2f0688c6ebd5d9b634be4a2",
+      "size": 35525
     },
     {
       "path": "tm-char-historical-wave-10.js",
-      "sha256": "bad6261967704fbcccc8962178920450c40cb3688ae8841e04c16ca6dec1220d",
-      "size": 42184
+      "sha256": "55a6d63e51f40f9b6e2fcc7c7f3d5a538c216eceb07cdb45110695c117fd2959",
+      "size": 42171
     },
     {
       "path": "tm-char-historical-wave-11.js",
-      "sha256": "6b559bc9c89b838b81657ca9ff7c971c4f59ca4bbd7b41c7e2c0e4e701561fa5",
-      "size": 42075
+      "sha256": "19a374f8c66c461844665633b3d576d558ef39b384ae9cc7ef7ff33c05767ae9",
+      "size": 42062
     },
     {
       "path": "tm-char-historical-wave-12.js",
-      "sha256": "d117394fd50f6062881363fe15d101f19329920ee12c7548c339b5f702d2bc8e",
-      "size": 52850
+      "sha256": "883518562ba7a3c7f892a0d3445774d50758bc7ca4277ac53e9d03d099ce8870",
+      "size": 52837
     },
     {
       "path": "tm-checklist.js",
@@ -4521,8 +4521,8 @@
     },
     {
       "path": "tm-economy-engine.js",
-      "sha256": "38619179d9810dd5bae710e39de03a61ea06e23accc331f89915cd76d98f7af5",
-      "size": 160239
+      "sha256": "d23a80bb078327a1ed1d392fb7e88e0c94cc26f6888b9ef793abf2da1540cbef",
+      "size": 160221
     },
     {
       "path": "tm-economy.js",
@@ -4606,8 +4606,8 @@
     },
     {
       "path": "tm-endturn-ai-context.js",
-      "sha256": "c92d0a4d2a0440b67e5fe5be2669d24d059b09a4a0144292b92d5bed9a06ca82",
-      "size": 21999
+      "sha256": "3c4fd90d8d96cbc5eb6b64a8e1e2e63ae3020b706817623c231b0f101432fc5f",
+      "size": 21986
     },
     {
       "path": "tm-endturn-ai-helpers.js",
@@ -4706,8 +4706,8 @@
     },
     {
       "path": "tm-endturn-province.js",
-      "sha256": "27bea75ce7af9d6a4bd2acd57d2c9c6f48cb627607f4b2a8d774937651fd24ea",
-      "size": 121651
+      "sha256": "1b2ad89403371c43536254145213ed3817c14e08214b40886c2b5eab85d836e3",
+      "size": 121627
     },
     {
       "path": "tm-endturn-qiaozhi.js",
@@ -4956,8 +4956,8 @@
     },
     {
       "path": "tm-fiscal-engine.js",
-      "sha256": "47e801d42cb1fa5a800f0578611ca5d8589e39fb303f969830ca5b4c4252e0d3",
-      "size": 180524
+      "sha256": "5a5ac2b9f8d85472ebbcc3f7bfab6059bf78c0e6b0b860fe4aa158daa260bc71",
+      "size": 180478
     },
     {
       "path": "tm-fiscal-local-expense.js",
@@ -5931,8 +5931,8 @@
     },
     {
       "path": "tm-prompt-composer.js",
-      "sha256": "be65bc2ed4b4c1fd8bd1a760f8605ca65d4af7eaf2826696f665887e01cfc904",
-      "size": 21166
+      "sha256": "fdbc6ed5e2fa512cfceae359984061de0e622da7d958ebf684a96c73c3217bc0",
+      "size": 21153
     },
     {
       "path": "tm-prophecy.js",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "0a82ad96eac4faa51d880e7a2cb671a1c7de30d25bb631f31d16b83caf7bdf8b",
+      "sha256": "d4fda2947824dbffb3ffd92cc6892af17b0500f1b3cf0d55b54edd0715172c48",
       "size": 142847
     },
     {

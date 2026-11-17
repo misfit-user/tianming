@@ -14,7 +14,7 @@
 //   - global.TM.Economy (alias)·sum / getDiv / topContributors / triggerSurvey
 // Used by: tm-game-loop·tm-endturn-systems·tm-var-drawers·official-scenario-smoke·smoke-1627-fiscal·smoke-guoku-*·tm-fiscal-ui·index/editor.html
 // Side effects: GM.fiscalConfig·GM.guoku·GM.regions[*].fiscal mutation·SettlementPipeline·EventBus·addEB·DOM via callers
-// Test: official-scenario-smoke·verify-all (35 checks·177 layered baseline)
+// Test: official-scenario-smoke
 // Notes: Phase 3·R3 (2026-05-03) 由 tm-fiscal-cascade + tm-fiscal-fixed-expense 5→2 合并·rename 至 tm-fiscal-engine
 //        R10a-h (2026-05-04)·吸 tm-tax-atomic §A·D·E·F·G (ATOMIC_TAX_TYPES_19·_ensureRegionFiscal·splitTaxByAllocation·EXPENDITURE_EFFECTS_14·executeLocalAction·_tickTransferOrders)
 //        R10 fiscal compat (2026-05-04·Codex)·重构 export 段·api 对象 + CascadeTax/FixedExpense VERSION 2 + PhaseH 防御 shim + TM.Economy alias + 字段双名 alias (claimed/claimedRevenue·remitted/remittedToCenter·retained/retainedBudget) + customTaxes (perMu/flat/perDing) + Tianqi salaryAnnualOverride/armyAnnualOverride

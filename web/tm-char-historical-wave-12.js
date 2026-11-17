@@ -19,7 +19,7 @@
 // Used by:
 //   - tm-npc-engine / tm-char-autogen / tm-char-historical-profiles consumers
 // Tests:
-//   - official-scenario-smoke / verify-all
+//   - official-scenario-smoke
 // Refactor notes:
 //   - Phase 2 split done·原 tm-char-historical-profiles-ext.js (10298) → 12 wave 文件
 //   - Phase 5 namespace·TM.Char.Historical

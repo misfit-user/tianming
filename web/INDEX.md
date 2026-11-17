@@ -88,7 +88,7 @@ Ctrl+Shift+/    速查卡浮层
 
 **一键全检**：
 ```bash
-node scripts/verify-all.js   # syntax→ref→orphans→smoke 4 项 18s · smoke 用 baseline 不退步判定
+node scripts/lint-arch-all.js && node scripts/run-smokes.js --changed   # 架构守卫 + 与改动相关的冒烟（verify-all.js 已于 2026-11-17 撤掉）
 ```
 
 **4 道防线**：

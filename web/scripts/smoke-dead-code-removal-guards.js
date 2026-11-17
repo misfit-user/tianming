@@ -41,7 +41,6 @@ const indices = read('tm-indices.js');
 const officeSystem = read('tm-office-system.js');
 const editorAuthoringAgent = read('editor-authoring-agent.js');
 const kejuReformEvolution = read('tm-keju-reform-evolution.js');
-const verifyAll = read(path.join('scripts', 'verify-all.js'));
 
 assert(!/function\s+manualStartKeju\s*\(/.test(keju), 'obsolete manualStartKeju direct exam launcher should be removed');
 assert(/function\s+startKejuByMethod\s*\(/.test(keju), 'active keju method launcher should remain');
@@ -122,7 +121,6 @@ assert(
 );
 assert(/GM\._historicalDeviations\.forEach/.test(endturnCore) && /ttl--/.test(endturnCore), 'historical-deviations TTL decay hook should remain');
 
-assert(verifyAll.includes('smoke-dead-code-removal-guards.js'), 'verify-all should include dead code removal guard smoke');
 assert(!/function\s+startGame\s*\(\s*sid\s*\)/.test(gameLoop), 'obsolete tm-game-loop startGame owner should be removed after active hooks are migrated');
 assert(/startGame\s*=\s*async\s*function\s*\(\s*sid\s*\)/.test(patches), 'active startGame owner should remain in tm-patches');
 assert(/function\s+_tmRefreshFactionDerivedRuntime\s*\(/.test(gameLoop), 'enterGame should retain migrated faction derived refresh helper');

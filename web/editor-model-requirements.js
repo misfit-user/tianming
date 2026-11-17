@@ -19,7 +19,7 @@
 // Used by:
 //   - editor.html "高级·模型适配·模型要求" sidebar item
 // Tests:
-//   - syntax-check (verify-all)
+//   - syntax-check
 // Refactor notes:
 //   - Phase 0 系统翻新 我做
 //   - Phase 3·rename → editor-form-meta.js (合 剧本基础信息)

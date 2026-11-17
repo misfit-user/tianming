@@ -3,8 +3,7 @@
 //
 // scripts/ 下 670+ 个 smoke-*.js 一直没有统一入口，「这刀该跑哪些」全靠人肉 grep。
 // 本 runner 做四件事：发现、并发跑、超时熔断、失败聚类。
-// 与 verify-all.js 分工：verify-all = 手工精选的快速门禁（fail-fast）；
-// run-smokes = 全量/按主题的发现式扫荡（周期性跑或大改后跑）。
+// 它是冒烟的唯一入口：放进 scripts/ 的 smoke-*.js 按文件名自动发现，不需要另外登记。
 //
 // 用法：
 //   node scripts/run-smokes.js --grep tinyi          # 只跑名字含 tinyi 的

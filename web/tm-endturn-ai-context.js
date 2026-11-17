@@ -19,7 +19,7 @@
 // Used by:
 //   - tm-endturn-ai-infer.js Region 1
 // Tests:
-//   - syntax-check / verify-all
+//   - syntax-check
 // Refactor notes:
 //   - Phase 3 R7 Codex slice: first small Region 1 extraction.
 // ============================================================

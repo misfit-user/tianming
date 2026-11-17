@@ -30,7 +30,7 @@
  *   §E·EconomyGapFill·* (12 项补完入口) + global.EconomyCore.formulaEstimateWealth (Codex R10·原 §J)
  *
  * Used by: tm-game-loop·tm-endturn-systems·tm-var-drawers·tm-fiscal-engine (经济基础读取)·smoke-engine-phase0·smoke-influence-groups
- * Test: verify-all 35/35·influence-groups (91 assertions)·class-engine (78)·smoke-engine-phase0 (21)
+ * Test: influence-groups (91 assertions)·class-engine (78)·smoke-engine-phase0 (21)
  */
 
 // ═══════════════════════════════════════════════════════════════════════

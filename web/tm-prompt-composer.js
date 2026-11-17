@@ -32,7 +32,7 @@
 //   - tm-endturn-ai-infer.js (sysP base + systemPrefix + narrative/temporal/chronicle)
 //   - tm-tinyi-v3.js (sc18 / NPC decision / char arcs / endturn middle style)
 // Tests:
-//   - syntax-check (verify-all)
+//   - syntax-check
 //   - cc3-smoke (covers chaoyi 调用)
 // Refactor notes:
 //   - Phase 6 系统翻新 我做·v0-v7 evolve

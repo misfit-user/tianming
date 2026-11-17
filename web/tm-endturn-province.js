@@ -9,7 +9,7 @@
 // Exports: top-level functions·initProvinceEconomy·updateProvinceEconomy·appointGovernor·省级政策 + 省级面板
 // Used by: tm-game-loop·tm-endturn-core·tm-endturn-render·index/editor.html
 // Side effects: GM.provinceStats mutation·UI panel
-// Test: official-scenario-smoke·verify-all (35 checks)
+// Test: official-scenario-smoke
 // Notes: R7 (2026-05-04·Claude)·从本文件 L2230-2479 carve out 侨置 (3 fns: openQiaozhiPanel·doQiaozhi·restoreQiaozhiDivision) → tm-endturn-qiaozhi.js·**侨置作为独立 feature 模块**·本文件 2488 → 2229·-259 行
 //        姊妹·tm-endturn-qiaozhi.js (R7 新建)·tm-endturn-core.js·tm-endturn-helpers.js·tm-endturn-render.js·tm-endturn-edict.js·tm-endturn-ai-context.js (R7 Codex 新建·AI prompt context)·tm-endturn-ai-infer.js·tm-endturn-systems.js
 // ============================================================

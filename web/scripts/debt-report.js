@@ -132,7 +132,7 @@ console.log('');
 console.log('🔧 工具链 (scripts/·零依赖)');
 const scriptsDir = path.join(__dirname);
 const scriptFiles = fs.readdirSync(scriptsDir).filter(f => f.endsWith('.js'));
-console.log('   零依赖工具: ' + scriptFiles.length + ' 个 (verify-all 一键跑齐 4 道防线)');
+console.log('   零依赖工具: ' + scriptFiles.length + ' 个');
 console.log('');
 console.log('═════════════════════════════════════════════════════════');
 console.log('  当前评估：基础设施完备·热路径错误覆盖 ' + tmErrPct + '%·安全网零漏');

@@ -195,7 +195,7 @@ function main() {
   assert(ctx.GM.huangquan.index === 75, `applyPathSet(huangquan.index)=75 should work·got ${ctx.GM.huangquan.index}`);
 
   // [D] safe behavior smoke (轻量·不依赖完整 GM 结构)
-  // — heavy applyAITurnChanges/onAppointment 等 method 依赖 GM 全状态·已被 verify-all
+  // — heavy applyAITurnChanges/onAppointment 等 method 依赖 GM 全状态·已被别的
   //   的 endturn smoke / smoke-faction-npc-* 覆盖·这里不重复·避免 mock 漂移。
   //   只跑 pure helper + 不写状态的查询类。
 

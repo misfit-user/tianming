@@ -21,7 +21,7 @@
 //   - editor-crud.js (导入/导出 button)
 //   - editor.html script include
 // Tests:
-//   - syntax-check (verify-all)
+//   - syntax-check
 //   - render-smoke (boot loads OK)
 // Refactor notes:
 //   - Phase 0 implemented (sc18 schema unify·event/variable bucket-ize)

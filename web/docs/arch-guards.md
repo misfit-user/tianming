@@ -78,7 +78,6 @@ node scripts/run-smokes.js --list                  # 干跑看选中
 node scripts/run-smokes.js --jobs 8 --timeout 90   # 全量扫荡（大改后/周期性）
 ```
 
-- 与 `verify-all.js` 分工：verify-all = 手工精选快速门禁（fail-fast）；run-smokes = 全量/按主题扫荡。
 - 尊重 `scripts/_<TOKEN>_NORUN.flag`（并行会话施工标记）与 `arch-baselines/smoke-skip.json`；`--all` 无视。
 - `suspect` = 退出码 0 但输出带 FAIL → 该脚本忘了 `process.exit(1)`，见报告补上。
 

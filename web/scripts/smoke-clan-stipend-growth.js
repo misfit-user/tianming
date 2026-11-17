@@ -88,6 +88,22 @@ var c6 = mkCtx(); c6.P.conf.clanGrowthEnabled = true;
 for (var i = 0; i < 24; i++) { c5.applyRoyalClanPressure(1); c6.applyRoyalClanPressure(1); }
 assert(c5.GM.imperialClan.princeCount === c6.GM.imperialClan.princeCount && c5.GM.neitang._royalClan.population === c6.GM.neitang._royalClan.population, '⑫ 确定性·同局面同轨');
 
+// ── 配了年额宗禄（天启、绍宋）：固定支出本回合或上回合扣过宗禄，这里让位不再扣；没扣过才按人口扣 ──
+//   （11-17：原先宗禄判权调了另一个闭包里的函数，这一步每回合抛错、整段跳过）
+var spent7 = [];
+var c7 = mkCtx({ FiscalEngine: { spendFromGuoku: function (amt, why) { spent7.push(why); } } });
+c7.GM.neitang.neicangRules.royalClanPressure.annualStipendPaid = 3.65;
+c7.GM._lastFixedExpenseTurn = c7.GM.turn - 1;
+var threw7 = null;
+try { c7.applyRoyalClanPressure(1); } catch (e) { threw7 = e; }
+assert(!threw7, '⑬ 配了年额宗禄：宗室结算不抛错（实得 ' + (threw7 && threw7.message) + '）');
+assert(spent7.length === 0 && c7.GM.neitang._royalClan.lastStipendCost > 0, '⑭ 固定支出上回合已扣宗禄：这里不再扣，月宗禄照记');
+var spent8 = [];
+var c8 = mkCtx({ FiscalEngine: { spendFromGuoku: function (amt, why) { spent8.push(why); } } });
+c8.GM.neitang.neicangRules.royalClanPressure.annualStipendPaid = 3.65;
+c8.applyRoyalClanPressure(1);
+assert(spent8.length === 1 && spent8[0] === '宗禄', '⑮ 固定支出没扣过：按人口扣一回宗禄');
+
 // ── 静态契约：下游读点/开关在位 ──
 
 console.log('smoke-clan-stipend-growth OK — ' + N + ' 断言全绿（种子不跳变/十年复利/剧本预置/编年/确定性/flag闸）');

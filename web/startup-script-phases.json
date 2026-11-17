@@ -10483,7 +10483,7 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-revolt-suppress.js",
+      "script": "tm-revolt-band.js",
       "order": 399,
       "phase": "world",
       "loadPolicy": "eager-ordered",

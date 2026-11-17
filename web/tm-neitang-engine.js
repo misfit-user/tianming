@@ -1160,6 +1160,7 @@
   global.NeitangEngine = {
     supportsExplicitFlow: true,
     isExplicit: explicitFiscalActive,
+    fixedExpenseRan: _fixedExpenseRan,
     getBudgetView: getBudgetView,
     getAccountContext: getAccountContext,
     tick: tick,
@@ -1197,6 +1198,9 @@
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function safe(v, d) { return (v === undefined || v === null) ? (d || 0) : v; }
+  // 固定支出结没结账（连上一回合一起认）在上一段；宗禄判权要用。11-07 修宗禄双扣时这里直接调了上一段闭包里的函数，
+  // 够不着，配了年额宗禄的剧本（天启、绍宋）宗室结算每回合抛错、整段跳过。
+  var _fixedExpenseRan = NeitangEngine.fixedExpenseRan;
 
   // 民心走 MinxinLedger 总闸(2026-07-04 收口)·同 p1 的 _mxApply(两 IIFE 各一份·作用域隔离)
   function _mxApply(delta, reason, kind) {

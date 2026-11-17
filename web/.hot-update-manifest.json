@@ -2916,7 +2916,7 @@
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
-      "sha256": "1934a9592a7ce37b82da5c3248b8126997f1df7c4df0fea15bd85cd21a772109",
+      "sha256": "e1b60e602c81e466cc0d2845858d8d69411a5834f0e76375475e1c834a26fa1a",
       "size": 53247384
     },
     {
@@ -3121,8 +3121,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "c888d83e70481196bc7770ebd38e27d3dccd1b6b1fc042ee381ebcce466564a1",
-      "size": 392256
+      "sha256": "357e167dd58464040747c4625936353a20a8310ade15f02cb391f47bac7672b3",
+      "size": 392741
     },
     {
       "path": "icon.png",
@@ -3131,8 +3131,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "423ee91f4439ee5977cc9e29843b45b0d5d39f47fbb0caba97485c3df589fe38",
-      "size": 80613
+      "sha256": "472f23aba5f457b3c945f7413b7651fb1023eecbed8ec014fe3a3c2de089051e",
+      "size": 80664
     },
     {
       "path": "INDEX.md",
@@ -3616,8 +3616,8 @@
     },
     {
       "path": "modules/ai-change-applier/reconcile.js",
-      "sha256": "6fe20b83eb156232344b32f8a7e55c222510724393b158bcfb03fad749346a46",
-      "size": 115652
+      "sha256": "5cdced4ee99f754d2dc2461bd422212c9dda18f1e55162f95384bd41aa100b42",
+      "size": 116434
     },
     {
       "path": "modules/ai-change-applier/validators.js",
@@ -3961,8 +3961,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "b90967d047d88e04db2bd6532cc9d0b439fe9b7707a5115da1c34173324b2594",
-      "size": 391960
+      "sha256": "0f38421f7bf371de63a0d3152dc38382154ce22cf6a9fc48b63d696b5a23bd0e",
+      "size": 391956
     },
     {
       "path": "styles.css",
@@ -4066,8 +4066,8 @@
     },
     {
       "path": "tm-ai-schema.js",
-      "sha256": "e0262efb9bb8b2b9f88c886c6617aec0f248338cfd80816809865a6ada265661",
-      "size": 52279
+      "sha256": "6e4748e78fe6ec0ac04c806a2aab12f7c91cf7f27b2c30784c33246c8c39dba6",
+      "size": 52314
     },
     {
       "path": "tm-api-models.js",
@@ -4111,13 +4111,13 @@
     },
     {
       "path": "tm-authority-complete.js",
-      "sha256": "7e15a40cf8a35acbd1f52fb39b3d6c324aa8cebac9d327f047e527c8db8d3e57",
-      "size": 97500
+      "sha256": "047a4a39c747702838181d3a874fa47982e801061c7a74088ff12f62a2fca1ad",
+      "size": 95777
     },
     {
       "path": "tm-authority-deep.js",
-      "sha256": "d4e0e56c61c5f649153ccfaeb139ecc9743df9f2c1ec6e44f7a45de7a194a187",
-      "size": 25993
+      "sha256": "449961078910856f8041413c34ef393505618bc11cc2ce662edd09b81bf6eb89",
+      "size": 24460
     },
     {
       "path": "tm-authority-engines.js",
@@ -4126,8 +4126,8 @@
     },
     {
       "path": "tm-authority-ui.js",
-      "sha256": "dc71a2945a6ff9083d478397c5b1f230fc7382f35015616b51c25b7335fcb94d",
-      "size": 32815
+      "sha256": "930f827ca6d26ed26c30e45448b3019af732e0ec26a382fc0e1958d6043e0e2f",
+      "size": 32700
     },
     {
       "path": "tm-battle-adapter.js",
@@ -4136,8 +4136,8 @@
     },
     {
       "path": "tm-battle-contract.js",
-      "sha256": "153dcb2f30ac7a769c10ad857de5446226d0c13c1aa8aeddaf29a177f3a4f078",
-      "size": 19089
+      "sha256": "a8b8e3a08485d3804e7d7cd53e3586e298b59daad3054388a66ec921e29b8529",
+      "size": 23463
     },
     {
       "path": "tm-battle-embed.js",
@@ -4626,18 +4626,18 @@
     },
     {
       "path": "tm-endturn-ai.js",
-      "sha256": "6303715ff5fcdfc3f8e872eccf8bb725c59476e9ef784d889f879b699d870b9b",
-      "size": 401740
+      "sha256": "747a36d2f0d0afbef8c21d90e6e2281967fa413e7c674ec802720fc05e27e792",
+      "size": 402413
     },
     {
       "path": "tm-endturn-apply-stages.js",
-      "sha256": "5696f883a65d695cc9c18612f5cdf02b7060fee202e0a07914c46ced5f60045c",
-      "size": 99778
+      "sha256": "5f9c765ada384ede3df99b74027f5c01b7e75c983bd2438742de769338eab753",
+      "size": 100293
     },
     {
       "path": "tm-endturn-apply.js",
-      "sha256": "399ce7a29a8cfcc39cb26d733ca7468682dd37a1feb4b43c7e3f46123da90753",
-      "size": 341094
+      "sha256": "8b4e8bf5c8fd7fe382cbf873470674424fba5f3e4e66d55d808660a083fd0fff",
+      "size": 344702
     },
     {
       "path": "tm-endturn-core.js",
@@ -4656,8 +4656,8 @@
     },
     {
       "path": "tm-endturn-followup.js",
-      "sha256": "83a869f321b75a731807d07cfecf5746623edce211da470f03c20501f9cf5922",
-      "size": 290430
+      "sha256": "131743f3a93337be965970d3f75de35afc7675a4865726d52087f89e105ecda6",
+      "size": 291564
     },
     {
       "path": "tm-endturn-helpers.js",
@@ -4756,8 +4756,8 @@
     },
     {
       "path": "tm-endturn-systems.js",
-      "sha256": "0532b144014993f626907ecbeae20ed58b7e077d693ab72bb8c88c5ef6622fac",
-      "size": 43062
+      "sha256": "b4020eea3dc65b8b0dc6273b85115466b376002c5e37836af70b0a5586a9bc55",
+      "size": 43093
     },
     {
       "path": "tm-endturn-timing-ledger.js",
@@ -5641,8 +5641,8 @@
     },
     {
       "path": "tm-neitang-engine.js",
-      "sha256": "91a68c0e303c15c89dc2db4536c21825f2a93684062b6557de7408151748ae73",
-      "size": 107537
+      "sha256": "62418f586e8e53a1be78bd7f5574e03dd1addc7b6aaf972f7aeb0616890caea2",
+      "size": 107911
     },
     {
       "path": "tm-neitang-panel.js",
@@ -5906,8 +5906,8 @@
     },
     {
       "path": "tm-player-tools.js",
-      "sha256": "e33dc6175b2f0e757898c8e254f41010f312b65a7953456ff291253b1c2eb943",
-      "size": 35098
+      "sha256": "2281dca28d2feb19b1fbc0150c3c36f61c8a92dfaddda6a772f1e563b713c294",
+      "size": 34951
     },
     {
       "path": "tm-political-actions.js",
@@ -5936,8 +5936,8 @@
     },
     {
       "path": "tm-prophecy.js",
-      "sha256": "982ceb269a0730135d6e4669fcb7931e0198952f4ff31553a0cb90ae18d7a266",
-      "size": 35029
+      "sha256": "8930fbc43917dc12cfc8448c02c740d490fbdff5d8279cbf15d3042cffced541",
+      "size": 27890
     },
     {
       "path": "tm-public-treasury.js",
@@ -6018,6 +6018,11 @@
       "path": "tm-resume-point.js",
       "sha256": "5620526ea2fe8bc88cdac3c9072ba8830e85f2dcfaba20bf198b8000039729be",
       "size": 9874
+    },
+    {
+      "path": "tm-revolt-band.js",
+      "sha256": "5d86356a2776c19c3add0c1daaec535c261c4bc67561fbf81b86b70ae4e9afc9",
+      "size": 28279
     },
     {
       "path": "tm-revolt-entity.js",
@@ -6141,8 +6146,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "92b0da693a3fc3c8a4a1e7ba4e364768e48f42f0285eb212b1ef3ebfe48ef0a7",
-      "size": 142847
+      "sha256": "bac7446eb8653edd257d04859b8b2b38b6d9bf32e79a94b789879fa972feada0",
+      "size": 142895
     },
     {
       "path": "tm-start-selector.js",
@@ -6261,8 +6266,8 @@
     },
     {
       "path": "tm-topbar-vars.js",
-      "sha256": "46db2b1279ef07f335a7c373486448fbf3df412f5c5bcabf61c5e73053a415e8",
-      "size": 99649
+      "sha256": "be7561d7f40449b4fc82a4ea071378be84ab372a4293032965427ea59f027be9",
+      "size": 97551
     },
     {
       "path": "tm-touch-gestures.js",
@@ -6301,8 +6306,8 @@
     },
     {
       "path": "tm-var-drawers.js",
-      "sha256": "afb3b8c2027402b11986ed09a1ac1c6c7e7c45dac3b25abb112a9aaec494dbd8",
-      "size": 119137
+      "sha256": "9867963825a9e8c1302bb3b4b66c7b63a13f767a94efec8c215fdce43aa0cb4a",
+      "size": 118797
     },
     {
       "path": "tm-wendui-persona-views.js",
@@ -6551,8 +6556,8 @@
     },
     {
       "path": "tm-revolt-cases.js",
-      "sha256": "540642c8075ec33550eff47eefc9b32b05aaac6b4edeb50067e819cb582df78a",
-      "size": 31764
+      "sha256": "a7e9b4c6dee39d1a7eead04cf9cbd3174633ed7138cc157a29ee7e302ff0c0b9",
+      "size": 31868
     },
     {
       "path": "tm-revolt-guerrilla.js",
@@ -6561,13 +6566,8 @@
     },
     {
       "path": "tm-revolt-rising.js",
-      "sha256": "a7f38b680ef0da5c4526b45d7771db5548ae6c1c7000ac41aec4a17c0bda9201",
-      "size": 18952
-    },
-    {
-      "path": "tm-revolt-suppress.js",
-      "sha256": "d036b49d256ec9f745251b5440e4c38e876b6d9f1a89e51d79e0456b673d0eb2",
-      "size": 39521
+      "sha256": "19678461a73bd3b90ed8cc3e36ceb065df1d333cff7b1535f0df08a06ff7af38",
+      "size": 19124
     }
   ],
   "remove": []

@@ -115,6 +115,41 @@ ok(disk.files.length === 6 && disk.files[2].sha256 === 'disk-b', '不改传入�
 const plain = regen.adjustForView(disk, baseline, fakeView('worktree', ['web/a.js', 'web/b.js', 'web/out.json', 'web/staged-new.js'], {}));
 ok(paths(plain.manifest) === 'a.js assets/p.png b.js out.json staged-new.js', '按工作区算时只筛掉不认识的未跟踪文件，其余原样');
 
+// ---------- 剧本那组跳过时，随包剧本沿用基线的值 ----------
+// 11-17：未跟踪的随包剧本是变基前生成的旧货，照磁盘算就把旧哈希写进了基线（3497707d，CI 报 stale）
+const pinBaseline = { files: [row('a.js', 'base-a'), row('bundled-scenarios/w.json', 'main-w', 5), row('scenarios/t.js', 'base-t'), row('bundled-scenarios/same.json', 'same', 3)] };
+const pinDisk = {
+  version: '1.0.0.1',
+  files: [
+    row('a.js', 'disk-a'),
+    row('bundled-scenarios/w.json', 'stale-w', 4),   // 未跟踪、变基前生成的旧产物
+    row('bundled-scenarios/same.json', 'same', 3),   // 未跟踪、与基线一致
+    row('bundled-scenarios/new.json', 'disk-new'),   // 未跟踪、基线里没有（交给 adjustForView 去筛）
+    row('scenarios/t.js', 'disk-t')                  // 跟踪着的产物：git 会换成新的，照磁盘算
+  ]
+};
+const pinView = fakeView('worktree', ['web/a.js', 'web/scenarios/t.js'], {});
+const pinned = regen.pinScenarioProducts(pinDisk, pinBaseline, pinView);
+const pinnedBy = new Map(pinned.manifest.files.map((entry) => [entry.path, entry]));
+ok(pinnedBy.get('bundled-scenarios/w.json').sha256 === 'main-w' && pinnedBy.get('bundled-scenarios/w.json').size === 5, '未跟踪的随包剧本沿用基线里的哈希与大小');
+ok(JSON.stringify(pinned.stale) === '["bundled-scenarios/w.json"]', '磁盘上与基线对不上的随包剧本列出来提示重生成，一致的不列');
+ok(pinnedBy.get('scenarios/t.js').sha256 === 'disk-t' && pinnedBy.get('a.js').sha256 === 'disk-a', '跟踪着的产物与别的文件照磁盘算');
+ok(pinnedBy.get('bundled-scenarios/new.json').sha256 === 'disk-new', '基线里没有的不在这里处理');
+ok(pinned.manifest.version === '1.0.0.1' && pinDisk.files[1].sha256 === 'stale-w', '其余字段照新算的清单，不改传入的清单');
+const pinMerged = regen.mergeBaseline(
+  { files: pinBaseline.files.slice() },
+  regen.adjustForView(pinned.manifest, pinBaseline, pinView, regen.isDerivedOutput).manifest,
+  { existsOnDisk: () => true, trackedInHistory: () => false }
+);
+ok(!pinMerged.stats.updated.includes('bundled-scenarios/w.json'), '重生成时旧产物不再把基线里那条哈希改掉');
+const rawMerged = regen.mergeBaseline(
+  { files: pinBaseline.files.slice() },
+  regen.adjustForView(pinDisk, pinBaseline, pinView, regen.isDerivedOutput).manifest,
+  { existsOnDisk: () => true, trackedInHistory: () => false }
+);
+ok(rawMerged.stats.updated.includes('bundled-scenarios/w.json'), '对照：不沿用时，旧产物会把基线那条改掉（11-17 就是这样）');
+ok(regen.SCENARIO_OUTPUTS.includes('web/bundled-scenarios/') && !regen.SCENARIO_OUTPUTS.includes('web/.hot-update-manifest.json'), '剧本产物那几项不含三份清单');
+
 // ---------- 过期判断 ----------
 const staleProblems = regen.baselineProblems(
   { type: 't', version: '1', entry: 'index.html', files: [row('a.js', 'old'), row('assets/p.png', 'asset'), row('gone.js', 'gone')], remove: [] },

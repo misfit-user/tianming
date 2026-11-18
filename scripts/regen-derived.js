@@ -5,7 +5,7 @@
 //   node scripts/regen-derived.js --staged        两份哈希清单按暂存区内容算——只提交一部分改动时用
 //   node scripts/regen-derived.js --check         只检查；过期则列出并以 1 退出
 //   node scripts/regen-derived.js --check --head  按已提交内容检查（推送钩子用：工作区里没提交的改动不算数）
-//   其它：--scenarios / --no-scenarios  强制带上或跳过官方剧本那一组（默认：相对主干改过才带）
+//   其它：--scenarios / --no-scenarios  强制带上或跳过官方剧本那一组（默认：相对主干改过才带；跳过时随包剧本在基线里沿用已提交的值）
 //         --after-lint                  刚跑过 lint-arch-all，复用它留下的 global-providers 报告
 //
 // 为什么要有它：主干上六成提交都得跟着改 web/.hot-update-manifest.json 与 web/tm-start-runtime-manifest.json
@@ -36,6 +36,9 @@ const DERIVED_OUTPUTS = [
   'web/preview/scenario-editor-reset-data.js',
   'web/data/maps/scenario-library/'
 ];
+
+// 官方剧本那一组的产物（DERIVED_OUTPUTS 里除去三份清单的那几项）
+const SCENARIO_OUTPUTS = DERIVED_OUTPUTS.filter((rel) => ![RUNTIME_MANIFEST, PHASE_MANIFEST, HOT_BASELINE].includes(rel));
 
 // 官方剧本那一组的输入：真源、生成器、以及产物本身（产物被动过也要重新对一遍）
 const SCENARIO_INPUTS = [
@@ -249,6 +252,33 @@ function mergeBaseline(canonical, fresh, probes) {
   return { manifest: merged, stats };
 }
 
+// 官方剧本那一组跳过时（真源与生成器相对主干都没改），剧本产物就该是主干上那份。跟踪着的产物变基时 git 会换成新的，
+// 未跟踪的随包剧本（web/bundled-scenarios 下那几份大 JSON）却还是变基前生成的旧货——照磁盘算，旧哈希就进了基线。
+// 11-17：本工作区 11-09 生成的晚唐产物在主干改过真源（ba687990）后没重生成，3497707d 把它的旧哈希写进基线，
+// 推送钩子拿同一份旧产物比也看不出，main 上 CI 才报 stale（ed15692c 修回）。
+// 所以这时这几条一律沿用基线现有的值；磁盘上的对不上，列出来提示重生成（只是本地跑游戏会用旧剧本，不拦）。
+//   actual  热更打包器照磁盘算出的清单；返回 { manifest, stale }，stale 是磁盘上与基线对不上的那几份
+function pinScenarioProducts(actual, canonical, view) {
+  const canonicalRows = new Map(((canonical && canonical.files) || []).map((row) => [row.path, row]));
+  const stale = [];
+  const files = actual.files.map((row) => {
+    const rel = 'web/' + row.path;
+    if (view.has(rel) || !matchesAny(rel, SCENARIO_OUTPUTS)) return row;
+    const pinned = canonicalRows.get(row.path);
+    if (!pinned) return row;
+    if (pinned.sha256 !== row.sha256 || pinned.size !== row.size) stale.push(row.path);
+    return { path: pinned.path, sha256: pinned.sha256, size: pinned.size };
+  });
+  return { manifest: Object.assign({}, actual, { files }), stale };
+}
+
+function staleProductsNote(stale) {
+  if (!stale.length) return '';
+  return '      本地这几份随包剧本与基线对不上（多半是变基后没重生成；基线照旧取已提交的值）：'
+    + stale.slice(0, 5).join('、') + (stale.length > 5 ? ' …' : '')
+    + '\n      本地跑游戏会用到旧剧本，要换成新的：node scripts/regen-derived.js --scenarios';
+}
+
 // 基线相对新清单的问题。容忍一种：基线里指向本工作区磁盘上不存在的文件（缺席的未跟踪资产）——
 // 除非那是分叉点之后被删掉的跟踪文件，那就是这次改动留下的残条。
 function baselineProblems(canonical, fresh, probes) {
@@ -369,13 +399,17 @@ function stepHotBaseline(ctx) {
     let canonical = null;
     try { canonical = readJsonText(ctx.view.read(HOT_BASELINE).toString('utf8')); } catch (_) { /* 没有基线 */ }
     if (!canonical) return { label, state: 'stale', file: HOT_BASELINE, note: '      基线文件不存在' };
-    const fresh = adjustForView(actual, canonical, ctx.view).manifest;
+    const pinnedCheck = ctx.runScenarios ? { manifest: actual, stale: [] } : pinScenarioProducts(actual, canonical, ctx.view);
+    const fresh = adjustForView(pinnedCheck.manifest, canonical, ctx.view).manifest;
     const problems = baselineProblems(canonical, fresh, probes);
-    if (!problems.length) return { label, state: 'fresh' };
-    return { label, state: 'stale', file: HOT_BASELINE, note: problems.slice(0, 12).map((line) => '      ' + line).join('\n') + (problems.length > 12 ? '\n      …共 ' + problems.length + ' 条' : '') };
+    const staleNote = staleProductsNote(pinnedCheck.stale);
+    if (!problems.length) return staleNote ? { label, state: 'fresh', note: staleNote } : { label, state: 'fresh' };
+    return { label, state: 'stale', file: HOT_BASELINE, note: problems.slice(0, 12).map((line) => '      ' + line).join('\n') + (problems.length > 12 ? '\n      …共 ' + problems.length + ' 条' : '') + (staleNote ? '\n' + staleNote : '') };
   }
   const currentText = fs.readFileSync(target, 'utf8');
   const canonical = readJsonText(currentText);
+  const pinned = ctx.runScenarios ? { manifest: actual, stale: [] } : pinScenarioProducts(actual, canonical, ctx.view);
+  actual = pinned.manifest;
   // 重生成时，本脚本管的派生文件一律按磁盘算：它们刚写出来，还没暂存
   const adjusted = adjustForView(actual, canonical, ctx.view, isDerivedOutput);
   const merged = mergeBaseline(canonical, adjusted.manifest, probes);
@@ -387,6 +421,7 @@ function stepHotBaseline(ctx) {
     notes.push('      有 ' + adjusted.skippedUntracked.length + ' 个未跟踪文件没收进基线（要随包发就先 git add 再重跑）：'
       + adjusted.skippedUntracked.slice(0, 5).join('、') + (adjusted.skippedUntracked.length > 5 ? ' …' : ''));
   }
+  if (pinned.stale.length) notes.push(staleProductsNote(pinned.stale));
   if (text === currentText) return { label, state: 'unchanged', file: HOT_BASELINE, note: notes.join('\n') };
   fs.writeFileSync(target, text);
   return { label, state: 'written', file: HOT_BASELINE, note: notes.join('\n') };
@@ -466,4 +501,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { DERIVED_OUTPUTS, SCENARIO_INPUTS, isDerivedOutput, matchesAny, adjustForView, mergeBaseline, baselineProblems, makeView, main };
+module.exports = { DERIVED_OUTPUTS, SCENARIO_INPUTS, SCENARIO_OUTPUTS, isDerivedOutput, matchesAny, adjustForView, pinScenarioProducts, mergeBaseline, baselineProblems, makeView, main };

@@ -63,6 +63,7 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-relations.js'), 'utf8'), san
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-faction-membership.js'), 'utf8'), sandbox, { filename: 'tm-faction-membership.js' });
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-revolt-entity.js'), 'utf8'), sandbox, { filename: 'tm-revolt-entity.js' });
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-revolt-inference.js'), 'utf8'), sandbox, { filename: 'tm-revolt-inference.js' });
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-capital-fall.js'), 'utf8'), sandbox, { filename: 'tm-capital-fall.js' });
 
 var GM = sandbox.GM;
 var RE = sandbox.TM.RevoltEntity;
@@ -83,8 +84,8 @@ console.log('② 渲染层静态契约：updateMapColors 挂 occupiedBy 走表+�
 console.log('③ 挟君索赎：不挟君不得挟');
 var r3 = RI._applyActions(GM, { stocks: [{ id: 'rvR', actions: [{ type: 'ransom_demand', silverDemand: 500000 }] }] });
 assert(r3.blocked === 1, '未挟君 → ransom_demand 拦');
-// 破京被俘(批四菜单)→挟君成立
-RE._applyBreachOutcome(GM, GM.minxin.revolts[0], { fate: 'captured' });
+// 破京被执(定命三择其一，11-18 起在 tm-capital-fall.js)→挟君成立
+sandbox.TM.CapitalFall.applyOutcome(GM, { by: '闯字营' }, { fate: 'captured' });
 var player = GM.chars[0];
 assert(player._captured === true && player._capturedBy === '闯字营', '君上被执于「闯字营」');
 assert(player._capturedLocation === '闯字营军中', '_capturedLocation 落位(endturn 社稷悬议段消费)');

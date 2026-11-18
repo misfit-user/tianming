@@ -2201,9 +2201,12 @@
         if (p1.revolt_transform && Array.isArray(p1.revolt_transform)) {
           p1.revolt_transform.forEach(function(tr) {
             if (!tr || !tr.revoltId) return;
-            // 民变案的一股自行溃散；成势（攻下城立成势力）在下一刀，这里先不认 toFaction
+            // 民变案的一股自行溃散
             var _bdT = tr.transformType === 'dissolved' ? _bandConclude(tr.revoltId, 'dispersed', {}) : null;
             if (_bdT) { _bandQiju('起义', _bdT.leaderName + '一股自行溃散', tr.narrative); return; }
+            // 民变案的一股「建政」：只记下推演起的名号；这股的军攻下城才立成势力（同志 11-15「攻下一座城就算成势」，tm-revolt-band.js 成势）
+            if (tr.transformType === 'toFaction' && typeof TM !== 'undefined' && TM.RevoltBand && typeof TM.RevoltBand.nameHint === 'function'
+                && TM.RevoltBand.nameHint(GM, tr.revoltId, tr.newFactionName).handled) return;
             var r = (GM._activeRevolts || []).find(function(x){return x.id === tr.revoltId;});
             if (!r || r.outcome) return;
             if (tr.transformType === 'toFaction' && tr.newFactionName) {
@@ -2329,40 +2332,19 @@
           p1.faction_create.forEach(function(fc) {
             if (!fc || !fc.name) return;
             if (GM.facs.some(function(f){return f.name === fc.name;})) return;
-            var newF = {
-              id: 'faction_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
-              name: fc.name,
-              type: fc.type || '起义军',
-              leader: '',
-              territory: fc.territory || '',
-              strength: parseInt(fc.strength, 10) || 30,
-              militaryStrength: parseInt(fc.militaryStrength, 10) || 10000,
-              economy: parseInt(fc.economy, 10) || 40,
-              attitude: fc.attitude || '敌对',
-              playerRelation: parseInt(fc.playerRelation, 10) || -30,
-              cohesion: fc.cohesion || { political: 50, military: 60, economic: 40, cultural: 50, ethnic: 60, loyalty: 50 },
-              militaryBreakdown: { standingArmy: parseInt(fc.militaryStrength, 10)||10000, militia: 0, elite: 0, fleet: 0 },
-              succession: { rule: 'strongest', designatedHeir: '', stability: 40 },
-              historicalEvents: [{ turn: GM.turn, event: '立国', impact: fc.triggerEvent || fc.reason || '' }],
-              internalParties: [],
-              parentFaction: fc.parentFaction || '',
-              description: fc.reason || '',
-              color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6,'0'),
-              _createdTurn: GM.turn
-            };
-            if (fc.leader && !_tmSetFactionLeaderCanonical(newF, fc.leader, fc.reason || fc.triggerEvent || '势力新建', 'faction_create.leader')) return;
-            GM.facs.push(newF);
-            if (typeof addToIndex === 'function') addToIndex('fac', newF.name, newF);
-            // 关联现有角色·新势力立国·领袖入籍·走 Membership API (Slice J)
-            if (newF.leader) {
-              var _fLdr = _tmExactLivingChar(newF.leader);
-              if (_fLdr) {
-                if (typeof window !== 'undefined' && window.TM && TM.FactionMembership) {
-                  TM.FactionMembership.assignChar(_fLdr, fc.name, { reason: '新势力立国·领袖入籍' });
-                } else {
-                  _fLdr.faction = fc.name;
-                }
-              }
+            // 立进势力册走 FactionMembership.createFaction（与民变成势同一个写口，11-18）：缺省、领袖、入索引、领袖入籍都在那里
+            var _fcMember = (typeof TM !== 'undefined' && TM.FactionMembership && typeof TM.FactionMembership.createFaction === 'function') ? TM.FactionMembership : null;
+            if (!_fcMember) { _tmRecordSemanticFailure('faction_create', fc.name, 'faction membership unavailable'); return; }
+            var _fcLeader = fc.leader ? _tmExactLivingChar(fc.leader) : null;
+            if (fc.leader && !_fcLeader) { _tmRecordSemanticFailure('faction_create.leader', fc.leader, 'leader must be an existing living character'); return; }
+            var _fcMade = _fcMember.createFaction({
+              name: fc.name, type: fc.type, leader: _fcLeader, territory: fc.territory, strength: fc.strength,
+              militaryStrength: fc.militaryStrength, economy: fc.economy, attitude: fc.attitude, playerRelation: fc.playerRelation,
+              cohesion: fc.cohesion, parentFaction: fc.parentFaction, reason: fc.reason, triggerEvent: fc.triggerEvent
+            }, { reason: fc.reason || fc.triggerEvent || '势力新建' });
+            if (!_fcMade.ok) {
+              if (_fcMade.reason === 'leader') _tmRecordSemanticFailure('faction_create.leader', fc.leader, 'faction leader sink rejected write');
+              return;
             }
             // 若有 parentFaction，母势力凝聚力下降
             if (fc.parentFaction) {

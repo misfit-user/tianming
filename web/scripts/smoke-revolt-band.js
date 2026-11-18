@@ -7,7 +7,10 @@
 // 二、推演报战果认民变的军：校验放行「民变」（参战的有民变的军才认）；战果写口照记伤亡；这股的军溃散、打没了即了结——
 //     首领去向取战果的 commanderFate，平乱接皇威，军从军册撤；打掉的能战之人记死，随之少的老弱记逃散，剩下的进逃户——人数前后对得上；
 //     胜仗主将在战果写口当场记功（大小跟推演给的皇威量走）。
-// 二b、民变打赢写了占城：先不落城（成势那刀接），城留在战报上；这股照旧在；民变首领不记功。
+// 二b、民变打赢写了占城：战果写口不落城，记在那一仗上（bandOccupied）；民变首领不记功。
+// 二d、成势（11-18）：这股的军打赢占了城，过回合当即立成真势力——名号取「建政」里起的（没起用首领名）、首领当领袖、军改归、
+//     城走易主写口、朝廷讨逆宣战（失城的别家也开战）、从乱的人随城归新势力（打下的是别州随军挪过去）；这股了结记「成势」。
+//     认不出城不成势；推演本回合先立的同名空壳认作这股的势力；同一仗几股一起赢的，后面的并进先成势的那家。
 // 三、军与人对账：少的按比例折人；加的拉回；挪走的拉回本州；军被别处减没了、撤了（查不到哪一仗）按自散，不记死、不给平乱皇威。
 // 四、推演判了结（revolt_suppress / revolt_amnesty / revolt_transform 按编号；一致性补录按首领、州、省）：剿平（首领下场照给的）、
 //     受抚回籍、自散进逃户；旧账编号、旧式民变不归这里。
@@ -201,7 +204,7 @@ part('二·推演报战果认民变的军：照记伤亡，这股的军溃散即
   ok(s.r.status === 'ongoing' && s.r.followers === 5400 && s.band().soldiers === 1404, '小败未溃：照旧在，人少一成（实得 ' + s.r.status + '/' + s.r.followers + '）');
 });
 
-part('二b·民变打赢写了占城：先不落城，城留在战报上；这股照旧在；民变首领不记功', () => {
+part('二b·民变打赢写了占城：战果写口不落城（「民变」不是势力），记在那一仗上留给成势；民变首领不记功', () => {
   const { c, G, r, band } = setup();
   G.cities = [{ id: 'city-yanan', name: '延安城', owner: '明朝廷', faction: '明朝廷' }];
   const bid = band().id;
@@ -210,12 +213,119 @@ part('二b·民变打赢写了占城：先不落城，城留在战报上；这�
   ok(c.MilitarySystems.validateBattleResult(br, G).ok, '民变胜：校验放行');
   const rec = c.MilitarySystems.applyBattleResult(br, G);
   ok(rec.ok && G.cities[0].owner === '明朝廷' && G.cities[0].faction === '明朝廷', '城不落给「民变」（实得 ' + G.cities[0].owner + '）');
-  ok(br.occupiedCityIds.length === 0 && br._bandOccupiedCityIds[0] === 'city-yanan', '占城留在战报上（成势那刀接）');
+  ok(br.occupiedCityIds.length === 0 && br._bandOccupiedCityIds[0] === 'city-yanan', '占城留在战报上');
+  const row = G.battleHistory.filter((x) => x.battleId === 'ai-w')[0];
+  ok(row && JSON.stringify(row.bandOccupied) === JSON.stringify({ cityIds: ['city-yanan'], armyIds: [bid] }), '那一仗的记录写明哪支民变的军占了哪座城（实得 ' + JSON.stringify(row && row.bandOccupied) + '）');
   ok(G.armies.filter((a) => a.id === 'a-xian')[0].soldiers === 1700, '官军照记伤亡');
   const wang = char(G, 'c-wang');
   ok(!(wang.resources && wang.resources.fame), '民变首领不记功');
   nextTurn(c, G);
   ok(r.status === 'ongoing' && r.followers === 6000 - 385, '这股照旧在，伤亡照折人（实得 ' + r.status + '/' + r.followers + '）');
+});
+
+part('二d·成势：这股的军打赢占了城，当即立成真势力；名号、领袖、军、城、宣战、人数都落账', () => {
+  function cs() {
+    const c = sandbox(['tm-faction-membership.js']), G = world();
+    c.GM = G; c.P = P();
+    G.playerInfo = { factionName: '明朝廷' };
+    G.activeWars = [];
+    c.CasusBelliSystem = { declareWar(att, def, cb) { G.activeWars.push({ attacker: att, defender: def, casusBelli: cb }); return { success: true }; } };
+    ['d-yanan', 'd-xian', 'd-yulin', 'd-kf'].forEach((id) => { leafOf(G, id).owner = '明朝廷'; });
+    const r = rise(c, G, 'd-yanan', 6000);
+    return { c, G, r, a: G.armies.filter((x) => x && x._revoltBand && x.sourceRevoltId === r.id)[0] };
+  }
+  function win(c, G, a, id, cities) {
+    const rec = c.MilitarySystems.applyBattleResult({ battleId: id, winnerFactionId: '民变', loserFactionId: '明朝廷', attackerArmyId: a.id, defenderArmyId: 'a-xian',
+      casualties: { attacker: 60, defender: 800 }, occupiedCityIds: cities }, G);
+    ok(rec && rec.ok, '民变胜的战果落账');
+  }
+  // A. 本州打下了，推演在「建政」里起了名号
+  {
+    const { c, G, r, a } = cs(), FM = c.TM.FactionMembership;
+    ok(c.TM.RevoltBand.nameHint(G, r.id, '大顺').handled && !c.TM.RevoltBand.nameHint(G, 'no-such', '某').handled, '「建政」名号记在这一股上（编号不对的不认）');
+    nextTurn(c, G);
+    ok(r.status === 'ongoing' && !G.facs.some((f) => f.name === '大顺'), '只起名号、没占城：不立势力');
+    const pd = leafOf(G, 'd-yanan').populationDetail, mouths0 = pd.mouths;
+    win(c, G, a, 'ai-cs1', ['d-yanan']);
+    const st = nextTurn(c, G);
+    const fac = G.facs.filter((f) => f.name === '大顺')[0];
+    ok(st.established === 1 && r.status === 'established' && r.establishedFaction === '大顺' && r.settled.to === 'faction', '这股了结记「成势」（实得 ' + r.status + '）');
+    ok(fac && fac.leader === '王二' && fac.type === '义军' && fac._fromRevolt === r.id && fac.capital === '延安府' && fac.playerRelation === -80,
+      '立成「大顺」：王二为首、都延安府（实得 ' + JSON.stringify(fac && { l: fac.leader, cap: fac.capital, from: fac._fromRevolt }) + '）');
+    ok(char(G, 'c-wang').faction === '大顺', '首领入籍新势力');
+    ok(G.armies.indexOf(a) >= 0 && a.faction === '大顺' && !a._revoltBand && a.location === '延安府' && a.soldiers === 1500, '军不撤，改归「大顺」、驻延安府（实得 ' + a.faction + '/' + a.location + '/' + a.soldiers + '）');
+    const info = FM.regionInfo('d-yanan');
+    ok(info && info.owner === '大顺', '延安府走易主写口归「大顺」（实得 ' + JSON.stringify(info && info.owner) + '）');
+    ok(G.activeWars.length === 1 && G.activeWars[0].attacker === '明朝廷' && G.activeWars[0].defender === '大顺' && G.activeWars[0].casusBelli === 'rebellion', '朝廷以「平叛讨逆」宣战（实得 ' + JSON.stringify(G.activeWars) + '）');
+    ok(pd.rebels === 0 && pd.mouths === mouths0 - 60, '本州打下了：人就在本州、不再算从乱，口数只少了阵亡的（实得 ' + pd.rebels + '/' + (pd.mouths - mouths0) + '）');
+    ok(c.__events.some((e) => e.indexOf('民变|【陕西布政使司·延安府】王二一股攻下延安府，立号「大顺」，成一方势力，王二为首') === 0), '事件在状态落了之后写（实得 ' + c.__events.filter((e) => e.indexOf('民变|') === 0).slice(-1) + '）');
+    const RR = c.TM.RevoltRising, yulin = c.TM.RevoltCases.realmLeaves(G).filter((L) => L.node.id === 'd-yulin')[0];
+    const wang = char(G, 'c-wang'), li = char(G, 'c-li'), loc0 = [wang.location, li.location];
+    wang.location = '榆林卫'; li.location = '榆林卫';   // 两人都在榆林卫：照先前「起义一类势力的人先」，王二准被挑中
+    const picked = RR.pickLeader(G, yulin, 'cs-pick'), named = RR.namedLeader(G, '王二');
+    // 剧本里流动的义军（天启「陕北饥民(将起)」）：旧档的易主表上记着「(无·流动)」，那不是地盘，它的人照旧先挑
+    G.facs.push({ id: 'f-jm', name: '陕北饥民(将起)', type: '起义军' });
+    (G._provinceToFaction = G._provinceToFaction || {})['(无·流动)'] = '陕北饥民(将起)';
+    G.chars.push({ id: 'c-gao', name: '高迎祥', alive: true, location: '榆林卫', age: 40, title: '贩马贩子', faction: '陕北饥民(将起)' });
+    const picked2 = RR.pickLeader(G, yulin, 'cs-pick');
+    G.chars.pop(); G.facs.pop(); delete G._provinceToFaction['(无·流动)'];
+    wang.location = loc0[0]; li.location = loc0[1];
+    ok(picked && picked.name === '李三' && named && named.otherPath === true,
+      '成了势力的首领不再被挑去领新的一股（11-18 天启干跑：张献忠立了「大顺」又在岷州卫领起一股）；推演点他的名也是另一条路（实得 ' + JSON.stringify({ picked: picked && picked.name, named: named }) + '）');
+    ok(picked2 && picked2.name === '高迎祥', '没地盘的义军（易主表上只记着「(无·流动)」）的人照旧先挑（11-18 干跑第二轮：照字面算地盘时张献忠、李自成这一路全挑不上；实得 ' + (picked2 && picked2.name) + '）');
+    const n0 = G.facs.length;
+    nextTurn(c, G);
+    ok(G.facs.length === n0 && r.status === 'established' && G.armies.indexOf(a) >= 0 && a.faction === '大顺', '再过回合不重立、军不撤');
+    ok(c.TM.RevoltBand.promptBlock(G).indexOf(String(r.id)) < 0, '成了势力的不再列在【各地民变】');
+  }
+  // B. 打下的是别州、没起名号：用首领的名字；从乱的人随军挪过去
+  {
+    const { c, G, r, a } = cs(), FM = c.TM.FactionMembership;
+    const from = leafOf(G, 'd-yanan').populationDetail, to = leafOf(G, 'd-yulin').populationDetail;
+    const fm0 = from.mouths, fd0 = from.ding, tm0 = to.mouths, td0 = to.ding;
+    win(c, G, a, 'ai-cs2', ['d-yulin']);
+    nextTurn(c, G);
+    const fac = G.facs.filter((f) => f.name === '王二')[0], n = r.settled && r.settled.n;
+    ok(fac && r.establishedFaction === '王二' && fac.capital === '榆林卫', '没起名号：用首领的名字（实得 ' + r.establishedFaction + '）');
+    ok(n === 5769 && r.settled.moved === n && from.rebels === 0 && from.mouths === fm0 - 60 - n && to.mouths === tm0 + n,
+      '打下的是别州：从乱的人随军挪进榆林卫（实得 ' + JSON.stringify({ n: n, moved: r.settled.moved, from: from.mouths - fm0, to: to.mouths - tm0 }) + '）');
+    ok(from.ding === fd0 - 60 - 1500 && to.ding === td0 + 1500, '能战的丁随军挪（实得 ' + (from.ding - fd0) + '/' + (to.ding - td0) + '）');
+    ok(FM.regionInfo('d-yulin').owner === '王二' && FM.regionInfo('d-yanan').owner === '明朝廷' && a.location === '榆林卫', '榆林卫归「王二」、军驻榆林卫；延安府还是朝廷的');
+    const ids = c.TM.RevoltCases.realmLeaves(G).map((L) => L.node.id);
+    ok(ids.indexOf('d-yulin') < 0 && ids.indexOf('d-yanan') >= 0 && leafOf(G, 'd-yulin'),
+      '区划没挪出玩家树（晚唐、旧档）：归了别家的榆林卫也不再算朝廷的州，不在这边立案起事；延安府照旧算（实得 ' + ids.join(',') + '）');
+  }
+  // C. 城认不出：不成势
+  {
+    const { c, G, r } = cs(), a = G.armies.filter((x) => x && x._revoltBand)[0];
+    win(c, G, a, 'ai-cs3', ['nowhere-city']);
+    nextTurn(c, G);
+    ok(r.status === 'ongoing' && r._chengshiMiss && r._chengshiMiss.cityIds[0] === 'nowhere-city' && G.facs.length === 2 && a._revoltBand, '城认不出：不立势力，这股照旧在');
+  }
+  // D. 推演本回合先用 faction_create 立了同名空壳：认作这股的势力，不立两个；立势力写口自己的规矩
+  {
+    const { c, G, r, a } = cs(), FM = c.TM.FactionMembership;
+    c.TM.RevoltBand.nameHint(G, r.id, '大顺');
+    const made = FM.createFaction({ name: '大顺', reason: '推演另写的 faction_create' });
+    ok(made.ok && made.faction.leader === '' && made.faction.militaryStrength === 10000 && made.faction.playerRelation === -30, '立势力写口填缺省（与 faction_create 原来的一样）');
+    ok(FM.createFaction({ name: '大顺' }).reason === 'exists' && FM.createFaction({ name: '鬼军', leader: '没这人' }).reason === 'leader' && FM.createFaction({ name: ' ' }).reason === 'name', '同名不再立、领袖须是在世的真人、要有名字');
+    win(c, G, a, 'ai-cs4', ['d-yanan']);
+    nextTurn(c, G);
+    const same = G.facs.filter((f) => f.name === '大顺');
+    ok(same.length === 1 && same[0] === made.faction && same[0]._fromRevolt === r.id && same[0].leader === '王二' && a.faction === '大顺', '同名空壳认作这股的势力，不立两个（实得 ' + same.length + '）');
+  }
+  // E. 打下城的那回合：判民变（6.145）跑在成势（6.1455）之前，被打下的州先当已归别家，不在朝廷这边立案起事
+  {
+    const { c, G, a } = cs();
+    leafOf(G, 'd-yulin').minxin = 5;
+    win(c, G, a, 'ai-cs5', ['d-yulin']);
+    G.turn++;
+    c.TM.RevoltCases.tick(G, { turn: G.turn, monthRatio: 1 });
+    ok(!G.revoltCases.cases.some((x) => x.divisionId === 'd-yulin'),
+      '榆林卫民心跌到 5，可这回合刚被民变的军打下：不立案（11-18 干跑第二轮：一股打下西安府那回合，西安府先在朝廷这边起了一股；实得 ' + JSON.stringify(G.revoltCases.cases.map((x) => x.divisionId)) + '）');
+    c.TM.RevoltBand.tick(G, { turn: G.turn, monthRatio: 1 });
+    ok(c.TM.FactionMembership.regionInfo('d-yulin').owner === '王二', '随后成势：榆林卫归了「王二」');
+  }
 });
 
 part('二c·主推演报的仗走主写回整条：预检认「民变」一方 → 应用器落账 → 我方胜照 P-5TK 记军胜；军事子调用换编号再报同一仗不重记', () => {
@@ -375,7 +485,7 @@ part('六·专用的拆了：民变干预面板、调兵数镇压、危机回复
   ok(sf && sf.skipped && old.status === 'ongoing' && !old._suppressionOrder, '鸿雁里写「发兵平乱」：不再按字眼判平（实得 ' + JSON.stringify(sf) + '）');
   ok(AC.inferCrisisActionFromSurface({ text: '廷议：民变四起，宜速发兵镇压讨贼进剿' }) === null, '廷议文字里有民变字眼：不认作危机处置');
   const keys = Object.keys(c.TM.RevoltBand).sort().join(',');
-  ok(keys === 'CFG,SOURCE,bandArmy,conclude,ensureArmy,findBand,promptBlock,settle,tick', '民变模块只剩军与账（实得 ' + keys + '）');
+  ok(keys === 'CFG,SOURCE,bandArmy,conclude,ensureArmy,establish,findBand,nameHint,promptBlock,settle,tick', '民变模块只剩军与账、成势（实得 ' + keys + '）');
   const tb = read('tm-topbar-vars.js');
   ok(!/调兵镇压|_revTroops_|_revT_|panelHtml|RevoltSuppress/.test(tb), '顶栏两处民变清单只留看：没有调兵框、发兵钮');
   ok(!/民变干预/.test(read('tm-player-tools.js')), '圣裁议题里没有「民变干预」');

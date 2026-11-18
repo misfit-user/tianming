@@ -214,99 +214,8 @@
   }
 
 
-// ── R2·破京终局链（批二刀1·2026-07-21·级5三拍：进军→破京→裁决器定命）──────────
-// 爬梯级5时(flag ON)tm-authority-complete 不再瞬时 _gameOver·改挂 r._breachMarch 由本层接力：
-// 拍1(升级当回合)：义军主力移师京师·九门戒严——给玩家与推演一回合反应窗；
-// 拍2(次回合)：破京——G._capitalFallen 首个真写入者(皇威 capitalFall 事件端一直在等此信号)·
-// 玩家角色过「玩家之死裁决器」(adjudicatePlayerDeath·kind=regicide·R1f 合法性门生效)：
-// 有储君=继统续玩残局(民变实体留场·南渡故事自然涌现)·无嗣=裁决器终局信号(_playerDead)独家收场·
-// 裁决器缺席(裸跑/装载序)=回落经典 _gameOver(保留 _consumeDynastyEndSignal 旧契约字段+breach 增强)。
-// ★终局信号单发纪律：裁决器接手就绝不再写 _gameOver(防双终局屏)·富屏增强走新字段 _dynastyFallInfo。
-function _tickBreach(G, r) {
-  if (!r || !r._breachMarch || r._breachDone) return;
-  var turn = G.turn || 0;
-  var army = _findBySource(G.armies, r.id);
-  var facName = (function () { var f = _findBySource(G.facs, r.id); return (f && f.name) || ((r.region || '') + '义军'); })();
-  if (!r._breachMarch.marched) {
-    // 拍1·进军
-    r._breachMarch.marched = turn;
-    if (army && !army.disbanded) { army.location = '京师'; army.garrison = '京师'; army.state = 'march'; }
-    _eb('「' + facName + '」百万之众进逼京师·九门戒严·中外震动');
-    return;
-  }
-  if (turn <= r._breachMarch.marched) return;  // 拍1当回合幂等·次回合才破京
-  // 拍2·破京
-  r._breachDone = true;
-  G._capitalFallen = true;  // 破京链首个真写入者·皇威 capitalFall 信号端(tm-authority-complete)既有消费
-  _eb('京师陷落！「' + facName + '」入据宫阙·社稷倾覆在即');
-  // 批四·定命场景交 AI（殉国/被俘北狩/出走勤王·场景与抉择由演绎层 subcall 定·AI 缺席=兜底旧行为死亡裁决）
-  var RI2 = global.TM && global.TM.RevoltInference;
-  if (RI2 && typeof RI2.scheduleBreachScene === 'function' && typeof RI2.aiOn === 'function' && RI2.aiOn()) {
-    RI2.scheduleBreachScene(G, r);
-    return;
-  }
-  _applyBreachOutcome(G, r, { fate: 'death' });
-}
-
-// ── 批四·破京定命落账（宪法层：三态菜单·菜单外一律按 death 兜底·死亡仍只走裁决器）──
-// fate: 'death'(殉国/城破被弑→裁决器 regicide·有储君继统) | 'captured'(被俘北狩·_captured 续玩·
-//   endturn _capturedSovereign 段既有消费) | 'escaped'(乘乱出走·驻跸于外续玩·勤王残局)。
-function _applyBreachOutcome(G, r, o) {
-  o = o || {};
-  var turn = G.turn || 0;
-  var facName = (function () { var f = _findBySource(G.facs, r.id); return (f && f.name) || ((r.region || '') + '义军'); })();
-  if (o.narrative) {
-    try {
-      if (!Array.isArray(G._chronicle)) G._chronicle = [];
-      G._chronicle.push({ turn: turn, date: G._gameDate || '', type: '国变', text: String(o.narrative).slice(0, 160), tags: ['破京', 'AI演绎'] });
-    } catch (_eN) {}
-  }
-  var player = null;
-  for (var i = 0; i < (G.chars || []).length; i++) {
-    var ch = G.chars[i];
-    if (ch && ch.isPlayer && ch.alive !== false) { player = ch; break; }
-  }
-  function fallInfo(fateStr) {
-    G._dynastyFallInfo = {  // 终局富屏/本纪增强(新字段·无旧消费端契约风险)
-      revolt: r.id, turn: turn, region: r.region || '',
-      leader: r.leader || r.leaderName || r._entityLeaderName || '',
-      facName: facName, breach: true, fate: fateStr
-    };
-  }
-  var f0 = String(o.fate || 'death');
-  if (player && f0 === 'captured') {
-    player._captured = true; player._capturedBy = facName;  // 北狩态·花名册/推演既有 _captured 消费
-    player._capturedLocation = facName + '军中';  // 批五·endturn「社稷悬议」段读此落位
-    fallInfo('captured');
-    _eb('君上蒙尘·为「' + facName + '」所执·社稷存亡悬于一线');
-    return;
-  }
-  if (player && f0 === 'escaped') {
-    fallInfo('escaped');
-    _eb('君上乘乱出走·驻跸于外·诏天下兵马勤王');
-    return;
-  }
-  var fate = null;
-  try {
-    if (player && typeof global.adjudicatePlayerDeath === 'function') {
-      fate = global.adjudicatePlayerDeath(player, '京师陷落·殁于社稷', { kind: 'regicide', deadReason: '京师陷落·殁于社稷' });
-    }
-  } catch (_eA) {}
-  fallInfo(fate ? fate.outcome : 'no-adjudicator');
-  if (fate && fate.outcome === 'succession') {
-    _eb('嗣君于乱军之外继统·社稷不绝如线·天下事犹未可知');
-    return;  // 续玩残局：实体留场·_capitalFallen 持续·爬梯照走
-  }
-  if (fate) return;  // 裁决器已定终局(_playerDead 信号独家收场·绝不双发)
-  // 裁决器缺席回落：经典 _gameOver·字段形状=旧轨契约(_consumeDynastyEndSignal)+breach 增强
-  G._gameOver = {
-    type: 'dynasty_change', revolt: r.id, turn: turn,
-    region: r.region || '', level: 5, levelName: '改朝',
-    leader: r.leader || r.leaderName || r._entityLeaderName || '',
-    breach: true, capitalFallen: true
-  };
-  _eb('改朝换代！天命已移');
-}
+// ── 破京（11-18 起不在这里）：京城所在的地块归了朝廷以外的势力就破京，谁攻下的都一样（tm-capital-fall.js）。
+//    旧梯第 5 级的三拍（进军→破京→定命）连同定命落账挪走、删了；五级梯 11-08 已冻住，删旧那刀连梯一起删。
 
   // 每回合镜像：状态驱动·幂等（即使某回合先于爬梯 tick 跑·至多迟一回合收敛）
   function sync(G) {
@@ -333,7 +242,6 @@ function _applyBreachOutcome(G, r, o) {
         if (r._identityFailed != null) return;
       }
       try { _ensureTrio(G, r); } catch (_eT) {}
-      if ((r.level || 0) >= 5) { try { _tickBreach(G, r); } catch (_eB) {} }  // 破京链三拍(批二刀1)
     });
     // ② 覆灭清账：源民变已被剿/瓦解/出档（级5改朝除外·实体留在场·终局屏归爬梯 _gameOver）
     G.facs.slice().forEach(function (fac) {
@@ -348,7 +256,6 @@ function _applyBreachOutcome(G, r, o) {
   var API = {
     sync: sync,
     enabled: enabled,
-    _applyBreachOutcome: _applyBreachOutcome,
     SOLDIERS_BY_LEVEL: SOLDIERS_BY_LEVEL,
     STRENGTH_BY_LEVEL: STRENGTH_BY_LEVEL
   };

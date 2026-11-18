@@ -48,11 +48,33 @@
     '江西': ['赣'], '福建': ['闽'], '广东': ['粤'], '广西': ['桂'], '云南': ['滇'], '贵州': ['黔'], '浙江': ['浙']
   };
 
-  function rebelFactionNames(G) {
+  // 起义一类、还没有地盘的势力（天启的「陕北饥民(将起)」）：它的人起事就是那一路的头领。
+  // 有了地盘的（民变打下城成的势力也在内）就是一方势力，跟别家一样，不算在这里（民变重做·成势，11-18）
+  function rebelFactionNames(G, landed) {
     var out = {};
+    landed = landed || landedFactions(G);
     arr(G.facs).forEach(function (f) {
       if (!f || f.alive === false || f.destroyed) return;
+      if (landed[str(f.name)]) return;
       if (f.isRevolt || REBEL_FACTION.test(str(f.type) + str(f.name))) { out[str(f.name)] = 1; if (f.id != null) out[str(f.id)] = 1; }
+    });
+    return out;
+  }
+
+  // 有地盘的势力（玩家本家不算）。11-18 天启干跑查出：民变成了势力，它的首领、骨干还被当成「起义一类势力的人」
+  // 挑去领新的一股民变——张献忠立了「大顺」，下一回合又在岷州卫领起一股
+  function landedFactions(G) {
+    var FM = TM.FactionMembership, pi = G.playerInfo || {}, out = {};
+    if (!FM || typeof FM.getProvinces !== 'function' || typeof FM.regionInfo !== 'function') return out;
+    arr(G.facs).forEach(function (f) {
+      if (!f || f.isPlayer || f.alive === false || f.destroyed) return;
+      if (str(f.name) === str(pi.factionName) || (f.id != null && str(f.id) === str(pi.factionId))) return;
+      var keys = [];
+      try { keys = arr(FM.getProvinces(f.name)); } catch (_) { keys = []; /* 认不出地盘的当没有地盘：照旧算 */ }
+      // 认得出的真地块才算：旧档的易主表里流动的义军也记着一条「(无·流动)」（11-18 天启干跑第二轮查出，
+      // 照字面算地盘的话「陕北饥民(将起)」成了有地的，张献忠、李自成这一路全挑不上）
+      var real = keys.some(function (k) { var info = FM.regionInfo(k); return !!(info && (info.region || info.division)); });
+      if (real) { out[str(f.name)] = 1; if (f.id != null) out[str(f.id)] = 1; }
     });
     return out;
   }
@@ -110,13 +132,14 @@
   }
 
   function pickLeader(G, L, seed) {
-    var rebels = rebelFactionNames(G), best = [], bestScore = 0;
+    var landed = landedFactions(G), rebels = rebelFactionNames(G, landed), best = [], bestScore = 0;
     arr(G.chars).forEach(function (ch) {
       if (!ch || ch.alive === false || ch.dead === true || isPlayerChar(G, ch)) return;
       if (ch._imprisoned || ch.imprisoned || ch._captured || ch.captured) return;   // 在押、被俘的不当首领（民2d-1：剿破被擒的下狱）
       if (ch._revoltAppeasedTurn != null || ch._cooptedTurn != null) return;       // 受过抚、归顺了的不由代码再挑（复叛要推演点名，走 namedLeader）
       if (num(ch.age, 30) < CFG.minLeaderAge) return;
       var fac = str(ch.faction || ch.factionId);
+      if (landed[fac]) return;                    // 有地盘的别家势力的人（民变成的势力的首领、骨干在内）：他起事是那一家的事，不归民变（成势，11-18）
       var rebel = !!rebels[fac];
       if (!rebel && !GRASSROOTS.test(str(ch.officialTitle || ch.title) + str(ch.origin) + str(ch.background))) return;
       if (ROYAL.test(str(ch.title) + str(ch.officialTitle) + str(ch.class))) return;

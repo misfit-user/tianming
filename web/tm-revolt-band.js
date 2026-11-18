@@ -5,7 +5,7 @@
 // 同志 11-15：「民变是治理的一部分」——不设专用面板、专用按钮，不另起机制。剿、抚、赈都从诏令进，推演判，代码记账
 //   （docs/guanben-roleplay-20260930/minbian.md「新的样子」）。本模块只管民变自己特有的那几样：
 //   - 起事即立一支军（同志 11-14 定）：民变案落地的每一股（tm-revolt-rising.js，source 'revolt-cases'）在军册（GM.armies）里
-//     有一支「某某部」，归「民变」（还不是势力；攻下城成势在下一刀），驻它盘踞的那一州。能打仗的人＝这股人数 × 本州丁口比
+//     有一支「某某部」，归「民变」（还不是势力；攻下城才成势，见下），驻它盘踞的那一州。能打仗的人＝这股人数 × 本州丁口比
 //     （丁/口；丁口数不全取全国的），其余照旧式流民军（tm-revolt-entity.js）：士气 55、训练 35、补给 45、乌合。首领领兵——真人。
 //   - 打：官军与这股交战跟别的仗一样，由推演报战果（battleResult，这一方的势力写「民变」），战果写口照记伤亡、溃散、
 //     首领下场（tm-military.js applyBattleResult；战果认民变的军在 tm-battle-contract.js）。
@@ -15,6 +15,7 @@
 //   - 人数落账：这股军里少了的能战之人记死（本州口数、丁数减），随之少的老弱妇孺记逃散（挪进本州逃户），都从本州「从乱」里扣；
 //     了结时剩下的人——剿平的、溃散的、自散的进本州逃户，受抚的、赈散的回籍——也从「从乱」里扣。
 //   - 推演要看得到：每回合提示词里列各股实情（promptBlock：首领、人数、在哪州、本州主官、这股的军、附近的官军）。
+//   - 成势（11-18）：这股的军打赢、占了城，当即立成真势力（establish）——名号、领袖、军、城、宣战、从乱的人，见该段注释。
 // 民2d-1 原先的剿令（玩家选军「发兵剿」、推演说镇压就派最近一支、行军、挂仗、战斗引擎结算、读战果定散不散、首领去向掷骰）
 //   在 11-15 收口时拆掉：剿的胜负跟别的仗一样由推演判（同志定「甲」）。
 // 挂在过回合 6.1455（tm-endturn-systems.js：民变案判定之后、游击连带之前）。
@@ -321,6 +322,159 @@
     return moved;
   }
 
+  // ── 成势：这股的军打赢、占了城，当即立成真势力（同志 11-15「攻下一座城就算成势」；11-18 定的几样见 minbian.md「成势」）──
+  //   战果写口（tm-battle-contract.js）不替民变落城，只在那一仗的记录上写明哪几支民变的军占了哪几城（bandOccupied）。
+  //   这里据此：名号取推演在「建政」（revolt_transform toFaction）里起的，没起用首领的名字；首领当领袖（首领死了、下狱了挑在世的骨干）；
+  //   势力立进势力册（FactionMembership.createFaction，与主推演 faction_create 同一个写口）；军改归它；城走易主写口；
+  //   朝廷以「平叛讨逆」宣战，城原属别家的也与那家开战；从乱的人随城归新势力——打下的城不在本州，随军挪进那州。
+  //   这股了结，记「成势」。此后就是普通势力：攻城、进兵、打到京师都走通用战争，攻下京师走破京裁决（tm-capital-fall.js）。
+  var CHENGSHI = { courtCB: 'rebellion', otherCB: 'border', economy: 15, relation: -80 };
+
+  // 这一回合（上一回合号到本回合号之间）的战报里，这股的军打赢、占了城的
+  function tookCities(G, a) {
+    if (!a || gone(a) || routed(a)) return null;
+    var id = str(a.id), cityIds = [], battleIds = [];
+    arr(G.battleHistory).forEach(function (row) {
+      var occ = row && row.bandOccupied;
+      if (!occ || !recent(G, row.turn) || arr(occ.armyIds).map(str).indexOf(id) < 0) return;
+      arr(occ.cityIds).forEach(function (c) { if (cityIds.indexOf(str(c)) < 0) cityIds.push(str(c)); });
+      battleIds.push(str(row.battleId));
+    });
+    return cityIds.length ? { cityIds: cityIds, battleIds: battleIds } : null;
+  }
+  function usable(ch) { return !!(ch && ch.alive !== false && ch.dead !== true && !ch._imprisoned); }
+  function newLeader(G, r) {
+    var ch = findChar(G, r.leaderId, r.leaderName);
+    if (usable(ch)) return ch;
+    var ids = arr(r.lieutenantIds);
+    for (var i = 0; i < ids.length; i++) { var x = findChar(G, ids[i], null); if (usable(x)) return x; }
+    return null;
+  }
+  function findFaction(G, name) { return arr(G.facs).filter(function (f) { return f && f.name === name; })[0] || null; }
+  // 推演本回合先用 faction_create 立了同名的空壳（没兵没地）就认它，免得一股立出两个势力
+  function shellFaction(G, f, turn) {
+    if (!f || f.isPlayer || num(f._createdTurn, -99) < turn - 1) return false;
+    if (arr(G.armies).some(function (x) { return x && !gone(x) && (x.faction === f.name || (f.id != null && str(x.factionId) === str(f.id))); })) return false;
+    var FM = TM.FactionMembership;
+    return !(FM && typeof FM.getProvinces === 'function' && FM.getProvinces(f.name).length);
+  }
+  function establishName(G, r, leader) {
+    var turn = num(G.turn, 0), hint = r._factionNameHint ? str(r._factionNameHint.name).trim() : '';
+    var base = str(r.leaderName) || (leader ? str(leader.name) : '') || (str(r.region) + '民变');
+    var names = [hint, base, base + '部众', str(r.region) + base].filter(Boolean);
+    for (var i = 0; i < names.length; i++) {
+      var f = findFaction(G, names[i]);
+      if (!f) return { name: names[i] };
+      if (shellFaction(G, f, turn)) return { name: names[i], adopt: f };
+    }
+    return { name: base + '·' + str(r.id).slice(-4) };
+  }
+  function captureErr(e, where) {
+    try { if (TM.errors && typeof TM.errors.captureSilent === 'function') TM.errors.captureSilent(e, where); } catch (_) { /* 记错本身失败：只是少一条错误记录 */ }
+  }
+
+  // 推演在「建政」里给这股起的名号：只记下，这股的军攻下城时用（同志 11-15「攻下一座城就算成势」：没占城不立）
+  function nameHint(G, revoltId, name) {
+    var r = G ? findBand(G, { revoltId: revoltId }) : null;
+    name = str(name).trim();
+    if (!r || !name) return { handled: false };
+    r._factionNameHint = { name: name.slice(0, 20), turn: num(G.turn, 0) };
+    return { handled: true, revoltId: r.id };
+  }
+
+  function establish(G, r, L, a, took) {
+    var FM = TM.FactionMembership, turn = num(G.turn, 0);
+    if (!FM || typeof FM.createFaction !== 'function' || typeof FM.regionInfo !== 'function' || typeof FM.applyProvinceTransfers !== 'function'
+      || typeof FM.assignArmy !== 'function' || typeof FM.assignChar !== 'function') return null;
+    // 1. 认城：认得出的才算；一座都认不出，城没处落，不成势
+    var cities = [];
+    took.cityIds.forEach(function (ref) {
+      var info = FM.regionInfo(ref);
+      if (info && !cities.some(function (c) { return c.id === info.id; })) cities.push(info);
+    });
+    if (!cities.length) { r._chengshiMiss = { turn: turn, cityIds: took.cityIds.slice() }; return null; }
+    var pf = playerFactionName(G), cityNames = cities.map(function (c) { return c.name; }).join('、');
+    // 同一仗里几股一起打赢的：先成势的那股立了势力，后面的并进去（城已归它）
+    var joined = cities.map(function (c) { return findFaction(G, c.owner); })
+      .filter(function (f) { return f && f._fromRevolt && f._fromRevolt !== r.id && num(f._createdTurn, -99) >= turn - 1; })[0] || null;
+    // 2. 立势力
+    var leader = newLeader(G, r), fac = joined;
+    if (!fac) {
+      var pick = establishName(G, r, leader);
+      var events = [{ turn: num(r.turn, turn), event: '起事', impact: str(r.cause).slice(0, 40) }, { turn: turn, event: '成势', impact: '攻下' + cityNames }];
+      var extra = { capital: cities[0].name, capitalName: cities[0].name, _fromRevolt: r.id, _fromRevoltCase: str(r.caseId) };
+      if (pick.adopt) {
+        fac = pick.adopt;
+        Object.keys(extra).forEach(function (k) { fac[k] = extra[k]; });
+        fac.historicalEvents = arr(fac.historicalEvents).concat(events);
+        if (leader && !fac.leader) {
+          var NV = TM.AIChange && TM.AIChange.Narrative;
+          if (NV && typeof NV.setFactionLeader === 'function') NV.setFactionLeader(fac, leader.id || leader.name, G, '民变成势');
+          else { fac.leader = leader.name; if (leader.id != null) fac.leaderId = leader.id; }   // 领袖写口缺席（裸跑）时
+          if (typeof FM.assignChar === 'function') FM.assignChar(leader, fac.name, { reason: '民变成势·领袖入籍', targetFactionId: fac.id });
+        }
+      } else {
+        var made = FM.createFaction({
+          name: pick.name, type: '义军', leader: leader, territory: cityNames,
+          strength: clamp(Math.round(soldiersOf(a) / 500), 5, 60), militaryStrength: soldiersOf(a), economy: CHENGSHI.economy,
+          attitude: '敌对', playerRelation: CHENGSHI.relation,
+          reason: place(r) + '民变攻下' + cityNames + '，立号' + pick.name, historicalEvents: events, extra: extra
+        }, { reason: '民变成势' });
+        if (!made.ok) { r._chengshiMiss = { turn: turn, reason: made.reason }; return null; }
+        fac = made.faction;
+      }
+    }
+    // 3. 军改归新势力；首领、骨干入籍
+    FM.assignArmy(a, fac.name, { reason: '民变成势', targetFactionId: fac.id });
+    delete a._revoltBand;
+    a.source = 'revolt.established'; a.location = cities[0].name; a.garrison = cities[0].name; a.destination = '';
+    arr([findChar(G, r.leaderId, r.leaderName)]).concat(arr(r.lieutenantIds).map(function (id) { return findChar(G, id, null); })).forEach(function (x) {
+      if (!x) return;
+      if (x._revoltLeaderOf === r.id) delete x._revoltLeaderOf;
+      if (x._revoltLieutenantOf === r.id) delete x._revoltLieutenantOf;
+      if (usable(x) && x.faction !== fac.name && typeof FM.assignChar === 'function') FM.assignChar(x, fac.name, { reason: '民变成势', targetFactionId: fac.id });
+    });
+    // 4. 城走易主写口（城原属谁先记下，好宣战）
+    var losers = [];
+    cities.forEach(function (c) { if (c.owner && c.owner !== fac.name && losers.indexOf(c.owner) < 0) losers.push(c.owner); });
+    try {
+      FM.applyProvinceTransfers(cities.filter(function (c) { return c.owner !== fac.name; })
+        .map(function (c) { return { regionRef: c.id, newOwner: str(fac.id != null ? fac.id : fac.name), reason: '民变成势' }; }), { reason: '民变成势' });
+    } catch (e) { captureErr(e, 'RevoltBand.establish.transfer'); r._chengshiTransferError = str(e && e.message || e).slice(0, 120); }
+    // 城的主人以地块、区划为准（上面的易主写口）；旧的城表 GM.cities 是兼容期的另一份，没有成员写口，这里不另写
+    // 5. 宣战：朝廷讨逆；失城的别家也开战
+    var CB = global.CasusBelliSystem, wars = [];
+    if (!joined && CB && typeof CB.declareWar === 'function') {
+      [pf].concat(losers).forEach(function (foe) {
+        if (!foe || foe === fac.name || wars.indexOf(foe) >= 0) return;
+        try { var res = CB.declareWar(foe, fac.name, foe === pf ? CHENGSHI.courtCB : CHENGSHI.otherCB); if (res && res.success) wars.push(foe); }
+        catch (e) { captureErr(e, 'RevoltBand.establish.war'); }
+      });
+    }
+    // 6. 从乱的人随城归新势力：本州打下了，人就在那州里（不再算从乱）；打下的是别州，随军挪进那州
+    var n = Math.max(0, Math.round(num(r.followers, 0))), fighters = Math.min(n, soldiersOf(a));
+    var pdFrom = L && L.node.populationDetail, ownTaken = !!(L && cities.some(function (c) { return c.division === L.node; }));
+    var dest = !ownTaken && cities[0].division ? cities[0].division.populationDetail : null, moved = 0;
+    if (pdFrom) pdFrom.rebels = Math.max(0, num(pdFrom.rebels, 0) - n);
+    if (pdFrom && dest && n > 0) {
+      moved = Math.min(n, Math.max(0, num(pdFrom.mouths, 0)));
+      pdFrom.mouths = num(pdFrom.mouths, 0) - moved; dest.mouths = num(dest.mouths, 0) + moved;
+      var d = Math.min(fighters, Math.max(0, num(pdFrom.ding, 0)));
+      if (d > 0) { pdFrom.ding = num(pdFrom.ding, 0) - d; dest.ding = num(dest.ding, 0) + d; }
+    }
+    // 7. 这股了结：成势
+    r.status = 'established'; r.endedTurn = turn; r.endedBy = 'establish';
+    r.establishedFaction = fac.name; r.establishedFactionId = fac.id != null ? fac.id : fac.name;
+    r.leaderFate = leader ? 'established' : 'gone';
+    r.settled = { turn: turn, n: n, to: 'faction', faction: fac.name, moved: moved };
+    retireOrder(G, r);
+    if (leader) remember(leader, '聚众起事于' + (str(r.region) || '某地') + '，攻下' + cityNames + '，' + (joined ? '归「' + fac.name + '」' : '立号「' + fac.name + '」'));
+    eb('民变', '【' + place(r) + '】' + (str(r.leaderName) || '民变') + '一股攻下' + cityNames + '，'
+      + (joined ? '并入「' + fac.name + '」' : '立号「' + fac.name + '」，成一方势力' + (leader ? '，' + str(leader.name) + '为首' : ''))
+      + (n ? '，众约 ' + n + ' 人随附' : ''));
+    return { faction: fac, cities: cities, joined: !!joined, wars: wars, moved: moved };
+  }
+
   // ── 推演判这股了结（revolt_suppress / revolt_amnesty / revolt_transform 按编号；一致性补录 record_revolt_events 按首领、州）──
   // 哪一股：给了编号只认编号（不是民变案的编号——旧账 GM._activeRevolts 的——不归这里）；否则认首领；再认它说的那一州；
   //   只说到省的，在那一省各股里挑人多的。返回 { handled:false } 由调用方照旧办。
@@ -419,6 +573,7 @@
     });
     if (bands.length > CFG.promptMax) lines.push('  ……另有 ' + (bands.length - CFG.promptMax) + ' 股人少的未列');
     lines.push('  ※ 官军与某股交战，照常写进 battleResult：这一方的势力填「' + CFG.faction + '」，军填上面的军名；伤亡、溃散（state:"routed"）、首领下场（commanderFate）照实写。');
+    lines.push('  ※ 某股的军打赢并占了城（battleResult 照常写 occupiedCityIds），这股就立成一方势力：名号写在 revolt_transform（revoltId 填上面的 id，transformType:"toFaction"，newFactionName），不写就用首领的名字；不必另写 faction_create。成了势力以后与别的势力一样。');
     lines.push('  ※ 某股被剿平写 revolt_suppress（revoltId 填上面的 id，outcome:"victory"，leaderFate 写首领下场 captured被擒/killed伏诛/escaped脱身）；受抚写 revolt_amnesty（outcome:"accepted"；授首领什么官走 office_changes，赏银走 fiscal_adjustments）；自行溃散写 revolt_transform（transformType:"dissolved"）。没平、没抚、没散的不写，这股照旧在。');
     return lines.join('\n') + '\n';
   }
@@ -442,7 +597,7 @@
     var leaves = R.realmLeaves(G), byId = {};
     leaves.forEach(function (L) { byId[str(L.node.id)] = L; });
     function leafFor(r) { return byId[str(r.divisionId)] || leafOf(G, r, leaves); }
-    var stat = { turn: turn, armies: 0, broken: 0, settled: 0, rebelsMoved: 0 };
+    var stat = { turn: turn, armies: 0, broken: 0, settled: 0, rebelsMoved: 0, established: 0 };
     // 0. 民2d-1 剿令挂的仗，旧档里没结的撤掉（收口后剿的胜负由推演判）
     if (Array.isArray(G.activeBattles)) {
       for (var i = G.activeBattles.length - 1; i >= 0; i--) {
@@ -453,7 +608,7 @@
     var revs = arr(G.minxin && G.minxin.revolts).filter(isBand);
     // 1. 别处了结的（推演判的、旧五级梯自散、赈散）先善后
     revs.forEach(function (r) { if (r.status !== 'ongoing' && settle(G, r, leafFor(r))) stat.settled++; });
-    // 2. 在的：立军、对账；军打没了、溃散了、能打的几乎没了，这股了结
+    // 2. 在的：立军、对账；这回合打赢占了城的立成势力；军打没了、溃散了、能打的几乎没了，这股了结
     revs.forEach(function (r) {
       if (r.status !== 'ongoing') return;
       retireOrder(G, r);
@@ -461,6 +616,8 @@
       var a = ensureArmy(G, r, L, leaves);
       if (a) stat.armies++;
       syncBand(G, r, L, a);
+      var took = tookCities(G, a);
+      if (took && establish(G, r, L, a, took)) { stat.established++; return; }
       var peak = num(r.band && r.band.peak, 0);
       // 有一仗打破的（推演报的战果里这股的军溃散、打没了）算剿平，首领去向取战果的；查不到是哪一仗的（军被别处减没了、撤了）按自散
       if (r.band && (gone(a) || routed(a) || soldiersOf(a) <= peak * CFG.collapseBelow)) {
@@ -479,6 +636,7 @@
   TM.RevoltBand = {
     CFG: CFG, SOURCE: SOURCE,
     tick: tick, ensureArmy: ensureArmy, bandArmy: bandArmy, settle: settle,
-    findBand: findBand, conclude: conclude, promptBlock: promptBlock
+    findBand: findBand, conclude: conclude, promptBlock: promptBlock,
+    nameHint: nameHint, establish: establish
   };
 })(typeof window !== 'undefined' ? window : globalThis);

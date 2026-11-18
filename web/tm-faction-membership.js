@@ -823,6 +823,98 @@
   }
 
   /**
+   * 立一个新势力（势力册的新建写口，与 dissolveFaction 成对）：主推演 faction_create、民变成势共用（民变重做·成势，11-18）。
+   * 只把势力立进势力册：填缺省、定领袖（领袖须是在世的真人，走 AIChange.Narrative.setFactionLeader）、入索引、领袖入籍。
+   * 地盘（易主写口）、宣战、军改隶由调用方各走各的写口。
+   * @param {object} spec { name, type?, leader?(人物或其 id/名), territory?, strength?, militaryStrength?, economy?, attitude?,
+   *   playerRelation?, cohesion?, parentFaction?, reason?, triggerEvent?, description?, historicalEvents?, color?, extra?(另挂的字段) }
+   * @param {object} opts { reason? }
+   * @returns {{ok:boolean, faction?:object, reason?:string}} reason：name 缺名 / exists 同名已在 / leader 领袖不是在世的真人
+   */
+  function createFaction(spec, opts) {
+    spec = spec || {}; opts = opts || {};
+    var g = _gm();
+    if (!g) return { ok: false, reason: 'no-world' };
+    var name = String(spec.name == null ? '' : spec.name).trim();
+    if (!name) return { ok: false, reason: 'name' };
+    if (_findFac(name)) return { ok: false, reason: 'exists', faction: _findFac(name) };
+    var leaderChar = null;
+    if (spec.leader) {
+      var ref = spec.leader, chars = Array.isArray(g.chars) ? g.chars : [];
+      if (typeof ref === 'object') leaderChar = chars.indexOf(ref) >= 0 ? ref : null;
+      else {
+        for (var i = 0; i < chars.length && !leaderChar; i++) if (chars[i] && chars[i].id != null && String(chars[i].id) === String(ref)) leaderChar = chars[i];
+        for (var j = 0; j < chars.length && !leaderChar; j++) if (chars[j] && chars[j].name === String(ref)) leaderChar = chars[j];
+      }
+      if (!leaderChar || leaderChar.alive === false || leaderChar.dead === true) return { ok: false, reason: 'leader' };
+    }
+    var turn = _now(), military = parseInt(spec.militaryStrength, 10) || 10000;
+    var fac = {
+      id: 'faction_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      name: name,
+      type: spec.type || '起义军',
+      leader: '',
+      territory: spec.territory || '',
+      strength: parseInt(spec.strength, 10) || 30,
+      militaryStrength: military,
+      economy: parseInt(spec.economy, 10) || 40,
+      attitude: spec.attitude || '敌对',
+      playerRelation: parseInt(spec.playerRelation, 10) || -30,
+      cohesion: spec.cohesion || { political: 50, military: 60, economic: 40, cultural: 50, ethnic: 60, loyalty: 50 },
+      militaryBreakdown: { standingArmy: military, militia: 0, elite: 0, fleet: 0 },
+      succession: { rule: 'strongest', designatedHeir: '', stability: 40 },
+      historicalEvents: Array.isArray(spec.historicalEvents) ? spec.historicalEvents.slice()
+        : [{ turn: turn, event: '立国', impact: spec.triggerEvent || spec.reason || '' }],
+      internalParties: [],
+      parentFaction: spec.parentFaction || '',
+      description: spec.description != null ? String(spec.description) : (spec.reason || ''),
+      color: spec.color || ('#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')),
+      _createdTurn: turn
+    };
+    var extra = spec.extra || {};
+    Object.keys(extra).forEach(function(k) { fac[k] = extra[k]; });
+    var reason = opts.reason || spec.reason || '势力新建';
+    if (leaderChar) {
+      var narrative = global.TM && global.TM.AIChange && global.TM.AIChange.Narrative;
+      if (narrative && typeof narrative.setFactionLeader === 'function') narrative.setFactionLeader(fac, leaderChar.id || leaderChar.name, g, reason);
+      else { fac.leader = leaderChar.name; if (leaderChar.id != null) fac.leaderId = leaderChar.id; }
+      if (fac.leader !== leaderChar.name) return { ok: false, reason: 'leader' };
+    }
+    if (!Array.isArray(g.facs)) g.facs = [];
+    g.facs.push(fac);
+    if (typeof global.addToIndex === 'function') {
+      try { global.addToIndex('fac', fac.name, fac); }
+      catch (e) { try { if (global.TM && global.TM.errors && global.TM.errors.captureSilent) global.TM.errors.captureSilent(e, 'createFaction.addToIndex'); } catch (_) { /* 记错本身失败：索引只是查找加速，势力已入册 */ } }
+    }
+    if (leaderChar) assignChar(leaderChar, fac.name, { reason: '新势力立国·领袖入籍', targetFactionId: fac.id });
+    _stamp(fac.name);
+    _emit('faction:created', { faction: fac.name, id: fac.id, reason: reason });
+    return { ok: true, faction: fac };
+  }
+
+  /**
+   * 某地块现归哪个势力（只读）。认法与易主写口同一套：地块编号、地块名、区划编号与名都认；认不出或引用不唯一返回 null。
+   * @returns {{id:string, name:string, owner:string, ownerId:string, region:object|null, division:object|null}|null}
+   */
+  function regionInfo(ref) {
+    var g = _gm();
+    if (!g || ref == null || ref === '') return null;
+    var rec;
+    try { rec = _provinceTransferRecord(g, String(ref)); } catch (_) { return null; }   // 引用不唯一：当认不出
+    var table = g._provinceToFaction || {};
+    if (!rec.region && !rec.division && !Object.prototype.hasOwnProperty.call(table, String(ref))) return null;
+    var owner = '', hit = false;
+    rec.aliases.some(function(k) { if (Object.prototype.hasOwnProperty.call(table, k)) { owner = table[k] || ''; hit = true; return true; } return false; });
+    if (!hit) owner = rec.region && (rec.region.currentOwner || rec.region.owner) || rec.division && (rec.division.currentOwner || rec.division.owner) || '';
+    var fac = _findFacById(owner) || _findFac(owner);
+    return {
+      id: String(rec.id), name: String(rec.name),
+      owner: fac ? fac.name : String(owner || ''), ownerId: fac ? String(fac.id != null ? fac.id : fac.name) : String(owner || ''),
+      region: rec.region || null, division: rec.division || null
+    };
+  }
+
+  /**
    * 验证 ref integrity·返回所有 stale 引用 (char/army.faction 指向不存在的势力)
    * 用于 smoke 检测·开发时调用 TM.FactionMembership.lint() 看一眼即知
    */
@@ -927,6 +1019,8 @@
     bulkReassignArmies: bulkReassignArmies,
     dissolveFaction: dissolveFaction,
     renameFaction: renameFaction,
+    createFaction: createFaction,
+    regionInfo: regionInfo,
     lint: lint,
     migrateArmyOwnerToFaction: migrateArmyOwnerToFaction,
     migrateCharsAddFactionId: migrateCharsAddFactionId,

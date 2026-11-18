@@ -273,6 +273,13 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
     if (window.TM && TM.RevoltBand) TM.RevoltBand.tick(GM, { turn: GM.turn, monthRatio: monthRatio });
   } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] RevoltBand.tick 失败:') : console.error('[endTurn] RevoltBand.tick 失败:', e); }
 
+  // 6.1456 京师陷落（民变重做·成势，11-18）：京城所在的地块归了朝廷以外的势力（谁攻下的都一样），走破京裁决——
+  //   定命三择其一交 AI 演，死亡只走玩家之死裁决器（tm-capital-fall.js）。在民变成势之后：这回合成了势力、打下京城的也算。
+  //   出错不拦过回合：只记错误。
+  try {
+    if (window.TM && TM.CapitalFall) TM.CapitalFall.check(GM);
+  } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'endTurn] CapitalFall.check 失败:') : console.error('[endTurn] CapitalFall.check 失败:', e); }
+
   // 6.146 民变游击的连带（民变重做·民2c，11-14）：民变案落地的民变在它那一州盘踞——地块状态「某股盘踞」（本州征收打折）、
   //   驿路阻断、户口逃散、本州民心（tm-revolt-guerrilla.js）。邻州民心照旧走「民变不宁」。出错不拦过回合：只记错误。
   try {

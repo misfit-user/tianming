@@ -72,16 +72,50 @@
   function realmLeaves(G) {
     var ah = G && G.adminHierarchy && G.adminHierarchy.player;
     var tops = arr(ah && (ah.divisions || ah.children));
-    var out = [];
+    var out = [], mine = playerMarks(G);
     function walk(node, chain) {
       if (!node || typeof node !== 'object') return;
       var kids = arr(node.children || node.divisions || node.subs);
       var here = [node].concat(chain);
-      if (!kids.length) { out.push({ node: node, chain: here }); return; }
+      if (!kids.length) { if (!heldByOther(node, mine)) out.push({ node: node, chain: here }); return; }
       kids.forEach(function (k) { walk(k, here); });
     }
     tops.forEach(function (t) { walk(t, []); });
     return out;
+  }
+
+  // 玩家一方的名与编号（易主写口往州上落的就是势力名、编号）
+  function playerMarks(G) {
+    var pi = (G && G.playerInfo) || {}, out = [];
+    function add(v) { if (v != null && v !== '' && out.indexOf(String(v)) < 0) out.push(String(v)); }
+    add(pi.factionName); add(pi.factionId);
+    arr(G && G.facs).forEach(function (f) {
+      if (!f) return;
+      if (f.isPlayer || (pi.factionName && f.name === pi.factionName) || (pi.factionId != null && pi.factionId !== '' && str(f.id) === str(pi.factionId))) { add(f.name); add(f.id); }
+    });
+    return out;
+  }
+  // 这一两回合民变的军打下的州（战果写口记在那一仗的 bandOccupied 上）：本回合稍后就成势归了那家（tm-revolt-band.js establish，
+  // 过回合 6.1455，在本步 6.145 之后），立案起事这里先当已归别家（11-18 天启干跑第二轮：一股打下西安府那回合，西安府先在朝廷这边起了一股）
+  function bandTaken(G) {
+    var now = num(G.turn, 0), out = {}, FM = TM.FactionMembership;
+    arr(G.battleHistory).forEach(function (row) {
+      var occ = row && row.bandOccupied, t = num(row && row.turn, -99);
+      if (!occ || t < now - 1 || t > now) return;
+      arr(occ.cityIds).forEach(function (c) {
+        out[str(c)] = 1;
+        var info = FM && typeof FM.regionInfo === 'function' ? FM.regionInfo(c) : null;
+        if (info && info.division && info.division.id != null) out[str(info.division.id)] = 1;
+      });
+    });
+    return out;
+  }
+  // 易主写口给这州落过别家的主，它就不是朝廷的州了（民变重做·成势，11-18 天启干跑查出）：
+  // 天启、绍宋的区划易主时整块挪出玩家树，这里本来就不见；晚唐与旧档的区划留在玩家树里、只改了主，
+  // 不挡的话被民变成的势力打下的州照样在朝廷这边立案起事。开局的州不带这些字段，照旧算朝廷的
+  function heldByOther(node, mine) {
+    var marks = [node.owner, node.currentOwner, node.factionId].filter(function (v) { return v != null && v !== ''; }).map(String);
+    return !!(mine.length && marks.length) && !marks.some(function (v) { return mine.indexOf(v) >= 0; });
   }
 
   function findChar(G, ref) {
@@ -345,7 +379,8 @@
       if (r && r.status === 'ongoing') return;
       c.status = 'closed'; c.closedTurn = turn; c.endedAs = r ? str(r.status) : 'gone';
     });
-    var leaves = realmLeaves(G), byDiv = {}, leafById = {}, cooling = {};
+    var taken = bandTaken(G);
+    var leaves = realmLeaves(G).filter(function (L) { return !taken[str(L.node.id)]; }), byDiv = {}, leafById = {}, cooling = {};
     leaves.forEach(function (L) { leafById[L.node.id] = L; });
     store.cases.forEach(function (c) {
       if (c.status !== 'closed') byDiv[c.divisionId] = c;

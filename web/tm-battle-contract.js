@@ -145,12 +145,20 @@
     ensureBattleId(br,G);
     var prior = findSettledBattle(br, G);
     if (prior) return { ok: true, duplicate: true, result: prior, applied: prior.applied };
-    // 民变的军打赢、战报写了占城：先不落城（「民变」不是势力；攻下一座城立成真势力在民变「成势」那一刀接），城留在战报上
+    // 民变的军打赢、战报写了占城：这里不落城（「民变」还不是势力，城没处归），城留在战报上；
+    //   结算后在这一仗的记录上写明哪几支民变的军占了哪几城（bandOccupied），过回合民变那一步据此立成势力、城走易主写口（成势，11-18）
     var win = br.winnerFactionId || br.winnerFaction || br.winner;
     if (Array.isArray(br.occupiedCityIds) && br.occupiedCityIds.length && !realFaction(win, G) && bandSideFaction(win, br, G)) {
       br._bandOccupiedCityIds = br.occupiedCityIds; br.occupiedCityIds = [];
     }
     var result = original.call(ms, br, G); // 保留原写口的ID/名称存储契约；归一化仅用于引用判定
+    if (br._bandOccupiedCityIds && result && result.ok && !result.deferred && result.result) {
+      result.result.bandOccupied = {
+        cityIds: br._bandOccupiedCityIds.map(String),
+        armyIds: battleParticipants(br, G).filter(function(p) { return p.army && p.army._revoltBand && String(p.army.faction || '') === String(win); })
+          .map(function(p) { return String(p.army.id); })
+      };
+    }
     if (result && result.ok && global.GuokuEngine && global.GuokuEngine.syncBattleCasualtyBonus) global.GuokuEngine.syncBattleCasualtyBonus(G);
     if (result && result.ok && br._applierAftermathPending && !result.result._applierAftermathDone && typeof global._applyBattleResult === 'function') {
       result.result._applierAftermathDone = true;

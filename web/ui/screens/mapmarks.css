@@ -42,6 +42,16 @@
 .mk-army.rough > .mk-flag { background: linear-gradient(160deg, #8f6c3f, #5c4325 70%); }
 .mk-rebel > .mk-flag { color: #f0e6d0; background: linear-gradient(160deg, #3d3a35, #1c1a17 70%); clip-path: polygon(0 0, 100% 6%, 80% 50%, 96% 100%, 0 94%); }
 .mk-rebel > .mk-n { color: #f0e6d0; background: linear-gradient(180deg, #3d3a35, #1c1a17); box-shadow: inset 0 0 0 1px rgba(240, 230, 208, .3); }
+/* 别家之军：旗作那一家在舆图上的底色（--mk-fc，与疆域同色）压深一层，旗顶铁色（本方金顶朱旗）；
+   别家的旗多半插在自家疆域上，同色相叠看不清，整面旗连杆描一道浅边。只知大概的旗上无字、色褪一层 */
+.mk-foe { filter: drop-shadow(0 0 .0625rem rgba(252, 246, 232, .95)) drop-shadow(0 0 .0625rem rgba(252, 246, 232, .8)) drop-shadow(0 .125rem .1875rem rgba(20, 10, 4, .55)); }
+.mk-foe:hover { filter: drop-shadow(0 0 .0625rem rgba(252, 246, 232, .95)) drop-shadow(0 .125rem .25rem rgba(20, 10, 4, .6)) brightness(1.12); }
+.mk-foe > .mk-flag { color: #fbf3e2; text-shadow: 0 1px 1px rgba(0, 0, 0, .75);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--mk-fc, #8a7a66) 78%, #000), color-mix(in srgb, var(--mk-fc, #8a7a66) 50%, #000) 70%); }
+.mk-foe > .mk-flag2 { background: linear-gradient(160deg, color-mix(in srgb, var(--mk-fc, #8a7a66) 60%, #000), color-mix(in srgb, var(--mk-fc, #8a7a66) 38%, #000) 70%); }
+.mk-foe > .mk-pole::before { background: radial-gradient(circle at 35% 30%, #ebe7dd, #64605a); }
+.mk-foe > .mk-c { box-shadow: 0 0 0 1px color-mix(in srgb, var(--mk-fc, #8a7a66) 50%, #000); }
+.mk-foe.dim > .mk-flag { filter: saturate(.7) brightness(1.12); }
 /* 交战：战字圆章，外一圈朱晕扩散 */
 .mk-battle > b { position: absolute; left: 0; top: 0; width: 1.75rem; height: 1.75rem; transform: translate(-50%, -50%); display: grid; place-items: center; border-radius: 50%;
   font: 400 1rem/1 var(--f-title); color: #fbeed4; background: radial-gradient(circle at 35% 30%, #c2402f, #6e1a10 75%);

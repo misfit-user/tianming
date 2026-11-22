@@ -5,6 +5,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { num, numeralStyle, cnNum } from '../core/numerals.js';
 import { tiao } from '../kit/index.js';
+import { REALM_INKS } from '../scene/map/politics.js';
 
 // 兵数写短：一万八、三万二、五千六、八百（阿拉伯数字时 1.8万）
 export function shortCount(n) {
@@ -23,20 +24,30 @@ export function roughCount(n) {
 // 番号取一个字上旗，同一衙门、同一路下的几军要分得开：
 //   无「·」的去掉京城、御营之类的冠称取头一字（关宁军 → 关、御营右军 → 右）；
 //   有「·」的取末段头一字（京营·神机营 → 神、荆湖·岳飞部 → 岳、宁远副总兵·祖氏家丁 → 祖），八旗取旗色（后金·两黄旗 → 黄）；
-//   末段是正兵、残部、总览这类泛称的仍取前段（东京留守司·正兵 → 东）
+//   末段是正兵、残部、总览、主力这类泛称的仍取前段（东京留守司·正兵 → 东、察哈尔·主力 → 察）
 function flagChar(name) {
   const parts = String(name || '军').replace(/[（(][^）)]*[）)]/g, '').split('·').map((s) => s.trim()).filter(Boolean);
   if (!parts.length) return '军';
   const last = parts[parts.length - 1];
   const banner = /^(?:两|正|镶)?([黄红白蓝])旗/.exec(last);   // 八旗取旗色：两黄旗、正白旗、镶蓝旗
   if (banner) return banner[1];
-  if (parts.length > 1 && !/^(正|残|总|余|本|全|诸)/.test(last)) return [...last][0];
+  if (parts.length > 1 && !/^(正|残|总|余|本|全|诸|主)/.test(last)) return [...last][0];
   return [...parts[0].replace(/^(南京|北京|御营)(?=..)/, '')][0] || '军';
+}
+
+// 别家的旗色：那一家在舆图上的底色（map.realmColorOf，与疆域同一色）；没有地盘的（群盗、游牧诸部）从同一套颜料里按家取定一色
+function inkOf(map, key) {
+  const c = map.realmColorOf ? map.realmColorOf(key) : null;
+  if (c) return c;
+  let h = 0;
+  for (const ch of String(key || '?')) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+  return REALM_INKS[1 + (h % (REALM_INKS.length - 1))];
 }
 
 // 落点：诸军读内核绑定的地块（军上的 site：一块，或粗区、两可的几块候选），regionOf(候选, 是否一片) 挑一块；
 //   绑不上的、民变、交战按地名认：placeOf(地名) → 舆图上的府州（先问内核，再按 model/place.js；书案镜头落点同一份）。旗落其治所
-export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, knows, onArmy, onRebels }) {
+// 别家之军：sightOfFoes() 给一个 (府州) → 'exact' | 'rough' | false 的所知之律（desk.js）；点了 onFoe(势力键) 翻谱牒里那一家
+export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, knows, sightOfFoes, onArmy, onFoe, onRebels }) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'mk-routes');
   svg.innerHTML = '<defs><marker id="mk-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 z" fill="#a3281b"/></marker></defs>';
@@ -45,8 +56,9 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
   let pins = [], routes = [];
 
   function refresh() {
-    let rows = [], rebels = [], battles = [];
+    let rows = [], foes = [], rebels = [], battles = [];
     try { rows = game.army.roster().groups.flatMap((g) => g.rows); } catch (_e) { rows = []; }
+    try { foes = sightOfFoes ? game.army.foreign() : []; } catch (_e) { foes = []; }
     try { rebels = game.army.rebels(); } catch (_e) { rebels = []; }
     try { battles = game.army.battles().active; } catch (_e) { battles = []; }
     // 诸军按所在府州归堆：一处一面旗
@@ -72,7 +84,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       const hot = list.some((a) => a.hot), marching = list.some((a) => a.march);
       // 只见其大概的：不写番号字、不记几部、点了不翻军务册（册里本无此军）
       const n = h('span.mk-n'), c = h('em.mk-c');
-      const pin = { kind: rough ? 'rough' : 'army', x: r.center[0], y: r.center[1], place: r.name, total, count: list.length, weight: (hot ? 1e9 : 0) + total, n, c, absorbed: [], sig: null };
+      const pin = { kind: rough ? 'rough' : 'army', rough, x: r.center[0], y: r.center[1], place: r.name, total, count: list.length, weight: (hot ? 1e9 : 0) + total, n, c, absorbed: [], sig: null };
       const el = h('button.mk.mk-army' + (hot ? '.hot' : '') + (marching ? '.march' : '') + (rough ? '.rough' : ''), { type: 'button', 'aria-label': `${r.name}驻军`,
         onclick: rough ? null : () => onArmy(pin.absorbed.length ? null : lead.key) },
         h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '兵' : flagChar(lead.name)), n, c);
@@ -92,6 +104,36 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
         path.setAttribute('marker-end', 'url(#mk-arrow)');
         routes.push({ path, from: r.center, to: to.center });
       }
+    }
+    // 别家之军：照那一家在舆图上的底色插旗、旗顶铁色（本方金顶朱旗），所知之律定画不画——知其确数的旗上番号字、牌上兵数，
+    //   悬停列番号与主将；只知大概的旗上无字、牌上只写数千数万。同一家、同一档的才并作一堆；点了翻谱牒里那一家。
+    //   叠旗先让本方：别家之军排在本方之后，同处撞上了由它让开。
+    //   只落内核绑定的地块，不按地名约略认——后金「辽东·辽西诸卫」的归附部按地名会落到山海关，像是敌兵到了关下
+    const see = sightOfFoes ? sightOfFoes() : null;
+    const foesAt = new Map();
+    for (const a of see ? foes : []) {
+      const r = a.site && regionOf(a.site.ids, a.site.area);
+      const k = r && see(r);
+      if (!k) continue;
+      const fac = a.factionKey || a.faction || '?';
+      const key = `${k}|${fac}|${r.id || r.name}`;
+      if (!foesAt.has(key)) foesAt.set(key, { r, rough: k === 'rough', fac, name: a.faction || '别家', list: [] });
+      foesAt.get(key).list.push(a);
+    }
+    for (const { r, rough, fac, name, list } of foesAt.values()) {
+      const total = list.reduce((s, a) => s + (a.soldiers || 0), 0);
+      const lead = list.slice().sort((a, b) => (b.soldiers || 0) - (a.soldiers || 0))[0];
+      const n = h('span.mk-n'), c = h('em.mk-c');
+      const pin = { kind: (rough ? 'foe~' : 'foe:') + fac, rough, foe: name, x: r.center[0], y: r.center[1], place: r.name, total, count: list.length, weight: total - 1e9, n, c, absorbed: [], sig: null };
+      const el = h('button.mk.mk-army.mk-foe' + (rough ? '.dim' : ''), { type: 'button', 'aria-label': `${r.name}${name}之军`, '--mk-fc': inkOf(map, fac), onclick: () => onFoe && onFoe(fac) },
+        h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '' : flagChar(lead.name)), n, c);
+      const lines = list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : ''}${about(a, r)}`);
+      pin.line = rough ? `${r.name}　${name}之军约${roughCount(total)}` : `${r.name}　${name}·${list.length > 1 ? `${lead.name}等${num(list.length)}部` : lead.name}　${shortCount(total)}`;
+      tiao(el, () => (pin.absorbed.length ? stackTip(pin)
+        : rough ? { title: `${r.name} · ${name}之军`, text: `约${roughCount(total)}人\n传闻所及，不知其番号、主将与确数` }
+        : { title: `${r.name} · ${name}${list.length > 1 ? `${num(list.length)}部` : ''}`, text: lines.join('\n') }));
+      els.push(el);
+      pins.push(Object.assign(pin, { el }));
     }
     // 民变：各股落在所在州（认法同诸军），一处一面墨旗（旗上仍写「寇」）——旗下记众、旗角记几股，悬停逐股列首领、众与能战之数
     const rebelsAt = new Map();
@@ -151,12 +193,17 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
     for (const p of pins) {
       const [sx, sy] = map.worldToScreen(p.x, p.y);
       const out = !(sx > -40 && sx < W + 40 && sy > -40 && sy < H + 60);
-      const host = out || p.kind === 'battle' ? null : kept.find((k) => k.kind === p.kind && Math.abs(k.sx - sx) < gx && Math.abs(k.sy - sy) < gy);
+      const host = out || p.kind === 'battle' ? null : kept.find((k) => k.kind === p.kind && Math.abs(k.ox - sx) < gx && Math.abs(k.sy - sy) < gy);
+      let x = sx;
       if (host) host.absorbed.push(p);
-      else if (!out && p.kind !== 'battle') { p.sx = sx; p.sy = sy; p.absorbed = []; kept.push(p); }
+      else if (!out && p.kind !== 'battle') {
+        // 别类的旗（本方与别家、别家与别家）同处撞上了：后摆的往右让开大半面旗宽，至多让两回
+        for (let t = 0; t < 2 && kept.some((k) => k.kind !== p.kind && Math.abs(k.sx - x) < gx * 0.75 && Math.abs(k.sy - sy) < gy * 0.6); t++) x += gx * 0.75;
+        p.ox = sx; p.sx = x; p.sy = sy; p.absorbed = []; kept.push(p);
+      }
       const hide = out || !!host;
       p.el.style.visibility = hide ? 'hidden' : '';
-      if (!hide) p.el.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px)`;
+      if (!hide) p.el.style.transform = `translate(${x.toFixed(1)}px, ${sy.toFixed(1)}px)`;
     }
     for (const k of kept) paintStack(k);
     for (const rt of routes) {
@@ -176,16 +223,16 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
     if (sig === p.sig) return;
     p.sig = sig;
     const total = all.reduce((t, q) => t + q.total, 0), count = all.reduce((t, q) => t + q.count, 0);
-    p.n.textContent = p.kind === 'rough' ? roughCount(total) : shortCount(total);
-    p.c.textContent = count > 1 && p.kind !== 'rough' ? num(count) : '';
+    p.n.textContent = p.rough ? roughCount(total) : shortCount(total);
+    p.c.textContent = count > 1 && !p.rough ? num(count) : '';
     p.c.hidden = !p.c.textContent;
     p.el.classList.toggle('stack', all.length > 1);
   }
   function stackTip(p) {
     const all = [p, ...p.absorbed];
     const total = all.reduce((t, q) => t + q.total, 0);
-    const head = p.kind === 'rebel' ? `民变${num(all.reduce((t, q) => t + q.count, 0))}股` : `${num(all.length)}处驻军`;
-    return { title: `${head} · 合${p.kind === 'rough' ? roughCount(total) : shortCount(total)}`, text: all.map((q) => q.line).join('\n') + '\n镜头拉近即各归其处' };
+    const head = p.kind === 'rebel' ? `民变${num(all.reduce((t, q) => t + q.count, 0))}股` : p.foe ? `${p.foe}之军${num(all.length)}处` : `${num(all.length)}处驻军`;
+    return { title: `${head} · 合${p.rough ? '约' + roughCount(total) : shortCount(total)}`, text: all.map((q) => q.line).join('\n') + '\n镜头拉近即各归其处' };
   }
 
   return { refresh };

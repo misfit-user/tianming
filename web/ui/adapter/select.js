@@ -786,6 +786,13 @@ export function mapRegions() {
   const regions = [];
   // 上级：府州的 parentId 多半就是所属省道（circuitId），那已在省道名里；真有上级府州的才取其名（不露内部 id）
   const nameById = new Map(map.regions.map((x) => [x.id, x.name]));
+  // 四邻：剧本按编号记（天启、绍宋），也有按名记的（晚唐「凤翔府」「华州」），一律换成编号（别家之军的所知之律按此数程）
+  const idSet = new Set(map.regions.map((x) => String(x.id)));
+  const idByName = new Map(map.regions.filter((x) => x && x.name).map((x) => [String(x.name), String(x.id)]));
+  const neighborsOf = (r) => (Array.isArray(r.neighbors) ? r.neighbors : []).map((x) => {
+    const v = String(x && typeof x === 'object' ? x.id || x.target || '' : x == null ? '' : x);
+    return idSet.has(v) ? v : idByName.get(v) || '';
+  }).filter(Boolean);
   for (const r of map.regions) {
     const ring = ringOf(r);
     if (!ring || ring.length < 3) continue;
@@ -797,7 +804,7 @@ export function mapRegions() {
     const center = r.referenceSeat || r.center || r.centroid;
     const rings = allRings(r);
     regions.push({
-      id: r.id, name: r.name || '', circuit: r.circuitName || '', faction: fid, terrain: r.terrain || '',
+      id: r.id, name: r.name || '', circuit: r.circuitName || '', faction: fid, terrain: r.terrain || '', neighbors: neighborsOf(r),
       parent: r.parentName || (r.parentId && r.parentId !== r.circuitId ? nameById.get(r.parentId) || '' : ''),
       poly: ring.map(toWorld), center: center ? toWorld(center) : toWorld(ring[0]),
       ...(rings.length > 1 ? { rings: rings.map((x) => x.map(toWorld)) } : {})

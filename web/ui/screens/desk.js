@@ -265,6 +265,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const marks = createMapMarks({
     layer: marksLayer, map, game, placeOf: (text) => { const [i] = byPlace(text); return i == null ? null : mapRegionList[i] || null; },
     regionOf: (ids, area) => { const i = pickIdx(ids, area); return i >= 0 ? mapRegionList[i] || null : null; },
+    sightOfFoes: () => sightOfFoes(),
+    onFoe: (key) => { if (key) realmPage.showDock(key); },
     isLive: () => dive.mode === 'map' && !dive.busy,
     // 所知之律：元首、本人所统知其确数；所掌辖区内，有官者读册籍知确数，无官之人在本籍只见其大概；此外不画
     knows: ({ army, region }) => (per.tier === 'sovereign' || (army && army.commander === per.name) ? 'exact'
@@ -618,6 +620,42 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (k >= 0) return [k];
     const i = placeIndex(text, regionList(), { capital: capitalIdx, seats: seatNames });
     return i >= 0 ? [i] : [];
+  }
+  // 别家之军的所知之律（同志 11-22 依议）：从知情处沿四邻数程——
+  //   元首（朝廷所知）：本境与接壤一程之内的，知其确数（番号、主将、兵数）；再远到四程、且离本境最近的府州治所不出千二百里的，
+  //   只知大概（数千、数万）；更远不画。只数程不量远近不行：草原上一块地大，四程就到了漠北，绍宋开局斡难河的蒙兀诸部也插了旗。
+  //   余者：所掌辖区内的，有官者读塘报知确数、无官之人只见大概；辖区四邻只知大概；此外不画（京官无辖区，不见别家之军）
+  const FOE_EXACT = 1, FOE_ROUGH = 4;
+  const FOE_REACH = 120;      // 舆图世界坐标；三部官方舆图一单位约五公里（开封至江宁 104、顺天至应天 164），120 约合千二百里
+  function sightOfFoes() {
+    const list = regionList(), sovereign = per.tier === 'sovereign';
+    let seeds = [];
+    if (sovereign) {
+      let mine = [];
+      try { mine = game.army.sides().mine; } catch (_e) { mine = []; /* 认不出本方：不见别家之军 */ }
+      const own = new Set(mine.map(String));
+      seeds = list.map((r, i) => (own.has(String(r.faction)) ? i : -1)).filter((i) => i >= 0);
+    } else seeds = focus ? focus.marked : [];
+    const depth = sovereign ? FOE_ROUGH : 1;
+    const hops = new Map();
+    let edge = [];
+    for (const i of seeds) { const id = String(list[i].id); if (!hops.has(id)) { hops.set(id, 0); edge.push(id); } }
+    for (let d = 1; d <= depth && edge.length; d++) {
+      const next = [];
+      for (const id of edge) {
+        const r = list[indexOfId(id)];
+        for (const n of (r && r.neighbors) || []) if (!hops.has(n)) { hops.set(n, d); next.push(n); }
+      }
+      edge = next;
+    }
+    const homes = seeds.map((i) => list[i].center).filter(Boolean);
+    const near = (r) => !!r.center && homes.some((c) => Math.hypot(c[0] - r.center[0], c[1] - r.center[1]) <= FOE_REACH);
+    return (r) => {
+      const d = hops.get(String(r.id));
+      if (d == null) return false;
+      if (sovereign) return d <= FOE_EXACT ? 'exact' : near(r) ? 'rough' : false;
+      return d === 0 && prof.official ? 'exact' : 'rough';
+    };
   }
   function focusOf() {
     let marked = [], centerOnly = [];

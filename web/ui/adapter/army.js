@@ -151,19 +151,49 @@ function commanderState(name) {
   return ch && (ch.alive === false || ch.dead === true) ? 'dead' : 'ok';
 }
 
+// 水师：番号或兵种写着水师、水军、舟、船、舰、水寨的（舆图上换一种旗形）
+const navalOf = (a) => /水师|水军|舟|船|舰|水营|水寨/.test(String(first(a, ['name'], ''))) || /水|舟|船|navy|naval|fleet/i.test(typeOf(a));
+
 // 名册：按兵种分组（同右栏），附总额
 export function roster() {
   const groups = new Map();
   let total = 0, hot = 0, arrears = 0, marching = 0;
   armies().forEach((a, i) => {
     const row = { key: keyOf(a, i), name: String(first(a, ['name', 'id'], '未名部队')), commander: commanderOf(a), location: locationOf(a), site: siteOf(a), soldiers: soldiers(a),
-      hot: hotOf(a), arrears: Math.max(0, Math.round(Number(a.payArrearsMonths) || 0)), march: marchOf(a), vacant: commanderState(commanderOf(a)) !== 'ok' };
+      hot: hotOf(a), arrears: Math.max(0, Math.round(Number(a.payArrearsMonths) || 0)), march: marchOf(a), vacant: commanderState(commanderOf(a)) !== 'ok', naval: navalOf(a) };
     const t = typeOf(a);
     if (!groups.has(t)) groups.set(t, []);
     groups.get(t).push(row);
     total += row.soldiers; hot += row.hot ? 1 : 0; arrears += row.arrears ? 1 : 0; marching += row.march ? 1 : 0;
   });
   return { groups: [...groups].map(([type, rows]) => ({ type, rows, soldiers: rows.reduce((s, r) => s + r.soldiers, 0) })), count: [...groups.values()].reduce((s, r) => s + r.length, 0), total, hot, arrears, marching };
+}
+
+// ---------- 别家之军（舆图照所知之律插旗用） ----------
+// 不是本方、也不是民变各股（墨旗另列）的军：番号、主将、兵数（照实——舆图按所知只露确数或大概）、落点、哪一家与其底色、是否水师
+export function foreign() {
+  const own = new Set(armies());
+  const facs = facTable();
+  const out = [];
+  liveArmies().forEach((a, i) => {
+    if (own.has(a) || a._revoltBand) return;
+    const rec = ['factionId', ...FACTION].map((k) => facRecord(a[k], facs)).find(Boolean);
+    const cmd = commanderOf(a);
+    out.push({
+      key: keyOf(a, i), name: String(first(a, ['name', 'id'], '未名部队')), commander: cmd, vacant: commanderState(cmd) !== 'ok',
+      soldiers: Math.max(0, Math.round(numOf(a, ['soldiers', 'size', 'strength', 'troops', 'initialTroops'], 0))),
+      location: locationOf(a), site: siteOf(a), naval: navalOf(a),
+      faction: rec ? String(rec.name || rec.id) : String(first(a, FACTION, '') || ''), factionKey: rec ? facKey(rec) : '', color: rec ? String(rec.color || rec.colour || '') : ''
+    });
+  });
+  return out;
+}
+// 本方是哪一家：势力表里的编号与名（舆图认本境用——府州记的是哪家的编号）
+export function sides() {
+  const ctx = factionCtx();
+  const mine = new Set(ctx.player);
+  ctx.facs.forEach((f) => { if (ctx.mineKeys.has(facKey(f))) [f.id, f.name].forEach((v) => { if (v) mine.add(String(v)); }); });
+  return { mine: [...mine] };
 }
 
 const TAC = { 'step/spear': '长枪', 'step/sword': '刀盾', 'step/halberd': '镋钯', 'bow/bow': '弓手', 'bow/crossbow': '弩手', 'bow/musket': '火铳', 'art/cannon': '火炮', 'cav/horse': '骑', 'cav/heavy': '重骑', 'cav/shock': '突骑', 'guard/guard': '亲军' };

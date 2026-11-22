@@ -5381,8 +5381,8 @@
     },
     {
       "path": "tm-map-locations.js",
-      "sha256": "c8f2fffc683619de7ba9fad75e977d36fff56e3a341bb99fcf07afcc7f56589c",
-      "size": 14552
+      "sha256": "bae3b67a1e36143d0ee4754f5179c8a4f25eb8de6e3e895c8cfcfe0b5c27505d",
+      "size": 22180
     },
     {
       "path": "tm-map-realm-layout.js",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "2b94677c9ea1af6ec342f18a77ff35ca12724ccd7df9dafafcd5ec9831d8a1d8",
+      "sha256": "976b19a3b7bf0e57617096db2999be85e7960b615ee120e006d48a2a54d35f4d",
       "size": 142619
     },
     {

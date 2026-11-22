@@ -128,6 +128,8 @@ function siteOf(a) {
   let b = null;
   try { b = L.read(a, 'army', G()); } catch (_e) { b = null; /* 舆图未载：返回空，舆图按驻地文字认 */ }
   if (!b) return null;
+  // 剧本写明散驻各地的总账（全国卫所军·总览）：不是驻在某处的一支军，舆图不插旗，也不按文字去猜
+  if (b.status === 'dispersed') return { ids: [], exact: false, area: false, dispersed: true };
   if (b.regionId) return { ids: [String(b.regionId)], exact: b.precision !== 'representative', area: false };
   const ids = (b.candidateRegionIds || []).map(String);
   return ids.length ? { ids, exact: false, area: b.status === 'area' } : null;

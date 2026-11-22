@@ -73,6 +73,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
     // 诸军按所在府州归堆：一处一面旗
     const byPlace = new Map();
     for (const a of rows) {
+      if (a.site && a.site.dispersed) continue;
       const r = (a.site && regionOf(a.site.ids, a.site.area)) || placeOf(a.location);
       const k = r && knows({ army: a, region: r });
       if (!k) continue;

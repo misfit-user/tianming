@@ -582,8 +582,11 @@
     }
     if (!usedGlobal && commander) _syncArmyCommanderAliases(army, commander);
     if (!usedGlobal) {
-      if (p.destination) army.destination = p.destination;
-      if (p.location || p.garrison) { army.location = p.location || p.garrison; army.garrison = p.garrison || p.location; if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', undefined, army.location); }
+      // 写口认地块（11-23）：认不出是舆图上哪块的去处、驻地不落，军留原地——与 applyAIArmyChange 同一条规矩，旁路也不能绕过去
+      var _locs = window.TMMapLocations;
+      var _onMap = function (t) { return !_locs || typeof _locs.readable !== 'function' || _locs.readable(t, army, 'army'); };
+      if (p.destination && _onMap(p.destination)) army.destination = p.destination;
+      if ((p.location || p.garrison) && _onMap(p.location || p.garrison)) { army.location = p.location || p.garrison; army.garrison = p.garrison || p.location; if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', undefined, army.location); }
     }
     var soldiersDelta = _safeNum(p.soldiersDelta != null ? p.soldiersDelta : p.troopsDelta);
     var moraleDelta = _safeNum(p.moraleDelta);

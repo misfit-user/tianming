@@ -3991,8 +3991,8 @@
     },
     {
       "path": "tm-ai-change-army.js",
-      "sha256": "4bfec6374b6f0a287a130356a6c674978857f6852ea60fb2be05096c67d93414",
-      "size": 48589
+      "sha256": "eae01ed564b6cc0c39a9f4e2253767477d1e9171c2a9a8535cdf745de191df5b",
+      "size": 50291
     },
     {
       "path": "tm-ai-change-narrative.js",
@@ -4811,8 +4811,8 @@
     },
     {
       "path": "tm-faction-action-engine.js",
-      "sha256": "746729f6108fa05deb099c6426fd20b630190bd64a70cf39b7795302918a9585",
-      "size": 96780
+      "sha256": "6ea385895b01ac61bc0ed7834b7b839a5a9a08a87587b776e6b85196c8df30d2",
+      "size": 97189
     },
     {
       "path": "tm-faction-derived-cohesion.js",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "9c1236931b3c16d9a5520f549181716c280ac83d9b1f3f9da7ebb4a203c1bcae",
+      "sha256": "3cfbc621528a1e183f59dc841ba8a99e8f0f8a39f6f0b1dcd7e3c005155cf951",
       "size": 142619
     },
     {

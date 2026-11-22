@@ -365,6 +365,7 @@
       : null;
     var changed = false;
     var created = false;
+    var placeRejected = null;
 
     // 名匹配失败但 AI 另给了主帅 → 按主帅反查那支军（防「后金军」这类含糊名漏改真军）。
     if (!explicitCreate && !army && commanderInput) army = _findArmyForAIChange(G, commanderInput);
@@ -567,29 +568,47 @@
         army.controlLevel = _clampNum(100 - newControl, 0, 100);
         changed = true;
       }
+      // 写口认地块（11-23 同志定：地块编号做根）：AI 写来的去处、驻地先认是舆图上哪块（认出几处的由引擎取代表点）；
+      // 一处也认不出的这一项退回，军留原地，记进未落地（史官不得写成已发生）。没有地块的剧本照旧放行
+      var _locs = global.TMMapLocations;
+      var _onMap = function (text) { return !_locs || typeof _locs.readable !== 'function' || _locs.readable(text, army, 'army', G); };
+      var _stay = function () { return String(army.garrisonRegionName || army.garrison || army.location || '原驻地'); };
       if (change.destination && typeof change.destination === 'string') {
-        army.destination = change.destination;
-        army._remainingDistance = 0;
-        if (typeof global.addEB === 'function') global.addEB('行军', (army.name || name) + '接令调往' + change.destination);
-        changed = true;
+        if (!_onMap(change.destination)) {
+          placeRejected = { part: { name: army.name || name, destination: change.destination }, reason: '去处「' + change.destination + '」在舆图上认不出是哪块地，未调；此军仍在' + _stay() };
+        } else {
+          army.destination = change.destination;
+          army._remainingDistance = 0;
+          if (typeof global.addEB === 'function') global.addEB('行军', (army.name || name) + '接令调往' + change.destination);
+          changed = true;
+        }
       }
       if ((change.location || change.garrison) && !change.destination) {
         var oldLoc = String(army.location || army.garrison || '').trim();
         var newLoc = String(change.location || change.garrison || '').trim();
-        army.location = change.location || change.garrison;
-        army.garrison = change.garrison || change.location;
-        if (oldLoc !== newLoc && G._turnReport) {
-          G._turnReport.push({ type:'military', armyName:army.name || name, field:'location', old:oldLoc, new:newLoc, reason:reason, source:opts.source || '', turn:G.turn||0 });
+        if (!_onMap(newLoc)) {
+          placeRejected = { part: { name: army.name || name, location: newLoc }, reason: '驻地「' + newLoc + '」在舆图上认不出是哪块地，未移；此军仍驻' + _stay() };
+        } else {
+          army.location = change.location || change.garrison;
+          army.garrison = change.garrison || change.location;
+          if (oldLoc !== newLoc && G._turnReport) {
+            G._turnReport.push({ type:'military', armyName:army.name || name, field:'location', old:oldLoc, new:newLoc, reason:reason, source:opts.source || '', turn:G.turn||0 });
+          }
+          changed = true;
         }
-        changed = true;
       }
     }
 
     if (commandTicket && commandTicket.allowed && commandTicket.orderId) {
       commandAuthority.commit(army, commandTicket); changed = true;
     }
+    if (placeRejected) {
+      // 这一条只有调动：整条退回。还带着别的改动（兵数、换帅……）：别的照落，调动这一项另记未落地
+      if (!changed) return { ok:false, reason:placeRejected.reason, army:army, placeRejected:placeRejected.reason };
+      if (opts && Array.isArray(opts.failed)) opts.failed.push({ army_change: placeRejected.part, reason: placeRejected.reason });
+    }
     if (changed) { if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', G); if (!opts.preview) _refreshMilitaryViews(G); }
-    return { ok:true, army:army, created:created, changed:changed, pending:!!(commandTicket && commandTicket.pending), orderId:commandTicket && commandTicket.orderId, reason:commandTicket && commandTicket.reason };
+    return { ok:true, army:army, created:created, changed:changed, pending:!!(commandTicket && commandTicket.pending), orderId:commandTicket && commandTicket.orderId, reason:commandTicket && commandTicket.reason, placeRejected:placeRejected ? placeRejected.reason : undefined };
   }
 
   function _applyAIArmyChangeList(list, source, opts) {

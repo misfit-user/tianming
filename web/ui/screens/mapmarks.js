@@ -1,4 +1,5 @@
-// 舆图标记（照 CK3 图上的军队与事态标记）：本方诸军一处一面军旗（旗上番号首字、旗下兵数，告急朱边闪），
+// 舆图标记（照 CK3 图上的军队与事态标记）：本方诸军一处一面军旗（旗上主将之姓、缺帅的写番号首字，旗下兵数，告急朱边闪），
+// 别家之军照其疆域底色插旗（所知之律见 desk.js sightOfFoes）；
 // 行军的画一道虚线箭头指向去处；民变各股所在一处一面墨旗；交战处一枚「战」字圆章。DOM 层，每帧跟着镜头摆位，压在舆图题名之上、界面之下。
 // 看得见哪些由调用方定（knows：所知之律——通用一套只见本人所统与所掌辖区内的）：返回 'exact' 知其确数，'rough' 只见其大概
 // （无官之人在本籍亲见驻军，只知数百、数千、数万），假则不画。
@@ -27,15 +28,21 @@ export function roughCount(n) {
 //   无「·」的去掉京城、御营之类的冠称取头一字（关宁军 → 关、御营右军 → 右）；
 //   有「·」的取末段头一字（京营·神机营 → 神、荆湖·岳飞部 → 岳、宁远副总兵·祖氏家丁 → 祖），八旗取旗色（后金·两黄旗 → 黄）；
 //   末段是正兵、残部、总览、主力这类泛称的仍取前段（东京留守司·正兵 → 东、察哈尔·主力 → 察）
+const partsOf = (name) => String(name || '军').replace(/[（(][^）)]*[）)]/g, '').split('·').map((s) => s.trim()).filter(Boolean);
+// 八旗取旗色：两黄旗、正白旗、镶蓝旗
+const bannerOf = (name) => { const parts = partsOf(name), m = parts.length ? /^(?:两|正|镶)?([黄红白蓝])旗/.exec(parts[parts.length - 1]) : null; return m ? m[1] : ''; };
 function flagChar(name) {
-  const parts = String(name || '军').replace(/[（(][^）)]*[）)]/g, '').split('·').map((s) => s.trim()).filter(Boolean);
+  const parts = partsOf(name);
   if (!parts.length) return '军';
   const last = parts[parts.length - 1];
-  const banner = /^(?:两|正|镶)?([黄红白蓝])旗/.exec(last);   // 八旗取旗色：两黄旗、正白旗、镶蓝旗
-  if (banner) return banner[1];
+  const banner = bannerOf(name);
+  if (banner) return banner;
   if (parts.length > 1 && !/^(正|残|总|余|本|全|诸|主)/.test(last)) return [...last][0];
   return [...parts[0].replace(/^(南京|北京|御营)(?=..)/, '')][0] || '军';
 }
+// 旗上写什么（同志 11-22 依议：军是有人统的）：八旗写旗色；有帅的写主将之姓（袁、毛、宗、岳、何——换了将旗跟着变，姓取法见
+//   adapter/army.js commandOf）；缺帅的（无帅、主将已殁）写番号首字、旗褪色（.vacant），一眼看得出
+const markOf = (a) => bannerOf(a.name) || (!a.vacant && a.surname) || flagChar(a.name);
 
 // 别家的旗色：那一家在舆图上的底色（map.realmColorOf，与疆域同一色）；没有地盘的（群盗、游牧诸部）从同一套颜料里按家取定一色
 function inkOf(map, key) {
@@ -87,9 +94,9 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       // 只见其大概的：不写番号字、不记几部、点了不翻军务册（册里本无此军）
       const n = h('span.mk-n'), c = h('em.mk-c');
       const pin = { kind: rough ? 'rough' : 'army', rough, x: r.center[0], y: r.center[1], place: r.name, total, count: list.length, weight: (hot ? 1e9 : 0) + total, n, c, absorbed: [], sig: null };
-      const el = h('button.mk.mk-army.' + tierOf(total) + (hot ? '.hot' : '') + (marching ? '.march' : '') + (rough ? '.rough' : '') + (lead.naval ? '.navy' : ''), { type: 'button', 'aria-label': `${r.name}驻军`,
+      const el = h('button.mk.mk-army.' + tierOf(total) + (hot ? '.hot' : '') + (marching ? '.march' : '') + (rough ? '.rough' : '') + (lead.naval ? '.navy' : '') + (!rough && lead.vacant ? '.vacant' : ''), { type: 'button', 'aria-label': `${r.name}驻军`,
         onclick: rough ? null : () => onArmy(pin.absorbed.length ? null : lead.key) },
-        h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '兵' : flagChar(lead.name)), n, c);
+        h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '兵' : markOf(lead)), n, c);
       const lines = list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : '　缺帅'}${about(a, r)}${a.hot ? '　告急' : ''}${a.march ? `　行军往${a.march.to}` : ''}`);
       pin.line = `${r.name}　${rough ? '驻军' : list.length > 1 ? `${lead.name}等${num(list.length)}部` : lead.name}　${rough ? roughCount(total) : shortCount(total)}${hot ? '　告急' : ''}`;
       tiao(el, () => (pin.absorbed.length ? stackTip(pin)
@@ -127,8 +134,8 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       const lead = list.slice().sort((a, b) => (b.soldiers || 0) - (a.soldiers || 0))[0];
       const n = h('span.mk-n'), c = h('em.mk-c');
       const pin = { kind: (rough ? 'foe~' : 'foe:') + fac, rough, foe: name, x: r.center[0], y: r.center[1], place: r.name, total, count: list.length, weight: total - 1e9, n, c, absorbed: [], sig: null };
-      const el = h('button.mk.mk-army.mk-foe.' + tierOf(total) + (rough ? '.dim' : '') + (lead.naval ? '.navy' : ''), { type: 'button', 'aria-label': `${r.name}${name}之军`, '--mk-fc': inkOf(map, fac), onclick: () => onFoe && onFoe(fac) },
-        h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '' : flagChar(lead.name)), n, c);
+      const el = h('button.mk.mk-army.mk-foe.' + tierOf(total) + (rough ? '.dim' : '') + (lead.naval ? '.navy' : '') + (!rough && lead.vacant ? '.vacant' : ''), { type: 'button', 'aria-label': `${r.name}${name}之军`, '--mk-fc': inkOf(map, fac), onclick: () => onFoe && onFoe(fac) },
+        h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '' : markOf(lead)), n, c);
       const lines = list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : ''}${about(a, r)}`);
       pin.line = rough ? `${r.name}　${name}之军约${roughCount(total)}` : `${r.name}　${name}·${list.length > 1 ? `${lead.name}等${num(list.length)}部` : lead.name}　${shortCount(total)}`;
       tiao(el, () => (pin.absorbed.length ? stackTip(pin)

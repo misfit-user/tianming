@@ -154,13 +154,40 @@ function commanderState(name) {
 // 水师：番号或兵种写着水师、水军、舟、船、舰、水寨的（舆图上换一种旗形）
 const navalOf = (a) => /水师|水军|舟|船|舰|水营|水寨/.test(String(first(a, ['name'], ''))) || /水|舟|船|navy|naval|fleet/i.test(typeOf(a));
 
+// 主将与旗号之姓（同志 11-22 依议：军是有人统的，舆图旗上写主将之姓，换了将旗跟着变；缺帅的旗写番号、褪色）。
+//   取姓要稳：主将在世，名是两三个字，头一字是常见单姓；复姓（欧阳、完颜、耶律）、带汗号的、人物记了非汉族属的（皇太极记「女真」）
+//   都不取，舆图照旧写番号。人物没记族属的（晚唐一概没记）只凭名字认
+const SURNAMES = new Set([...'赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵席季麻强贾路娄危江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万支柯昝管卢莫经房裘缪干解应宗丁宣贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢滑裴陆荣翁荀羊於惠甄曲家封芮羿储靳汲邴糜松井段富巫乌焦巴弓牧隗山谷车侯宓蓬全郗班仰秋仲伊宫宁仇栾暴甘厉戎祖武符刘景詹束龙叶幸司韶郜黎蓟薄印宿白怀蒲邰从鄂索咸籍赖卓蔺屠蒙池乔阴胥能苍双闻莘党翟谭贡劳逄姬申扶堵冉宰郦雍桑桂濮牛寿通边扈燕冀郏浦尚农温别庄晏柴瞿阎充慕连茹习宦艾鱼容向古易慎戈廖庾终暨居衡步都耿满弘匡国文寇广禄阙东欧殳沃利蔚越夔隆师巩厍聂晁勾敖融冷訾辛阚那简饶空曾毋沙乜养鞠须丰巢关蒯相查后荆红游竺权逯盖益桓公仝佟岳帅缑亢况归晋楚闫法汝鄢涂钦商牟佘伯墨谯言浑渠沐种折綦麦栗冼揭丘覃侬奢苻']);
+const COMPOUND = /^(欧阳|司马|诸葛|上官|长孙|慕容|宇文|尉迟|独孤|令狐|皇甫|东方|公孙|夏侯|赫连|呼延|澹台|万俟|端木|完颜|耶律|拓跋|轩辕|南宫|西门|司徒|司空|太史|申屠|闻人|百里|鲜于|钟离|宗政|淳于|单于|仲孙|左丘|公羊|东郭|乌古|仆散|纥石|徒单|夹谷|蒲察|赫舍|爱新|叶赫)/;
+// 主将一栏常写成说明（「(崔呈秀总督·都指挥分统)」「(毛文龙节制)」「武之望(兼)」「沐天波节制」）：取头一个人名——去掉整栏外的括号与括注，
+//   按「·、，/」切开取头一段，再去掉段尾的职衔
+function leadName(raw) {
+  let s = String(raw || '').trim();
+  if (/^[（(].*[）)]$/.test(s)) s = s.slice(1, -1);
+  s = s.replace(/[（(][^）)]*[）)]/g, '').split(/[·、，,/\s]/)[0] || '';
+  return s.replace(/(总督|节制|提督|总兵|统领|分统|兼|领|摄)$/, '').trim();
+}
+function commandOf(a) {
+  const name = commanderOf(a);
+  if (!name) return { name, vacant: true, surname: '' };
+  const lead = leadName(name);
+  const ch = fn('findCharByName') ? w.findCharByName(name) || (lead && lead !== name ? w.findCharByName(lead) : null) : null;
+  if (ch && (ch.alive === false || ch.dead === true)) return { name, vacant: true, surname: '' };
+  const kin = ch ? String(ch.ethnicity || ch.culture || '') : '';
+  // 写的是一群人（「和硕特、准噶尔、杜尔伯特诸台吉」「(各酋)」「各土司首领」）不取姓
+  const group = /[诸各]|酋|首领|部众/.test(name);
+  const han = !group && /^[一-鿿]{2,3}$/.test(lead) && !COMPOUND.test(lead) && !/(汗|赞普|台吉|贝勒|特勤|叶护|单于)$/.test(lead) && SURNAMES.has(lead[0]) && (!kin || /^汉/.test(kin));
+  return { name, vacant: false, surname: han ? lead[0] : '' };
+}
+
 // 名册：按兵种分组（同右栏），附总额
 export function roster() {
   const groups = new Map();
   let total = 0, hot = 0, arrears = 0, marching = 0;
   armies().forEach((a, i) => {
-    const row = { key: keyOf(a, i), name: String(first(a, ['name', 'id'], '未名部队')), commander: commanderOf(a), location: locationOf(a), site: siteOf(a), soldiers: soldiers(a),
-      hot: hotOf(a), arrears: Math.max(0, Math.round(Number(a.payArrearsMonths) || 0)), march: marchOf(a), vacant: commanderState(commanderOf(a)) !== 'ok', naval: navalOf(a) };
+    const cmd = commandOf(a);
+    const row = { key: keyOf(a, i), name: String(first(a, ['name', 'id'], '未名部队')), commander: cmd.name, location: locationOf(a), site: siteOf(a), soldiers: soldiers(a),
+      hot: hotOf(a), arrears: Math.max(0, Math.round(Number(a.payArrearsMonths) || 0)), march: marchOf(a), vacant: cmd.vacant, surname: cmd.surname, naval: navalOf(a) };
     const t = typeOf(a);
     if (!groups.has(t)) groups.set(t, []);
     groups.get(t).push(row);
@@ -178,9 +205,9 @@ export function foreign() {
   liveArmies().forEach((a, i) => {
     if (own.has(a) || a._revoltBand) return;
     const rec = ['factionId', ...FACTION].map((k) => facRecord(a[k], facs)).find(Boolean);
-    const cmd = commanderOf(a);
+    const cmd = commandOf(a);
     out.push({
-      key: keyOf(a, i), name: String(first(a, ['name', 'id'], '未名部队')), commander: cmd, vacant: commanderState(cmd) !== 'ok',
+      key: keyOf(a, i), name: String(first(a, ['name', 'id'], '未名部队')), commander: cmd.name, vacant: cmd.vacant, surname: cmd.surname,
       soldiers: Math.max(0, Math.round(numOf(a, ['soldiers', 'size', 'strength', 'troops', 'initialTroops'], 0))),
       location: locationOf(a), site: siteOf(a), naval: navalOf(a),
       faction: rec ? String(rec.name || rec.id) : String(first(a, FACTION, '') || ''), factionKey: rec ? facKey(rec) : '', color: rec ? String(rec.color || rec.colour || '') : ''

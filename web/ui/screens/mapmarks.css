@@ -46,6 +46,8 @@
 .map-marks.far .mk-army.t1:not(:hover) > .mk-n { display: none; }
 /* 告急：旗边一圈朱光一明一暗 */
 .mk-army.hot > .mk-flag { animation: mk-wave 3.2s ease-in-out infinite, mk-hot 1.4s ease-in-out infinite; }
+/* 缺帅（无帅、主将已殁）：旗写番号首字、色褪一半，一眼看得出（有帅的旗上写主将之姓） */
+.mk-army.vacant > .mk-flag { filter: saturate(.35) brightness(1.06); opacity: .82; }
 @keyframes mk-hot { 50% { filter: brightness(1.35) saturate(1.2); } }
 /* 流寇：墨旗 */
 /* 只见其大概的驻军（无官之人在本籍所见）：旗色褪作赭，不可点 */

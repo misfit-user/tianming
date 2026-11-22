@@ -124,7 +124,7 @@
       return n.name + (subs.length ? ('(' + subs.slice(0, 6).join('/') + ')') : '');
     }).slice(0, 14).join('·');
     var cands = (G.chars || [])
-      .filter(function (c) { return c && c.alive !== false && !c.isPlayer && !c._revoltEntity && (Number(c.loyalty) || 50) >= 40; })
+      .filter(function (c) { return c && c.alive !== false && !c.isPlayer && (Number(c.loyalty) || 50) >= 40; })
       .sort(function (a, b) { return (Number(b.administration) || 0) - (Number(a.administration) || 0); })
       .slice(0, 6)
       .map(function (c) { return c.name + '(' + (c.officialTitle || '在野') + '·政' + (Number(c.administration) || 0) + '·忠' + (Number(c.loyalty) || 0) + ')'; });

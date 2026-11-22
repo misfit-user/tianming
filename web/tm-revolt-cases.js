@@ -220,15 +220,14 @@
   }
 
   // ── 流民 ≤0.20：本州逃户、落在本州的流寇；同时定裹挟的规模 ──
-  // 流寇在哪：起义一类势力自写的地盘（「陕西延安府·榆林·米脂·府谷」），和流寇池 GM.rovingRebels 落了地的
+  // 流寇在哪：起义一类势力自写的地盘（「陕西延安府·榆林·米脂·府谷」）。旧档的流寇池 11-21 删旧时折回逃户、池子撤了
   function rebelPlaces(G) {
     var texts = [];
     arr(G.facs).forEach(function (f) {
       if (!f || f.alive === false || f.destroyed) return;
-      if (!(f.isRevolt || /起义|民变|流寇|义军|饥民/.test(str(f.type) + str(f.name)))) return;
+      if (!/起义|民变|流寇|义军|饥民/.test(str(f.type) + str(f.name))) return;
       texts.push(str(f.territory) + '·' + str(f.name));
     });
-    arr(G.rovingRebels).forEach(function (r) { if (r) texts.push(str(r.region || r.location || r.place)); });
     return maskProvinces(texts.join('｜'), realmLeaves(G));   // 省名遮掉再认州名（「陕西安塞」不认作西安，见 placeLeaf）
   }
 
@@ -505,9 +504,10 @@
   //   落到本朝一州：该州有案就当「起」，没案就立案并当起（AI 看到了账上没有的东西，如教门、兵变），交 tm-revolt-rising.js 落地——
   //   首领、骨干按 AI 给的名字先在档里找，找不到用这名字按出身新生；规模按户口算，不取 AI 报的兵数。
   //   该州已有一股民变在，或 AI 点名的首领已领着一股：就是那一股，不另起（already）。
-  //   不并（otherPath，调用方照旧）：落不到本朝州县（别家境内、地名对不上）；首领是在任官员、领兵将帅、宗室、别家势力的人，
-  //   或 AI 说是民族、边疆、宗室起事——那是兵变、割据、土司叛乱，另一条路；落地出错。
-  // decl：by（class_revolt／reconcile）、region、leaderName、secondaryLeaders、className、ideology、organizationType、
+  //   不并（otherPath）：落不到本朝州县（别家境内、地名对不上）；首领是在任官员、领兵将帅、宗室、别家势力的人，
+  //   或 AI 说是民族、边疆、宗室起事——那是兵变、割据、土司叛乱，另一条路；落地出错。11-21 删旧起调用方不再另记旧账：
+  //   主推演、补录的记一笔写回落空（兵变割据由推演照通用的 faction_create＋易主＋给兵写），谋叛的在任官员据州自立（leaderKind）。
+  // decl：by（class_revolt／reconcile／conspiracy／legacy）、region、leaderName、secondaryLeaders、className、ideology、organizationType、
   //   religiousSect、slogan、demands、historicalArchetype、reason
   function riseFromAI(G, decl) {
     decl = decl || {};
@@ -522,7 +522,7 @@
     if (!L) return { otherPath: true, why: '地名对不上本朝州县' };
     var revs = arr(G.minxin && G.minxin.revolts);
     var nl = str(decl.leaderName).trim() && typeof RR.namedLeader === 'function' ? RR.namedLeader(G, decl.leaderName) : null;
-    if (nl && nl.otherPath) return { otherPath: true, why: str(decl.leaderName).trim() + nl.why };
+    if (nl && nl.otherPath) return { otherPath: true, why: str(decl.leaderName).trim() + nl.why, leaderKind: str(nl.kind), leaf: L };
     if (nl && nl.leading) {
       var his = revs.filter(function (r) { return r && r.status === 'ongoing' && (r.leaderId === nl.ch.id || r.leaderName === nl.ch.name); })[0];
       return { already: true, revoltId: his ? his.id : '', region: his ? str(his.region) : '' };

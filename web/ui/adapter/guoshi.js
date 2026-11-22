@@ -156,12 +156,11 @@ function minxin() {
   if (!flip && m.byRegion && Object.keys(m.byRegion).length) {
     sections.push({ kind: 'tiles', title: '天下民情图', badge: `${Object.keys(m.byRegion).length} 区`, items: Object.keys(m.byRegion).slice(0, 40).map((rid) => { const v = n0((m.byRegion[rid] || {}).index, 60); return { label: divisionName(rid), value: r(v), tone: v >= 60 ? 'good' : v >= 40 ? 'mid' : 'bad' }; }) });
   }
-  const LEVELS = (w.AuthorityComplete && w.AuthorityComplete.REVOLT_LEVELS) || [];
-  if (LEVELS.length) {
-    const ongoing = (m.revolts || []).filter((x) => x.status === 'ongoing');
-    sections.push({ kind: 'chain', title: '民变 · 五级升级链', badge: '流言→聚啸→暴动→起义→改朝', tone: 'bad',
-      levels: LEVELS.map((lv) => ({ label: lv.name, count: ongoing.filter((x) => x.level === lv.id).length, note: lv.description || '' })),
-      items: ongoing.map((x) => { const lv = LEVELS[(x.level || 1) - 1] || { name: 'L' + x.level }; return { title: `［${lv.name}］${x.region || '某地'} · 众 ${fmt(x.scale || 5000)}${x.cause ? ' · 因 ' + x.cause : ''}`, meta: x._suppressionOrder ? `官军 ${fmt(x._suppressionOrder.strength)} 讨伐中` : '', tone: 'bad' }; }) });
+  // 民变各股：首领、在哪州、众多少、因何（「五级升级链」11-21 随五级梯删了；剿、抚、赈从诏令进，由推演判）
+  const ongoingRevolts = (m.revolts || []).filter((x) => x && x.status === 'ongoing');
+  if (ongoingRevolts.length) {
+    sections.push({ kind: 'list', title: '民变', badge: `${ongoingRevolts.length} 股`,
+      items: ongoingRevolts.map((x) => ({ title: `${x.leaderName ? x.leaderName + ' · ' : ''}${x.province ? x.province + '·' : ''}${x.region || '某地'} · 众 ${fmt(n0(x.followers != null ? x.followers : x.scale))}${x.cause ? ' · 因 ' + x.cause : ''}`, tone: 'bad' })) });
   }
   const signs = (g.heavenSigns || []).filter((s) => n0(g.turn) - n0(s.turn) < 12);
   if (signs.length) sections.push({ kind: 'list', title: '近年天象·祥瑞', badge: String(signs.length), items: signs.slice(-10).map((s) => ({ title: String(s.name || ''), meta: turnTag(s.turn), tone: s.type === 'good' ? 'good' : 'bad' })) });

@@ -38,7 +38,8 @@ const SF = sandbox.TM && sandbox.TM.SocialFoundation, CE = sandbox.TM && sandbox
 ok(SF && typeof SF.tick === 'function' && typeof SF.computeLegitimacy === 'function' && typeof SF.tickClassRadical === 'function', '真全局 TM.SocialFoundation.tick/computeLegitimacy/tickClassRadical 在位');
 ok(CE && typeof CE.refreshClassPhase === 'function' && typeof CE.ensureClassPopulationCell === 'function', '真全局 TM.ClassEngine.refreshClassPhase/ensureClassPopulationCell 在位');
 ok(PF3 && typeof PF3._tickRadicalFlight === 'function', '真全局 PhaseF3._tickRadicalFlight 在位');
-ok(PF3 && typeof PF3._tickRovingCoalesce === 'function' && typeof PF3.suppressRovingRebel === 'function' && typeof PF3.pacifyRovingRebel === 'function', '真全局 PhaseF3 流寇 C4 三 API（凝聚/镇压/招抚）在位');
+// 流寇池（C4 凝聚/镇压/招抚）11-21 删旧时删了：流寇只从各州起事来（tm-revolt-cases / rising / band），旧档流寇池读档后折回逃户
+ok(PF3 && typeof PF3._tickRovingCoalesce === 'undefined' && typeof PF3.pacifyRovingRebel === 'undefined', '真全局 PhaseF3 流寇池的口子删了（11-21 删旧）');
 
 // ── 3. 真 bundle 内驱动整条链（苛政·6 回合）──
 const leaves = []; for (let i = 0; i < 10; i++) leaves.push({ name: '县' + i, taxRate: 1.45, minxin: 30, statusEffects: i < 5 ? [{ kind: 'disaster' }] : [], warZone: false });
@@ -58,7 +59,7 @@ try {
     GM.turn = t;
     SF.tick(GM, P);
     GM.classes.forEach(function (c) { CE.refreshClassPhase(GM, c); });
-    sandbox.GM = GM; PF3._tickRadicalFlight({}, 1); PF3._tickRovingCoalesce({ turn: t }, 1);   // C4·流寇凝聚（全 bundle 内不抛即过）
+    sandbox.GM = GM; PF3._tickRadicalFlight({}, 1);
   }
 } catch (e) { err = ((e && e.message) || String(e)) + ' || @ ' + ((e && e.stack || '').split('\n').slice(1, 4).join(' << ')); }
 ok(!err, '真 bundle 内连跑 6 回合无异常' + (err ? (' → ' + err) : ''));

@@ -149,16 +149,7 @@
         if (_leg && _leg.flag && _leg.flag !== '相安') stateLines.push('  〔天命权重〕权贵满意(clout)' + _leg.clout + ' vs 民心(人口)' + _leg.pop + '·' + _leg.flag);
         stateLines.push('  （满意=当下·势位=结构应然·乱民=激进民情(汹涌则近民变)·运动=持续未偿诉求所凝(成势/鼎沸则朝野震动)·求=当前诉求——class_changes 须以正册为准）');
       }
-      // ①·C4 流寇威胁喂 LLM（朝廷据此叙事/下旨剿抚·出 roving_actions）
-      if (Array.isArray(GM.rovingRebels)) {
-        var _rov = GM.rovingRebels.filter(function(r) { return r && !r.disbanded && (Number(r.strength) || 0) > 0; });
-        if (_rov.length > 0) {
-          stateLines.push('【流寇警报】');
-          _rov.slice(0, 6).forEach(function(r) {
-            stateLines.push('  - ' + (r.name || '流寇') + '·众' + (Number(r.strength) || 0) + ((r.regions && r.regions.length) ? ('·流窜' + r.regions.slice(0, 4).join('、')) : '') + '（可剿:roving_actions{action:suppress,force:兵力}耗军饷战损·或抚:{action:pacify}招为编户/军户然开赦贼恶例）');
-          });
-        }
-      }
+      // 【流寇警报】（旧流寇池，roving_actions 剿抚）11-21 删旧时删了：流寇只从各州起事来，各股实情在主推演【各地民变】
       // 本朝军力·全貌(补盲:让 AI 推演纳入军队各项数据·非只风险军队·主路径·2026-07-01)
       if (Array.isArray(GM.armies) && GM.armies.length > 0) {
         var _mlPf = (typeof P !== 'undefined' && P && P.playerInfo && P.playerInfo.factionName) || '';

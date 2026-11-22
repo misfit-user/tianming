@@ -881,9 +881,8 @@ function updateMapColors(options) {
     });
   }
 
-  // 批五·义军占据覆色：region.id → 占据者（民变演绎层写 div.occupiedBy·此处渲染层消费）。
-  // 双树防御走查：P 与 GM 的 adminHierarchy 通常同引用·若分叉则以任一侧有 occupiedBy 为准（占据只由
-  // tm-revolt-inference 写在 GM 叶上·P 侧缺失=静默无覆色·安全失效不破图）。
+  // 批五·义军占据覆色：region.id → 占据者（div.occupiedBy·此处渲染层消费）。原写口是旧民变演绎层的「占府」，
+  // 11-21 删旧时删了，眼下没有别处写 occupiedBy（民变成势后城走易主写口，按势力色上色）；这里留着，旧档里有的照旧覆色。
   var _regionOccupiedMap = {};
   [runtimeGM ? runtimeGM.adminHierarchy : null,
     null].forEach(function(ah) {   // 区划只留游戏里那份（GM），剧本库那份只给开局与编辑器（2026-11-15）

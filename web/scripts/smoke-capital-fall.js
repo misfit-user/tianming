@@ -7,8 +7,8 @@
 // 二、没见朝廷守过的不判（开局就不在手里）；京城名认不出不判、不抛错。
 // 三、定命交 AI：AI 在就排一幕，演出 captured 就被执、不叫裁决器；演不出（回的不是三择其一）按殉国走裁决器。
 // 四、定命三择其一落账：被执续玩、出走续玩、殉国只走玩家之死裁决器（继统续玩）、菜单外按殉国；裁决器缺席回落经典终局信号。
-// 五、旧梯第 5 级的破京三拍删了：旧档里挂着「进军京师」的旧式民变不再自己破京。
-// 真跑 tm-faction-membership.js（易主写口、认地块）、tm-capital-fall.js、tm-revolt-entity.js、tm-utils.js（别称表）、tm-map-locations.js（地名解析）。
+// （原第五段「旧梯第 5 级的破京三拍删了」11-21 删旧时随五级梯、旧三件套一起去掉，旧档折算见 smoke-revolt-legacy。）
+// 真跑 tm-faction-membership.js（易主写口、认地块）、tm-capital-fall.js、tm-utils.js（别称表）、tm-map-locations.js（地名解析）。
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
@@ -138,15 +138,8 @@ const flush = () => new Promise((r) => setTimeout(r, 0));
       '裁决器缺席：回落经典终局信号，字段照旧契约（实得 ' + JSON.stringify(G2._gameOver) + '）');
   });
 
-  await part('五·旧梯第 5 级的破京三拍删了：旧档里挂着「进军京师」的旧式民变不再自己破京', () => {
-    const G = world();
-    G.minxin = { revolts: [{ id: 'rvZ', region: '陕西', status: 'ongoing', level: 5, turn: 10, leader: '李闯', _identity: { banner: '闯字营', leaderName: '李闯' }, _breachMarch: { started: 20, marched: 20 } }] };
-    const c = sandbox({ G, adjudicate: { outcome: 'gameover' }, extra: ['tm-revolt-entity.js'] });
-    c.TM.Roster = { createChar: (ch) => { G.chars.push(ch); return ch; } };
-    c.TM.RevoltEntity.sync(G);
-    ok(!G._capitalFallen && c.__adj.length === 0 && !G._gameOver, '旧式民变的「进军京师」不再自己破京（实得 ' + JSON.stringify({ fallen: G._capitalFallen, adj: c.__adj.length }) + '）');
-    ok(typeof c.TM.RevoltEntity._applyBreachOutcome === 'undefined', '旧的定命落账不在了（只剩 tm-capital-fall.js 一份）');
-  });
+  // 原第五段（旧梯第 5 级的「进军京师」不再自己破京）11-21 随删旧去掉：五级梯与旧三件套整个删了，
+  //   旧档里挂着「进军京师」的旧式民变读档后折成民变案的一股（smoke-revolt-legacy 测）。
 
   if (failed.length) {
     console.log('\n[smoke-capital-fall] FAIL — ' + checks + ' 项过；败 ' + failed.length + ' 段：' + failed.join('；'));

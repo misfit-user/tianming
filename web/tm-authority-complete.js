@@ -323,123 +323,11 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  P0-2 · 民变 5 级升级链
+  //  P0-2 · 民变 5 级升级链——11-21 删旧整段删了（同志「按你推荐来」）
+  //  五级梯 11-08 冻住；民变重做后起事、落地、了结、成势都在 tm-revolt-cases / rising / band 三个模块里：
+  //  「民心回升 5% 自散」不留（这股了结只认推演判的和军打没了），「民变表只留最近 30 条已了结的」挪到 tm-revolt-band.js，
+  //  第 5 级的兵临京师早换成谁攻下京城都算的破京（tm-capital-fall.js）。
   // ═══════════════════════════════════════════════════════════════════
-
-  var REVOLT_LEVELS = [
-    { id:1, name:'流言', scale:500,     threshold:35, threat:'low',     description:'茶馆酒肆议论纷纷' },
-    { id:2, name:'聚啸', scale:5000,    threshold:25, threat:'medium',  description:'山寨草寇，官军可平' },
-    { id:3, name:'暴动', scale:30000,   threshold:18, threat:'high',    description:'占据城镇，威胁州府' },
-    { id:4, name:'起义', scale:200000,  threshold:12, threat:'critical',description:'旗号响亮，建政授官' },
-    { id:5, name:'改朝', scale:1000000, threshold:5,  threat:'doom',    description:'问鼎中原，王朝终结' }
-  ];
-
-  // 民变重做落地前先止血（同志 11-08 定）：五级梯冻住，民变停在起事时的级别，不再按民心掷骰往上爬，
-  // 也就不再扣皇权皇威、不会「兵临京师」；起事最高到暴动。天启真过十四回合：第一回合陕西就有起义、改朝，
-  // 第八回合起爬到改朝、剑指京师，皇权 75→41、皇威 70→30；换成回话正常的模型，开局约八个月京师就陷。
-  var REVOLT_LADDER_FROZEN = true;
-  var REVOLT_START_MAX_LEVEL = 3;
-
-  // 区引用 → 该省 div.minxin 真值（A·并账地基）。r.region 可能是行政区名("陕西")或 div.id，
-  //   复用 PathUtils.findDivisionByNameOrId(按 name|id 深度匹配) 落到 adminHierarchy 叶子取真值源 div.minxin；
-  //   解析不到（旧民变挂的 G.regions id 对不上 / 无 adminHierarchy）→ 回退全国 fallback，不致崩。
-  function _localMinxinForRegion(G, regionRef, fallback) {
-    try {
-      var PU = global.TM && global.TM.AIChange && global.TM.AIChange.PathUtils;
-      if (PU && regionRef != null && regionRef !== '') {
-        var _fn = (typeof PU.findDivisionByNameFuzzy === 'function') ? PU.findDivisionByNameFuzzy : ((typeof PU.findDivisionByNameOrId === 'function') ? PU.findDivisionByNameOrId : null); // fuzzy 优先(认"陕西↔陕西布政使司")·OrId 兜底
-        var d = _fn ? _fn(G, regionRef) : null;
-        if (d && typeof d.minxin === 'number') return d.minxin;
-      }
-    } catch (_e) {}
-    return fallback;
-  }
-
-  function _tickRevoltUpgrade(ctx, mr) {
-    var mx = global.GM.minxin;
-    if (!mx || !mx.revolts) return;
-    mx.revolts.forEach(function(r) {
-      if (r.status !== 'ongoing') return;
-      // C·民变判级读「该省」真值 div.minxin（解析不到回退全国 trueIndex）——每个民变按自己所在省的民心定级，不再被全国均值掩盖
-      var localMx = _localMinxinForRegion(global.GM, r.region, mx.trueIndex);
-      // 初次：按阈值确定起始级别
-      if (!r.level) {
-        var idx = localMx;
-        r.level = 1;
-        for (var i = 0; i < REVOLT_LEVELS.length; i++) {
-          if (idx <= REVOLT_LEVELS[i].threshold) r.level = REVOLT_LEVELS[i].id;
-        }
-        r.level = Math.min(r.level, REVOLT_START_MAX_LEVEL); // 起事最高到暴动
-        r.scale = REVOLT_LEVELS[r.level - 1].scale;
-      }
-      // 升级条件：民心仍低 + 官军未剿 + 时间够长（五级梯冻住期间不爬）
-      var currentDef = REVOLT_LEVELS[r.level - 1];
-      if (r.level < 5 && !REVOLT_LADDER_FROZEN) {
-        var upgradeReady = (ctx.turn - r.turn) > _turnsForMonthsLocal(6) && localMx < currentDef.threshold && !r._suppressed;
-        if (upgradeReady && Math.random() < 0.15 * mr) {
-          r.level++;
-          r.scale = REVOLT_LEVELS[r.level - 1].scale;
-          if (global.addEB) global.addEB('民变', (r.region || '某地') + ' 升级为 ' + REVOLT_LEVELS[r.level - 1].name);
-          // 高级别民变影响更大
-          if (r.level >= 4) {
-            if (typeof global.AuthorityEngines !== 'undefined' && global.AuthorityEngines.adjustHuangquan) {
-              global.AuthorityEngines.adjustHuangquan('factionConsuming', -5, '\u9ad8\u7ea7\u6c11\u53d8\u5347\u7ea7');
-            } else if (typeof global.GM.huangquan === 'object') global.GM.huangquan.index = Math.max(0, global.GM.huangquan.index - 5);
-            if (typeof global.AuthorityEngines !== 'undefined' && global.AuthorityEngines.adjustHuangwei) {
-              global.AuthorityEngines.adjustHuangwei('lostVirtueRumor', -8, '\u9ad8\u7ea7\u6c11\u53d8\u5347\u7ea7');
-            } else if (typeof global.GM.huangwei === 'object') global.GM.huangwei.index = Math.max(0, global.GM.huangwei.index - 8);
-          }
-          if (r.level === 5) {
-            // R2破京链(2026-07-21·owner铁律「终局=玩家角色被杀」)：实体链开启时不再瞬时 _gameOver——
-            // 改为兵临京师三拍(进军→破京→裁决器定命·tm-revolt-entity 接力·有储君=继统续玩残局)。
-            // flag 关=下方旧轨字节级不动。
-            var _r2On = true; // 正式民变实体路径，不再读取旧的禁用设置。
-            if (_r2On) {
-              r._breachMarch = { started: ctx.turn };
-              if (global.addEB) global.addEB('民变', (r.region || '') + '义军号称百万·旌旗蔽野·剑指京师');
-            } else {
-            // 真亡因随信号走(第七轮·2026-07-07)：此前只带 type/revolt-id/turn·消费端(_consumeDynastyEndSignal)
-            // 拿不到亡在何省何级·终局屏与太史公评语只能写套话。region/level/levelName 皆 revolt 真数据。
-            global.GM._gameOver = {
-              type: 'dynasty_change', revolt: r.id, turn: ctx.turn,
-              region: r.region || '', level: r.level,
-              levelName: (REVOLT_LEVELS[r.level - 1] || {}).name || '',
-              leader: r.leader || r.leaderName || ''
-            };
-            if (global.addEB) global.addEB('民变', '改朝换代！天命已移');
-            }
-          }
-        }
-      }
-      // 镇压尝试：官军作战（旧档里还挂着的调兵令；收口后再没有地方下这种令，旧梯在「删旧」那刀整个拆）。
-      //   民变案落地的民变不认「调兵数够即平」：剿抚由推演判（tm-revolt-band.js）
-      if (r.source === 'revolt-cases' && r._suppressionOrder) delete r._suppressionOrder;
-      if (r._suppressionOrder && !r._suppressed) {
-        var suppressionStrength = r._suppressionOrder.strength || 0;
-        if (suppressionStrength > r.scale * 2) {
-          r.status = 'suppressed';
-          r._suppressed = true;
-          if (global.addEB) global.addEB('民变', (r.region || '某地') + ' ' + REVOLT_LEVELS[r.level - 1].name + ' 已平');
-          // P-5TK·平乱接皇威：官军确定性镇压民变成功 → 加皇威（按民变等级定量·封顶·防重复）
-          if (!r._hwAwarded && typeof global.AuthorityEngines !== 'undefined' && typeof global.AuthorityEngines.adjustHuangwei === 'function') {
-            var _P5TK_SUP_PER = 2, _P5TK_SUP_MIN = 2, _P5TK_SUP_CAP = 8;
-            var _supGain = Math.max(_P5TK_SUP_MIN, Math.min(_P5TK_SUP_CAP, (r.level || 1) * _P5TK_SUP_PER));
-            global.AuthorityEngines.adjustHuangwei('suppressRevolt', _supGain, (r.region || '某地') + ' 平乱');
-            r._hwAwarded = true;
-          }
-        }
-      }
-      // 自然瓦解：若「该省」民心回升（解析不到回退全国）
-      if (localMx > currentDef.threshold + 15 && Math.random() < 0.05) {
-        r.status = 'dispersed';
-      }
-    });
-    // 只清已结束的（留最近 30 条），进行中的一律留着。旧写法 slice(-30) 连进行中的一起挤掉：
-    // 民变一多，早起的几股被挤出列表，实体层见源民变「出档」就按覆灭清掉它的势力和军队，没人镇压它自己没了；
-    // 民心链见它不在，冷却过后又在原地另生一股。
-    var _endedKeep = mx.revolts.filter(function(r) { return r && r.status !== 'ongoing'; }).slice(-30);
-    mx.revolts = mx.revolts.filter(function(r) { return r && (r.status === 'ongoing' || _endedKeep.indexOf(r) >= 0); });
-  }
 
   // ═══════════════════════════════════════════════════════════════════
   //  P0-3 · 暴君综合症深化
@@ -839,7 +727,7 @@
     var la = hw.lostAuthorityCrisis;
     // D2·缙绅离心加速失威危机：clout 加权合法性远低于人口加权民心（缙绅/权贵离心）时，
     //   地方督抚本即缙绅、外邦窥伺者亦观士心——合规流失/外邦蠢动/抗疏皆提速。
-    //   纯读 §三D 已建的 GM._legitimacy（clout 加权读模型）·不碰刻意自由写的皇威·与人口加权民变线(_tickRevoltUpgrade)不双计。
+    //   纯读 §三D 已建的 GM._legitimacy（clout 加权读模型）·不碰刻意自由写的皇威·与人口加权的民变线（民变案，tm-revolt-cases.js）不双计。
     var _escMult = 1;
     var _leg = G._legitimacy;
     if (_leg && _leg.flag === '缙绅离心') {
@@ -1605,7 +1493,6 @@
     try { _tickMinxinMatrix(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] matrix:') : console.error('[auth-c] matrix:', e); }
     try { _tickOfficeTenure(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] tenure:') : console.error('[auth-c] tenure:', e); }
     try { _detectPowerMinister(ctx); _tickPowerMinister(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] pm:') : console.error('[auth-c] pm:', e); }
-    try { _tickRevoltUpgrade(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] revolt:') : console.error('[auth-c] revolt:', e); }
     try { _tickTyrantSyndrome(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] tyrant:') : console.error('[auth-c] tyrant:', e); }
     try { _tickLostAuthorityCrisis(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'auth-c] lost:') : console.error('[auth-c] lost:', e); }
     try { _autoDetectHuangweiEvents(ctx, mr); } catch(e) { if(window.TM&&TM.errors) TM.errors.capture(e,'authority.autoDetectHuangwei'); }
@@ -1638,13 +1525,13 @@
       var pm=G.huangquan.powerMinister;
       lines.push(pm.mode==='institutional'?'【职掌与交接】'+pm.name+'：'+(pm.description||'所掌职事依在任官署与实际传令关系核定，处分须经承办与交割。'):'【权臣】'+pm.name+' 控制度 '+(pm.controlLevel*100).toFixed(0)+'%');
     }
-    // 民变分级
+    // 民变：各股在哪、多少人（五级名号 11-21 随五级梯删了；各股实情在主推演【各地民变】，tm-revolt-band.js promptBlock）
     var mx = G.minxin;
     if (mx && mx.revolts) {
-      var ongoing = mx.revolts.filter(function(r){return r.status==='ongoing';});
+      var ongoing = mx.revolts.filter(function(r){return r && r.status==='ongoing';});
       if (ongoing.length > 0) {
-        var levels = ongoing.map(function(r){ return REVOLT_LEVELS[(r.level||1)-1].name; }).join('、');
-        lines.push('【民变】进行中：' + levels);
+        var bands = ongoing.slice(0, 6).map(function(r){ return (r.region || '某地') + (r.followers || r.scale ? '众约' + Math.round(Number(r.followers || r.scale) || 0) : ''); }).join('、');
+        lines.push('【民变】进行中 ' + ongoing.length + ' 股：' + bands + (ongoing.length > 6 ? '等' : ''));
       }
     }
     // 天象
@@ -1672,7 +1559,6 @@
     getExtendedAIContext: getExtendedAIContext,
     tickOfficeTenure: _tickOfficeTenure,
     tickMinxinSources: _tickMinxinAdditionalSources,   // 民心七源单跑（smoke 核「民变不宁只扰本省」）
-    tickRevoltUpgrade: _tickRevoltUpgrade,             // 民变爬梯单跑（smoke 核「进行中的民变不被挤出列表」）
     tickHeavenSigns: _tickHeavenSigns,                 // 天象单跑（smoke 核「只留天上的、不随民心」）
     autoDetectHuangwei: _autoDetectHuangweiEvents,     // 战报接皇威单跑（smoke 核「只算玩家这方的胜负」）
     refreshHuangquanDimensions: _tickHuangquanSubDims,
@@ -1682,8 +1568,6 @@
     isPowerMinisterEnabled: _powerMinisterEnabled,
     powerMinisterEndgame: _powerMinisterEndgame,   // 刀丁4·供 ConspiracyEngine palace_coup 复用 R1d 废帝(usurpation)·勿另起终局路
 
-    REVOLT_LEVELS: REVOLT_LEVELS,
-    REVOLT_LADDER_FROZEN: REVOLT_LADDER_FROZEN,   // 「同起升一级」(tm-authority-deep) 也读这一个
     HEAVEN_SIGNS: HEAVEN_SIGNS,
     QUADRANT_PROTOTYPES: QUADRANT_PROTOTYPES,
     HUANGWEI_DELTAS: HUANGWEI_DELTAS,

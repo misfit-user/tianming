@@ -848,7 +848,9 @@
       }
       if (!leaderChar || leaderChar.alive === false || leaderChar.dead === true) return { ok: false, reason: 'leader' };
     }
-    var turn = _now(), military = parseInt(spec.militaryStrength, 10) || 10000;
+    // 兵力给了就照给的记，0 也是 0（据州自立手里没兵的，11-21）；没给才按缺省一万
+    var turn = _now(), givenMilitary = parseInt(spec.militaryStrength, 10);
+    var military = isFinite(givenMilitary) && givenMilitary >= 0 ? givenMilitary : 10000;
     var fac = {
       id: 'faction_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
       name: name,

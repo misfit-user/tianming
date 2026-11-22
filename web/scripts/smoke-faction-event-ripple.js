@@ -2,7 +2,7 @@
 // smoke-faction-event-ripple.js
 // 验证「势力大事涟漪」(批丙·C1) + 「势力覆灭涟漪」(批丙·C2)：
 //   C1 六类扫描(占府/入寇/宣战/民变/拒抚·受抚/条约)各触发+窗外不触发·幂等·24 封顶·玩家/死者跳过·占府三受众·
-//     拒抚/招安双向·条约类型分流·仅牵涉玩家的战争/条约才反应·零 world-ledger 写入。
+//     受抚只认民变案的一股受抚了结（拒抚背约 11-21 随旧账删）·条约类型分流·仅牵涉玩家的战争/条约才反应·零 world-ledger 写入。
 //   C2 覆灭涟漪成员(树倒猢狲散 哀imp7+loyalty-3+stress+8+心绪) + 京中高品(敌覆喜/友覆忧)·幂等·跳过死者/玩家。
 //   C3 死链退役契约：army:defeat 无 emitter·world-reactors 承载·不复活(反双扣)。
 // 手法:从 tm-endturn-helpers.js 花括号配平抽**真**函数·配桩 GM/记忆/忠诚/promotion/bridge 实跑·非重新实现。
@@ -178,12 +178,13 @@ function memCount(ctx) { return (ctx.GM.chars || []).reduce(function (s, c) { re
 })();
 
 // ═══════════════════ ④ 民变首义 ═══════════════════
+//   11-21 删旧：旧账 GM._activeRevolts 删了，只认民变案落地的民变（GM.minxin.revolts·source==='revolt-cases'）
 (function () {
   const ctx = runC1(function () {
     return {
       turn: 10, _capital: '京城',
       chars: [{ name: '陕西巡抚', alive: true }, { name: '首辅', alive: true, location: '京城', _lv: 2 }],
-      _activeRevolts: [{ region: '陕西', leaderName: '王二', startTurn: 10, history: [] }],
+      minxin: { revolts: [{ id: 'rv-sx-t10', source: 'revolt-cases', region: '陕西', leaderName: '王二', turn: 10, status: 'ongoing', level: 2 }] },
       __divs: [{ name: '陕西', governor: '陕西巡抚' }]
     };
   });
@@ -192,9 +193,9 @@ function memCount(ctx) { return (ctx.GM.chars || []).reduce(function (s, c) { re
 })();
 (function () {
   const ctx = runC1(function () {
-    return { turn: 10, _capital: '京城', chars: [{ name: '陕西巡抚', alive: true }], _activeRevolts: [{ region: '陕西', leaderName: '王二', startTurn: 6, history: [] }], __divs: [{ name: '陕西', governor: '陕西巡抚' }] };
+    return { turn: 10, _capital: '京城', chars: [{ name: '陕西巡抚', alive: true }], minxin: { revolts: [{ id: 'rv-sx-t6', source: 'revolt-cases', region: '陕西', leaderName: '王二', turn: 6, status: 'ongoing', level: 2 }] }, __divs: [{ name: '陕西', governor: '陕西巡抚' }] };
   });
-  ok(memOf(ctx, '陕西巡抚').length === 0, '④民变 窗外(旧 startTurn)不触发');
+  ok(memOf(ctx, '陕西巡抚').length === 0, '④民变 窗外(旧起事回合)不触发');
 })();
 (function () {
   // 民变重做·民2b：民变案落地的民变（GM.minxin.revolts·source==='revolt-cases'）也认——主推演宣布的起义并进民变案后不再进 _activeRevolts；
@@ -215,28 +216,27 @@ function memCount(ctx) { return (ctx.GM.chars || []).reduce(function (s, c) { re
   ok(ctx.GM.minxin.revolts[0]._upriseRippleReacted === true && !ctx.GM.minxin.revolts[1]._upriseRippleReacted, '④民变 只认 source=revolt-cases 的，幂等标记打在民变上');
 })();
 
-// ═══════════════════ ⑤ 拒抚背约 / 受抚招安 ═══════════════════
+// ═══════════════════ ⑤ 受抚招安 ═══════════════════
+//   11-21 删旧：改认民变案的一股受抚了结（status 'appeased'·endedTurn 本回合）；「拒抚背约」随旧账删了（新制拒抚不记账）
 (function () {
   const ctx = runC1(function () {
-    return { turn: 10, _capital: '京城', chars: [{ name: '兵科给事中', alive: true, location: '京城', _lv: 6 }], _activeRevolts: [{ region: '河南', leaderName: '李自成', _amnestyRejectedTurn: 10, history: [] }] };
+    return { turn: 10, _capital: '京城', chars: [{ name: '内阁中书', alive: true, location: '京城', _lv: 7 }],
+      minxin: { revolts: [{ id: 'rv-sd-t4', source: 'revolt-cases', region: '山东', leaderName: '徐鸿儒', turn: 4, status: 'appeased', endedTurn: 10, level: 2, _upriseRippleReacted: true }] } };
   });
-  const m = memOf(ctx, '兵科给事中');
-  ok(m.length === 1 && m[0].emotion === '忧' && m[0].importance === 6, '⑤拒抚 京中高品 忧/imp6');
-  // 幂等:同回合再跑不重复
+  const m = memOf(ctx, '内阁中书');
+  ok(m.length === 1 && m[0].emotion === '喜' && m[0].importance === 6, '⑤受抚招安 京中高品 喜/imp6');
   ctx._factionEventRipple();
-  ok(memOf(ctx, '兵科给事中').length === 1, '⑤拒抚 幂等(_amnestyRippleTurn 记 turn 值·同回合不重复)');
+  ok(memOf(ctx, '内阁中书').length === 1, '⑤受抚 幂等（_amnestyOkRippleReacted·再跑不重复）');
 })();
 (function () {
   const ctx = runC1(function () {
-    return { turn: 10, _capital: '京城', chars: [{ name: '内阁中书', alive: true, location: '京城', _lv: 7 }], _activeRevolts: [{ region: '山东', leaderName: '徐鸿儒', history: [{ turn: 10, event: '招安:某使-accepted' }] }] };
+    return { turn: 10, _capital: '京城', chars: [{ name: '内阁中书', alive: true, location: '京城', _lv: 7 }],
+      minxin: { revolts: [
+        { id: 'rv-sd-t4', source: 'revolt-cases', region: '山东', leaderName: '徐鸿儒', turn: 4, status: 'suppressed', endedTurn: 10, level: 2, _upriseRippleReacted: true },
+        { id: 'rv-hn-t2', source: 'revolt-cases', region: '河南', leaderName: '李自成', turn: 2, status: 'appeased', endedTurn: 5, level: 2, _upriseRippleReacted: true }
+      ] } };
   });
-  ok(memOf(ctx, '内阁中书').length === 1 && memOf(ctx, '内阁中书')[0].emotion === '喜' && memOf(ctx, '内阁中书')[0].importance === 6, '⑤受抚招安 京中高品 喜/imp6');
-})();
-(function () {
-  const ctx = runC1(function () {
-    return { turn: 10, _capital: '京城', chars: [{ name: '内阁中书', alive: true, location: '京城', _lv: 7 }], _activeRevolts: [{ region: '山东', leaderName: '徐鸿儒', history: [{ turn: 10, event: '招安:某使-rejected' }] }] };
-  });
-  ok(memOf(ctx, '内阁中书').length === 0, '⑤受抚 rejected 结果不误触发喜(双向分流)');
+  ok(memOf(ctx, '内阁中书').length === 0, '⑤受抚 剿平的不误触发喜；早先受抚的（窗外）不再触发');
 })();
 
 // ═══════════════════ ⑥ 条约(仅牵涉玩家·类型分流) ═══════════════════
@@ -305,7 +305,7 @@ function memCount(ctx) { return (ctx.GM.chars || []).reduce(function (s, c) { re
         { name: '亡臣', alive: false, location: '京城', _lv: 2 },                   // 死者·跳过
         { name: '活臣', alive: true, location: '京城', _lv: 3 }
       ],
-      _activeRevolts: [{ region: '陕西', leaderName: '王二', startTurn: 10, history: [] }],
+      minxin: { revolts: [{ id: 'rv-sx-t10', source: 'revolt-cases', region: '陕西', leaderName: '王二', turn: 10, status: 'ongoing', level: 2 }] },
       __divs: [{ name: '陕西', governor: '活臣' }]
     };
   });

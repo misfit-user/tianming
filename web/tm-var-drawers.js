@@ -160,20 +160,18 @@
     html += '<div class="vd-ov-row"><span class="vd-ov-label">段位</span><span class="vd-ov-value">' + _esc(m.phase||'peaceful') + '</span></div>';
     html += '</div></section>';
 
-    // 进行中民变（只展示，不干预）— 干预靠写诏/朱批奏疏
+    // 进行中民变（只展示，不干预）— 干预靠写诏/朱批奏疏。每股列在哪州、众多少、因何、首领（五级名号 11-21 随五级梯删了）
     if (m.revolts) {
-      var ongoing = m.revolts.filter(function(r){return r.status==='ongoing';});
+      var ongoing = m.revolts.filter(function(r){return r && r.status==='ongoing';});
       if (ongoing.length > 0) {
-        var LEVELS = (typeof global.AuthorityComplete !== 'undefined' && global.AuthorityComplete.REVOLT_LEVELS) || [];
         var rh = '';
         ongoing.forEach(function(r) {
-          var lv = LEVELS[(r.level||1) - 1] || { name:'L'+r.level };
           rh += '<div style="padding:6px 8px;background:rgba(192,64,48,0.08);border-left:3px solid var(--vermillion-400);border-radius:3px;margin:2px 0;font-size:0.74rem;">';
-          rh += '<b style="color:var(--vermillion-300);">[' + _esc(lv.name) + ']</b> ' + _esc(r.region||'某地') + ' · ' + _fmt(r.scale||5000) + (r.cause?' · 因 '+_esc(r.cause):'');
-          if (r.leader) rh += ' · 首 ' + _npcLink(r.leader);
+          rh += _esc((r.province ? r.province + '·' : '') + (r.region||'某地')) + ' · 众 ' + _fmt(Number(r.followers != null ? r.followers : r.scale) || 0) + (r.cause?' · 因 '+_esc(r.cause):'');
+          if (r.leaderName) rh += ' · 首 ' + _npcLink(r.leaderName);
           rh += '</div>';
         });
-        html += _sec('进行中民变', ongoing.length + ' 起', rh);
+        html += _sec('进行中民变', ongoing.length + ' 股', rh);
       }
     }
 
@@ -968,34 +966,16 @@
       html += _sec('天下民情图', Object.keys(m.byRegion).length + ' 区', rh);
     }
 
-    // § 民变 5 级升级链 + 4 干预
-    var LEVELS = (typeof global.AuthorityComplete !== 'undefined' && global.AuthorityComplete.REVOLT_LEVELS) || [];
-    if (LEVELS.length > 0) {
-      var lh = '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-bottom:6px;">';
-      LEVELS.forEach(function(lv) {
-        var count = (m.revolts||[]).filter(function(r){return r.status==='ongoing' && r.level===lv.id;}).length;
-        var act = count > 0 ? 'background:var(--vermillion-400);color:#fff;' : 'background:var(--bg-2);color:var(--txt-d);';
-        lh += '<div style="padding:4px;text-align:center;border-radius:2px;font-size:0.7rem;' + act + '">' +
-          '<div>' + _esc(lv.name) + '</div>' +
-          '<div style="font-size:0.72rem;font-weight:600;">' + count + '</div>' +
-        '</div>';
+    // § 民变：各股在哪州、众多少、因何（只看；剿、抚、赈从诏令进，推演判）。「五级升级链」五格 11-21 随五级梯删了
+    var ongoingBands = (m.revolts||[]).filter(function(r){return r && r.status==='ongoing';});
+    if (ongoingBands.length > 0) {
+      var lh = '';
+      ongoingBands.forEach(function(r) {
+        lh += '<div style="padding:6px 8px;background:rgba(192,64,48,0.08);border-left:3px solid var(--vermillion-400);border-radius:3px;margin-bottom:4px;font-size:0.74rem;">';
+        lh += '<div>' + (r.leaderName ? '<b style="color:var(--vermillion-300);">' + _esc(r.leaderName) + '</b> ' : '') + _esc((r.province ? r.province + '·' : '') + (r.region||'某地')) + ' · 众 ' + _fmt(Number(r.followers != null ? r.followers : r.scale) || 0) + (r.cause?' · 因 '+_esc(r.cause):'') + '</div>';
+        lh += '</div>';
       });
-      lh += '</div>';
-      // 进行中民变详表（只看）
-      var ongoing = (m.revolts||[]).filter(function(r){return r.status==='ongoing';});
-      if (ongoing.length > 0) {
-        ongoing.forEach(function(r) {
-          var lvDef = LEVELS[(r.level||1) - 1] || { name:'L'+r.level };
-          lh += '<div style="padding:6px 8px;background:rgba(192,64,48,0.08);border-left:3px solid var(--vermillion-400);border-radius:3px;margin-bottom:4px;font-size:0.74rem;">';
-          lh += '<div><b style="color:var(--vermillion-300);">[' + _esc(lvDef.name) + ']</b> ' + _esc(r.region||'某地') + ' · 众 ' + _fmt(r.scale||5000) + (r.cause?' · 因 '+_esc(r.cause):'') + '</div>';
-          // 只看（同志 11-15：剿、抚、赈从诏令进，推演判）；旧档里还挂着的调兵令照写
-          if (r._suppressionOrder && r.source !== 'revolt-cases') {
-            lh += '<div style="color:var(--amber-400);margin-top:2px;">官军 ' + _fmt(r._suppressionOrder.strength) + ' 讨伐中</div>';
-          }
-          lh += '</div>';
-        });
-      }
-      html += '<section class="vd-section"><div class="vd-section-title" style="color:var(--vermillion-400);">民变 · 五级升级链 <span class="vd-badge">流言→聚啸→暴动→起义→改朝</span></div>' + lh + '</section>';
+      html += '<section class="vd-section"><div class="vd-section-title" style="color:var(--vermillion-400);">民变 <span class="vd-badge">' + ongoingBands.length + ' 股</span></div>' + lh + '</section>';
     }
 
     // § 异象三库（天象/祥瑞/谶纬）

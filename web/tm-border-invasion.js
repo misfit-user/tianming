@@ -4,7 +4,7 @@
 //  第七轮记债(2026-07-08)：威胁值/borderRisk 只涨不咬——敌强边虚多年·从不真出一支入侵军·
 //  「威胁高→南侵」始终停在文案层。修法与民变实体镜像同范式：**确定性具象化·非随机**——
 //  玩家领内 leaf.borderRisk ≥ 70 连续 3 回合(streak 记在 leaf 上·tm-border-risk 每回合重算 risk)
-//  → 最强敌对势力(playerRelation<-50·排除 _revoltEntity 义军·民变走破京链不走边患链)具象化
+//  → 最强敌对势力(playerRelation<-50·民变成了势力也算——成势后就是普通势力，11-21 删旧去掉旧三件套义军的排除)具象化
 //  一支入侵军入 GM.armies(faction=敌方·驻该 leaf)——军事系统/junqing/AI 推演自然看见并接战。
 //  每势力同时至多一支·每回合至多新出一支(最险 leaf)·撤军=风险<40 连续2回合(饱掠而归)或
 //  军被打散(soldiers≤0)·撤后该势力 6 回合冷却。战斗归既有军事系统·本层只管「出现/撤走」。
@@ -30,7 +30,7 @@
 
   function _hostilesOf(G) {
     return (G.facs || []).filter(function (f) {
-      if (!f || f._revoltEntity) return false;             // 义军走破京链·不走边患链
+      if (!f) return false;
       return (Number(f.playerRelation) || 0) < -50;
     });
   }
@@ -234,7 +234,7 @@
     parsed.moves.slice(0, 6).forEach(function (mv) {
       if (!mv || !mv.type) return;
       try {
-        var fac = (G.facs || []).find(function (f) { return f && f.name === mv.fac && !f._revoltEntity; });
+        var fac = (G.facs || []).find(function (f) { return f && f.name === mv.fac; });
         switch (String(mv.type)) {
           case 'invade': {
             if (!fac || (Number(fac.playerRelation) || 0) >= -50) { blocked++; return; }  // 宪法：非敌对不得入寇

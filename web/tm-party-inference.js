@@ -3,7 +3,7 @@
 //
 //  owner 宪法：「实体化≠模板化——身份与行为必须 AI 演绎·确定性只配兜底账本」。
 //  党派此前是纯数值傀儡：partyDynamics(helpers §perturn·seq25) 每回合只产一句描述串进
-//  GM._partyDynamics·唯一消费=prompt 叙事段·零数值后果。本层照 tm-revolt-inference.js 范式
+//  GM._partyDynamics·唯一消费=prompt 叙事段·零数值后果。本层照旧民变演绎层（tm-revolt-inference.js，11-21 删）范式
 //  把党派升成一等演员——AI 为各党立身份(纲领/处世/图谋/底线)、逐回合决断自主行动。
 //
 //  两条 AI 通道（皆随 partyInferenceEnabled 默认 ON·AI 缺席时确定性模板兜底=双轨）：

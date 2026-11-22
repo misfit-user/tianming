@@ -1324,7 +1324,8 @@ function _factionEventRipple() {
     return false;
   }
 
-  // ① 占府/陷城 —— div.occupiedBy + _occupiedTurn(写口 tm-revolt-inference.js:223)·幂等 div._occupyRippleReacted
+  // ① 占府/陷城 —— div.occupiedBy + _occupiedTurn·幂等 div._occupyRippleReacted
+  //   （原写口是旧民变演绎层的「占府」，11-21 删旧时删了，眼下没有别处写 occupiedBy；城易主走易主写口，这里还没接——记下）
   var _divs = _allDivs();
   for (var di = 0; di < _divs.length && wrote < CAP; di++) {
     var dv = _divs[di];
@@ -1382,11 +1383,9 @@ function _factionEventRipple() {
     });
   }
 
-  // ④ 民变首义 —— GM._activeRevolts startTurn|turn 近1回合(对象形状 tm-endturn-apply.js:2161)·幂等 revolt._upriseRippleReacted
-  //   民变重做·民2b（11-14）：并认民变案落地的民变（GM.minxin.revolts 里 source==='revolt-cases'·turn=起事回合·tm-revolt-rising.js）——
-  //   主推演宣布的起义并进民变案后不再记进 GM._activeRevolts，不认就漏了这份人物反应。州里不设主官的，落到省里的主官
-  var _revs = Array.isArray(GM._activeRevolts) ? GM._activeRevolts : [];
-  var _revs4 = _revs.concat((GM.minxin && Array.isArray(GM.minxin.revolts) ? GM.minxin.revolts : []).filter(function (r) { return r && r.source === 'revolt-cases'; }));
+  // ④ 民变首义 —— 民变案落地的民变（GM.minxin.revolts 里 source==='revolt-cases'·turn=起事回合·tm-revolt-rising.js）近1回合·
+  //   幂等 revolt._upriseRippleReacted。州里不设主官的，落到省里的主官。旧账 GM._activeRevolts 11-21 删旧时删了（民2b 起主推演宣布的起义已并进民变案）
+  var _revs4 = (GM.minxin && Array.isArray(GM.minxin.revolts) ? GM.minxin.revolts : []).filter(function (r) { return r && r.source === 'revolt-cases'; });
   for (var ri = 0; ri < _revs4.length && wrote < CAP; ri++) {
     var rv = _revs4[ri];
     if (!rv || rv._upriseRippleReacted) continue;
@@ -1400,24 +1399,14 @@ function _factionEventRipple() {
     _capitalHigh(4).forEach(function (c) { if (!seen4[c.name]) { seen4[c.name] = 1; _rem(c, '「' + rg + '」民变蜂起·京师忧惧', '忧', 6); } });   // 京中高品(忧·imp6·top4)
   }
 
-  // ⑤ 拒抚背约 / 受抚招安 —— GM._activeRevolts 的 _amnestyRejectedTurn / history 招安条目(写口 tm-endturn-apply.js:2361/2366)
-  for (var xi = 0; xi < _revs.length && wrote < CAP; xi++) {
-    var xr = _revs[xi];
-    if (!xr) continue;
+  // ⑤ 受抚招安 —— 民变案的一股受抚了结（status 'appeased'·endedTurn 近1回合·tm-revolt-band.js end）·幂等 revolt._amnestyOkRippleReacted。
+  //   原先读旧账 GM._activeRevolts 的招安记录与「拒抚背约」，11-21 删旧时随旧账删了：新制拒抚不记账（这股照旧在），就没有拒抚这一份反应
+  for (var xi = 0; xi < _revs4.length && wrote < CAP; xi++) {
+    var xr = _revs4[xi];
+    if (!xr || xr._amnestyOkRippleReacted || xr.status !== 'appeased' || !_isNew(xr.endedTurn)) continue;
+    xr._amnestyOkRippleReacted = true;
     var who5 = xr.leaderName || xr.region || '义军';
-    // 拒抚背约(忧)·幂等记 turn 值(允许新一次拒抚再发·同回合不重复)
-    if (_isNew(xr._amnestyRejectedTurn) && xr._amnestyRippleTurn !== xr._amnestyRejectedTurn) {
-      xr._amnestyRippleTurn = xr._amnestyRejectedTurn;
-      _capitalHigh(4).forEach(function (c) { _rem(c, '抚局既败·战云再起·「' + who5 + '」拒抚愈炽', '忧', 6); });
-    }
-    // 受抚/招安(喜)·扫 history 近1回合 event 含「招安」且非 rejected·幂等 revolt._amnestyOkRippleReacted
-    if (!xr._amnestyOkRippleReacted && Array.isArray(xr.history)) {
-      var okAmnesty = xr.history.some(function (h) { return h && _isNew(h.turn) && /招安/.test(String(h.event || '')) && !/rejected|拒/.test(String(h.event || '')); });
-      if (okAmnesty) {
-        xr._amnestyOkRippleReacted = true;
-        _capitalHigh(4).forEach(function (c) { _rem(c, '「' + who5 + '」受抚罢兵·干戈暂息·朝野稍安', '喜', 6); });
-      }
-    }
+    _capitalHigh(4).forEach(function (c) { _rem(c, '「' + who5 + '」受抚罢兵·干戈暂息·朝野稍安', '喜', 6); });
   }
 
   // ⑥ 条约 —— GM.treaties turn|startTurn 近1回合(两形状:tm-faction-action-engine.js:679 用 turn·tm-faction-diplomacy.js:170 用 startTurn)·幂等 treaty._rippleReacted

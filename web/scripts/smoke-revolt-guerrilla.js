@@ -10,7 +10,7 @@
 //     只说到省的「陕北」不算；主推演写的阻断照旧按字面。
 // 三、地名认州先遮省名（tm-revolt-cases.js placeLeaf）：「陕西安塞」不再认作西安府；括注是按语不认（「银川驿(学界或作甘州驿)」不是甘州卫）。
 // 四、顺带的三处：从乱同逃户不纳粮（tm-field-pipelines.js fleeTaxPenalty）；复通的驿路不再当未了的事立案（tm-matters.js）；
-//     「民变扰攘」不再套到民变案的民变上（tm-class-mobility.js）。
+//     「民变扰攘」「流寇劫掠」11-21 删旧时整个删了（tm-class-mobility.js）。
 // 五、接线：过回合 6.146 在民变案判定之后调；index.html 紧跟 tm-revolt-rising.js 装载。
 // 真跑 tm-region-status.js、tm-minxin-ledger.js、tm-revolt-cases.js、tm-revolt-rising.js、tm-revolt-guerrilla.js、tm-field-pipelines.js、
 // tm-matters.js、tm-class-mobility.js；_ltIsRouteBlocked 从 tm-hongyan-office.js 原样抽出来跑。
@@ -217,16 +217,19 @@ part('四·复通的驿路不再当未了的事立案', () => {
   ok(byRef['routeDisruption:c'] && byRef['routeDisruption:c'].status === 'settled', '民变盘踞记的复通：了结');
 });
 
-part('四·「民变扰攘」不再套到民变案的民变上（旧式的照旧，民2d 折算后删）', () => {
+part('四·「民变扰攘」「流寇劫掠」整个删了（11-21 删旧）：阶层流动那一套过回合不给任何民变、流寇挂地块状态', () => {
   const c = sandbox(['tm-engine-constants.js', 'tm-class-mobility.js']);
   const adds = [];
   c.TM.RegionStatus = { add(div, fx) { adds.push({ div: div.name, name: fx.name }); return fx; } };
   const divs = { 延安府: { id: 'd-yanan', name: '延安府' }, 开封府: { id: 'd-kf', name: '开封府' } };
   c.TM.AIChange = { PathUtils: { findDivisionByNameFuzzy: (G, n) => divs[n] || null } };
-  c.GM = { turn: 6, population: { byLegalStatus: { taoohu: { mouths: 0 }, huangji: { mouths: 1000000 } } }, rovingRebels: [],
+  c.GM = { turn: 6, population: { byLegalStatus: { taoohu: { mouths: 0 }, huangji: { mouths: 1000000 } } },
+    rovingRebels: [{ id: 'rv-1', name: '流寇', strength: 80000, regions: ['延安府'] }],
     minxin: { revolts: [band(), { id: 'old-1', region: '开封府', status: 'ongoing', level: 3, scale: 30000 }] } };
-  c.PhaseF3._tickRovingPlunder({ turn: 6 }, 1);
-  ok(adds.length === 1 && adds[0].div === '开封府' && adds[0].name === '民变扰攘', '只有旧式的开封府挂「民变扰攘」：' + JSON.stringify(adds));
+  ok(typeof c.PhaseF3._tickRovingPlunder === 'undefined' && typeof c.PhaseF3._tickRovingCoalesce === 'undefined', '劫掠、凝聚两步不在了');
+  c.PhaseF3.tick({ turn: 6, monthRatio: 1 });
+  ok(!adds.some((x) => x.name === '民变扰攘' || x.name === '流寇劫掠'), '过回合不挂「民变扰攘」「流寇劫掠」（实得 ' + JSON.stringify(adds) + '）');
+  ok(c.GM.rovingRebels[0].strength === 80000, '旧档流寇池不在这里动（读档后首个过回合折回逃户，tm-revolt-band.js convertLegacy）');
 });
 
 // ── 五、接线 ──

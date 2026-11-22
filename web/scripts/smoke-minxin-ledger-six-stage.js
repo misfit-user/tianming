@@ -234,18 +234,19 @@ stableGM.minxin.uprisingCandidates.push({ id: 'mxuc-13-farmers-mountaincounty', 
 ML.advanceUprisingChain(stableGM, { turn: 13 });
 assert(ongoingOf(stableGM).length === 0 && stableGM.minxin.uprisingChain.filter(c => c.className === 'Farmers').length === 1, 'a fresh candidate next turn refreshes the same chain, still no revolt: ' + ongoingOf(stableGM).length);
 
-// 进行中的民变不被挤出列表：只清已结束的（留最近 30 条）。旧写法 slice(-30) 会把最早起事、仍在进行的几股挤掉，
-// 实体层随后按覆灭清掉它们的势力和军队。
-assert(typeof sandbox.AuthorityComplete.tickRevoltUpgrade === 'function', 'AuthorityComplete.tickRevoltUpgrade should be exported');
+// 进行中的民变不被挤出列表：只清已结束的（留最近 30 条）。旧写法 slice(-30) 会把最早起事、仍在进行的几股挤掉。
+// 11-21 删旧：这一段从五级梯挪到 tm-revolt-band.js（pruneEnded，善后之后清）；民变案的股只清善后过的
+load('tm-revolt-band.js', sandbox);
 const listRevolts = [];
-for (let i = 1; i <= 5; i++) listRevolts.push({ id: 'o' + i, region: 'Mountain County', status: 'ongoing', level: 3, scale: 30000, turn: 50 });
-for (let i = 1; i <= 31; i++) listRevolts.push({ id: 'e' + i, region: 'Mountain County', status: 'suppressed', level: 3, scale: 30000, turn: 40 });
-sandbox.GM = { turn: 50, minxin: { trueIndex: 10, perceivedIndex: 10, byRegion: {}, byClass: {}, sources: {}, uprisingCandidates: [], revolts: listRevolts },
-  adminHierarchy: { player: { divisions: [{ id: 'mountain', name: 'Mountain County', minxin: 10, population: 100 }] } } };
-sandbox.AuthorityComplete.tickRevoltUpgrade({ turn: 50 }, 1);
+for (let i = 1; i <= 5; i++) listRevolts.push({ id: 'o' + i, source: 'revolt-cases', region: 'Mountain County', status: 'ongoing', level: 2, scale: 3000, turn: 50 });
+for (let i = 1; i <= 31; i++) listRevolts.push({ id: 'e' + i, source: 'revolt-cases', region: 'Mountain County', status: 'suppressed', level: 2, scale: 3000, turn: 40, settled: { turn: 41 } });
+listRevolts.push({ id: 'unsettled', source: 'revolt-cases', region: 'Mountain County', status: 'suppressed', level: 2, scale: 3000, turn: 49 });
+sandbox.GM = { turn: 50, minxin: { revolts: listRevolts } };
+const pruned = sandbox.TM.RevoltBand.pruneEnded(sandbox.GM);
 const keptIds = sandbox.GM.minxin.revolts.map(r => r.id);
 assert(['o1', 'o2', 'o3', 'o4', 'o5'].every(id => keptIds.indexOf(id) >= 0), 'every ongoing revolt must stay in the list: ' + keptIds.slice(0, 8).join(','));
-assert(keptIds.indexOf('e1') < 0 && keptIds.length === 35, 'only finished revolts are trimmed to the latest 30: ' + keptIds.length);
+assert(pruned === 1 && keptIds.indexOf('e1') < 0 && keptIds.length === 36, 'only settled finished revolts are trimmed to the latest 30: ' + keptIds.length);
+assert(keptIds.indexOf('unsettled') >= 0, 'a finished band not yet settled stays (善后还没走)');
 
 // 民变链封顶八十条，但已生过民变的链（进行中，或剿平后还在冷却里）一条不挤，挤只挤酝酿中的。
 // 旧写法 slice(-80) 按先后挤掉最早立的链；挤掉的链下回合原地重立、冷却记录丢了，剿平的民变次回合就复起。
@@ -301,28 +302,33 @@ ML.advanceUprisingChain(startGM, { turn: 40 });
 const zetaChain = startGM.minxin.uprisingChain.find(c => c.region === 'Zeta County');
 assert(zetaChain && zetaChain.level === 5 && ongoingOf(startGM).length === 0, 'local minxin 5 makes a level-5 chain but no revolt (民2a; 起事归 tm-revolt-cases.js): ' + JSON.stringify(zetaChain && zetaChain.level));
 
+// 11-21 删旧（同志「按你推荐来」）：五级梯连「同起升一级」整个删了。权威一步过回合不再碰民变：不定级、不爬、不扣皇权皇威、
+//   不兵临京师；「民心回升就有 5% 自散」也不留——民变了结只认推演判的和军打没了（tm-revolt-band.js）。
+// 权威一步里别的子系统（暴君、失威、战报接皇威……）照旧会动皇威皇权，这里只盯民变来的那几笔（旧梯记「高级民变升级」）
 const ladderCalls = [];
-sandbox.AuthorityEngines.adjustHuangquan = (src, d) => ladderCalls.push('huangquan ' + d);
-sandbox.AuthorityEngines.adjustHuangwei = (src, d) => ladderCalls.push('huangwei ' + d);
+sandbox.AuthorityEngines.adjustHuangquan = (src, d, why) => { if (/民变/.test(String(why || ''))) ladderCalls.push('huangquan ' + d + ' ' + why); };
+sandbox.AuthorityEngines.adjustHuangwei = (src, d, why) => { if (/民变/.test(String(why || ''))) ladderCalls.push('huangwei ' + d + ' ' + why); };
 const realRandom = Math.random;
-Math.random = () => 0; // 掷骰必中：旧写法这里一定往上爬
+Math.random = () => 0; // 掷骰必中：旧写法这里一定往上爬，民心回升的一定自散
 try {
+  assert(typeof sandbox.AuthorityComplete.tickRevoltUpgrade === 'undefined' && typeof sandbox.AuthorityComplete.REVOLT_LEVELS === 'undefined',
+    'the ladder is gone: no tickRevoltUpgrade, no REVOLT_LEVELS');
   const climber = { id: 'climb', region: 'Mountain County', status: 'ongoing', level: 4, scale: 200000, turn: 1 };
   const fresh = { id: 'fresh', region: 'Mountain County', status: 'ongoing', turn: 60 };
-  sandbox.GM = { turn: 60, minxin: { trueIndex: 0, perceivedIndex: 0, byRegion: {}, byClass: {}, sources: {}, uprisingCandidates: [], revolts: [climber, fresh] },
-    adminHierarchy: { player: { divisions: [{ id: 'mountain', name: 'Mountain County', minxin: 0, population: 100 }] } } };
-  sandbox.AuthorityComplete.tickRevoltUpgrade({ turn: 60 }, 1);
-  assert(climber.level === 4 && !climber._breachMarch && ladderCalls.length === 0,
-    'frozen ladder: no climb, no huangquan/huangwei hit, no march on the capital: ' + JSON.stringify({ level: climber.level, march: climber._breachMarch, calls: ladderCalls }));
-  assert(fresh.level === 3 && fresh.scale === 30000, 'a revolt without a level should start no higher than a riot even at local minxin 0: ' + JSON.stringify({ level: fresh.level, scale: fresh.scale }));
-  assert(sandbox.AuthorityComplete.REVOLT_LADDER_FROZEN === true, 'the freeze is exported for the other ladder path');
+  const calmBand = { id: 'calm', source: 'revolt-cases', region: 'River County', status: 'ongoing', level: 2, scale: 3000, followers: 3000, turn: 50 };
+  sandbox.GM = { turn: 60, minxin: { trueIndex: 0, perceivedIndex: 0, byRegion: {}, byClass: {}, sources: {}, uprisingCandidates: [], revolts: [climber, fresh, calmBand] },
+    adminHierarchy: { player: { divisions: [{ id: 'mountain', name: 'Mountain County', minxin: 0, population: 100 }, { id: 'river', name: 'River County', minxin: 90, population: 100 }] } } };
+  // 认州的替身（真入口在 modules/ai-change-applier）：旧梯拿它读本州民心，河县 90 远过「聚啸」线 25＋15，掷骰必中就自散
+  sandbox.TM = sandbox.TM || {};
+  const realAIChange = sandbox.TM.AIChange;
+  sandbox.TM.AIChange = { PathUtils: { findDivisionByNameFuzzy: (G, n) => (G.adminHierarchy.player.divisions || []).filter(d => d.name === n)[0] || null } };
+  try { sandbox.AuthorityComplete.tick({ turn: 60, monthRatio: 1 }); } finally { sandbox.TM.AIChange = realAIChange; }
+  assert(climber.level === 4 && !climber._breachMarch && fresh.level === undefined && ladderCalls.length === 0,
+    'authority tick leaves revolts alone: no level, no climb, no revolt huangquan/huangwei hit, no march: ' + JSON.stringify({ level: climber.level, fresh: fresh.level, march: climber._breachMarch, calls: ladderCalls }));
+  assert(calmBand.status === 'ongoing', 'a band in a county whose minxin recovered (90) does not disperse by dice: ' + calmBand.status);
 
   load('tm-authority-deep.js', sandbox);
-  const ra = { id: 'ra', region: 'Mountain County', status: 'ongoing', level: 3 };
-  const rb = { id: 'rb', region: 'River County', status: 'ongoing', level: 3 };
-  sandbox.GM = { turn: 61, minxin: { revolts: [ra, rb] } };
-  sandbox.PhaseF4.applyMultiRebellionInspiration({ turn: 61 }, 1);
-  assert(ra.level === 3 && rb.level === 3 && ra._multiInspiration > 1, 'multi-revolt inspiration should no longer bump levels while frozen: ' + ra.level + '/' + rb.level);
+  assert(typeof sandbox.PhaseF4.applyMultiRebellionInspiration === 'undefined', '「同起升一级」gone with the ladder');
 } finally {
   Math.random = realRandom;
 }

@@ -107,7 +107,7 @@
       if (G.minxin.revolts && G.minxin.revolts.length > 0) {
         var ongoing = G.minxin.revolts.filter(function(r){return r.status==='ongoing';});
         if (ongoing.length > 0) {
-          obs.push('进行中民变：' + ongoing.length + ' 起（' + ongoing.slice(0,3).map(function(r){return (r.region||'某地')+'L'+r.level;}).join('、') + '）');
+          obs.push('进行中民变：' + ongoing.length + ' 股（' + ongoing.slice(0,3).map(function(r){return (r.region||'某地') + '众约' + Math.round(Number(r.followers != null ? r.followers : r.scale) || 0);}).join('、') + '）');
         }
       }
     }

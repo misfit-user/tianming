@@ -539,28 +539,52 @@
     }
     _eb('谋反', plot.ringleader + ' 谋逆至期，图穷匕见（引擎发动·交裁决器定生死）。');
   }
-  // 涉民变：ClassMinxinBridge 播种候选 + 主谋交 revolt 实体系统当渠帅候选(revoltEntityEnabled 默认 ON·身份行为交 AI 演绎)。
+  // 涉民变（谋划里有聚众一类的字）：同志 11-21 删旧第 3 问定「甲」——看主谋是什么人：
+  //   当得了民变首领的（不在任、不领官军、不是宗室），在他所在的州当一股民变起：走民变案点名起事的口子
+  //   （TM.RevoltCases.riseFromAI：首领就是他，人数出自户口，军由 tm-revolt-band.js 立，打下城再成势）；
+  //   在任官员、将帅、宗室，在他所在的那一州据州自立（TM.RevoltBand.secede：州和他的军随他走，朝廷宣战，官职出缺）；
+  //   在京的、所在落不到本朝州县的、别家的人：事泄出奔（同兵变出奔：人走、记一笔，不生民变）。
+  //   原先在主谋所在地塞一股三级旧式民变、靠旧三件套落成固定九千兵义军的写法，随删旧去掉。
+  function _captureErr(e, where) {
+    try { if (global.TM && global.TM.errors && typeof global.TM.errors.captureSilent === 'function') global.TM.errors.captureSilent(e, where); }
+    catch (_) { /* 记错本身失败：只是少一条错误记录 */ }
+  }
+  function _remember(name, text, emo, imp) {
+    try { if (typeof global.NpcMemorySystem !== 'undefined' && global.NpcMemorySystem.remember) global.NpcMemorySystem.remember(name, text, emo, imp, ''); }
+    catch (e) { _captureErr(e, 'conspiracy.remember'); }
+  }
   function _resolveUprising(G, plot) {
-    var lead = _findChar(G, plot.ringleader);
+    var lead = _findChar(G, plot.ringleader), where = String((lead && lead.location) || '');
+    var plan = String(plot._narrativePlan || plot.reason || '').slice(0, 40);
     try {
       var bridge = global.TM && global.TM.ClassMinxinBridge;
       if (bridge && typeof bridge.spawnUprisingCandidates === 'function') bridge.spawnUprisingCandidates(G, { turn: G.turn || 0, source: 'conspiracy_' + plot.ringleader });
     } catch (_) {}
-    try {
-      var _r2On = true; // 正式民变实体路径，不再读取旧的禁用设置。
-      if (_r2On && G.minxin) {
-        if (!Array.isArray(G.minxin.revolts)) G.minxin.revolts = [];
-        var region = (lead && lead.location) || '畿辅';
-        G.minxin.revolts.push({ id: 'revolt_consp_' + (G.turn || 0) + '_' + _hash(plot.ringleader + '|' + (G.turn || 0)).toString(36), turn: G.turn || 0, region: region, scale: 'medium', level: 3, status: 'ongoing', leader: plot.ringleader, _fromConspiracy: true });
-        if (G.minxin.revolts.length > 30) G.minxin.revolts = G.minxin.revolts.slice(-30);
-        if (lead) { lead._joinedRevolt = true; lead._revoltLeaderCandidate = true; }
-        _eb('民变', plot.ringleader + ' 揭竿聚众，啸聚为乱，自号渠帅。');
-      } else {
-        _eb('民变', plot.ringleader + ' 煽动流民，乱象已萌。');
+    var RC = global.TM && global.TM.RevoltCases, RB = global.TM && global.TM.RevoltBand, rise = null, sec = null;
+    if (lead && _alive(lead) && where && RC && typeof RC.riseFromAI === 'function') {
+      try { rise = RC.riseFromAI(G, { by: 'conspiracy', region: where, leaderName: plot.ringleader, reason: plan || '密谋聚众' }); }
+      catch (e) { rise = null; _captureErr(e, 'conspiracy.uprising.rise'); }
+    }
+    if (rise && (rise.landed || rise.already)) {
+      _remember(plot.ringleader, '密谋聚众，起事于' + (rise.region || where), '决', 7);
+      _recordConspiracy(G, plot, 'uprising', 'succeeded', '聚众起事于' + (rise.region || where) + (rise.already ? '·并入原有一股' : ''), false);
+      return;
+    }
+    if (rise && (rise.leaderKind === 'office' || rise.leaderKind === 'royal') && RB && typeof RB.secede === 'function') {
+      try { sec = RB.secede(G, lead, { leaf: rise.leaf, cause: plan, by: 'conspiracy' }); }
+      catch (e) { sec = null; _captureErr(e, 'conspiracy.uprising.secede'); }
+      if (sec && sec.ok) {
+        _recordConspiracy(G, plot, 'secession', 'succeeded', '据' + sec.city.name + '自立·号「' + sec.faction.name + '」', false);
+        return;
       }
-    } catch (_) {}
-    try { if (typeof global.NpcMemorySystem !== 'undefined' && global.NpcMemorySystem.remember) global.NpcMemorySystem.remember(plot.ringleader, '举义聚众为乱', '平', 7, ''); } catch (_) {}
-    _recordConspiracy(G, plot, 'uprising', 'succeeded', '聚众举义·入民变渠帅候选', false);
+    }
+    // 事泄出奔（同兵变出奔那条）
+    if (lead) { lead._fled = true; lead._missing = true; lead._fledTurn = G.turn || 0; lead._fledReason = '聚众事泄·出奔'; }
+    var inCapital = !!(sec && sec.why === '在京');
+    _eb('谋反', plot.ringleader + ' 谋聚众为乱而事泄，' + (inCapital ? '身在京师无从举事，' : '') + '遂出奔，亡命江湖。');
+    _remember(plot.ringleader, '聚众事泄·流亡', '惧', 8);
+    var why = sec && sec.why ? sec.why : (rise && rise.why ? rise.why : '');
+    _recordConspiracy(G, plot, 'uprising', 'failed', '聚众事泄·主谋出奔' + (why ? '（' + String(why).slice(0, 30) + '）' : ''), false);
   }
 
   // ─── 主入口:每回合 tick ───

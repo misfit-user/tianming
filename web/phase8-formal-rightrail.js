@@ -951,32 +951,18 @@
     return s === 'always' ? '若接战·必亲征' : s === 'delegate' ? '若接战·必委之' : '若接战·问我';
   }
 
-  // C4 流寇 UI：军情面板显在场流寇威胁（众/流窜省/势头）·仅有活贼才显（同军情预警 hot 卡范式）
-  function rightRovingCard(){
-    var G = rightSocGM();
-    var list = (Array.isArray(G.rovingRebels) ? G.rovingRebels : []).filter(function(r){ return r && !r.disbanded && (Number(r.strength) || 0) > 0; });
-    if (!list.length) return '';
-    var rows = list.slice(0, 6).map(function(r){
-      var str = Number(r.strength) || 0;
-      var regs = (r.regions && r.regions.length) ? r.regions.slice(0, 4).join('、') : '';
-      var tier = str >= 100000 ? ' · 燎原' : (str >= 30000 ? ' · 势盛' : ' · 啸聚');
-      return '<div class="tmrp-step"><b>' + esc(r.name || '流寇') + '</b>众 ' + esc(rightArmyFmtNum(str)) + (regs ? ' · 流窜 ' + esc(regs) : '') + tier + '</div>';
-    }).join('');
-    return '<section class="tmrp-card hot"><div class="tmrp-card-title"><span>流寇警报</span><small>民变啸聚成军·剿耗军饷战损/抚开赦贼恶例</small></div>' + rows + '</section>';
-  }
+  // C4 流寇卡（旧流寇池）11-21 删旧时删了：流寇只从各州起事来，各股在顶栏、民心页的「进行中民变」里列。
 
   // D1 国祚·崩坏临近度（聚合派生·纯读现有信号·治「干瞪眼看数字线性往下掉」）：
-  //   民变最高级(主死因链·5级=亡)/流寇燎原/皇权低(权臣篡位死因)/度支竭/民心地板 → 派生 0-100 + 具名档(安/隐忧/将危/濒亡) + 点明哪根杠杆在塌。
+  //   民变（股数、众数）/皇权低(权臣篡位死因)/度支竭/民心地板 → 派生 0-100 + 具名档(安/隐忧/将危/濒亡) + 点明哪根杠杆在塌。
   //   守 owner 铁律：这是「失败的可读性图层」·非胜利路线·不加逆天手段·仅让下坡可读。承平无危则不显(不制造无谓焦虑)。
+  //   11-21 删旧：民变不再按五级梯定危度（梯删了），按在的股数、众数算（尺度同原流寇一项：众三十万记满）；流寇、建制两项随旧账删了。
   function rightGuozuoCard(){
     var G = rightSocGM();
     var factors = [];
-    var revolts = (G.minxin && Array.isArray(G.minxin.revolts)) ? G.minxin.revolts.filter(function(r){ return r && (Number(r.level)||0) > 0 && !r._suppressed; }) : [];
-    var maxLv = revolts.reduce(function(m,r){ return Math.max(m, Number(r.level)||0); }, 0);
-    if (maxLv > 0) { var LVCN = ['','流言','聚啸','暴动','起义','改朝']; var _lv = Math.max(1, Math.min(5, Math.round(maxLv))); factors.push({ name:'民变', sev:[0,12,28,50,78,100][_lv]||0, note: revolts.length + ' 处·最烈「' + LVCN[_lv] + '」' }); }
-    var rebels = (Array.isArray(G.rovingRebels) ? G.rovingRebels : []).filter(function(r){ return r && !r.disbanded && (Number(r.strength)||0) > 0; });
-    var rebStr = rebels.reduce(function(s,r){ return s + (Number(r.strength)||0); }, 0);
-    if (rebStr > 0) factors.push({ name:'流寇', sev: Math.min(100, Math.round(rebStr/300000*100)), note: rebels.length + ' 股·众 ' + rightArmyFmtNum(rebStr) });
+    var revolts = (G.minxin && Array.isArray(G.minxin.revolts)) ? G.minxin.revolts.filter(function(r){ return r && r.status === 'ongoing'; }) : [];
+    var revMen = revolts.reduce(function(s,r){ return s + (Number(r.followers != null ? r.followers : r.scale) || 0); }, 0);
+    if (revolts.length) factors.push({ name:'民变', sev: Math.min(100, Math.max(12, Math.round(revMen/300000*100))), note: revolts.length + ' 股·众约 ' + rightArmyFmtNum(revMen) });
     var hq = (G.huangquan && typeof G.huangquan.index === 'number') ? G.huangquan.index : (typeof G.huangquan === 'number' ? G.huangquan : null);
     if (hq != null && hq < 45) factors.push({ name:'皇权', sev: Math.min(100, Math.round((45-hq)/45*100)), note: '皇权 ' + Math.round(hq) + '·权柄下移' });
     var money = (G.guoku && typeof G.guoku.money === 'number') ? G.guoku.money : null;
@@ -995,16 +981,10 @@
     var tier = null; for (var i=0;i<TIERS.length;i++){ if (prox >= TIERS[i][0]) { tier = TIERS[i]; break; } }
     var tierName = tier[1], tierColor = tier[2], barW = Math.max(3, prox);
     var levers = factors.slice(0,3).map(function(f){ return '<div class="tmrp-step"><b>' + esc(f.name) + '</b>' + esc(f.note) + '</div>'; }).join('');
-    // D4 一步之遥(第七轮B)：三处终局临界此前全静默骰点(民变4→5/篡位 cl>0.9/流寇建制)——可升级而未骰中·
-    //   玩家全然不知有多险。此处读侧具名告警(带省份/权臣名/巨寇名真数据)·纯读零改判定逻辑·守「失败可读性图层」铁律。
+    // D4 一步之遥(第七轮B)：终局临界此前全静默骰点——可升级而未骰中·玩家全然不知有多险。此处读侧具名告警(带权臣名真数据)·
+    //   纯读零改判定逻辑·守「失败可读性图层」铁律。民变「距改朝只欠一线」、巨寇「建制立国」两条 11-21 随五级梯与旧账删了。
     var junctures = [];
-    if (maxLv >= 4) {
-      var _lv4regs = revolts.filter(function(r){ return (Number(r.level)||0) >= 4; }).map(function(r){ return r.region || '某地'; }).slice(0, 2).join('、');
-      junctures.push('民变已至「起义」' + (_lv4regs ? '（' + _lv4regs + '）' : '') + '·距改朝只欠一线——剿抚迟则天命移');
-    }
     if (pm && pm.mode !== 'institutional' && cl > 0.9) junctures.push((pm.name || '权臣') + '权柄已逾九分·距废立篡夺只欠一线——制衡迟则神器易主');
-    var _builtRebs = (Array.isArray(G._activeRevolts) ? G._activeRevolts : []).filter(function(r){ return r && r.organizationType === 'builtState'; });
-    if (_builtRebs.length) junctures.push((_builtRebs[0].leaderName || _builtRebs[0].name || '巨寇') + '已成建制立国之势·问鼎只在旦夕');
     var juncHtml = junctures.slice(0, 3).map(function(t){ return '<div class="tmrp-step" style="color:#c9645a;"><b>一步之遥</b>' + esc(t) + '</div>'; }).join('');
     return '<section class="tmrp-card hot"><div class="tmrp-card-title"><span>国祚 · ' + esc(tierName) + '</span><small>王朝崩坏临近度·唯延缓·不可逆</small></div>' +
       '<div style="margin:2px 0 7px;"><div style="height:9px;border-radius:5px;background:rgba(0,0,0,.22);overflow:hidden;"><div style="height:100%;width:' + barW + '%;background:' + tierColor + ';"></div></div>' +
@@ -1083,7 +1063,7 @@
       '</div>' +
       (armyTab === 'roster'
         ? rosterCard
-        : rightGuozuoCard() + armyOverviewCard + rightArmoryCard() + rightRovingCard()) +
+        : rightGuozuoCard() + armyOverviewCard + rightArmoryCard()) +
       '</div>';
   }
 

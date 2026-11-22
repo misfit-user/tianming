@@ -1,7 +1,7 @@
 // smoke-negotiation-sessions.js — 谈判多轮会话引擎（批己·2026-07-22）
 //
 // 验：会话状态机(open 复用不重开/offers 追加/round 封3/fail-closed id 未命中返 null/玩家 counter 全流/
-// 过期 lapse+僵尸使节清)·三生产者接线(revolt pacify_counter 开会话+prompt 注入段/border demand 开会话+
+// 过期 lapse+僵尸使节清)·生产者接线(民变招抚一路 11-21 删/border demand 开会话+
 // settlePeace endWar+退兵+贡银走 spendFromGuoku/faction 提议挂会话)·flag OFF 三生产者旧行为等价(行为级)·
 // save-lifecycle explicit mirror 登记契约(真源抽取)。不经真 AI：canned 动作直灌 _applyActions/_applyInvasionActions。
 'use strict';
@@ -93,80 +93,8 @@ assert(s1.status === 'lapsed' && ex.lapsed === 1, 'tickExpiry → 过期 open �
 assert(!GA._pendingAudiences.some(function (a) { return a._negotiationId === s1.id; }), '过期会话对应 _negotiationId 僵尸使节被清');
 assert(s2.status === 'accepted', '已 accepted 会话不受过期影响');
 
-// ═══════════════════════════════════════════════════════════════
-console.log('\n§B 民变招抚接会话（pacify_counter 开会话 + prompt 注入 + playerResolvePacify）');
-var DIVS = { '凤阳府': { name: '凤阳府', militaryRecruits: 3000 } };
-var B = mkSandbox({
-  TM: { AIChange: { PathUtils: { findDivisionByNameFuzzy: function (G, n) { return DIVS[String(n || '').trim()] || null; } } } },
-  GM: {
-    turn: 9, eraName: '天下将乱', mapData: {},
-    guoku: { balance: 250000, ledgers: { money: { stock: 250000 } } },
-    facs: [{ id: 'f1', name: '大明', strength: 70, playerRelation: 100 }],
-    chars: [{ name: '朱由检', isPlayer: true, alive: true }],
-    armies: [], _pendingAudiences: [],
-    minxin: { trueIndex: 30, revolts: [{ id: 'rvA', region: '凤阳', status: 'ongoing', level: 4, turn: 8, _identity: { banner: '闯字营', leaderName: '高闯王', leaderFrom: 'new', creed: '均田免赋', stance: '流动作战', agenda: '窥神京' } }] },
-    _edictTracker: [{ turn: 9, category: '政事', content: '着有司招抚凤阳流贼·许以自新' }]
-  },
-  P: { conf: { revoltEntityEnabled: true, negotiationSessionsEnabled: true } }
-});
-load(B, 'tm-revolt-entity.js');
-load(B, 'tm-negotiation.js');
-load(B, 'tm-revolt-inference.js');
-var RI = B.TM.RevoltInference, NB = B.TM.Negotiation, GB = B.GM;
-B.TM.RevoltEntity.sync(GB);
-
-var rb = RI._applyActions(GB, { stocks: [{ id: 'rvA', actions: [{ type: 'pacify_counter', silverDemand: 150000, officeTitle: '游击将军' }] }] });
-assert(rb.applied === 1, 'pacify_counter 落账(仍 _eb 叙事)');
-var pns = (GB._negotiations || []).filter(function (n) { return n.topic === 'pacify' && n.sourceRef.refId === 'rvA'; });
-assert(pns.length === 1 && pns[0].status === 'open', '讨价 → 开 pacify 会话(sourceRef revolt=rvA)');
-assert(pns[0].offers[0].silver === 150000 && pns[0].offers[0].office === '游击将军', '会话 offer=索银/officeTitle');
-var env = (GB._pendingAudiences || []).filter(function (a) { return a._negotiationId === pns[0].id; });
-assert(env.length === 1 && env[0].isEnvoy && env[0].name === '闯字营来使', '推使节求见进 _pendingAudiences(旗号+来使)');
-
-var nl0 = RI._negotiationLines(GB, 'rvA');
-assert(nl0.length >= 1 && nl0[0].indexOf('续谈') >= 0, 'tickInference prompt 注入「待续谈判」段存在');
-console.log('§B2 零成本受抚根治：结算台面=末条 them-offer·玩家回价禁准奏·对方回应后方可成局');
-var setO = NB.settleableOffer(NB.get(pns[0].id));
-assert(setO && setO.by === 'them' && setO.silver === 150000, '结算台面 settleableOffer=末条 them-offer(索银15万·非玩家回价)');
-// 玩家回价(纯文本无银·exploit 载体)→ currentOffer 变 player·但 settleableOffer 仍锚 them
-NB.playerCounter(pns[0].id, '只授官不予银', 0);
-var nl1 = RI._negotiationLines(GB, 'rvA');
-assert(nl1[0].indexOf('朝廷已还价') >= 0, '玩家已回价 → 注入段提示「须回应」续演');
-assert(NB.currentOffer(NB.get(pns[0].id)).by === 'player', '玩家回价后 currentOffer.by=player');
-assert(NB.settleableOffer(NB.get(pns[0].id)).silver === 150000, 'settleableOffer 仍锚 them-offer(玩家回价不改结算台面)');
-// 反例③：玩家刚回价·对方未回 → 准奏被禁(根治零成本受抚·不得纯文本回价白捡)
-var blockedAcc = RI.playerResolvePacify(GB, 'rvA', { accept: true });
-assert(!blockedAcc.ok && /回价/.test(blockedAcc.reason || ''), '反例③ 玩家回价后对方未回 → 准奏被禁(已递回价·俟其回音)');
-assert(GB.minxin.revolts[0].status === 'ongoing' && GB.guoku.balance === 250000, '被禁时国库分文未动·股仍 ongoing(零成本受抚封死)');
-// 驳回：抚议中辍·义军续叛
-var rr = RI.playerResolvePacify(GB, 'rvA', { accept: false });
-assert(rr.ok && rr.rejected && GB.minxin.revolts[0].status === 'ongoing', '驳回 → 抚议中辍·义军续叛(仍 ongoing)');
-// 反例④：对方回应形成新 them-offer(改索十二万) → 可准奏·按新台面真扣(绝非玩家回价的0)
-NB.open({ topic: 'pacify', initiator: '闯字营', sourceRef: { kind: 'revolt', refId: 'rvA' }, offer: { by: 'them', terms: '改索十二万·授游击', silver: 120000, office: '游击将军' }, turn: GB.turn });
-assert(NB.currentOffer(NB.get(pns[0].id)).by === 'them', '反例④ 对方回应 → currentOffer.by=them(可结算)');
-var ra = RI.playerResolvePacify(GB, 'rvA', { accept: true });
-assert(ra.ok && ra.pacified && ra.silver === 120000, '反例④ 按新 them-offer(12万)准奏受抚(非0成本)');
-assert(GB.guoku.balance === 130000 && GB.guoku.ledgers.money.stock === 130000, '真扣12万(_spendSilver·money.stock 同步)');
-assert(GB.minxin.revolts[0]._pacified.officeTitle === '游击将军', '受抚落账带 them-offer 官职');
-var rgone = RI.playerResolvePacify(GB, 'rvA', { accept: true });
-assert(!rgone.ok, '已受抚股再准 → fail(不在续谈)');
-
-console.log('§B3 银额兜底：them-offer 无 silver → 回落 level*100000(绝不落 0)');
-var F = mkSandbox({
-  GM: {
-    turn: 12, mapData: {}, guoku: { balance: 500000, ledgers: { money: { stock: 500000 } } },
-    facs: [{ id: 'f1', name: '大明', playerRelation: 100 }], chars: [], armies: [], _pendingAudiences: [],
-    minxin: { trueIndex: 30, revolts: [{ id: 'rvF', region: '山东', status: 'ongoing', level: 2, turn: 11, _identity: { banner: '张字营', leaderName: '张头领' } }] },
-    _edictTracker: [{ turn: 12, content: '着有司招抚山东乱民' }]
-  },
-  P: { conf: { revoltEntityEnabled: true, negotiationSessionsEnabled: true } }
-});
-load(F, 'tm-revolt-entity.js'); load(F, 'tm-negotiation.js'); load(F, 'tm-revolt-inference.js');
-F.TM.RevoltEntity.sync(F.GM);
-F.TM.Negotiation.open({ topic: 'pacify', initiator: '张字营', sourceRef: { kind: 'revolt', refId: 'rvF' }, offer: { by: 'them', terms: '只求招安不索银' }, turn: 12 });
-var rf = F.TM.RevoltInference.playerResolvePacify(F.GM, 'rvF', { accept: true });
-assert(rf.ok && rf.silver === 200000, 'them-offer 无 silver → 回落 level(2)*100000=20万(绝不落0)');
-assert(F.GM.guoku.balance === 300000, '兜底索价真扣20万(帑闸生效)');
+// §B 民变招抚接会话（旧民变演绎层 pacify_counter 开会话、问对里准奏/驳回）11-21 删旧时连演绎层一起删了：
+//   民变的招抚走诏令、由推演判（revolt_amnesty），旧档里开着的招抚会话读档后首个过回合作罢（tm-revolt-band.js convertLegacy）。
 
 // ═══════════════════════════════════════════════════════════════
 console.log('\n§C 外患议和接线（demand 结构化贡银 + settlePeace 余额闸/endWar/退兵）');
@@ -230,23 +158,7 @@ assert(GC3.armies[0].disbanded === true && GC3.guoku.balance === 0, '白和 → 
 
 // ═══════════════════════════════════════════════════════════════
 console.log('\n§D flag OFF 三生产者旧行为等价（行为级）+ 势力提议挂会话（ON）');
-// D1·revolt pacify_counter OFF
-var D1 = mkSandbox({
-  TM: { AIChange: { PathUtils: { findDivisionByNameFuzzy: function () { return null; } } } },
-  GM: {
-    turn: 9, mapData: {}, guoku: { balance: 250000, ledgers: { money: { stock: 250000 } } },
-    facs: [{ id: 'f1', name: '大明', playerRelation: 100 }], chars: [], armies: [], _pendingAudiences: [],
-    minxin: { trueIndex: 30, revolts: [{ id: 'rvA', region: '凤阳', status: 'ongoing', level: 4, turn: 8, _identity: { banner: '闯字营', leaderName: '高闯王' } }] },
-    _edictTracker: [{ turn: 9, content: '着有司招抚凤阳流贼' }]
-  },
-  P: { conf: { revoltEntityEnabled: true, negotiationSessionsEnabled: false } }
-});
-load(D1, 'tm-revolt-entity.js'); load(D1, 'tm-negotiation.js'); load(D1, 'tm-revolt-inference.js');
-D1.TM.RevoltEntity.sync(D1.GM);
-D1.TM.RevoltInference._applyActions(D1.GM, { stocks: [{ id: 'rvA', actions: [{ type: 'pacify_counter', silverDemand: 150000 }] }] });
-assert(!(D1.GM._negotiations && D1.GM._negotiations.length), 'flag OFF·revolt pacify_counter 不开会话');
-assert(D1.GM._pendingAudiences.length === 0, 'flag OFF·revolt 不推使节');
-assert(D1._ebs.some(function (e) { return e.indexOf('讨价') >= 0; }), 'flag OFF·revolt 旧行为(仍 _eb 讨价)保留');
+// D1·民变招抚那一路 11-21 随旧演绎层删了（见 §B），flag OFF 的等价也不再测
 
 // D2·border demand OFF
 var D2 = mkSandbox({
@@ -292,4 +204,4 @@ if (failures.length) {
   failures.forEach(function (f) { console.log('  - ' + f); });
   process.exit(1);
 }
-console.log('PASS smoke-negotiation-sessions (状态机/复用/round封3/过期清僵尸/招抚接线/议和endWar退兵贡银/势力挂会话/flag OFF等价/mirror契约)');
+console.log('PASS smoke-negotiation-sessions (状态机/复用/round封3/过期清僵尸/议和endWar退兵贡银/势力挂会话/flag OFF等价/mirror契约)');

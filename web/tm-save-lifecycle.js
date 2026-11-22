@@ -695,6 +695,7 @@ function _prepareGMForSave(GM, P, options) {
   if (GM._forgottenWorks && GM._forgottenWorks.length > 0) GM._savedForgottenWorks = _safeClone(GM._forgottenWorks);
   if (!skipMirrors._savedFactionRelationsMap && GM.factionRelationsMap && Object.keys(GM.factionRelationsMap).length > 0) GM._savedFactionRelationsMap = _safeClone(GM.factionRelationsMap);
   if (!skipMirrors._savedEdictLifecycle && GM._edictLifecycle && GM._edictLifecycle.length > 0) GM._savedEdictLifecycle = _safeClone(GM._edictLifecycle);
+  // 旧账 GM._activeRevolts 11-21 删旧后不再有人写；旧档读进来、还没过回合折算（tm-revolt-band.js convertLegacy）就存档的，照旧带上，折算时用
   if (GM._activeRevolts && GM._activeRevolts.length > 0) GM._savedActiveRevolts = _safeClone(GM._activeRevolts);
   if (GM._revoltPrecursors && GM._revoltPrecursors.length > 0) GM._savedRevoltPrecursors = _safeClone(GM._revoltPrecursors);
   if (!skipMirrors._savedNpcCommitments && GM._npcCommitments && Object.keys(GM._npcCommitments).length > 0) GM._savedNpcCommitments = _safeClone(GM._npcCommitments);

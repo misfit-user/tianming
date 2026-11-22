@@ -2137,7 +2137,6 @@
       'landAnnex.crisis',
       'population.fugitive.surge',
       'population.corveeDeath.peak',
-      'authority.rebellion.upgrade',
       'audit.fraud.exposed',
       'bankruptcy.step',
       'leakage.triangle.critical'

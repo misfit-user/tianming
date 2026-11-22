@@ -286,21 +286,9 @@
         }
       });
     }
-    // 叛乱触发（仅羁縻区）
-    if (G.population.jimiHoldings) {
-      G.population.jimiHoldings.forEach(function(h) {
-        if (h.loyalty < 30 && Math.random() < ed.rebellionRisk * 0.01 * mr) {
-          // 触发羁縻叛乱
-          if (G.minxin && !G.minxin.revolts) G.minxin.revolts = [];
-          if (G.minxin) G.minxin.revolts.push({
-            id: 'jimi_rev_' + (ctx.turn||0), region: h.region, turn: ctx.turn||0,
-            cause: '羁縻', status:'ongoing', level: 3, scale: h.mouths * 0.05
-          });
-          if (global.addEB) global.addEB('羁縻', h.name + ' 反叛');
-          h.loyalty = Math.max(0, h.loyalty - 15);
-        }
-      });
-    }
+    // 羁縻随机叛乱（往民变表里塞一股三级旧式民变）11-21 删旧时删了（同志「按你推荐来」）：羁縻六家是各朝通用的预置，
+    //   没有首领、地方落不到州、没有口数，立不起势力。土司叛乱走通用的封臣叛乱（tm-feudal.js：首领忠诚低于叛乱阈值就举旗、
+    //   断藩属、开战，天启「西南土司」即此）与主推演 faction_create。rebellionRisk 照算，只是不再在这里掷骰。
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -386,155 +374,9 @@
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  C4·流寇（2026-06-16 起；民变重做·民2c 11-14 改）
-  //    原先：起义阶层在场且全国逃户池够大→逃户守恒凝成一股全国的「流寇」，每月从池里招一成多壮大，地方取阶层数据的泛称
-  //    （天启里一处也落不到州）。民2c 删了这一段凝聚：流寇池并进游击——流寇只从各州起事来（tm-revolt-cases.js 判、
-  //    tm-revolt-rising.js 落地，人从本州逃户里拨），在它那一州盘踞、扰征收、断驿路、驱户口（tm-revolt-guerrilla.js）。
-  //    旧档里已有的流寇照旧：不喂新血每月溃散一成回逃户、势穷瓦解；镇压(suppress)、招抚(pacify)照旧可用。民2d 剿抚换新制时一并折算。
-  function _ensureRoving(G) { if (!Array.isArray(G.rovingRebels)) G.rovingRebels = []; return G.rovingRebels; }
-  function _findRoving(G, ref) {
-    var list = (G && G.rovingRebels) || [];
-    if (ref && typeof ref === 'object') return ref;
-    if (ref != null && ref !== '') { var m = list.filter(function(r){ return r && (r.id === ref || r.name === ref); })[0]; if (m) return m; }
-    // 无 ref / 未命中 → 取首股在编流寇（AI 笼统下令「剿流寇」不给精确 id 亦可执行）
-    return list.filter(function(r){ return r && !r.disbanded && (Number(r.strength) || 0) > 0; })[0] || null;
-  }
-  // 名字沿用（PhaseF3 导出、旧测试认它）；民2c 起只剩溃散：旧档里已有的流寇不再壮大，每月溃散一成回逃户，势穷瓦解。
-  function _tickRovingCoalesce(ctx, mr) {
-    var G = global.GM;
-    if (!G || !Array.isArray(G.classes) || !G.population) return;
-    mr = mr || 1;
-    var bls = G.population.byLegalStatus = G.population.byLegalStatus || {};
-    var taoohu = bls.taoohu || (bls.taoohu = { mouths: 0 });
-    var rebels = _ensureRoving(G);
-    var turn = G.turn || (ctx && ctx.turn) || 0;
-    // ── 溃散（不喂新血者守恒回逃户）+ 势穷瓦解 ──
-    rebels.forEach(function(r) {
-      if (!r || r.disbanded) return;
-      if (r._lastGrewTurn !== turn) {
-        var loss = Math.floor((Number(r.strength) || 0) * 0.10 * mr);
-        if (loss > 0) { r.strength = (Number(r.strength) || 0) - loss; taoohu.mouths = (Number(taoohu.mouths) || 0) + loss; }
-      }
-      if ((Number(r.strength) || 0) < 5000) {
-        taoohu.mouths = (Number(taoohu.mouths) || 0) + Math.max(0, Number(r.strength) || 0);
-        r.strength = 0; r.disbanded = true;
-        if (global.addEB) global.addEB('民变', (r.name || '流寇') + '势穷瓦解，余众星散为逃户');
-      }
-    });
-    G.rovingRebels = rebels.filter(function(r){ return r && !r.disbanded; });
-  }
-  // 镇压：force=投入兵力 → 斩首(离籍)+溃散(回逃户)·耗军饷/战损（确定性·供 UI/AI/诏令调）
-  function suppressRovingRebel(ref, force) {
-    var G = global.GM;
-    var r = _findRoving(G, ref);
-    if (!G || !r || r.disbanded) return { ok: false };
-    force = Math.max(0, Number(force) || 0);
-    G.population = G.population || {};
-    var bls = G.population.byLegalStatus = G.population.byLegalStatus || {};
-    var taoohu = bls.taoohu || (bls.taoohu = { mouths: 0 });
-    var hit = Math.min(Number(r.strength) || 0, Math.floor(force * 1.2));
-    var killed = Math.floor(hit * 0.5);          // 斩获/阵亡——离籍（人口净减·镇压之实）
-    var scattered = hit - killed;                // 溃散——守恒回逃户
-    r.strength = (Number(r.strength) || 0) - hit;
-    taoohu.mouths = (Number(taoohu.mouths) || 0) + scattered;
-    var ownLoss = Math.floor(force * 0.08);      // 官军战损
-    var silver = Math.floor(force * 0.5);        // 军饷耗（best-effort 扣国库）
-    if (G.fiscal && isFinite(Number(G.fiscal.treasury))) G.fiscal.treasury = Number(G.fiscal.treasury) - silver;
-    var disbanded = false;
-    if ((Number(r.strength) || 0) < 5000) {
-      taoohu.mouths = (Number(taoohu.mouths) || 0) + Math.max(0, Number(r.strength) || 0);
-      r.strength = 0; r.disbanded = true; disbanded = true;
-      G.rovingRebels = (G.rovingRebels || []).filter(function(x){ return x && !x.disbanded; });
-    }
-    if (global.addEB) global.addEB('军务', '官军剿流寇，斩获' + killed + '·溃散' + scattered + (disbanded ? '·贼势瓦解' : ''));
-    return { ok: true, killed: killed, scattered: scattered, ownLoss: ownLoss, silver: silver, disbanded: disbanded };
-  }
-  // 招抚：流寇守恒回编户/军户 + 开恶例（合法性代价·记账）
-  function pacifyRovingRebel(ref, opts) {
-    var G = global.GM;
-    var r = _findRoving(G, ref);
-    if (!G || !r || r.disbanded) return { ok: false };
-    opts = opts || {};
-    var absorbed = Math.max(0, Number(r.strength) || 0);
-    G.population = G.population || {};
-    var bls = G.population.byLegalStatus = G.population.byLegalStatus || {};
-    var huangji = bls.huangji || (bls.huangji = { mouths: 0 });
-    var toMil = Math.floor(absorbed * (opts.toMilitaryFrac != null ? Number(opts.toMilitaryFrac) : 0.3));
-    var toBian = absorbed - toMil;
-    huangji.mouths = (Number(huangji.mouths) || 0) + toBian;
-    var byClass = G.population.byClass = G.population.byClass || {};
-    if (byClass.military && isFinite(Number(byClass.military.mouths))) byClass.military.mouths = Number(byClass.military.mouths) + toMil;
-    else huangji.mouths += toMil;   // 无军户格子则全入编户（守恒）
-    r.strength = 0; r.disbanded = true;
-    G.rovingRebels = (G.rovingRebels || []).filter(function(x){ return x && !x.disbanded; });
-    G._amnestyPrecedent = (Number(G._amnestyPrecedent) || 0) + 1;   // 开赦贼之恶例（合法性代价·记账·不擅动皇威）
-    if (global.addEB) global.addEB('招抚', '招抚流寇' + absorbed + '众，编户' + toBian + '·军户' + toMil + '·然开赦贼之恶例');
-    return { ok: true, absorbed: absorbed, toBian: toBian, toMil: toMil };
-  }
-
-  // ═══ 刀三·流寇/民变劫掠据府（给乱党牙齿·闭合刀A：逃户喂流寇→流寇劫掠→更多逃户）═══
-  //   流寇/民变 此前 strength/scale 算了却无每回合危害=死数字躺列表。此处令其据府每回合：
-  //   ①挂「流寇劫掠/民变扰攘」负境况(复用 RegionStatus→cascade 减税·且联动刀一灾异→减粮产·status tick 减民心)
-  //   ②驱民从编户转入逃户池(守恒·恶性循环·有界封顶防失控)。纯增量·朝代中立·门控(无乱党/无可解析地→no-op)。
-  var PLUNDER_STRENGTH_SCALE = 200000; // 流寇强度达此→劫掠烈度饱和
-  var PLUNDER_ECON = 0.18;             // 流寇劫掠 econPct 上限(×烈度·RegionStatus 再夹[-0.25,0.25])
-  var PLUNDER_TAOOHU_RATE = 0.02;      // 劫掠驱民入逃户=强度×此(/回合)
-  var PLUNDER_TAOOHU_CAP = 20000;      // 单股流寇单回合驱民封顶(防失控)
-  var PLUNDER_MAX_REGIONS = 4;         // 单股流寇单回合最多劫掠府数
-  var REVOLT_PLUNDER_ECON = 0.10;      // 民变扰攘 econPct 上限(轻于流寇)
-  function _tickRovingPlunder(ctx, mr) {
-    var G = global.GM;
-    if (!G) return;
-    mr = mr || 1;
-    var RS = (typeof window !== 'undefined' && window.TM && window.TM.RegionStatus) || (typeof global !== 'undefined' && global.TM && global.TM.RegionStatus) || null;
-    var PU = (typeof TM !== 'undefined' && TM.AIChange && TM.AIChange.PathUtils) || (typeof window !== 'undefined' && window.TM && window.TM.AIChange && window.TM.AIChange.PathUtils) || null;
-    function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, Number(n) || 0)); }
-    function findDiv(name) {
-      if (!name || !PU) return null;
-      try { if (PU.findDivisionByNameFuzzy) { var d = PU.findDivisionByNameFuzzy(G, name); if (d) return d; } } catch (_) {}
-      try { if (PU.findDivisionByNameOrId) return PU.findDivisionByNameOrId(G, name); } catch (_) {}
-      return null;
-    }
-    var bls = G.population && (G.population.byLegalStatus || (G.population.byLegalStatus = {}));
-    var taoohu = bls && (bls.taoohu || (bls.taoohu = { mouths: 0 }));
-    // ① 流寇劫掠据府
-    var rebels = (G.rovingRebels || []).filter(function (r) { return r && !r.disbanded && (Number(r.strength) || 0) > 0; });
-    rebels.forEach(function (r) {
-      var sev = clamp((Number(r.strength) || 0) / PLUNDER_STRENGTH_SCALE, 0.1, 1);
-      var plundered = [];
-      (r.regions || []).slice(0, PLUNDER_MAX_REGIONS).forEach(function (rn) {
-        var div = findDiv(rn);
-        if (div && RS && typeof RS.add === 'function') {
-          try { RS.add(div, { kind: 'disaster', name: '流寇劫掠', econPct: -PLUNDER_ECON * sev, minxinPerTurn: -1.5 * sev, durationTurns: 2, desc: '流寇过境·焚掠乡里', source: 'roving' }, G); plundered.push(div.name || rn); } catch (_) {}
-        }
-      });
-      // 劫掠驱民：从编户转逃户（守恒，同 tm-event-bus 低民心逃亡那一段），只在真劫掠到州时才有。
-      // 旧写法不论劫没劫到都往逃户池里加人、也不从编户扣，人凭空多出来，又被流寇凝聚收去壮大（11-09）。
-      var huangji = bls && bls.huangji;
-      if (taoohu && huangji && plundered.length) {
-        var swell = Math.min(Math.round((Number(r.strength) || 0) * PLUNDER_TAOOHU_RATE * mr), PLUNDER_TAOOHU_CAP, Math.max(0, Math.round(Number(huangji.mouths) || 0)));
-        if (swell > 0) {
-          huangji.mouths = (Number(huangji.mouths) || 0) - swell;
-          taoohu.mouths = (Number(taoohu.mouths) || 0) + swell; // 恶性循环·有界封顶
-        }
-      }
-      // 只报真劫掠到的州。流寇的地方取自阶层数据的地域，天启里是「北方燕齐」「江南苏松」这类泛称，对不上任何州时
-      // 上面一处也没挂上；旧写法照样每回合报「劫掠北方燕齐等地，焚庐舍」，地方上什么都没发生，是假事件。
-      if (global.addEB && sev >= 0.3 && plundered.length) global.addEB('民变', (r.name || '流寇') + '劫掠' + plundered[0] + (plundered.length > 1 ? '等地' : '') + '，焚庐舍、掠丁壮');
-    });
-    // ② 民变据府扰攘（轻于流寇·按级别）。民变案落地的民变（source 'revolt-cases'）不在这里：它们在本州的连带
-    //   （地块「某股盘踞」、征收打折、驿路阻断、户口逃散、本州民心）由 tm-revolt-guerrilla.js 按真人数落（民2c）；
-    //   这里只剩旧档里的旧式民变，民2d 折算后整段删。
-    var revolts = (G.minxin && Array.isArray(G.minxin.revolts)) ? G.minxin.revolts.filter(function (rv) { return rv && rv.status === 'ongoing' && rv.region && rv.source !== 'revolt-cases'; }) : [];
-    revolts.forEach(function (rv) {
-      var div = findDiv(rv.region);
-      if (div && RS && typeof RS.add === 'function') {
-        var lv = clamp((Number(rv.level) || 1) / 5, 0.2, 1);
-        try { RS.add(div, { kind: 'disaster', name: '民变扰攘', econPct: -REVOLT_PLUNDER_ECON * lv, minxinPerTurn: -1 * lv, durationTurns: 2, desc: '民变未靖·阡陌不宁', source: 'revolt' }, G); } catch (_) {}
-      }
-    });
-  }
+  // C4 流寇池（全国逃户凝成的「流寇」，剿抚、劫掠据府）与刀三「民变扰攘」11-21 删旧时整个删了（同志「按你推荐来」）：
+  //   流寇只从各州起事来（tm-revolt-cases.js 判、tm-revolt-rising.js 落地），盘踞的连带在 tm-revolt-guerrilla.js；
+  //   旧档里的流寇池在第一次过回合时人数整个回全国逃户池（tm-revolt-band.js convertLegacy）。
 
   // ═══ 刀四·欠军饷→兵变/逃营（串刀二：战耗→赤字→欠饷→morale↓→逃营哗变→逃户→流寇）═══
   //   既有破产阶段令 army.morale↓ 却与兵变脱钩(数值空跌)。此处令低 morale 真有后果：逃营(守恒入逃户)·极低则哗变溃散。
@@ -585,8 +427,6 @@
     var mr = ctx.monthRatio || 1;
     try { _tickClassMobilityChain(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF3] classChain:') : console.error('[phaseF3] classChain:', e); }
     try { _tickRadicalFlight(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF3] radicalFlight:') : console.error('[phaseF3] radicalFlight:', e); }
-    try { _tickRovingCoalesce(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF3] roving:') : console.error('[phaseF3] roving:', e); }
-    try { _tickRovingPlunder(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF3] plunder:') : console.error('[phaseF3] plunder:', e); }
     try { _tickArmyMutiny(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF3] mutiny:') : console.error('[phaseF3] mutiny:', e); }
     try { _tickMagnateAnnexation(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF3] magnate:') : console.error('[phaseF3] magnate:', e); }
     try { _applyCropYieldBoost(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF3] crops:') : console.error('[phaseF3] crops:', e); }
@@ -609,11 +449,7 @@
     init: init,
     tick: tick,
     _tickRadicalFlight: _tickRadicalFlight,
-    _tickRovingCoalesce: _tickRovingCoalesce,
-    _tickRovingPlunder: _tickRovingPlunder,
     _tickArmyMutiny: _tickArmyMutiny,
-    suppressRovingRebel: suppressRovingRebel,
-    pacifyRovingRebel: pacifyRovingRebel,
     applyTravelDocRestriction: _applyTravelDocRestriction,
     adjustPlagueByEthnicity: _adjustPlagueByEthnicity,
     setupQiaozhiFromMigration: setupQiaozhiFromMigration,

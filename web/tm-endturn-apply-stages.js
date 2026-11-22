@@ -821,7 +821,7 @@ inst._imprisonedTurn = GM.turn||0;
                   } else {
                     // 民变重做·民2b（同志 11-14 定）：落在本朝一州的并进民变案，与主推演宣布的起义同一个入口（TM.RevoltCases.riseFromAI）——
                     //   首领按叙事里的名字先在档里找、找不到用这名字按出身新生，人数按户口算（不取叙事报的数）；该州已有一股就是那一股。
-                    //   落不到本朝州县的（别家境内、地名对不上）照旧补一股（规模照旧封顶）。
+                    //   落不到本朝州县的（别家境内、地名对不上）、首领是官员将帅宗室的：11-21 删旧起不再补旧式一股，记一笔写回落空。
                     var _riseR = null;
                     if (typeof TM !== 'undefined' && TM.RevoltCases && typeof TM.RevoltCases.riseFromAI === 'function') {
                       try { _riseR = TM.RevoltCases.riseFromAI(GM, { by: 'reconcile', region: r.region, leaderName: r.leader, reason: r.reason }); }
@@ -829,47 +829,19 @@ inst._imprisonedTurn = GM.turn||0;
                     }
                     if (_riseR && _riseR.landed) _revChanged = true;
                     else if (!(_riseR && _riseR.already)) {
-                    // AI 报的叛军规模确定性封顶·不许凭空 30 万：按该省人口比例卡上限(解析不到走绝对上限)
-                    var P_AI_REVOLT_SCALE_FRAC = 0.05, P_AI_REVOLT_SCALE_ABS = 80000;
-                    var _mouths = (_rdiv && _rdiv.populationDetail && typeof _rdiv.populationDetail.mouths === 'number') ? _rdiv.populationDetail.mouths : null;
-                    var _scaleCap = _mouths != null ? Math.max(2000, Math.round(_mouths * P_AI_REVOLT_SCALE_FRAC)) : P_AI_REVOLT_SCALE_ABS;
-                    var _scale = Math.min(Number(r.scale) || 1000, _scaleCap);
-                    GM.minxin.revolts.push({
-                      id: 'revolt-airec-t' + (GM.turn || 0) + '-' + GM.minxin.revolts.length, // 补id·镇压路径按id find·无id曾镇不掉(2026-07-04 审查定罪)
-                      region: r.region,
-                      leader: r.leader || '',
-                      scale: _scale,
-                      startedTurn: GM.turn || 0,
-                      status: 'ongoing',
-                      _autoFromReconcile: true
-                    });
-                    _revChanged = true;
+                      _stageSemanticFailure('record_revolt_events.start', String(r.leader || r.region || ''), (_riseR && _riseR.why) ? String(_riseR.why) : 'revolt cases unavailable');
                     }
                   }
                 } else if (r.action === 'suppress' || r.action === 'appease') {
                   // 民变重做·收口（同志 11-15「民变是治理的一部分」）：推演说「镇压」「招抚」就是它判定这股平了、受抚了——
                   //   落到民变案的一股（认首领、认州、只说到省的挑那省人多的），由 TM.RevoltBand.conclude 了结：首领去向取它给的
-                  //   （没给当脱身），剿平的接皇威（平乱），人数在过回合 6.1455 善后。不是民变案的旧式民变照旧判平。
+                  //   （没给当脱身），剿平的接皇威（平乱），人数在过回合 6.1455 善后。旧式民变「判平」那支 11-21 删旧时删了（旧式的读档时已折成民变案）。
                   var _supR = null;
                   if (typeof TM !== 'undefined' && TM.RevoltBand && typeof TM.RevoltBand.conclude === 'function') {
                     try { _supR = TM.RevoltBand.conclude(GM, { by: '', endedBy: 'reconcile', region: r.region, leader: r.leader, leaderFate: r.leaderFate, reason: r.reason, status: r.action === 'suppress' ? 'suppressed' : 'appeased' }); }
                     catch (_supRE) { _supR = null; (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_supRE, 'reconcile revolt conclude:') : console.warn('[Reconcile] revolt conclude failed:', _supRE); }
                   }
                   if (_supR && _supR.handled) _revChanged = true;
-                  var openR = _supR && _supR.handled ? null : GM.minxin.revolts.find(function(x){return x && x.status === 'ongoing' && x.region === r.region;});
-                  if (openR) {
-                    _revChanged = true;
-                    openR.status = (r.action === 'suppress') ? 'suppressed' : 'appeased';
-                    openR.endedTurn = GM.turn || 0;
-                    // AI 叙事的武力平乱也确定性接皇威（与引擎/手动平乱同口径·_hwAwarded 防重复·状态互斥不双计）；招抚不计
-                    if (r.action === 'suppress' && !openR._hwAwarded) {
-                      var _AEsup = (typeof window !== 'undefined' && window.AuthorityEngines) || (typeof global !== 'undefined' && global.AuthorityEngines) || null;
-                      if (_AEsup && typeof _AEsup.adjustHuangwei === 'function') {
-                        _AEsup.adjustHuangwei('suppressRevolt', Math.max(2, Math.min(8, (openR.level || 1) * 2)), (r.region || '某地') + ' 平乱');
-                        openR._hwAwarded = true;
-                      }
-                    }
-                  }
                 }
                 if (!_revChanged) return;
                 if (!GM.turnChanges) GM.turnChanges = {};

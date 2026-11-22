@@ -117,19 +117,15 @@ ok(GM._legitimacy && GM._legitimacy.flag === '缙绅离心', '闭合·天命旗�
 const out2 = roster(GM);
 ok(out2.indexOf('天命权重') >= 0 && out2.indexOf('缙绅离心') >= 0, '闭合·正册 surface 天命权重·缙绅离心(喂 LLM 叙事士绅离心)');
 
-// ── C4 端到端相（2026-06-16 起；民变重做·民2c 11-14 改）：苛政链产出的逃户 + 起义阶层 → 不再凝成全国流寇（流寇池并进游击，
-//   流寇只从各州起事来）；旧档里已有的流寇招抚照旧守恒回编户 ──
-console.log('\n  ── C4 端到端：链产逃户+起义→不凝流寇；旧流寇招抚 ──');
+// ── C4 端到端相（2026-06-16 起；民变重做·民2c 11-14 改；11-21 删旧）：苛政链产出的逃户 + 起义阶层 → 不凝成全国流寇
+//   （流寇只从各州起事来）。旧档流寇池连同剿抚 11-21 删了（读档后首个过回合折回逃户，tm-revolt-band.js convertLegacy），
+//   这里只剩「阶层流动那一步过回合不碰逃户池、不生流寇」 ──
+console.log('\n  ── C4 端到端：链产逃户+起义→不凝流寇 ──');
 global.GM = GM;
 var _taoohuB4 = GM.population.byLegalStatus.taoohu.mouths;
-PF3._tickRovingCoalesce({ turn: GM.turn }, 1);
-ok((GM.rovingRebels || []).length === 0 && GM.population.byLegalStatus.taoohu.mouths === _taoohuB4, 'C4·链产逃户+起义→不再凝成全国流寇，逃户池不动 (逃户 ' + _taoohuB4 + ')');
-GM.rovingRebels = [{ id: 'roving_old', name: '流寇', strength: 40000, regions: ['陕西'], _lastGrewTurn: GM.turn - 2, disbanded: false }];
-var _rebels = GM.rovingRebels;
-var _hj0 = (GM.population.byLegalStatus.huangji && GM.population.byLegalStatus.huangji.mouths) || 0;
-var _pac = PF3.pacifyRovingRebel(_rebels[0]);
-ok(_pac.ok && (GM.rovingRebels || []).length === 0, 'C4·招抚→流寇消编');
-ok(((GM.population.byLegalStatus.huangji || {}).mouths || 0) - _hj0 === _pac.absorbed, 'C4·招抚守恒回编户/军户 (+' + _pac.absorbed + ')');
+ok(typeof PF3._tickRovingCoalesce === 'undefined' && typeof PF3.pacifyRovingRebel === 'undefined', 'C4·流寇凝聚、剿抚的口子删了');
+PF3.tick({ turn: GM.turn, monthRatio: 1 });
+ok(!(GM.rovingRebels || []).length, 'C4·链产逃户+起义→过回合不凝成全国流寇 (逃户 ' + _taoohuB4 + ')');
 
 console.log('\n[verify-class-chain-integration] ' + (failed ? 'FAIL' : 'PASS') + ' — ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed ? 1 : 0);

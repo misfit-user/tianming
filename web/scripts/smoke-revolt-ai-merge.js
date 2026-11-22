@@ -5,10 +5,10 @@
 // 一、AI 宣布的起义（主推演 class_revolt）、一致性补录的民变并进民变案（TM.RevoltCases.riseFromAI）：
 //     落到本朝一州——该州有案就当「起」，没案就立案并当起；首领、骨干按 AI 给的名字先在档里找，找不到用这名字按出身新生；
 //     人数按户口算，不取 AI 报的兵数。该州已有一股、或点名的首领已领着一股：就是那一股，不另起。
-//     落不到本朝州县、在任官员领头、民族边疆宗室起事：不并（另一条路），调用方照旧。
+//     落不到本朝州县、在任官员领头、民族边疆宗室起事：不并（另一条路）；11-21 删旧起调用方不再记旧账、补旧式一股，记一笔写回落空。
 // 二、省的简称只认通行简称：「江南」不是江西，「山东」不是山西，「广西」不是广东（民2a 拿省名头一个字当简称）。
 // 三、三处直接生民变的口子删掉：徭役惨烈（「某地」五千）、强征（财政区划编号上一万）、破产第六步（「某地」五千）。
-// 四、主推演 class_revolt 与一致性补录两处真代码（花括号、标记之间原样抽出）接上 riseFromAI；落不到的照旧。
+// 四、主推演 class_revolt 与一致性补录两处真代码（花括号、标记之间原样抽出）接上 riseFromAI；落不到的记写回落空（11-21 删旧）。
 // 真跑 tm-traits-data.js、tm-person.js、tm-office-holder-state.js、tm-circuit-governance.js、tm-revolt-cases.js、tm-revolt-rising.js、
 // tm-region-enrich.js、tm-fiscal-ui.js、tm-event-bus.js；造人用替身（真入口 TM.Roster.createChar 在 tm-indices.js，实验台真档另验）。
 const fs = require('fs');
@@ -194,12 +194,15 @@ function between(file, from, to) {
   assert(a >= 0 && b > a, file + '：找不到标记 ' + from + ' … ' + to);
   return s.slice(a, b);
 }
-const CLASS_BLOCK = between('tm-endturn-apply.js', '// ── 阶层起义爆发——长周期生命周期起点 ──', '// 拒抚反消失闸');
+// 11-21 删旧：落不到的不再记旧账 GM._activeRevolts、不再补旧式一股，各记一笔写回落空（两处的写回落空口子换成替身记下来）
+const CLASS_BLOCK = between('tm-endturn-apply.js', '// ── 阶层起义爆发 ──', '// ── 民变案的各股（民变重做·收口');
 const RECON_BLOCK = between('tm-endturn-apply-stages.js', '// 民变补录', '// 天灾补录');
 
 function runClassRevolt(G, p1) {
   const e = sandbox();
   e.GM = G;
+  e.__fails = [];
+  e._tmRecordSemanticFailure = (kind, ref, why) => { e.__fails.push({ kind, ref, why }); return false; };
   e.findCharByName = (n) => G.chars.find((x) => x.name === n) || null;
   e.createRuntimeCharacter = (o) => { o.id = 'rt_' + G.chars.length; G.chars.push(o); return o; };
   vm.runInContext('this.__run = function (p1) {\n' + CLASS_BLOCK + '\n};', e);
@@ -209,21 +212,24 @@ function runClassRevolt(G, p1) {
 G = world();
 G.classes = [{ name: '饥民', leaders: [] }];
 G._revoltPrecursors = [{ class: '饥民', region: '延安府', indicator: 'famine' }, { class: '佃农', region: '开封府' }];
-runClassRevolt(G, { class_revolt: [
+const cr = runClassRevolt(G, { class_revolt: [
   { class: '饥民', region: '延安府', leaderName: '王二', militaryStrength: 200000, slogan: '均田免粮' },
   { class: '饥民', region: '辽东', leaderName: '赵四', militaryStrength: 8000 }
 ] });
 const mine = G.minxin.revolts.filter((x) => x.source === 'revolt-cases');
 ok(mine.length === 1 && mine[0].leaderName === '王二' && mine[0].followers === 9810, '主推演宣布延安起义：进民变案，人数按户口');
-ok(G._activeRevolts.length === 1 && G._activeRevolts[0].leaderName === '赵四' && G._activeRevolts[0].militaryStrength === 8000,
-  '辽东落不到本朝州县：照旧记进旧账（另一条路），不丢');
-ok(!(G.activeWars || []).some((w) => w.leader === '王二') && (G.activeWars || []).some((w) => w.leader === '赵四'), '并进民变案的游击不挂战事；旧账那股照旧挂');
+ok(G._activeRevolts === undefined && !G.chars.some((x) => x.name === '赵四'), '辽东落不到本朝州县：不再记旧账、不造人（实得 ' + JSON.stringify(G._activeRevolts) + '）');
+ok(cr.__fails.length === 1 && cr.__fails[0].kind === 'class_revolt' && cr.__fails[0].ref === '赵四' && /地名对不上/.test(cr.__fails[0].why),
+  '记一笔写回落空，写明为什么（实得 ' + JSON.stringify(cr.__fails) + '）');
+ok(!(G.activeWars || []).some((w) => w.leader === '王二' || w.leader === '赵四'), '并进民变案的游击不挂战事；落空的也不挂');
 ok(G.classes[0].leaders.indexOf('王二') >= 0 && G._revoltPrecursors.length === 1 && G._revoltPrecursors[0].class === '佃农', '阶层领袖照旧记上；该阶层该地的前兆照旧清掉');
 
 function runRecon(G, events, difficulty) {
   const e = sandbox();
   e.GM = G;
   e.P = { conf: { difficulty: difficulty || 'standard' } };
+  e.__fails = [];
+  e._stageSemanticFailure = (kind, ref, why) => { e.__fails.push({ kind, ref, why }); return false; };
   // 护栏认地名的替身（真入口 TM.AIChange.PathUtils 在 modules/ai-change-applier）：按名字找区划
   e.TM.AIChange = { PathUtils: { findDivisionByNameFuzzy: (GM, n) => { const L = leafOf(GM, n); return L ? L.node : null; } } };
   vm.runInContext('this.__run = function (_patch) {\n' + RECON_BLOCK + '\n};', e);
@@ -233,15 +239,16 @@ function runRecon(G, events, difficulty) {
 G = world();
 G.turnChanges = { variables: [] };
 G.minxin.trueIndex = 40;
-runRecon(G, [
+const rc = runRecon(G, [
   { action: 'start', region: '平凉府', leader: '刘六', scale: 90000, reason: '饥民抢粮' },
   { action: 'start', region: '江南', leader: '', scale: 3000, reason: '织工罢市' },
   { action: 'suppress', region: '不存在的地方' }
 ]);
 const pl = G.minxin.revolts.find((x) => x.region === '平凉府');
 ok(pl && pl.source === 'revolt-cases' && pl.leaderName === '刘六' && pl.followers === 300 && pl.declaredBy === 'reconcile', '补录平凉起事：进民变案，人数按户口（不取叙事报的九万）');
-ok(G.minxin.revolts.some((x) => x.region === '江南' && x._autoFromReconcile), '「江南」落不到一州：照旧补一股（旧式）');
-ok(G.turnChanges.variables.length === 2, '本回合变量只记真有变动的两条（镇压找不到那股不记）');
+ok(!G.minxin.revolts.some((x) => x.region === '江南') && rc.__fails.length === 1 && rc.__fails[0].kind === 'record_revolt_events.start',
+  '「江南」落不到一州：不再补旧式一股，记一笔写回落空（实得 ' + JSON.stringify(rc.__fails) + '）');
+ok(G.turnChanges.variables.length === 1, '本回合变量只记真有变动的一条（落空的、镇压找不到那股都不记）');
 G = world();
 G.turnChanges = { variables: [] };
 runRecon(G, [{ action: 'start', region: '开封府', leader: '李四' }]);

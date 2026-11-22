@@ -1868,13 +1868,14 @@
           });
         }
 
-        // ── 阶层起义爆发——长周期生命周期起点 ──
+        // ── 阶层起义爆发 ──
         // 民变重做·民2b（同志 11-14 定）：落在本朝一州的并进民变案（TM.RevoltCases.riseFromAI）——该州有案当「起」、没案立案并起，
         //   首领、骨干按 AI 给的名字先在档里找，找不到用这名字按出身新生；人数按户口算，不取 AI 报的兵数；游击不挂战事。
-        //   之后的进展、剿抚、建政走新制（revolt_update 等四样只管下面这本旧账，随对应的片撤掉）。
-        //   落不到本朝州县的（别家境内、地名对不上），土司、宗室、在任官员领头的（兵变、割据，另一条路）：照旧记进 GM._activeRevolts。
+        //   之后的剿、抚、自散、成势都在民变案那一套里（tm-revolt-band.js）。
+        // 11-21 删旧（同志「按你推荐来」）：落不到本朝州县的（别家境内、地名对不上），首领是在任官员、将帅、宗室、别家人的，
+        //   民族、边疆、宗室起事的，不再记进旧账 GM._activeRevolts（旧账连同 revolt_update 删了），记一笔写回落空。
+        //   兵变、割据、土司起事不是民变：推演照通用的 faction_create（领袖须是档里在世的人）＋ map_changes 易主＋ army_changes 写。
         if (p1.class_revolt && Array.isArray(p1.class_revolt)) {
-          if (!Array.isArray(GM._activeRevolts)) GM._activeRevolts = [];
           p1.class_revolt.forEach(function(rv) {
             if (!rv) return;
             var _rise = null;
@@ -1903,176 +1904,13 @@
               }
               return;
             }
-            if (!rv.class || !rv.leaderName || !Array.isArray(GM.classes)) return;
-            var cObj = GM.classes.find(function(c){return c.name === rv.class;});
-            if (!cObj) return;
-            var _rid = rv.revoltId || ('revolt_' + GM.turn + '_' + Math.random().toString(36).slice(2, 8));
-            if (GM._activeRevolts.some(function(r){return r.id === _rid;})) return; // 重复ID
-            // 生成起义领袖角色（若不存在）
-            if (GM.chars && !findCharByName(rv.leaderName)) {
-              var _abBase = { intelligence: 50, administration: 40, military: 55, valor: 65, charisma: 75, diplomacy: 40, benevolence: 50 };
-              // 根据 ideology 调整能力倾向
-              if (rv.ideology === 'religious') { _abBase.charisma += 15; _abBase.intelligence += 10; _abBase.diplomacy += 5; }
-              else if (rv.ideology === 'warlord' || rv.organizationType === 'militaryMutiny') { _abBase.military += 15; _abBase.valor += 10; }
-              else if (rv.ideology === 'nobleClaim') { _abBase.administration += 15; _abBase.intelligence += 10; _abBase.charisma += 10; }
-              else if (rv.ideology === 'populist') { _abBase.benevolence += 15; _abBase.charisma += 10; }
-              createRuntimeCharacter({
-                name: rv.leaderName,
-                title: rv.class + '领袖',
-                faction: rv.class + '起义军',
-                class: rv.class,
-                alive: true,
-                age: 35,
-                loyalty: 0,
-                stance: '反对',
-                intelligence: Math.min(100, _abBase.intelligence),
-                administration: Math.min(100, _abBase.administration),
-                military: Math.min(100, _abBase.military),
-                valor: Math.min(100, _abBase.valor),
-                charisma: Math.min(100, _abBase.charisma),
-                diplomacy: Math.min(100, _abBase.diplomacy),
-                benevolence: Math.min(100, _abBase.benevolence),
-                personality: '起义领袖——' + (rv.slogan || (rv.demands ? rv.demands.join('、') : '')),
-                _spawnedFromRevolt: { revoltId: _rid, class: rv.class, region: rv.region, turn: GM.turn }
-              });
-            }
-            // 生成副将（若指定且不存在）
-            if (Array.isArray(rv.secondaryLeaders) && GM.chars) {
-              rv.secondaryLeaders.forEach(function(sln) {
-                if (!sln || findCharByName(sln)) return;
-                createRuntimeCharacter({
-                  name: sln, title: rv.class + '义军副将', faction: rv.class + '起义军', class: rv.class, alive: true,
-                  age: 32, loyalty: 70, stance: '反对',
-                  intelligence: 45, administration: 35, military: 60, valor: 65, charisma: 50, diplomacy: 35, benevolence: 45,
-                  _spawnedFromRevolt: { revoltId: _rid, class: rv.class, region: rv.region, turn: GM.turn, role: 'secondary' }
-                });
-              });
-            }
-            // 构建 revolt 实体
-            var revolt = {
-              id: _rid,
-              class: rv.class, region: rv.region || '',
-              leaderName: rv.leaderName,
-              secondaryLeaders: Array.isArray(rv.secondaryLeaders) ? rv.secondaryLeaders : [],
-              ideology: rv.ideology || 'populist',
-              organizationType: rv.organizationType || 'flowingBandit',
-              slogan: rv.slogan || '',
-              religiousSect: rv.religiousSect || '',
-              historicalArchetype: rv.historicalArchetype || '',
-              scale: rv.scale || '中',
-              militaryStrength: parseInt(rv.militaryStrength, 10) || 5000,
-              composition: rv.composition || '',
-              supplyStatus: 50,
-              phase: rv.phase || 'uprising',
-              demands: Array.isArray(rv.demands) ? rv.demands : [],
-              grievances: Array.isArray(rv.grievances) ? rv.grievances : [],
-              spreadPattern: rv.spreadPattern || 'mobile',
-              territoryControl: rv.region ? [rv.region] : [],
-              absorbedForces: [],
-              externalSupport: [],
-              defectedOfficials: [],
-              startTurn: GM.turn,
-              history: [{ turn: GM.turn, phase: rv.phase || 'uprising', event: '首义：' + (rv.reason || rv.slogan || '') }],
-              outcome: null
-            };
-            GM._activeRevolts.push(revolt);
-
-            // 更新阶层领袖
-            if (!Array.isArray(cObj.leaders)) cObj.leaders = [];
-            if (cObj.leaders.indexOf(rv.leaderName) < 0) cObj.leaders.push(rv.leaderName);
-            // 加入 activeWars
-            if (!Array.isArray(GM.activeWars)) GM.activeWars = [];
-            GM.activeWars.push({
-              enemy: rv.class + '起义军', leader: rv.leaderName, region: rv.region,
-              militaryStrength: revolt.militaryStrength, turn: GM.turn,
-              demands: revolt.demands, revoltId: _rid
-            });
-            // 清理关联前兆（已爆发）
-            if (Array.isArray(GM._revoltPrecursors)) {
-              GM._revoltPrecursors = GM._revoltPrecursors.filter(function(pc){return !(pc.class === rv.class && pc.region === rv.region);});
-            }
-            addEB('\u8D77\u4E49', '\u3010' + (rv.region||'') + '\u3011' + rv.class + '\u8D77\u4E49\uFF01\u9886\u8896' + rv.leaderName + (rv.slogan?'\u6253\u300C' + rv.slogan + '\u300D':'') + '\u2014\u2014' + (rv.historicalArchetype?'\u5F62\u5982' + rv.historicalArchetype + '\uFF0C':'') + '\u89C4\u6A21' + (rv.scale||'\u4E2D') + (rv.reason ? '\u56E0\u2014\u2014' + rv.reason : ''));
-            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【起义爆发】' + rv.leaderName + '起兵于' + (rv.region||'?') + (rv.slogan?'，号"' + rv.slogan + '"':'') + '。' + (rv.reason||''), category: '起义' });
-          });
-        }
-
-        // 拒抚反消失闸（2026-07-22·玩家立案「谈和被拒→叛军蒸发」）：刚拒抚的义军 3 回合内、
-        // 期间无一场真镇压（history 无「镇压:」条目）时，禁被 dissolved/decline 静默收走——
-        // 拒抚是变强信号·须先经真战斗才能消亡。P.conf.revoltRejectionEscalation===false 整体关闭。
-        function _revoltAmnestyShield(r) {
-          if (!r || r._amnestyRejectedTurn == null) return false;
-          if (P.conf && P.conf.revoltRejectionEscalation === false) return false;
-          if ((GM.turn - r._amnestyRejectedTurn) >= 3) return false;
-          var fought = (r.history || []).some(function(h) { return h && h.turn >= r._amnestyRejectedTurn && /^镇压:/.test(String(h.event || '')); });
-          return !fought;
-        }
-
-        // ── 起义进展更新 ──
-        if (p1.revolt_update && Array.isArray(p1.revolt_update) && GM._activeRevolts) {
-          p1.revolt_update.forEach(function(ru) {
-            if (!ru || !ru.revoltId) return;
-            var r = GM._activeRevolts.find(function(x){return x.id === ru.revoltId;});
-            if (!r || r.outcome) return;
-            var oldPhase = r.phase;
-            if (ru.newPhase) {
-              if ((ru.newPhase === 'decline' || ru.newPhase === 'ending') && _revoltAmnestyShield(r)) {
-                addEB('起义', '【' + r.leaderName + '】拒抚方炽·其势未衰（未经真镇压不得自衰）');
-              } else {
-                r.phase = ru.newPhase;
-              }
-            }
-            if (Array.isArray(ru.territoryGained)) ru.territoryGained.forEach(function(t){ if(t && r.territoryControl.indexOf(t)<0) r.territoryControl.push(t); });
-            if (Array.isArray(ru.territoryLost)) ru.territoryLost.forEach(function(t){ r.territoryControl = r.territoryControl.filter(function(tt){return tt !== t;}); });
-            if (ru.strength_delta) { var _rsd = parseInt(ru.strength_delta, 10) || 0; if (_rsd < 0 && _revoltAmnestyShield(r)) _rsd = 0; r.militaryStrength = Math.max(0, (r.militaryStrength||0) + _rsd); } // ||0·AI给非数字曾写NaN入档(2026-07-04 审查定罪)·拒抚闸内负增量归零(兵力衰减须经真镇压)
-            if (ru.supplyStatus_delta) r.supplyStatus = Math.max(0, Math.min(100, (r.supplyStatus||50) + (parseInt(ru.supplyStatus_delta, 10) || 0)));
-            if (Array.isArray(ru.absorbedForces)) ru.absorbedForces.forEach(function(f){ if (r.absorbedForces.indexOf(f) < 0) r.absorbedForces.push(f); });
-            if (Array.isArray(ru.externalSupport)) ru.externalSupport.forEach(function(s){ if (r.externalSupport.indexOf(s) < 0) r.externalSupport.push(s); });
-            if (Array.isArray(ru.defectedOfficials)) {
-              ru.defectedOfficials.forEach(function(nm) {
-                if (r.defectedOfficials.indexOf(nm) < 0) r.defectedOfficials.push(nm);
-                var _och = findCharByName(nm);
-                if (_och) {
-                  // [Slice J·2026-05-10] 走 Membership API
-                  if (typeof window !== 'undefined' && window.TM && TM.FactionMembership) {
-                    TM.FactionMembership.assignChar(_och, r.class + '起义军', { reason: '官员投奔起义军' });
-                  } else {
-                    _och.faction = r.class + '起义军';
-                  }
-                  _tmApplyLoyaltySet(_och, 80, '\u6295\u5954\u8D77\u4E49\u519B', 'revolt-defect');
-                  _och._defectedTurn = GM.turn;
-                  if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(nm, '投奔起义军：' + (r.slogan||''), '决', 8);
-                }
-              });
-            }
-            // 领袖伤亡
-            if (ru.leaderCasualty) {
-              var _fatalLeaderCasualty = /死|战死|被杀|击毙/.test(ru.leaderCasualty);
-              var _leaderCasualtyApplied = !_fatalLeaderCasualty || _tmApplyCanonicalDeath(r.leaderName, ru.leaderCasualty, 'revolt_update.leaderCasualty');
-              if (_leaderCasualtyApplied) addEB('\u8D77\u4E49', '\u3010' + r.leaderName + '\u3011' + ru.leaderCasualty);
-              if (_fatalLeaderCasualty && _leaderCasualtyApplied) {
-                // 领袖死亡通常推向 decline（除非已转 establishment）
-                if (r.phase !== 'establishment') r.phase = 'decline';
-              }
-            }
-            r.history.push({ turn: GM.turn, phase: r.phase, event: ru.keyEvent || ru.narrative || '推进' });
-            // 同步 activeWars 的 militaryStrength
-            if (Array.isArray(GM.activeWars)) {
-              GM.activeWars.forEach(function(w){ if (w.revoltId === r.id) w.militaryStrength = r.militaryStrength; });
-            }
-            // 自动建政提示——若进入 establishment 而未转化，AI 下回合应 revolt_transform to faction_create
-            if (r.phase === 'establishment' && oldPhase !== 'establishment') {
-              r._needTransform = true;
-            }
-            addEB('\u8D77\u4E49', '\u3010' + r.leaderName + '\u3011' + (oldPhase!==r.phase?'\u8F6C\u5165' + r.phase + '\uFF1A':'\u63A8\u8FDB\uFF1A') + (ru.keyEvent||'') + (ru.narrative?'\u2014\u2014' + ru.narrative.slice(0,80):''));
-            if (GM.qijuHistory && (ru.keyEvent || ru.narrative)) {
-              if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【起义·' + r.phase + '】' + r.leaderName + '：' + (ru.keyEvent||ru.narrative||''), category: '起义' });
-            }
+            _tmRecordSemanticFailure('class_revolt', String(rv.leaderName || rv.region || ''), (_rise && _rise.why) ? String(_rise.why) : 'revolt cases unavailable');
           });
         }
 
         // ── 民变案的各股（民变重做·收口，同志 11-15「民变是治理的一部分」）──
         //   剿平、受抚、自散由推演判，按编号落到这一股（TM.RevoltBand.conclude）：首领去向取它给的 leaderFate（没给当脱身），
-        //   剿平的接皇威（平乱），人数在过回合 6.1455 善后。下面三段原本只管旧账 GM._activeRevolts；编号是民变案的先在这里了结。
+        //   剿平的接皇威（平乱），人数在过回合 6.1455 善后。下面三段原先还管旧账 GM._activeRevolts，那半 11-21 删旧时删了。
         //   交战照常走 battleResult（这股的军在军册里）；剿而未平（partial/stalemate/defeat）不在这里记。
         var _bandConclude = function(id, status, extra) {
           if (!id || typeof TM === 'undefined' || !TM.RevoltBand || typeof TM.RevoltBand.conclude !== 'function') return null;
@@ -2085,204 +1923,51 @@
           if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【' + tag + '】' + text + '。' + (narrative || ''), category: '起义' });
         };
 
-        // ── 镇压行动 ──
+        // ── 剿平（民变案的一股；旧账 GM._activeRevolts 那半 11-21 删旧时删了）──
+        //   victory 才了结；剿而未平（partial/stalemate/defeat）不在这里记，交战照常写 battleResult
         if (p1.revolt_suppress && Array.isArray(p1.revolt_suppress)) {
           p1.revolt_suppress.forEach(function(sp) {
-            if (!sp || !sp.revoltId) return;
-            var _bdS = sp.outcome === 'victory' ? _bandConclude(sp.revoltId, 'suppressed', { by: sp.suppressor, leaderFate: sp.leaderFate }) : null;
-            if (_bdS) { _bandQiju('镇压', (sp.suppressor || '官军') + '剿平' + _bdS.leaderName + '一股', sp.narrative); return; }
-            var r = (GM._activeRevolts || []).find(function(x){return x.id === sp.revoltId;});
-            if (!r || r.outcome) return;
-            var cas = sp.casualties || {};
-            if (cas.rebel) r.militaryStrength = Math.max(0, (r.militaryStrength||0) - (parseInt(cas.rebel, 10) || 0)); // ||0·同上防NaN
-            if (sp.tactic === '坚壁清野') r.supplyStatus = Math.max(0, (r.supplyStatus||50) - 15);
-            if (sp.tactic === '分化瓦解') { r.absorbedForces = r.absorbedForces.slice(0, Math.max(0, r.absorbedForces.length - 2)); }
-            if (sp.outcome === 'victory') {
-              r.outcome = 'suppressed';
-              r.phase = 'ending';
-              // 移除 activeWars
-              if (Array.isArray(GM.activeWars)) GM.activeWars = GM.activeWars.filter(function(w){return w.revoltId !== r.id;});
-              // 领袖被杀
-              _tmApplyCanonicalDeath(r.leaderName, '起义失败被剿', 'revolt_suppress.leader');
-            } else if (sp.outcome === 'defeat') {
-              // 官军反被击溃——起义壮大
-              r.militaryStrength = Math.min(999999, (r.militaryStrength||0) + 3000);
-            }
-            r.history.push({ turn: GM.turn, phase: r.phase, event: '镇压:' + (sp.suppressor||'官军') + '-' + (sp.outcome||'相持') });
-            addEB('\u9547\u538B', '【' + (sp.suppressor||'官军') + '】' + (sp.tactic||'') + '→' + r.leaderName + '之乱' + (sp.outcome==='victory'?'\u5E73\u5B9A':sp.outcome==='defeat'?'\u53CD\u88AB\u51FB\u6E83':'') + (sp.narrative?'\u2014\u2014' + sp.narrative.slice(0,80):''));
-            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【镇压】' + (sp.suppressor||'?') + '战' + r.leaderName + '，结' + (sp.outcome||'?') + '。' + (sp.narrative||''), category: '起义' });
+            if (!sp || !sp.revoltId || sp.outcome !== 'victory') return;
+            var _bdS = _bandConclude(sp.revoltId, 'suppressed', { by: sp.suppressor, leaderFate: sp.leaderFate });
+            if (_bdS) _bandQiju('镇压', (sp.suppressor || '官军') + '剿平' + _bdS.leaderName + '一股', sp.narrative);
+            else _tmRecordSemanticFailure('revolt_suppress', String(sp.revoltId), 'no ongoing revolt band with this id');
           });
         }
 
-        // ── 招安行动 ──
+        // ── 受抚（民变案的一股）：首领与骨干归顺朝廷——照旧账招安同一个办法，归入玩家势力、忠诚 45；
+        //   授什么官、赏多少走 office_changes、fiscal_adjustments。拒抚、分化没有可落的账，不记（这股照旧在）
         if (p1.revolt_amnesty && Array.isArray(p1.revolt_amnesty)) {
           p1.revolt_amnesty.forEach(function(am) {
-            if (!am || !am.revoltId) return;
-            var _bdA = am.outcome === 'accepted' ? _bandConclude(am.revoltId, 'appeased', { by: am.envoy }) : null;
-            if (_bdA) {
-              // 受抚的首领（与骨干）归顺朝廷：照旧账招安同一个办法——归入玩家势力、忠诚 45；授什么官、赏多少走 office_changes、fiscal_adjustments
-              var _bdNames = Array.isArray(am.acceptedLeaders) && am.acceptedLeaders.length ? am.acceptedLeaders : [_bdA.leaderName];
-              _bdNames.forEach(function(nm) {
-                var _ch = findCharByName(nm);
-                if (!_ch || _ch.alive === false) return;
-                var _pi = (typeof TM !== 'undefined' && TM.Player && typeof TM.Player.getInfo === 'function') ? TM.Player.getInfo() : ((GM.playerInfo && typeof GM.playerInfo === 'object') ? GM.playerInfo : {});
-                var _nf = _pi.factionName || _ch.faction;
-                if (_nf !== _ch.faction && typeof TM !== 'undefined' && TM.FactionMembership && typeof TM.FactionMembership.assignChar === 'function') TM.FactionMembership.assignChar(_ch, _nf, { reason: '招安归附' });
-                _tmApplyLoyaltySet(_ch, 45, '招安归附', 'revolt-amnesty-accepted');
-                _ch._cooptedTurn = GM.turn;
-              });
-              _bandQiju('招安', (am.envoy || '朝廷') + '抚' + _bdA.leaderName + '一股，受抚' + (am.terms ? '；条件：' + String(am.terms).slice(0, 60) : ''), am.narrative);
-              return;
-            }
-            var r = (GM._activeRevolts || []).find(function(x){return x.id === am.revoltId;});
-            if (!r || r.outcome) return;
-            if (am.outcome === 'accepted') {
-              r.outcome = 'coopted';
-              r.phase = 'ending';
-              if (Array.isArray(GM.activeWars)) GM.activeWars = GM.activeWars.filter(function(w){return w.revoltId !== r.id;});
-              // 领袖归顺：faction 改回朝廷，loyalty 恢复
-              var _acLeaders = Array.isArray(am.acceptedLeaders) && am.acceptedLeaders.length ? am.acceptedLeaders : [r.leaderName];
-              _acLeaders.forEach(function(nm) {
-                var _ch = findCharByName(nm);
-                if (_ch) {
-                  // [Slice J\u00B72026-05-10] \u8D70 Membership API
-                  var _runtimePlayerInfo = (typeof TM !== 'undefined' && TM.Player && typeof TM.Player.getInfo === 'function')
-                    ? TM.Player.getInfo()
-                    : ((GM.playerInfo && typeof GM.playerInfo === 'object') ? GM.playerInfo : {});
-                  var _newFac = _runtimePlayerInfo.factionName || _ch.faction;
-                  if (typeof window === 'undefined' || !window.TM || !TM.FactionMembership || typeof TM.FactionMembership.assignChar !== 'function') {
-                    throw new Error('招安归附缺少统一势力成员入口');
-                  }
-                  if (_newFac !== _ch.faction) TM.FactionMembership.assignChar(_ch, _newFac, { reason: '\u62DB\u5B89\u5F52\u9644' });
-                  _tmApplyLoyaltySet(_ch, 45, '\u62DB\u5B89\u5F52\u9644', 'revolt-amnesty-accepted');
-                  _ch._cooptedTurn = GM.turn;
-                  _ch.title = '归附·' + (_ch.title || '将领');
-                }
-              });
-            } else if (am.outcome === 'split') {
-              // 分化：接受者归顺，拒绝者继续
-              if (Array.isArray(am.acceptedLeaders)) {
-                am.acceptedLeaders.forEach(function(nm) {
-                  var _ch = findCharByName(nm);
-                  if (_ch) {
-                    // [Slice J\u00B72026-05-10] \u8D70 Membership API
-                    var _runtimePlayerInfo = (typeof TM !== 'undefined' && TM.Player && typeof TM.Player.getInfo === 'function')
-                      ? TM.Player.getInfo()
-                      : ((GM.playerInfo && typeof GM.playerInfo === 'object') ? GM.playerInfo : {});
-                    var _newFac = _runtimePlayerInfo.factionName || _ch.faction;
-                    if (typeof window === 'undefined' || !window.TM || !TM.FactionMembership || typeof TM.FactionMembership.assignChar !== 'function') {
-                      throw new Error('分化归附缺少统一势力成员入口');
-                    }
-                    if (_newFac !== _ch.faction) TM.FactionMembership.assignChar(_ch, _newFac, { reason: '\u5206\u5316\u5F52\u9644' });
-                    _tmApplyLoyaltySet(_ch, 40, '\u5206\u5316\u5F52\u9644', 'revolt-amnesty-split');
-                    _ch._cooptedTurn = GM.turn;
-                  }
-                });
-              }
-              r.militaryStrength = Math.floor((r.militaryStrength||0) * 0.5);
-              r.phase = 'decline';
-            } else if (am.outcome === 'rejected') {
-              // 拒抚接线（2026-07-22·玩家立案）：旧版此分支缺失=纯 no-op·回合 prompt 又催 AI 收束
-              // →下回合义军被 dissolved/decline 静默收档·玩家看「叛军蒸发」。现打标+反消失闸+prompt 引导·
-              // 升级演绎(打哪/进逼何城)交 AI。P.conf.revoltRejectionEscalation===false 恢复旧行为(设置有开关)。
-              if (!(P.conf && P.conf.revoltRejectionEscalation === false)) {
-                r._amnestyRejectedTurn = GM.turn;
-                r._warPrep = true;
-                if (Array.isArray(am.rejectedLeaders) && am.rejectedLeaders.length) r._rejectedLeaders = am.rejectedLeaders.slice(0, 8);
-              }
-            }
-            r.history.push({ turn: GM.turn, phase: r.phase, event: '招安:' + (am.envoy||'') + '-' + (am.outcome||'') });
-            addEB('\u62DB\u5B89', '【' + (am.envoy||'?') + '】招安' + r.leaderName + '：' + (am.outcome||'?') + (am.terms?'；条件：' + am.terms.slice(0,60):''));
-            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【招安】' + (am.envoy||'?') + '抚' + r.leaderName + '，' + (am.outcome||'?') + '。' + (am.narrative||''), category: '起义' });
+            if (!am || !am.revoltId || am.outcome !== 'accepted') return;
+            var _bdA = _bandConclude(am.revoltId, 'appeased', { by: am.envoy });
+            if (!_bdA) { _tmRecordSemanticFailure('revolt_amnesty', String(am.revoltId), 'no ongoing revolt band with this id'); return; }
+            var _bdNames = Array.isArray(am.acceptedLeaders) && am.acceptedLeaders.length ? am.acceptedLeaders : [_bdA.leaderName];
+            _bdNames.forEach(function(nm) {
+              var _ch = findCharByName(nm);
+              if (!_ch || _ch.alive === false) return;
+              var _pi = (typeof TM !== 'undefined' && TM.Player && typeof TM.Player.getInfo === 'function') ? TM.Player.getInfo() : ((GM.playerInfo && typeof GM.playerInfo === 'object') ? GM.playerInfo : {});
+              var _nf = _pi.factionName || _ch.faction;
+              if (_nf !== _ch.faction && typeof TM !== 'undefined' && TM.FactionMembership && typeof TM.FactionMembership.assignChar === 'function') TM.FactionMembership.assignChar(_ch, _nf, { reason: '招安归附' });
+              _tmApplyLoyaltySet(_ch, 45, '招安归附', 'revolt-amnesty-accepted');
+              _ch._cooptedTurn = GM.turn;
+            });
+            _bandQiju('招安', (am.envoy || '朝廷') + '抚' + _bdA.leaderName + '一股，受抚' + (am.terms ? '；条件：' + String(am.terms).slice(0, 60) : ''), am.narrative);
           });
         }
 
-        // ── 起义转化（建政 / 招安编入 / 融入他派 / 改朝） ──
+        // ── 自散、建政名号（民变案的一股）──
+        //   dissolved：这股自行溃散；toFaction：只记下推演起的名号，这股的军攻下城才立成势力（同志 11-15「攻下一座城就算成势」，
+        //   tm-revolt-band.js 成势）。旧账那半（并入他部、招安编入、改朝换代、直接立势力）11-21 删旧时删了：割据立国照通用的 faction_create 写
         if (p1.revolt_transform && Array.isArray(p1.revolt_transform)) {
           p1.revolt_transform.forEach(function(tr) {
             if (!tr || !tr.revoltId) return;
-            // 民变案的一股自行溃散
-            var _bdT = tr.transformType === 'dissolved' ? _bandConclude(tr.revoltId, 'dispersed', {}) : null;
-            if (_bdT) { _bandQiju('起义', _bdT.leaderName + '一股自行溃散', tr.narrative); return; }
-            // 民变案的一股「建政」：只记下推演起的名号；这股的军攻下城才立成势力（同志 11-15「攻下一座城就算成势」，tm-revolt-band.js 成势）
-            if (tr.transformType === 'toFaction' && typeof TM !== 'undefined' && TM.RevoltBand && typeof TM.RevoltBand.nameHint === 'function'
-                && TM.RevoltBand.nameHint(GM, tr.revoltId, tr.newFactionName).handled) return;
-            var r = (GM._activeRevolts || []).find(function(x){return x.id === tr.revoltId;});
-            if (!r || r.outcome) return;
-            if (tr.transformType === 'toFaction' && tr.newFactionName) {
-              // 自动创建 faction
-              if (!Array.isArray(GM.facs)) GM.facs = [];
-              if (!GM.facs.some(function(f){return f.name === tr.newFactionName;})) {
-                GM.facs.push({
-                  id: 'faction_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
-                  name: tr.newFactionName,
-                  type: r.organizationType === 'builtState' ? '主权国' : '起义军',
-                  leader: r.leaderName,
-                  territory: (tr.finalTerritory || r.territoryControl.join('、')),
-                  strength: Math.min(100, 20 + Math.floor((r.militaryStrength||0) / 5000)),
-                  militaryStrength: r.militaryStrength || 10000,
-                  economy: 30,
-                  attitude: '敌对',
-                  playerRelation: -50,
-                  cohesion: { political: 40, military: 70, economic: 30, cultural: r.ideology === 'religious' ? 80 : 50, ethnic: r.ideology === 'ethnic' ? 90 : 60, loyalty: 70 },
-                  militaryBreakdown: { standingArmy: Math.floor((r.militaryStrength||0) * 0.6), militia: Math.floor((r.militaryStrength||0) * 0.4), elite: 0, fleet: 0 },
-                  succession: { rule: 'strongest', designatedHeir: '', stability: 30 },
-                  historicalEvents: [{ turn: r.startTurn, event: '起义立国', impact: r.slogan||'' }, { turn: GM.turn, event: '正式建政', impact: tr.narrative||'' }],
-                  internalParties: [],
-                  description: '自' + r.class + '起义（' + (r.historicalArchetype||'') + '）升级',
-                  color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6,'0'),
-                  _createdTurn: GM.turn,
-                  _fromRevolt: r.id
-                });
-                // 更新角色 faction·走 Membership API
-                if (GM.chars) {
-                  if (typeof window !== 'undefined' && window.TM && TM.FactionMembership) {
-                    TM.FactionMembership.bulkReassignChars(function(c){return c.faction === r.class + '起义军';}, tr.newFactionName, { reason: '起义军建政·' + tr.newFactionName });
-                  } else {
-                    GM.chars.filter(function(c){return c.faction === r.class + '起义军';}).forEach(function(c){ c.faction = tr.newFactionName; });
-                  }
-                }
-                // activeWars 更新
-                if (Array.isArray(GM.activeWars)) {
-                  GM.activeWars.forEach(function(w){ if (w.revoltId === r.id) w.enemy = tr.newFactionName; });
-                }
-              }
-              r.outcome = 'seceded';
-              r.phase = 'ending';
-            } else if (tr.transformType === 'dynastyReplaced') {
-              r.outcome = 'dynastyReplaced';
-              r.phase = 'ending';
-              // 游戏结束信号——让上层 UI 处理
-              GM._gameOverPending = { reason: 'dynasty_replaced_by_revolt', revoltId: r.id, newDynasty: tr.newFactionName, narrative: tr.narrative };
-              addEB('\u6539\u671D', '【改朝换代】' + r.leaderName + '之乱颠覆旧朝，' + (tr.newFactionName||'新朝') + '立。');
-            } else if (tr.transformType === 'merged' && tr.mergedInto) {
-              r.outcome = 'merged';
-              r.phase = 'ending';
-              if (Array.isArray(GM.activeWars)) GM.activeWars = GM.activeWars.filter(function(w){return w.revoltId !== r.id;});
-              if (GM.chars) {
-                if (typeof window !== 'undefined' && window.TM && TM.FactionMembership) {
-                  TM.FactionMembership.bulkReassignChars(function(c){return c.faction === r.class + '起义军';}, tr.mergedInto, { reason: '起义军并入·' + tr.mergedInto });
-                } else {
-                  GM.chars.filter(function(c){return c.faction === r.class + '起义军';}).forEach(function(c){ c.faction = tr.mergedInto; });
-                }
-              }
-            } else if (tr.transformType === 'coopted') {
-              r.outcome = 'coopted';
-              r.phase = 'ending';
-              if (Array.isArray(GM.activeWars)) GM.activeWars = GM.activeWars.filter(function(w){return w.revoltId !== r.id;});
-            } else if (tr.transformType === 'dissolved') {
-              if (_revoltAmnestyShield(r)) {
-                // 拒抚方炽·未经真镇压不得自散（反消失闸·2026-07-22 玩家立案）
-                addEB('起义', '【' + r.leaderName + '】拒抚未几岂能自散——其众仍聚·战守待决');
-                return;
-              }
-              r.outcome = 'dissolved';
-              r.phase = 'ending';
-              if (Array.isArray(GM.activeWars)) GM.activeWars = GM.activeWars.filter(function(w){return w.revoltId !== r.id;});
+            if (tr.transformType === 'dissolved') {
+              var _bdT = _bandConclude(tr.revoltId, 'dispersed', {});
+              if (_bdT) { _bandQiju('起义', _bdT.leaderName + '一股自行溃散', tr.narrative); return; }
+            } else if (tr.transformType === 'toFaction' && typeof TM !== 'undefined' && TM.RevoltBand && typeof TM.RevoltBand.nameHint === 'function') {
+              if (TM.RevoltBand.nameHint(GM, tr.revoltId, tr.newFactionName).handled) return;
             }
-            r.history.push({ turn: GM.turn, phase: r.phase, event: '转化:' + tr.transformType });
-            addEB('\u8D77\u4E49', '【转化】' + r.leaderName + '之乱→' + ({toFaction:'据地立帜',dynastyReplaced:'改朝换代',merged:'并入他部',coopted:'招安受抚',dissolved:'溃散平定'}[tr.transformType]||tr.transformType) + (tr.newFactionName?'：立' + tr.newFactionName:'') + (tr.narrative?'——' + tr.narrative.slice(0,80):''));
-            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【起义转化】' + r.leaderName + '：' + tr.transformType + '。' + (tr.narrative||''), category: '起义' });
+            _tmRecordSemanticFailure('revolt_transform', String(tr.revoltId), 'not applicable: ' + String(tr.transformType || ''));
           });
         }
 
@@ -4216,8 +3901,6 @@
           });
         }
 
-        // ①·C4 流寇处置（AI roving_actions→剿/抚·走 PhaseF3 API·邸报由 API 出·单行避混 CRLF）
-        if (p1.roving_actions && Array.isArray(p1.roving_actions) && typeof PhaseF3 !== 'undefined') { p1.roving_actions.forEach(function(ra){ if(!ra||!ra.action) return; try { var _rid=ra.id||ra.name; if(/suppress|剿|镇压|平叛|围剿/.test(ra.action)) PhaseF3.suppressRovingRebel(_rid, Number(ra.force)||30000); else if(/pacify|抚|招抚|招安|赦/.test(ra.action)) PhaseF3.pacifyRovingRebel(_rid); } catch(_re){} }); }
 
         // ④·G 名额杠杆（AI keju_quota_change→调 quotaPerExam·夹50-1500·下一科 _kejuMobilityFlow 据此 throttle 士人受阻·单行避混 CRLF）
         if (p1.keju_quota_change && typeof p1.keju_quota_change === 'object' && typeof P !== 'undefined' && P && P.keju) { var _kq = p1.keju_quota_change, _kcur = Number(P.keju.quotaPerExam) || 0, _knv = (_kq.value != null) ? Number(_kq.value) : (_kcur + (Number(_kq.delta) || 0)); if (isFinite(_knv)) { _knv = Math.max(50, Math.min(1500, Math.round(_knv))); if (_knv !== _kcur) { P.keju.quotaPerExam = _knv; if (typeof addEB === 'function') addEB('科举', '诏调科举名额 ' + _kcur + '→' + _knv + (_kq.reason ? '·' + _kq.reason : '') + (_knv < _kcur ? '（取士益严·恐激士林怨望）' : '（广开取士·然稀清流增优免）')); } } }

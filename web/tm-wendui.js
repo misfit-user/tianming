@@ -853,7 +853,7 @@ function _wdEnvoyDecision(kind) {
   var itype = ch.interactionType || '';
   var playerFac = (typeof P !== 'undefined' && (P.playerFactionName || (P.playerInfo && P.playerInfo.factionName))) || GM.playerFactionName || GM.playerFaction || '本朝';
   var L = ({ accept: '准奏', reject: '驳回', temporize: '羁縻' })[kind] || kind;
-  // 批己·谈判会话专线：招抚(pacify)/议和(peace)据当前台面 offer 走各自子系统结算·不走下方通用邦交效果表
+  // 批己·谈判会话专线：议和(peace)据当前台面 offer 走边患子系统结算·不走下方通用邦交效果表（民变招抚会话 11-21 随旧演绎层删）
   if(ch._factionProposalId) {
     var dip=window.TM&&TM.FactionDiplomacy;
     var receipt=dip&&dip.recordPlayerResponse({id:ch._fromFactionId,name:fac},{id:ch._factionProposalId,proposalVersion:ch._proposalVersion,outcome:({accept:'accepted',reject:'rejected',temporize:'temporized'})[kind]});
@@ -865,7 +865,7 @@ function _wdEnvoyDecision(kind) {
     return;
   }
   var _ng = (ch._negotiationId != null && typeof window !== 'undefined' && window.TM && window.TM.Negotiation && window.TM.Negotiation.get) ? window.TM.Negotiation.get(ch._negotiationId) : null;
-  if (_ng && (_ng.topic === 'pacify' || _ng.topic === 'peace')) { _wdSettleNegotiation(kind, ch, fac, _ng, playerFac); return; }
+  if (_ng && _ng.topic === 'peace') { _wdSettleNegotiation(kind, ch, fac, _ng, playerFac); return; }
   var _km = _WD_ENVOY_EFFECTS[kind] || _WD_ENVOY_EFFECTS.temporize;
   var _eff = _km[itype] || _km._default;
   var relDelta = _eff.rel || 0;
@@ -906,7 +906,9 @@ function _wdEnvoyDecision(kind) {
   if (typeof toast === 'function') toast(L + '·' + fac + '邦交' + (relDelta >= 0 ? '+' : '') + relDelta);
   if (typeof closeWenduiModal === 'function') setTimeout(closeWenduiModal, 600);
 }
-// 批己·招抚(pacify)/议和(peace)据当前台面 offer 走各自子系统结算（专线·不走通用邦交效果表）
+// 批己·议和(peace)据当前台面 offer 走边患子系统结算（专线·不走通用邦交效果表）。
+//   民变的招抚(pacify)会话原由旧民变演绎层开、在这里准奏/驳回；11-21 删旧时连演绎层一起删了——民变的招抚走诏令、由推演判
+//   （revolt_amnesty），旧档里开着的招抚会话在第一次过回合时作罢（tm-revolt-band.js convertLegacy）。
 function _wdSettleNegotiation(kind, ch, fac, ng, playerFac) {
   var N = (typeof window !== 'undefined' && window.TM && window.TM.Negotiation) ? window.TM.Negotiation : null;
   // 玩家刚回价、对方未回（台面末条=玩家）→禁准奏·须待对方回应形成新 them-offer（根治零成本受抚）
@@ -922,18 +924,6 @@ function _wdSettleNegotiation(kind, ch, fac, ng, playerFac) {
   var msg = '', keepOpen = false;
   if (kind === 'temporize') {
     msg = '羁縻敷衍·' + fac + '之议未即定夺';   // 会话留 open(不 resolve)·关窗后仍可再议/回价
-  } else if (ng.topic === 'pacify') {
-    var rid = ng.sourceRef && ng.sourceRef.refId;
-    var RI = window.TM && window.TM.RevoltInference;
-    if (kind === 'accept') {
-      // 银额由 playerResolvePacify 从 settleableOffer 权威取（缺失回落 level*100000·绝不落 0）
-      var r1 = (RI && RI.playerResolvePacify) ? RI.playerResolvePacify(GM, rid, { accept: true, officeTitle: office }) : { ok: false, reason: '演绎层缺失' };
-      if (r1 && r1.ok) { if (N) N.resolve(ng.id, 'accepted'); msg = '准「' + fac + '」受抚罢兵' + (r1.silver ? '·抚银' + r1.silver + '两' : '') + (office ? '·授' + office : ''); }
-      else { keepOpen = true; msg = '抚局未成·' + ((r1 && r1.reason) || '帑廪不给'); }
-    } else {
-      if (RI && RI.playerResolvePacify) RI.playerResolvePacify(GM, rid, { accept: false });
-      if (N) N.resolve(ng.id, 'rejected'); msg = '驳「' + fac + '」讨价·抚议中辍';
-    }
   } else if (ng.topic === 'peace') {
     var BI = window.TM && window.TM.BorderInvasion;
     if (kind === 'accept') {

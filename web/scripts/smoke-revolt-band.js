@@ -485,7 +485,8 @@ part('六·专用的拆了：民变干预面板、调兵数镇压、危机回复
   ok(sf && sf.skipped && old.status === 'ongoing' && !old._suppressionOrder, '鸿雁里写「发兵平乱」：不再按字眼判平（实得 ' + JSON.stringify(sf) + '）');
   ok(AC.inferCrisisActionFromSurface({ text: '廷议：民变四起，宜速发兵镇压讨贼进剿' }) === null, '廷议文字里有民变字眼：不认作危机处置');
   const keys = Object.keys(c.TM.RevoltBand).sort().join(',');
-  ok(keys === 'CFG,SOURCE,bandArmy,conclude,ensureArmy,establish,findBand,nameHint,promptBlock,settle,tick', '民变模块只剩军与账、成势（实得 ' + keys + '）');
+  // 11-21 删旧加了：立势力那几步（standUp，成势与谋叛据州自立共用）、据州自立（secede）、旧档折算（convertLegacy）、民变表留最近已了结（pruneEnded）
+  ok(keys === 'CFG,SOURCE,bandArmy,conclude,convertLegacy,ensureArmy,establish,findBand,nameHint,promptBlock,pruneEnded,secede,settle,standUp,tick', '民变模块只剩军与账、成势、据州自立、旧档折算（实得 ' + keys + '）');
   const tb = read('tm-topbar-vars.js');
   ok(!/调兵镇压|_revTroops_|_revT_|panelHtml|RevoltSuppress/.test(tb), '顶栏两处民变清单只留看：没有调兵框、发兵钮');
   ok(!/民变干预/.test(read('tm-player-tools.js')), '圣裁议题里没有「民变干预」');

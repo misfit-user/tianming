@@ -23,8 +23,9 @@ for (const mode of ['llm', 'agent']) {
   ok(c.agentFlagOn('factionAgentEnabled') && c.agentFlagOn('factionGoalStackEnabled'), mode + ': saved off flags cannot disable faction world');
   ok(c.agentLiveWorldOn() === (mode === 'agent'), mode + ': agent-side ownership remains mode-specific');
   ok(!c.agentFlagOn('reflectionAgentEnabled'), mode + ': unrelated experimental agent remains optional');
-  load(c, 'tm-revolt-entity.js'); load(c, 'tm-captive-court.js');
-  ok(c.TM.RevoltEntity.enabled() && c.TM.CaptiveCourt.enabled(), mode + ': revolts and their consequences remain core');
+  // 民变那一套 11-21 删旧后在 tm-revolt-cases / rising / band，本来就不挂开关；旧三件套连它的开关一起删了
+  load(c, 'tm-captive-court.js');
+  ok(c.TM.CaptiveCourt.enabled(), mode + ': revolt consequences (captive court) remain core');
   load(c, 'tm-faction-npc-settings.js');
   ok(!c.TM.FactionNpcSettings.isAiPrecisionEnabled(), 'missing API still prevents AI calls');
   c.P.ai.key = 'offline-fixture';

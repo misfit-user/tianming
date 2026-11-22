@@ -163,7 +163,7 @@
     try { if (typeof global.GuokuEngine !== 'undefined' && typeof global.GuokuEngine.ensureModel === 'function') global.GuokuEngine.ensureModel(); } catch (e) {}
     var g = GM.guoku;
     if (!g || (Number(g.balance) || 0) < amount) return false;
-    g.balance -= amount;   // arch-ok 开办费国库真扣·镜像 GuokuEngine.Actions.openGranary 支出范式(与 tm-revolt-inference._spendSilver 同款裁定)
+    g.balance -= amount;   // arch-ok 开办费国库真扣·镜像 GuokuEngine.Actions.openGranary 支出范式
     try { if (g.ledgers && g.ledgers.money) g.ledgers.money.stock = g.balance; } catch (e) {}   // arch-ok 同上·账本 stock 同步
     try { if (typeof global.addEB === 'function') global.addEB('朝代', label + '·帑出 ' + amount + ' 两'); } catch (e) {}
     return true;

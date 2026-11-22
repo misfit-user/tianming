@@ -1,9 +1,10 @@
 // smoke-invasion-ai.js — 外患演绎层（批四·2026-07-21·AI 主导·spawner 降兜底）
 //
 // owner 范式：入不入寇/打多大/什么名义交敌国 AI·引擎只当宪法闸。本 smoke 不经真 AI：
-// canned moves 直灌 _applyInvasionActions·验闸——非敌对不得入寇/义军排除/无真边压不得
+// canned moves 直灌 _applyInvasionActions·验闸——非敌对不得入寇/无真边压不得
 // 凭空入寇/兵额封顶/一国一军/冷却/press·withdraw·demand 落账。兜底轨回归=既有
 // smoke-border-invasion(其沙箱无 callAI·确定性路径字节级未动)。
+// 11-21 删旧：旧三件套的「义军排除」删了（民变成了势力就是普通势力），原第①段那一条断言随之去掉。
 'use strict';
 var fs = require('fs');
 var path = require('path');
@@ -31,8 +32,7 @@ sandbox.GM = {
   adminHierarchy: { player: {} },
   facs: [
     { id: 'f_hj', name: '后金', strength: 80, playerRelation: -90 },
-    { id: 'f_cx', name: '朝鲜', strength: 40, playerRelation: 60 },
-    { id: 'f_rev', name: '闯字营', strength: 60, playerRelation: -85, _revoltEntity: true, sourceRevoltId: 'rvX' }
+    { id: 'f_cx', name: '朝鲜', strength: 40, playerRelation: 60 }
   ],
   armies: [],
   chars: [],
@@ -45,12 +45,10 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-border-invasion.js'), 'utf8'
 var GM = sandbox.GM;
 var BI = sandbox.TM.BorderInvasion;
 
-console.log('① 入寇宪法闸：非敌对/义军/无边压全拦·合规才成军(兵额封顶)');
+console.log('① 入寇宪法闸：非敌对/无边压全拦·合规才成军(兵额封顶)');
 var r1 = BI._applyInvasionActions(GM, { moves: [{ type: 'invade', fac: '朝鲜', target: '蓟州', soldiers: 30000 }] });
 assert(r1.blocked === 1 && GM.armies.length === 0, '朝鲜(关系+60·非敌对) → 不得入寇');
-var r2 = BI._applyInvasionActions(GM, { moves: [{ type: 'invade', fac: '闯字营', target: '蓟州' }] });
-assert(r2.blocked === 1 && GM.armies.length === 0, '义军(_revoltEntity) → 排除·民变不走边患链');
-var r3 = BI._applyInvasionActions(GM, { moves: [{ type: 'invade', fac: '后金', target: '大同', soldiers: 30000 }] });
+var r3 =BI._applyInvasionActions(GM, { moves: [{ type: 'invade', fac: '后金', target: '大同', soldiers: 30000 }] });
 assert(r3.blocked === 1 && GM.armies.length === 0, '大同边警仅20(<40) → 无真边压不得凭空入寇');
 var r4 = BI._applyInvasionActions(GM, { moves: [{ type: 'invade', fac: '后金', target: '蓟州', soldiers: 999999, pretext: '七大恨告天' }] });
 var inv = GM.armies.find(function (a) { return a._borderInvasion; });
@@ -98,4 +96,4 @@ if (failures.length) {
   failures.forEach(function (f) { console.log('  - ' + f); });
   process.exit(1);
 }
-console.log('PASS smoke-invasion-ai (非敌对拦/义军排除/边压闸/兵额顶/一国一军/press·demand·withdraw/冷却/排程幂等)');
+console.log('PASS smoke-invasion-ai (非敌对拦/边压闸/兵额顶/一国一军/press·demand·withdraw/冷却/排程幂等)');

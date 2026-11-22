@@ -90,7 +90,7 @@
     { id:'authority.tyrant.activated',    name:'暴君症候活',    test:function(G){return G.huangwei&&G.huangwei.tyrantSyndrome&&G.huangwei.tyrantSyndrome.active && !G.huangwei.tyrantSyndrome._eventFired;} },
     { id:'authority.lostCrisis.activated',name:'失威危机活',    test:function(G){return G.huangwei&&G.huangwei.lostAuthorityCrisis&&G.huangwei.lostAuthorityCrisis.active && !G.huangwei.lostAuthorityCrisis._eventFired;} },
     { id:'authority.powerMinister.rise',  name:'权臣坐大',      test:function(G){return G.huangquan&&G.huangquan.powerMinister && G.huangquan.powerMinister.mode!=='institutional' && !G.huangquan.powerMinister._eventFired;} },
-    { id:'authority.rebellion.upgrade',   name:'民变升级',      test:function(G){return G.minxin&&(G.minxin.revolts||[]).some(function(r){return r.level>=3 && r.status==='ongoing' && !r._eventFired;});} },
+    // 「民变升级」（三级以上的旧式民变）11-21 随五级梯删了：民变起事、成势各自在落地、成势时出事件
     // 监察/环境/诏令
     { id:'audit.fraud.exposed',           name:'查出舞弊',      test:function(G){var a=G.auditSystem;return a&&a.activeAudits&&a.activeAudits.some(function(au){return au.status==='completed' && au.found && !au._eventFired;});} },
     { id:'env.eco.crisis',                name:'生态危机',      test:function(G){return G.environment&&(G.environment.crisisHistory||[]).some(function(c){return c.turn===G.turn;});} }
@@ -114,9 +114,6 @@
     if (eventId === 'authority.tyrant.activated' && G.huangwei && G.huangwei.tyrantSyndrome) G.huangwei.tyrantSyndrome._eventFired = true;
     if (eventId === 'authority.lostCrisis.activated' && G.huangwei && G.huangwei.lostAuthorityCrisis) G.huangwei.lostAuthorityCrisis._eventFired = true;
     if (eventId === 'authority.powerMinister.rise' && G.huangquan && G.huangquan.powerMinister) G.huangquan.powerMinister._eventFired = true;
-    if (eventId === 'authority.rebellion.upgrade' && G.minxin) {
-      (G.minxin.revolts || []).forEach(function(r) { if (r.level>=3 && !r._eventFired) r._eventFired = true; });
-    }
     if (eventId === 'audit.fraud.exposed' && G.auditSystem) {
       (G.auditSystem.activeAudits || []).forEach(function(au) { if (au.status==='completed' && au.found) au._eventFired = true; });
     }

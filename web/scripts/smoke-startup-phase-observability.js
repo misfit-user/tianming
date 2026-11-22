@@ -42,7 +42,8 @@ const replyRetryModules=['tm-ai-reply-retry.js'];
 replyRetryModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(!scriptNames.some(src=>/^tm-emergency-recovery-/.test(src)),'回合复核与应急推演的模块不再加载');
 // 11-11 撤「势力按需取数」：势力调度由绑定的真人按职任一次问完，工具模块不再加载
-const retiredModules=['tm-faction-decision-tools.js'];
+// 民变旧三件套与旧演绎层 11-21 删旧时删了（民变在 tm-revolt-cases / rising / band）
+const retiredModules=['tm-faction-decision-tools.js','tm-revolt-entity.js','tm-revolt-inference.js'];
 retiredModules.forEach(name=>assert(!scriptNames.includes(name),name+' 不再加载'));
 const enactedOrderModules=['tm-agent-world-editor.js','tm-social-formation.js','tm-imperial-orders.js','tm-personal-memory-recall.js','tm-live-context.js','tm-tax-policy.js'];
 requestControls.concat(enactedOrderModules).forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads exactly once'));
@@ -87,9 +88,9 @@ armyPayModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===n
 // 地方存留开支（宗禄出存留）：向 TM.__fiscalParts 登记，fixedCollect 调用期才取，装在财政引擎与其分片之后
 const localExpenseModules=['tm-fiscal-local-expense.js'];
 localExpenseModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-fiscal-army-pay.js'),'local expense registers after the fiscal engine family');});
-// 民变立案与起事判定（民变重做·民1）：过回合 6.145 才调用，紧跟民变演绎层装载；判地方官的性情经 TM.Person 取；游击的连带（民2c）6.146 调用；民变的军与账（民2d-1、收口、成势）6.1455 调用；京师陷落（成势，定命一幕经 TM.Person 取人）6.1456 调用
+// 民变立案与起事判定（民变重做·民1）：过回合 6.145 才调用，装在权威引擎之后（旧民变演绎层 11-21 删了）；判地方官的性情经 TM.Person 取；游击的连带（民2c）6.146 调用；民变的军与账（民2d-1、收口、成势）6.1455 调用；京师陷落（成势，定命一幕经 TM.Person 取人）6.1456 调用
 const revoltCaseModules=['tm-revolt-cases.js','tm-revolt-rising.js','tm-revolt-guerrilla.js','tm-revolt-band.js','tm-capital-fall.js'];
-revoltCaseModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-revolt-inference.js'),'revolt cases load after the revolt inference layer');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-person.js'),'revolt cases load after the person entity');});
+revoltCaseModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-authority-complete.js'),'revolt cases load after the authority engines');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-person.js'),'revolt cases load after the person entity');});
 assert(scriptNames.indexOf('tm-map-circuits.js')<scriptNames.indexOf('phase8-formal-map-dossier.js'),'circuit data layer precedes the map dossier that reads it');
 assert.strictEqual(manifest.scriptCount,417-retiredModules.length+armyPayModules.length+localExpenseModules.length+revoltCaseModules.length+dailyModules.length+politicalModules.length+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+replyRetryModules.length+edictEfficacyModules.length+mapDataModules.length+timeModules.length+travelModules.length+tenureModules.length+mattersModules.length+wenfengModules.length+personModules.length+ledgerFactsModules.length+continuationModules.length,'retain every prior script and every explicitly registered runtime addition');
 fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));

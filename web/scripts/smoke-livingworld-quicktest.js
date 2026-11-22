@@ -2,13 +2,13 @@
 //
 // 「开闸醒世界」翻默认后的一键实跑体检：真源码 vm 实跑(非重新实现)四套活世界系统，验两矩阵——
 //   场景A（默认 conf·即翻默认后的形态）：
-//     民变 level≥3 → RevoltEntity.sync 具象化义军三件套(势力/渠帅/军队)；
+//     （民变 level≥3 具象化义军三件套那一项 11-21 随旧三件套删了）
 //     leaf.borderRisk≥70 连 3 回合 → BorderInvasion.tick 出真侵攻军(army._borderInvasion)；
 //     GM._factionLivingWorld 默认生效 → agentFlagOn('factionAgentEnabled'/'factionGoalStackEnabled')=true(B8 互斥仍守)；
 //     一场会战结果 → WorldReactors 对败方 strength/legitimacy 确定性生效；全程零异常。
 //   场景B（显式全 OFF conf）：同样种子下上述全部【不】发生（老轨回归守卫·字节级 OFF 路径）。
 //
-// 真源码：tm-revolt-entity.js / tm-border-invasion.js / tm-world-reactors.js / tm-agent-flags.js —— vm 实跑其真逻辑。
+// 真源码：tm-border-invasion.js / tm-world-reactors.js / tm-agent-flags.js —— vm 实跑其真逻辑。
 'use strict';
 var fs = require('fs');
 var path = require('path');
@@ -30,23 +30,7 @@ function loadInto(sb, files) {
   return sb;
 }
 
-// ── 民变实体化：真 RevoltEntity.sync ──
-function revoltSandbox(conf) {
-  var sb = { console: console, _ebs: [], Date: Date, JSON: JSON, Math: Math, Object: Object, Array: Array, Number: Number, String: String, Boolean: Boolean, RegExp: RegExp, Map: Map, Set: Set, parseInt: parseInt, parseFloat: parseFloat, isNaN: isNaN, isFinite: isFinite };
-  sb.addEB = function (cat, msg) { sb._ebs.push(cat + '·' + msg); };
-  sb.TM = { errors: { capture: function(){}, captureSilent: function(){} } };
-  sb.initDataListeners = function() {};
-  sb.SettlementPipeline = { register: function() {} };
-  sb.GM = {
-    turn: 10,
-    facs: [{ id: 'f1', name: '大明', strength: 80, economy: 70, playerRelation: 100 }],
-    chars: [{ name: '孙承宗', alive: true, faction: '朝廷', loyalty: 80 }],
-    armies: [{ id: 'a1', name: '京营', faction: '大明', soldiers: 50000 }],
-    minxin: { revolts: [] }
-  };
-  sb.P = { conf: conf || {}, scenarios: [] };
-  return loadInto(sb, ['tm-utils.js', 'tm-indices.js', 'tm-relations.js', 'tm-faction-membership.js', 'tm-revolt-entity.js']);
-}
+// （民变实体化 RevoltEntity.sync 的沙箱 11-21 随旧三件套删了：民变在 tm-revolt-cases / rising / band，另有专测）
 
 // ── 边患真入侵：真 BorderInvasion.tick ──
 function borderSandbox(conf) {
@@ -95,17 +79,7 @@ try {
   // ══════════════ 场景 A：默认 conf（翻默认后 = ON） ══════════════
   console.log('══ 场景A：默认 conf（翻默认后活世界全生效） ══');
 
-  console.log('— A1 民变实体化：level≥3 → 义军三件套具象化 —');
-  var ra = revoltSandbox({});                        // 默认 conf·无 revoltEntityEnabled
-  ra.GM.minxin.revolts.push({ id: 'rvA', region: '陕西', status: 'ongoing', level: 3, scale: 30000, turn: 8 });
-  ra.TM.RevoltEntity.sync(ra.GM);
-  var aFac = ra.GM.facs.find(function (f) { return f._revoltEntity; });
-  var aArmy = ra.GM.armies.find(function (a) { return a._revoltEntity; });
-  var aLeader = ra.GM.chars.find(function (c) { return c._revoltEntity; });
-  assert(!!aFac && aFac.name === '陕西义军', 'A·默认 conf → 义军势力具象化入档(证明 revoltEntityEnabled 默认 ON)');
-  assert(!!aArmy && aArmy.soldiers === 9000 && aArmy.faction === '陕西义军', 'A·义军军队具象化(9000 兵)');
-  assert(!!aLeader && aLeader.officialTitle === '义军渠帅', 'A·义军渠帅人物具象化');
-  assert(ra._ebs.some(function (e) { return e.indexOf('陕西民变成势') >= 0; }), 'A·具象化落起居注(实体链真跑)');
+  // A1 民变实体化（旧三件套）11-21 删旧时删了
 
   console.log('— A2 边患真入侵：borderRisk≥70 连 3 回合 → 侵攻军入境 —');
   var ba = borderSandbox({});                        // 默认 conf·无 borderInvasionEnabled
@@ -135,12 +109,7 @@ try {
   // ══════════════ 场景 B：显式全 OFF（老轨回归守卫） ══════════════
   console.log('══ 场景B：显式全 OFF conf（老轨回归·字节级 OFF 路径） ══');
 
-  console.log('— B1 民变实体化 OFF：不具象化 —');
-  var rb = revoltSandbox({ revoltEntityEnabled: false });
-  rb.GM.minxin.revolts.push({ id: 'rvB', region: '陕西', status: 'ongoing', level: 3, scale: 30000, turn: 8 });
-  rb.TM.RevoltEntity.sync(rb.GM);
-  assert(rb.GM.facs.length === 2 && rb.GM.facs.some(function (f) { return f._revoltEntity; }), '旧关闭值下民变仍具象化');
-  assert(rb.GM.armies.length === 2 && rb.GM.chars.length === 2, '正式民变生成真实军队和渠帅');
+  // B1 民变实体化 OFF（旧三件套）11-21 删旧时删了
 
   console.log('— B2 边患真入侵 OFF：永不出兵 —');
   var bb = borderSandbox({ borderInvasionEnabled: false });

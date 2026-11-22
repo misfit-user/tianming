@@ -130,7 +130,6 @@
     reissue_topics: { type: 'array', desc: '建议将留中册议题起复再议', requiredSubFields: ['topic', 'reason'] },
     class_updates: { type: 'array', desc: '阶层增量', consumedBy: ['applier:1283'] },
     class_emerge:  { type: 'array', desc: '新阶层兴起（可选 descriptor:{stratum:上/中/下, economicBase, fiscalStatus:优免/编户/受饷/法外, unrestArchetype:暴烈/撤离/不合作/哗变}·主标可填表外原词·缺则按 economicRole/特权确定性补全）' },
-    roving_actions: { type: 'array', desc: '流寇处置（见【流寇警报】·{id或name, action:suppress剿/pacify抚, force?:剿时投入兵力}·剿耗军饷战损斩首·抚招为编户/军户然开赦贼恶例）' },
     keju_quota_change: { type: 'object', desc: '调科举名额 quotaPerExam（{value 或 delta, reason}·收紧→士林范进怨望↑/放宽→泄压然稀释士绅清流+优免财政代价）' },
     class_revolt:  { type: 'array', desc: '阶层起义' },
     class_dissolve:{ type: 'array', desc: '阶层消亡' },

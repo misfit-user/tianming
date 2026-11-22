@@ -577,17 +577,16 @@ function _openHujiPanel() {
     body += '<button class="btn" style="font-size:0.7rem;padding:3px 8px;margin-left:6px;" onclick="var s=document.getElementById(\'_largeCorveePick\');if(s.value){var r=HujiEngine.startLargeCorvee(s.value);if(r.ok)toast(\'已开工\');else toast(r.reason||\'失败\');document.querySelector(\'[onclick*=_openHujiPanel]\');this.closest(\'div[style*=position]\').remove();if(typeof _openHujiPanel===\'function\')_openHujiPanel();}">开工</button>';
   }
   // 进行中民变（只看：同志 11-15「民变是治理的一部分」——剿、抚、赈从诏令进，由推演判，不在这里下令）
-  if (GM.minxin && GM.minxin.revolts && typeof AuthorityComplete !== 'undefined') {
-    var ongoing = GM.minxin.revolts.filter(function(r) { return r.status === 'ongoing'; });
+  //   每股列首领、在哪州、众多少（五级名号 11-21 随五级梯删了）
+  if (GM.minxin && GM.minxin.revolts) {
+    var ongoing = GM.minxin.revolts.filter(function(r) { return r && r.status === 'ongoing'; });
     if (ongoing.length > 0) {
       body += '<div style="font-size:0.82rem;color:var(--vermillion-400);margin:0.6rem 0 0.2rem;">进行中民变</div>';
-      var LEVELS = AuthorityComplete.REVOLT_LEVELS || [];
       ongoing.forEach(function(r) {
-        var lv = LEVELS[(r.level||1) - 1] || {};
+        var men = Number(r.followers != null ? r.followers : r.scale) || 0;
         body += '<div style="padding:6px;margin:3px 0;background:var(--bg-2);border-left:3px solid var(--vermillion-400);border-radius:3px;font-size:0.72rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
-        body += '<b style="color:var(--vermillion-300);">[' + (lv.name || ('L'+r.level)) + ']</b>';
-        body += (r.region || '某地') + ' · 众 ' + (r.scale >= 10000 ? (r.scale/10000).toFixed(1)+'万' : r.scale);
-        if (r._suppressionOrder && r.source !== 'revolt-cases') body += ' · <span style="color:var(--amber-400);">官军 ' + r._suppressionOrder.strength + ' 讨伐中</span>';
+        body += '<b style="color:var(--vermillion-300);">' + _topbarEscHtml(r.leaderName || '无名') + '</b>';
+        body += _topbarEscHtml((r.province ? r.province + '·' : '') + (r.region || '某地')) + ' · 众 ' + (men >= 10000 ? (men/10000).toFixed(1)+'万' : men);
         body += '</div>';
       });
     }
@@ -1341,19 +1340,15 @@ function _renderMinxinFullPanel() {
   var perc = m.perceivedIndex !== undefined ? m.perceivedIndex : trueIdx;
   h += '<div style="font-size:0.82rem;color:var(--gold-400);margin-bottom:0.3rem;">民心真伪</div>';
   h += '<div style="font-size:0.82rem;">真实：' + Math.round(trueIdx) + ' / 100 · 朝廷视野：' + Math.round(perc) + '</div>';
-  // 民变 5 级
+  // 进行中民变（只看，同志 11-15：剿、抚、赈从诏令进，由推演判）：每股列首领、在哪州、众多少（五级名号 11-21 随五级梯删了）
   if (m.revolts) {
-    var ongoing = m.revolts.filter(function(r){return r.status==='ongoing';});
-    if (ongoing.length > 0 && typeof AuthorityComplete !== 'undefined') {
-      h += '<div style="font-size:0.82rem;color:var(--vermillion-400);margin:0.6rem 0 0.3rem;">进行中民变（子系统）</div>';
-      var LEVELS = AuthorityComplete.REVOLT_LEVELS || [];
+    var ongoing = m.revolts.filter(function(r){return r && r.status==='ongoing';});
+    if (ongoing.length > 0) {
+      h += '<div style="font-size:0.82rem;color:var(--vermillion-400);margin:0.6rem 0 0.3rem;">进行中民变</div>';
       ongoing.forEach(function(r) {
-        var lv = LEVELS[(r.level||1) - 1] || {};
         h += '<div style="padding:6px;margin:3px 0;background:var(--bg-2);border-left:3px solid var(--vermillion-400);border-radius:3px;font-size:0.74rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
-        h += '<b style="color:var(--vermillion-300);">[' + (lv.name || ('L'+r.level)) + ']</b>';
-        h += (r.region || '某地') + ' · ' + _barFmtNum(r.scale||5000);
-        // 只看（同志 11-15）：剿、抚、赈从诏令进，由推演判；旧档里还挂着的调兵令照写
-        if (r._suppressionOrder && r.source !== 'revolt-cases') h += ' <span style="color:var(--amber-400);">官军 ' + r._suppressionOrder.strength + ' 讨伐中</span>';
+        h += '<b style="color:var(--vermillion-300);">' + _topbarEscHtml(r.leaderName || '无名') + '</b>';
+        h += _topbarEscHtml((r.province ? r.province + '·' : '') + (r.region || '某地')) + ' · 众 ' + _barFmtNum(Number(r.followers != null ? r.followers : r.scale) || 0);
         h += '</div>';
       });
     }

@@ -204,11 +204,9 @@
       tp += '  ※ executorEffectiveness 推演公式：能力×0.25 + 忠诚×0.15 + 吏治×0.15 + 诏书清晰度×0.15 - 阻力×0.25 + 时代加成×0.05（结果 0-1）\n';
       tp += '    阻力越大、能力/忠诚越低 → currentEffects 须小于诏令面值·unintendedConsequences 体现折扣（如"户部对账库银实入仅七成·余被胥吏截留"）\n';
 
-      // 民变 7 阶段（lifecycle.js 未定义·此处教 AI）
-      tp += '【民变/起义 7 阶段（revolt_update.phase 必填·阶段不可跳跃）】\n';
-      tp += '  brewing酝酿（饥馑+加派+流民聚集）→ uprising举旗（杀官称号）→ expansion扩张（攻略州县）→ stalemate相持（官军围剿/义军固守）→ turning转折（破围/受招安/分裂）→ decline衰亡 OR establishment建政 → ending收束（剿灭/招抚/改朝）\n';
-      tp += '  ※ 必填字段：ideology（救世/复古/改朝/族群/教派）·organizationType（流寇/根据地/会党/教团）·slogan口号·historicalArchetype（黄巾/赤眉/黄巢/红巾/白莲等参照）\n';
-      tp += '  ※ 民变非随机·须有 brewing 阶段铺垫·brewing 之前不得直接进入 uprising\n';
+      // 民变：七阶段教学（revolt_update.phase）11-21 删旧时连 revolt_update 一起删了。民变起事由代码按实账判（民变案），
+      //   主推演宣布的起义（class_revolt）并进民变案；剿、抚、自散、成势见提示词【各地民变】。
+      tp += '【民变】各股实情见【各地民变】。剿抚赈从诏令进：交战写 battleResult，剿平写 revolt_suppress，受抚写 revolt_amnesty，自散或起名号写 revolt_transform；人数按户口记账，不取叙事报的数。兵变、割据、土司起事不是民变，照 faction_create＋map_changes＋army_changes 写。\n';
 
       // 朝代特化（中立·AI 自判）
       tp += '【朝代特化字段——按本剧本朝代由 AI 自行判断·不预设地名/官名】\n';
@@ -1398,7 +1396,7 @@
     tp += '  ※ 玩家本回合行动若属【启动型】，必须在对应 schema 字段输出至少一条新 entry，配合"起步"值表现刚启动·不可只在 zhengwen/shilu 叙事而无对应字段：\n';
     tp += '    · 颁政令/诏书 → edict_lifecycle_update[{edictId, stage:"drafting"或"promulgation", stageProgress:0.05~0.2, ...}]\n';
     tp += '    · 营造工程/商队/学堂/造船/水利 → project_updates[{name, type, status:"planning"或"active", progress:5~15, leader, ...}]\n';
-    tp += '    · 剿抚民变/介入既有起义 → revolt_update[{revoltId, phase, ...}]（新起义用 class_revolt 创建）\n';
+    tp += '    · 剿抚民变 → 诏令落到交战写 battleResult，平了、抚了按【各地民变】的 id 写 revolt_suppress、revolt_amnesty（新起义用 class_revolt）\n';
     tp += '    · 募兵/调兵/出征/换帅 → military_changes 或 army_changes；换帅必须写 commander/newCommander，财政征调另写 fiscal_adjustments\n';
     tp += '    · 派遣使节/出使 → char_updates.travelTo + edict_lifecycle_update 双写（人走+诏走）\n';
     tp += '    · 改革变法 → edict_lifecycle_update 含 reformPhase:"pilot"·配 pilotRegion\n';

@@ -1,8 +1,9 @@
 // smoke-border-invasion.js — 威胁→侵攻确定性接点（批二刀2·2026-07-21·flag 默认 OFF）
 //
 // 第七轮记债：borderRisk 只涨不咬·「威胁高→南侵」停在文案层。修法=确定性具象化：
-// 玩家领 leaf.borderRisk≥70 连续3回合 → 最强敌对势力(排除义军)出一支真入侵军(每势力至多
+// 玩家领 leaf.borderRisk≥70 连续3回合 → 最强敌对势力出一支真入侵军(每势力至多
 // 一支·每回合至多一支)·风险<40 连续2回合或被打散→退兵+6回合冷却。战斗归既有军事系统。
+// 11-21 删旧：旧三件套的义军排除那句删了——民变成了势力就是普通势力，跟别家一样按强弱排。
 'use strict';
 var fs = require('fs');
 var path = require('path');
@@ -32,7 +33,7 @@ sandbox.GM = {
     { id: 'f_hj', name: '后金', strength: 80, playerRelation: -90 },
     { id: 'f_mg', name: '漠南部', strength: 60, playerRelation: -70 },
     { id: 'f_cx', name: '朝鲜', strength: 40, playerRelation: 60 },
-    { id: 'f_rev', name: '陕西义军', strength: 60, playerRelation: -85, _revoltEntity: true, sourceRevoltId: 'rvX' }
+    { id: 'f_rev', name: '大顺', type: '义军', strength: 60, playerRelation: -85, _fromRevolt: 'rv-d-yanan-t2', _fromRevoltCase: 'c-1' }
   ],
   armies: [],
   chars: []
@@ -50,7 +51,7 @@ BI.tick(GM); BI.tick(GM); BI.tick(GM); BI.tick(GM);
 assert(GM.armies.length === 0, 'flag 显式关 → 永不出兵');
 assert(!leaves[0]._invRiskStreak, 'flag 显式关 → 连 streak 都不记');
 
-console.log('② 高压三回合 → 最强敌对势力出兵（义军被排除）');
+console.log('② 高压三回合 → 最强敌对势力出兵（民变成的势力照普通势力按强弱排）');
 sandbox.P.conf.borderInvasionEnabled = true;
 BI.tick(GM); GM.turn++;
 assert(GM.armies.length === 0 && leaves[0]._invRiskStreak === 1, '第1回合高压 → 只记账不出兵');
@@ -59,7 +60,7 @@ assert(GM.armies.length === 0 && leaves[0]._invRiskStreak === 2, '第2回合高�
 BI.tick(GM); GM.turn++;
 var inv = GM.armies.find(function (a) { return a._borderInvasion; });
 assert(!!inv, '第3回合高压 → 出兵');
-assert(inv.faction === '后金' && inv.sourceFacName === '后金', '攻方=最强敌对(后金80>漠南60)·义军(-85)被排除');
+assert(inv.faction === '后金' && inv.sourceFacName === '后金', '攻方=最强敌对(后金80>漠南60、大顺60)');
 assert(inv.soldiers === 20000 + 80 * 800, '兵额=20000+strength×800=84000');
 assert(inv.location === '蓟州', '兵锋落最险 leaf(蓟州80>大同50)');
 assert(sandbox._ebs.some(function (e) { return e.indexOf('大举犯边') >= 0; }), '出兵落起居注');
@@ -108,4 +109,4 @@ if (failures.length) {
   failures.forEach(function (f) { console.log('  - ' + f); });
   process.exit(1);
 }
-console.log('PASS smoke-border-invasion (flag门/三回合确定出兵/义军排除/单支限额/退兵冷却/覆没退场)');
+console.log('PASS smoke-border-invasion (flag门/三回合确定出兵/最强敌对/单支限额/退兵冷却/覆没退场)');

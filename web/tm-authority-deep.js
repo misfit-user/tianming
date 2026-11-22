@@ -250,29 +250,7 @@
 
   // 民变干预权重（四策按等级的成功率、花费）11-15 随民变干预面板删掉：剿、抚、赈走诏令，由推演判（tm-revolt-band.js）。
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  同期多地起义激励系数
-  // ═══════════════════════════════════════════════════════════════════
-
-  function _applyMultiRebellionInspiration(ctx, mr) {
-    var G = global.GM;
-    if (!G.minxin || !G.minxin.revolts) return;
-    var ongoing = G.minxin.revolts.filter(function(r){return r.status==='ongoing';});
-    if (ongoing.length < 2) return;
-    // 每多 1 地 +5% 升级概率
-    var inspirationMult = 1 + (ongoing.length - 1) * 0.05;
-    // 五级梯冻住期间（同志 11-08 定，见 tm-authority-complete REVOLT_LADDER_FROZEN）这里也不再「同起升一级」；激励系数照记。
-    // 只有那边明说解冻（=== false）才爬；没载那边时按冻住算。
-    var frozen = !(global.AuthorityComplete && global.AuthorityComplete.REVOLT_LADDER_FROZEN === false);
-    ongoing.forEach(function(r) {
-      r._multiInspiration = inspirationMult;
-      // 加速升级（高概率升级）
-      if (!frozen && r.level < 5 && Math.random() < 0.01 * inspirationMult * mr) {
-        r.level++;
-        if (global.addEB) global.addEB('民变', '响 ' + ongoing.length + ' 地同起，' + (r.region || '某地') + ' 升一级');
-      }
-    });
-  }
+  // 同期多地起义「同起升一级」11-21 随五级梯删了（删旧）：邻州已起事在民变案起事判定里算（tm-revolt-cases.js 邻州一项）。
 
   // ═══════════════════════════════════════════════════════════════════
   //  改革容忍度接入 decreeParser
@@ -406,7 +384,6 @@
     try { _detectAdditionalHuangweiEvents(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF4] hwDetect:') : console.error('[phaseF4] hwDetect:', e); }
     try { _detectAdditionalHuangquanEvents(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF4] hqDetect:') : console.error('[phaseF4] hqDetect:', e); }
     try { _tickPermanentReforms(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF4] permReforms:') : console.error('[phaseF4] permReforms:', e); }
-    try { _applyMultiRebellionInspiration(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF4] multiRev:') : console.error('[phaseF4] multiRev:', e); }
     try { detectFraudulentReports(ctx); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'phaseF4] fraud:') : console.error('[phaseF4] fraud:', e); }
   }
 
@@ -424,7 +401,6 @@
     dispatchSecretEdict: dispatchSecretEdict,
     applyPermanentReformLegacy: applyPermanentReformLegacy,
     getMinxinByOldClass: getMinxinByOldClass,
-    applyMultiRebellionInspiration: _applyMultiRebellionInspiration,   // smoke 单跑（核五级梯冻住时不「同起升一级」）
     getCurrentCorruptionMode: getCurrentCorruptionMode,
     detectFraudulentReports: detectFraudulentReports,
     checkLumpSumWarning: checkLumpSumWarning,

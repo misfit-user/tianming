@@ -10,8 +10,8 @@
 //     挑不到按出身新生（TM.Roster.createChar）：卫所边镇作边兵，有灾作饥民，盐区作盐枭，其余作佃农；
 //     特质按出身配，名字按种子掷（同局可复现），不调 AI。人格由 TM.Person 按特质读，与问对同一份。
 //   - 人数出自户口：本州逃户的三成（没有逃户取口数千分之一），从逃户挪进「从乱」（populationDetail.rebels），口数不变。
-//   - 样子先是游击：定级 2（聚啸）。实体三件套（tm-revolt-entity.js）、起旗号与每回合动作（tm-revolt-inference.js）、
-//     事件总线「民变升级」都只认三级以上，游击的民变不会被套上写死兵数的流民军。占城、成势在民4。
+//   - 样子是游击：定级 2（聚啸）。占城即成势（tm-revolt-band.js establish，11-18）。
+//     旧的五级梯、实体三件套、起旗号与每回合动作 11-21 删旧时整个删了，旧档里的旧式民变折成这里的一股（tm-revolt-band.js convertLegacy）。
 // 民2b（11-14）：AI 宣布的起义并进案（TM.RevoltCases.riseFromAI）也走这里落地——首领、骨干按 AI 给的名字先在档里找，
 //   找不到用这个名字按出身新生（出身照 AI 说的：教门、兵变、盐枭、饥民、佃农）；人数照样从户口拨，不取 AI 报的兵数；
 //   口号、诉求、教派这些原话当文字留在民变上。
@@ -56,7 +56,7 @@
     arr(G.facs).forEach(function (f) {
       if (!f || f.alive === false || f.destroyed) return;
       if (landed[str(f.name)]) return;
-      if (f.isRevolt || REBEL_FACTION.test(str(f.type) + str(f.name))) { out[str(f.name)] = 1; if (f.id != null) out[str(f.id)] = 1; }
+      if (REBEL_FACTION.test(str(f.type) + str(f.name))) { out[str(f.name)] = 1; if (f.id != null) out[str(f.id)] = 1; }
     });
     return out;
   }
@@ -84,6 +84,14 @@
     return arr(mx && mx.revolts).some(function (r) {
       return r && r.status === 'ongoing' && (r.leaderId === ch.id || (r.leaderName && r.leaderName === ch.name));
     });
+  }
+
+  // 在一股还在的民变里当骨干（land 记 _revoltLieutenantOf）：代码不挑他去别州另领一股（11-22 旧档折算干跑查出；
+  //   推演点名他另起一股照旧认，走 namedLeader）
+  function inBand(G, ch) {
+    var id = ch && ch._revoltLieutenantOf;
+    if (!id) return false;
+    return arr(G.minxin && G.minxin.revolts).some(function (r) { return r && r.id === id && r.status === 'ongoing'; });
   }
 
   // 在任（官制树上有职）或领着兵。领的是起义一路自己的兵不算（天启王嘉胤领着「陕北饥民(将起)·主力」，他就是那一路的头领；民2b 改）
@@ -146,7 +154,7 @@
       var s = placeScore(ch.location || ch.loc || ch.region, L);
       if (!s) return;
       if (!rebel) s -= 0.5;                       // 同等所在，起义一类势力的人先
-      if (leadingRevolt(G, ch) || inOffice(G, ch, rebels)) return;
+      if (leadingRevolt(G, ch) || inBand(G, ch) || inOffice(G, ch, rebels)) return;
       if (s > bestScore) { bestScore = s; best = [ch]; } else if (s === bestScore) best.push(ch);
     });
     if (!best.length) return null;
@@ -155,8 +163,10 @@
   }
 
   // AI 点名的人（民2b）：档里没有 → null（用这个名字新生）；有且能当首领 → { ch }；
-  // 已领着一股民变 → { ch, leading }（就是那一股）；当不了 → { why, otherPath }。
-  // otherPath：在任官员、领兵的将帅、宗室、玩家本人——他们起事是兵变、割据，另一条路，不并进民变案。
+  // 已领着一股民变 → { ch, leading }（就是那一股）；当不了 → { why, otherPath, kind }。
+  // otherPath：在任官员、领兵的将帅、宗室、玩家本人、别家的人——他们起事是兵变、割据，另一条路，不并进民变案。
+  //   kind（11-21 删旧）：player 玩家本人／royal 宗室／office 在任或领兵／other 别家的人。谋叛聚众的在任官员、将帅、宗室
+  //   据州自立（tm-conspiracy.js → tm-revolt-band.js secede）认它。
   function namedLeader(G, name) {
     name = str(name).trim();
     if (!name) return null;
@@ -167,11 +177,12 @@
       hit = hit || ch;
     });
     if (!hit) return dead ? { why: '已故' } : null;
-    if (isPlayerChar(G, hit)) return { why: '是玩家本人', otherPath: true };
-    if (ROYAL.test(str(hit.title) + str(hit.officialTitle) + str(hit.class))) return { why: '宗室', otherPath: true };
-    if (inOffice(G, hit, rebels)) return { why: '在任或领兵', otherPath: true };
+    // 这几种不带 ch：land() 认 { ch } 就当首领、骨干用
+    if (isPlayerChar(G, hit)) return { why: '是玩家本人', otherPath: true, kind: 'player' };
+    if (ROYAL.test(str(hit.title) + str(hit.officialTitle) + str(hit.class))) return { why: '宗室', otherPath: true, kind: 'royal' };
+    if (inOffice(G, hit, rebels)) return { why: '在任或领兵', otherPath: true, kind: 'office' };
     var fac = str(hit.faction || hit.factionId);
-    if (fac && fac !== myFac && !rebels[fac]) return { why: '是' + fac + '的人', otherPath: true };
+    if (fac && fac !== myFac && !rebels[fac]) return { why: '是' + fac + '的人', otherPath: true, kind: 'other' };
     if (leadingRevolt(G, hit)) return { ch: hit, leading: true };
     if (num(hit.age, 30) < CFG.minLeaderAge) return { why: '年幼' };
     return { ch: hit };
@@ -331,8 +342,11 @@
     }
     if (typeof global.addEB === 'function') {
       try {
-        global.addEB('民变', '【' + (c.province ? c.province + '·' : '') + revolt.region + '】' + revolt.leaderName +
-          '聚众约 ' + got.n + ' 人起事' + (revolt.slogan ? '，号「' + revolt.slogan + '」' : '') + '，啸聚山林（' + revolt.cause + '）', { credibility: 'high' });
+        // 旧档折算（by legacy）折的是旧档里本来就在的乱，不是这回合新起事（11-22 干跑查出）
+        var who = opts.by === 'legacy' ? '旧报民变核实：' + revolt.leaderName + '为首，众约 ' + got.n + ' 人'
+          : revolt.leaderName + '聚众约 ' + got.n + ' 人起事';
+        global.addEB('民变', '【' + (c.province ? c.province + '·' : '') + revolt.region + '】' + who +
+          (revolt.slogan ? '，号「' + revolt.slogan + '」' : '') + '，啸聚山林（' + revolt.cause + '）', { credibility: 'high' });
       } catch (_) {}
     }
     return revolt;
@@ -340,6 +354,7 @@
 
   TM.RevoltRising = {
     CFG: CFG, land: land, pickLeader: pickLeader, placeScore: placeScore, provinceAt: provinceAt, provinceHit: provinceHit,
-    originOf: originOf, originFromDecl: originFromDecl, namedLeader: namedLeader
+    originOf: originOf, originFromDecl: originFromDecl, namedLeader: namedLeader,
+    landedFactions: landedFactions   // 旧档折算认「没有真地盘的旧义军势力」（tm-revolt-band.js convertLegacy）
   };
 })(typeof window !== 'undefined' ? window : globalThis);

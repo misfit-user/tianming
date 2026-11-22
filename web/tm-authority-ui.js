@@ -348,10 +348,12 @@
     if (mx.revolts && mx.revolts.length > 0) {
       var ongoing = mx.revolts.filter(function(r){return r.status==='ongoing';});
       if (ongoing.length > 0) {
-        body += '<div style="font-size:0.82rem;color:var(--vermillion-400);margin:10px 0 4px;">民变 ' + ongoing.length + ' 起</div>';
+        body += '<div style="font-size:0.82rem;color:var(--vermillion-400);margin:10px 0 4px;">民变 ' + ongoing.length + ' 股</div>';
         ongoing.forEach(function(r) {
           body += '<div style="font-size:0.72rem;background:rgba(192,64,48,0.1);padding:4px 8px;margin:2px 0;">';
-          body += (r.region||'某地') + ' · L' + r.level + ' · ' + (r.cause||'？');   // 只看：剿、抚、赈从诏令进（同志 11-15）
+          // 只看：剿、抚、赈从诏令进（同志 11-15）。五级名号 11-21 随五级梯删了，列首领、在哪州、众多少
+          body += String((r.leaderName ? r.leaderName + ' · ' : '') + (r.region||'某地') + ' · 众 ' + Math.round(Number(r.followers != null ? r.followers : r.scale) || 0) + ' · ' + (r.cause||'？'))
+            .replace(/[&<>"]/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]; });
           body += '</div>';
         });
       }

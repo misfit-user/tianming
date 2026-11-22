@@ -119,16 +119,15 @@ async function directProducerChecks() {
   assert(d.GM._longTermDigest.text.length >= 300, 'the real callAISmart minimum uses actual source excerpts, not a retry loop');
   console.log('PASS actual plain-text long-term producer and minimum-length consumer');
 
-  // The small supplemental military/revolt responses go through their real
+  // The small supplemental military responses go through their real
   // existing no-action consumers. Unsupported destructive story decisions
   // (capture/death/breach) intentionally remain outside this fixture.
-  for (const file of ['tm-border-invasion.js', 'tm-revolt-inference.js']) d.load(file);
+  // (The old revolt inference sub-call and its consumer were deleted on 11-21 with the old revolt machinery.)
+  d.load('tm-border-invasion.js');
   const borderPrompt = '你是天命推演引擎的外患演绎官。以下敌国各有心思';
-  const revoltPrompt = '你是天命推演引擎的民变演绎官。天下汹汹';
   assert.equal(d.TM.BorderInvasion._applyInvasionActions(d.GM, responseFor('', borderPrompt)).applied, 0);
-  assert.equal(d.TM.RevoltInference._applyActions(d.GM, responseFor('', revoltPrompt)).applied, 0);
   assert.throws(() => responseFor('', '你是天命推演引擎的国变演绎官。京师已陷'), /unsupported/);
-  console.log('PASS real bounded border/revolt no-action consumers; unsupported irreversible branches fail closed');
+  console.log('PASS real bounded border no-action consumer; unsupported irreversible branches fail closed');
 
   const events = responseFor('', '请将以下游戏事件压缩为200字以内的摘要，格式：\n事件列表：\n[来信] 尚待答复\n\n请直接输出摘要正文：');
   assert.equal(typeof events, 'string'); assert(events.includes('尚待答复'));

@@ -148,13 +148,24 @@ assert(ce.GM.chars.find(c => c.name === '政敌')._imprisoned, 'A2 plot→目标
 assert(!ce.GM.chars.find(c => c.name === '权臣')._imprisoned, 'A2 plot→主谋不下狱（得逞）');
 assert(ce.GM._conspiracies.some(c => c.action === 'plot_succeeded'), 'A2 plot→史录得逞');
 
-// 民变 modifier（plan 含义军）→ ClassMinxinBridge + revolt 渠帅候选
+// 民变 modifier（plan 含义军）→ ClassMinxinBridge + 走民变案点名起事的口子（删旧 11-21：不再往民变表塞旧式三级一股）
+// 落州、据州自立、出奔的真跑在 smoke-revolt-legacy；这里只看谋叛这头把人、地方、由头交对了口子，结果照口子的回话记史录
 ce = makeCE();
+ce.TM.RevoltCases = { riseFromAI: (g, d) => { ce._calls.push({ fn: 'rise', d }); return { landed: true, region: '开封府' }; } };
 ce.GM = { turn: 10, minxin: { revolts: [] }, _activePlots: [], _conspiracies: [], chars: [char('渠帅', { location: '河南' })] };
 ce.ConspiracyEngine._resolveRipe(ce.GM, plotOf({ ringleader: '渠帅', kind: 'coup', _narrativePlan: '聚众揭竿·义军举事' }));
 assert(ce._calls.some(c => c.fn === 'uprising'), 'A2 民变→ClassMinxinBridge.spawnUprisingCandidates');
-assert(ce.GM.minxin.revolts.some(r => r.leader === '渠帅' && r._fromConspiracy && r.level === 3), 'A2 民变→主谋入 minxin.revolts 当渠帅候选');
-assert(ce.GM._conspiracies.some(c => c.action === 'uprising'), 'A2 民变→史录');
+let riseCall = ce._calls.find(c => c.fn === 'rise');
+assert(riseCall && riseCall.d.by === 'conspiracy' && riseCall.d.leaderName === '渠帅' && riseCall.d.region === '河南', 'A2 民变→主谋走民变案点名起事（by conspiracy·首领渠帅·地方河南）');
+assert(ce.GM.minxin.revolts.length === 0, 'A2 民变→不再往民变表塞旧式一股');
+assert(ce.GM._conspiracies.some(c => c.action === 'uprising' && c.outcome === 'succeeded'), 'A2 民变→落了州记史录得逞');
+// 口子回「另有去处」（不是在任官员宗室）→ 事泄出奔，不生东西
+ce = makeCE();
+ce.TM.RevoltCases = { riseFromAI: () => ({ otherPath: true, why: '首领另有去处', leaderKind: 'other' }) };
+ce.GM = { turn: 10, minxin: { revolts: [] }, _activePlots: [], _conspiracies: [], chars: [char('渠帅', { location: '河南' })] };
+ce.ConspiracyEngine._resolveRipe(ce.GM, plotOf({ ringleader: '渠帅', kind: 'coup', _narrativePlan: '聚众揭竿·义军举事' }));
+assert(ce.GM.chars.find(c => c.name === '渠帅')._fled === true && ce.GM.minxin.revolts.length === 0, 'A2 民变→落不成→事泄出奔·不生民变');
+assert(ce.GM._conspiracies.some(c => c.action === 'uprising' && c.outcome === 'failed'), 'A2 民变→出奔记史录事败');
 
 // ═══ A3 · 同谋牵连羁押（刀丁5） ═══
 ce = makeCE();

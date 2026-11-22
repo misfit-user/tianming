@@ -217,7 +217,6 @@
       copy('class_updates', ['classUpdates','阶层更新','阶级更新']);
       copy('class_emerge', ['classEmerge','classCreate','class_create','new_classes','阶层兴起','新阶层']);
       copy('class_dissolve', ['classDissolve','阶层消亡']);
-      copy('revolt_update', ['revoltUpdate','起义更新','起义推进']);
       copy('regent_decisions', ['regentDecisions','摄政决断','辅政决断']);
       // 信息流·sc1c
       copy('fengwen_snippets', ['fengwenSnippets','风闻','风闻片段']);
@@ -2200,76 +2199,45 @@
         "\"faction_succession\":[{\"faction\":\"势力名\",\"oldLeader\":\"旧首脑\",\"newLeader\":\"新首脑\",\"legitimacy\":70,\"stability_delta\":-10,\"disputeType\":\"正常继承/争位/篡位/内战/外戚专政\",\"narrative\":\"继承叙事\"}],"+
         // 起义前兆——酝酿期状态（流民聚集/密谋/谶语流传），不一定爆发起义
         "\"revolt_precursor\":[{\"class\":\"蓄势阶层\",\"region\":\"发生地\",\"indicator\":\"famine饥荒/landConcentration土地兼并/heavyTax苛税/corvee繁役/officialCorruption吏治腐败/propheticOmen谶纬异象/secretSociety教门密谋\",\"severity\":\"mild/severe/critical\",\"detail\":\"具体表现(如'青州连续三年旱，流民十万涌入徐州')\",\"couldLeadTo\":\"可能导致的起义类型\"}],"+
-        // 阶层起义爆发——进入长周期生命周期，AI 每回合通过 revolt_update 推进
+        // 阶层起义爆发：落到本朝一州的并进民变案（人数按户口记，不取这里报的数）；兵变、割据、土司起事不写这里（写 faction_create＋map_changes＋army_changes）
         "\"class_revolt\":[{"+
-          "\"revoltId\":\"本次起义的唯一ID(如revolt_huangjin/revolt_1886)\","+
           "\"class\":\"起义阶层\","+
-          "\"region\":\"起义地区(须与行政区划匹配)\","+
-          "\"leaderName\":\"起义领袖姓名(按朝代命名，如张角、黄巢、李自成风格)\","+
-          "\"secondaryLeaders\":[\"副将/兄弟/军师\"],"+
-          "\"ideology\":\"religious宗教/dynastic光复/ethnic民族/populist民生/nobleClaim宗室分支/warlord军阀/tributary边疆\","+
-          "\"organizationType\":\"flowingBandit流寇/baseArea根据地/builtState建制/secretSociety教门/militaryMutiny军变\","+
-          "\"slogan\":\"口号(如'苍天已死黄天当立'、'均田免粮'、'驱除鞑虏')\","+
-          "\"religiousSect\":\"宗教派别(ideology=religious时必填，如太平道/白莲教)\","+
-          "\"historicalArchetype\":\"参考的历史原型(如'黄巾之乱''黄巢之乱''红巾军')\","+
-          "\"scale\":\"小/中/大/滔天\","+
-          "\"militaryStrength\":5000,"+
-          "\"composition\":\"兵员组成(如'流民为主、饥卒为辅、少数武装乡民')\","+
-          "\"supplyStatus\":50,"+
-          "\"phase\":\"brewing酝酿/uprising首义/expansion扩张/stalemate相持/turning转折/decline衰落/establishment建政/ending结局\","+
-          "\"demands\":[\"起义诉求\"],"+
-          "\"grievances\":[\"积怨(连续三年旱灾/徭役过重/官员贪索/土地兼并)\"],"+
-          "\"spreadPattern\":\"mobile流动作战/baseDefense根据地/urbanSiege攻城/cascade多点齐发\","+
-          "\"reason\":\"起义导火索\""+
+          "\"region\":\"起事的州（写本朝州名；只写到省也可，就在那省挑一州）\","+
+          "\"leaderName\":\"首领姓名（档里有的写原名，没有的按朝代起名）\","+
+          "\"secondaryLeaders\":[\"骨干\"],"+
+          "\"ideology\":\"religious宗教/dynastic光复/populist民生/warlord军阀（ethnic民族/nobleClaim宗室/tributary边疆不是民变，照 faction_create 写）\","+
+          "\"organizationType\":\"flowingBandit流寇/baseArea根据地/secretSociety教门/militaryMutiny军变\","+
+          "\"slogan\":\"口号(如'均田免粮')\","+
+          "\"religiousSect\":\"教派(宗教起事时写，如白莲教)\","+
+          "\"historicalArchetype\":\"参考的历史原型(如'黄巢之乱')\","+
+          "\"demands\":[\"诉求\"],"+
+          "\"reason\":\"起事导火索\""+
         "}],"+
-        // 起义进展更新——AI 每回合推进阶段（类似诏令生命周期）
-        "\"revolt_update\":[{"+
-          "\"revoltId\":\"匹配现有 revolt 的 id\","+
-          "\"newPhase\":\"新阶段(brewing→uprising→expansion→stalemate→turning→decline/establishment→ending)\","+
-          "\"territoryGained\":[\"本回合占领的城/州\"],"+
-          "\"territoryLost\":[\"本回合失去的\"],"+
-          "\"strength_delta\":1000,"+
-          "\"supplyStatus_delta\":-5,"+
-          "\"absorbedForces\":[\"本回合收编的势力/降将(如'归附了张某三千人'、'收编某都尉降卒')\"],"+
-          "\"externalSupport\":[\"外援(如'受契丹暗中接济粮草')\"],"+
-          "\"defectedOfficials\":[\"归附的朝廷官员(他们会自动转投起义军)\"],"+
-          "\"counterForces\":[\"对抗力量(如'某乡勇首领某某纠集千人抗拒')\"],"+
-          "\"narrative\":\"30-120 字阶段叙事——体现历史真实感\","+
-          "\"keyEvent\":\"本回合关键事件(如'攻陷长安'、'领袖受伤')\","+
-          "\"leaderCasualty\":\"领袖伤亡情况(可空；如'领袖中箭负伤'、'副将战死')\""+
-        "}],"+
-        // 起义镇压行动——朝廷派兵/士绅乡勇/外援等对抗
+        // 民变案的一股被剿平（编号见【各地民变】；交战照常写 battleResult，剿而未平不写这里）
         "\"revolt_suppress\":[{"+
-          "\"revoltId\":\"目标起义\","+
-          "\"suppressor\":\"镇压主力(官军将领/乡勇首领/异族援军)\","+
-          "\"suppressorForce\":20000,"+
-          "\"tactic\":\"围剿/坚壁清野/分化瓦解/利诱降服/借异族/迁徙裹挟\","+
-          "\"outcome\":\"victory彻底剿灭/partial部分镇压/stalemate相持/defeat反被击溃\","+
-          "\"casualties\":{\"rebel\":5000,\"official\":1500,\"civilian\":3000},"+
-          "\"leaderFate\":\"victory时首领下场 captured被擒/killed伏诛/escaped脱身(可空=脱身)\","+
-          "\"narrative\":\"战况叙事\""+
+          "\"revoltId\":\"【各地民变】里那一股的 id\","+
+          "\"suppressor\":\"剿平它的官军或将领\","+
+          "\"outcome\":\"victory（只有平了才写）\","+
+          "\"leaderFate\":\"首领下场 captured被擒/killed伏诛/escaped脱身(可空=脱身)\","+
+          "\"narrative\":\"经过\""+
         "}],"+
-        // 起义招安——朝廷给条件换取归顺
+        // 民变案的一股受抚（授首领什么官走 office_changes，赏银走 fiscal_adjustments；拒抚不写）
         "\"revolt_amnesty\":[{"+
-          "\"revoltId\":\"目标起义\","+
-          "\"envoy\":\"招安使节NPC\","+
-          "\"terms\":\"招安条件(如'封某节度使，残部编入禁军')\","+
-          "\"outcome\":\"accepted接受/rejected拒绝/split分化(部分接受部分拒绝)\","+
-          "\"acceptedLeaders\":[\"接受招安的领袖\"],"+
-          "\"rejectedLeaders\":[\"拒绝的顽固派\"],"+
-          "\"fateOfAccepted\":\"归顺后安置(如'宋江等一十八人封武节大夫')\","+
-          "\"narrative\":\"招安过程\""+
+          "\"revoltId\":\"【各地民变】里那一股的 id\","+
+          "\"envoy\":\"招抚的人\","+
+          "\"terms\":\"招抚条件\","+
+          "\"outcome\":\"accepted（只有受抚了才写）\","+
+          "\"acceptedLeaders\":[\"受抚的首领、骨干\"],"+
+          "\"narrative\":\"经过\""+
         "}],"+
         // 问对承诺进展更新——NPC 对玩家承诺任务的执行报告
         "\"commitment_update\":[{\"id\":\"承诺id(匹配GM._npcCommitments)\",\"npcName\":\"承诺者\",\"progress_delta\":10,\"status\":\"executing/completed/failed/delayed\",\"feedback\":\"执行情况叙事(30-80字，具体描述做了什么、遇到什么)\",\"consequenceType\":\"success/partial/obstructed/abandoned\",\"failReason\":\"若status=failed/delayed·为何未成:推诿/无能/被掣肘/阳奉阴违/客观受阻(不填=未知·据承办人忠诚才干心绪判)\"}],"+
-        // 起义转化——建政/割据/融入他派/彻底消散
+        // 民变案的一股自行溃散，或给它起名号（这股的军打下城就用这名号立成势力）
         "\"revolt_transform\":[{"+
-          "\"revoltId\":\"目标起义\","+
-          "\"transformType\":\"toFaction升级为独立势力/merged融入他派/coopted被招安编入/dissolved自行消散/dynastyReplaced建立新朝(玩家GAMEOVER)\","+
-          "\"newFactionName\":\"新势力名(toFaction时必填)\","+
-          "\"mergedInto\":\"被并入的势力名(merged时必填)\","+
-          "\"finalTerritory\":\"最终控制区(toFaction时)\","+
-          "\"narrative\":\"转化叙事\""+
+          "\"revoltId\":\"【各地民变】里那一股的 id\","+
+          "\"transformType\":\"dissolved自行溃散/toFaction起名号\","+
+          "\"newFactionName\":\"名号(toFaction时写)\","+
+          "\"narrative\":\"经过\""+
         "}],"+
         // 势力关系动态变化
         "\"faction_relation_shift\":[{\"from\":\"势力A\",\"to\":\"势力B\",\"relation_delta\":-10,\"new_type\":\"敌对/联盟/交战/朝贡/通婚\",\"event\":\"变化事件\",\"reason\":\"原因\"}],"+
@@ -2535,7 +2503,7 @@
             tp1 += '  ※ 对方势力有独立的君主/国策/宗教/敌友关系·可能：(1) 接受但变通执行 (2) 敷衍推诿 (3) 明确拒绝 (4) 反唇相讥甚至兴兵 (5) 暂缓答复以观望\n';
             tp1 += '  ※ 依势力对本朝 relation/attitude/militaryStrength 与议题内容择合理回应·不可如内政般"执行→反馈"·应按外交逻辑回报\n';
             tp1 += '  ※ edict_feedback 的 status 用 executing/partial/obstructed 映射外交层级（受理/半允/拒绝）·feedback 写对方朝堂/酋长/酋使的实际回应态度\n';
-            tp1 += '  ※ 连带反映到 faction_updates（relation_delta/attitude_shift 等）·必要时触发 factionsAffected/revolt_update/map_changes\n';
+            tp1 += '  ※ 连带反映到 faction_updates（relation_delta/attitude_shift 等）·必要时触发 factionsAffected/map_changes\n';
             _diplomaticEdicts.forEach(function(e) {
               tp1 += '  #id=' + e.id + ' 【' + e.category + '】致' + (e._targetFactions||[]).join('·') + '：' + e.content;
               if (e._targetNpcs && e._targetNpcs.length) tp1 += ' (目标人物: ' + e._targetNpcs.join('、') + ')';
@@ -2655,36 +2623,7 @@
           tp1 += '  ※ 前兆累积超 3 条且 severity=critical → 下回合应考虑 class_revolt 爆发\n';
         }
       }
-      // 注入进行中起义——AI 必须继续推进每一起
-      if (Array.isArray(GM._activeRevolts)) {
-        var _ongoingRev = GM._activeRevolts.filter(function(r){return !r.outcome;});
-        if (_ongoingRev.length > 0) {
-          tp1 += '\n\n【进行中的起义——每起必须在 revolt_update 中推进；满足条件应 suppress/amnesty/transform】\n';
-          _ongoingRev.forEach(function(r) {
-            var elapsed = GM.turn - r.startTurn;
-            tp1 += '  [id=' + r.id + '] ' + r.leaderName + '·' + r.class + '起义 已' + elapsed + '回合\n';
-            tp1 += '    意识形态:' + r.ideology + ' 组织:' + r.organizationType + ' 阶段:' + r.phase + ' 规模:' + r.scale + '\n';
-            if (r.historicalArchetype) tp1 += '    原型:' + r.historicalArchetype + '\n';
-            if (r.slogan) tp1 += '    口号「' + r.slogan + '」\n';
-            if (r.religiousSect) tp1 += '    教派:' + r.religiousSect + '\n';
-            tp1 += '    兵' + r.militaryStrength + ' 粮' + r.supplyStatus + '/100 控制:[' + r.territoryControl.join('、') + ']\n';
-            if (r.absorbedForces.length) tp1 += '    已收编:' + r.absorbedForces.slice(0,3).join('、') + '\n';
-            if (r.defectedOfficials.length) tp1 += '    叛投官员:' + r.defectedOfficials.slice(0,3).join('、') + '\n';
-            if (r.secondaryLeaders.length) tp1 += '    副将:' + r.secondaryLeaders.slice(0,3).join('、') + '\n';
-            if (r.history.length > 0) {
-              var _recH = r.history.slice(-3).map(function(h){return 'T'+h.turn+':'+(h.event||'').slice(0,30);}).join(' → ');
-              tp1 += '    近事:' + _recH + '\n';
-            }
-            if (r._needTransform) tp1 += '    ⚠已达建政阈值，本回合必须 revolt_transform type=toFaction 升级为独立势力\n';
-            if (r.phase === 'stalemate' && elapsed > _turnsForMonthsLocal(5)) tp1 += '    ⚠相持过久，考虑招安(revolt_amnesty)或加强剿灭(revolt_suppress)\n';
-            if (r.supplyStatus < 20) tp1 += '    ⚠粮草枯竭，可能自行 decline 或内讧\n';
-            // 拒抚接线（2026-07-22·玩家立案「拒抚后叛军蒸发」）：拒抚是变强信号·引导 AI 真备战/进逼·怎么打交 AI 演绎
-            if (r._warPrep && r._amnestyRejectedTurn != null && (GM.turn - r._amnestyRejectedTurn) < 3) {
-              tp1 += '    ⚠【拒抚·第' + r._amnestyRejectedTurn + '回合】朝廷条件已遭其拒·义军愈炽备战中——本回合 revolt_update 须体现真进逼(扩地/增兵/攻掠·由你演绎打哪)·不得 decline/dissolved(拒抚方炽·未经真镇压不得自散)' + (r._rejectedLeaders && r._rejectedLeaders.length ? '·拒抚首领:' + r._rejectedLeaders.slice(0,3).join('、') : '') + '\n';
-            }
-          });
-        }
-      }
+      // 旧账【进行中的起义】一段 11-21 删旧时删了（旧账 GM._activeRevolts 连同 revolt_update 删了）；民变各股实情在下面【各地民变】
       // 民变案起事的各股（民变重做·收口，同志 11-15）：首领、人数、在哪州、本州主官、这股的军、附近的官军——推演看得到才判得了剿抚
       if (typeof TM !== 'undefined' && TM.RevoltBand && typeof TM.RevoltBand.promptBlock === 'function') {
         try { tp1 += TM.RevoltBand.promptBlock(GM); }

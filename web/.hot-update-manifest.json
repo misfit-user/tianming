@@ -2901,18 +2901,18 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "b750bf00fac12751994d04a8295684befffc7069ecfe24e73b6a47c577f64da9",
+      "sha256": "fff33517b1171fcbf766eb86c404471c49f82071b319d47b8b5bcb6a775e39d3",
       "size": 508285
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "c6ba6ffdf8d21e411e3298205ee5e5121f7da241f4d9ea7728c56b654e63c2e3",
+      "sha256": "5c880f49579a423b7fc25dcaf7d3ee796d013386011afa52855eeaaaa8dd68ba",
       "size": 508688
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
-      "sha256": "cee3c5bbb010938fd25a5adac3599fd25c5ee4aaf5444fcdb8d2b68e720c5600",
-      "size": 16413714
+      "sha256": "26f60b67db24620fd517d8eb627458bfc74bd7b94bc33e55b42b6fa8ed6c4099",
+      "size": 16414414
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
@@ -2931,7 +2931,7 @@
     },
     {
       "path": "data/maps/scenario-library/index.json",
-      "sha256": "ea5bad11a8b98453ce2109c25efcfe657ffad3494c6d5dea6e165fc91de65a30",
+      "sha256": "476ebdcfa80f0f414c57ecd399c15a859a4ff2884c4932237dcc9c99f2c34499",
       "size": 2410
     },
     {
@@ -2946,7 +2946,7 @@
     },
     {
       "path": "data/maps/scenario-library/sc-tianqi7-1627.json",
-      "sha256": "bd0b4c39174907b769ce595ab115161463f95202a8428f683bb4daa0c649f34d",
+      "sha256": "77a684fe510804535c1f02dd68897ada26894f83d8d0ac27e1726fbef7521c17",
       "size": 1486190
     },
     {
@@ -3896,8 +3896,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
-      "sha256": "fbed788aa64afa35daf90c850a7741c2be0f91862560a283c5c4ae435746d7b9",
-      "size": 16430969
+      "sha256": "9f02ddfb61dd57da5cecbaf8e31c20162858d516705d8fcd350cf58de58e1174",
+      "size": 16431669
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
@@ -3931,8 +3931,8 @@
     },
     {
       "path": "scenarios/tianqi7-1627.js",
-      "sha256": "e5d3f0a59bd90517e2080cf774cfd4c9efb54efd4b7436c3a0a9030519e687b6",
-      "size": 10051094
+      "sha256": "bd3a39f039bdc08b5279e8897bc74004cb0cf22ce5d6825ab0f1e72a9ef1eb63",
+      "size": 10051739
     },
     {
       "path": "schemas/sc1.schema.json",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "976b19a3b7bf0e57617096db2999be85e7960b615ee120e006d48a2a54d35f4d",
+      "sha256": "9c1236931b3c16d9a5520f549181716c280ac83d9b1f3f9da7ebb4a203c1bcae",
       "size": 142619
     },
     {

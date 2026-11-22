@@ -258,7 +258,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     }
   });
   diveReady = true;
-  // 舆图标记：诸军、行军、流寇、交战（screens/mapmarks.js）。所知之律：元首见本方诸军与天下流寇战事；余者只见本人所统与所掌辖区内的
+  // 舆图标记：诸军、行军、民变、交战（screens/mapmarks.js）。所知之律：元首见本方诸军与天下民变战事；余者只见本人所统与所掌辖区内的
   const marksLayer = h('div.map-marks.off');
   labels.after(marksLayer);
   const inCharge = (r) => !!focus && focus.marked.some((i) => mapRegionList[i] && mapRegionList[i].name === r.name);

@@ -40,6 +40,9 @@ function knownFactions() {
 }
 function mine(a, ctx) {
   if (!a || a.destroyed || a.disbanded || a.active === false) return false;
+  // 民变各股的军（tm-revolt-band.js 立，带 _revoltBand、势力记「民变」，不在势力表里）不是本方的：原先因「势力不在表里」落到下面末一句
+  //   当成本方，列进诸军、插上红色军旗（11-22 查出）。它列在「战事」页签的「民变」组与墨旗上；成势时军上这个记号随之撤掉，归新势力
+  if (a._revoltBand) return false;
   const explicit = FACTION.map((k) => a[k]).filter((x) => x != null && String(x).trim());
   if (!explicit.length || explicit.some(genericCourt) || !ctx.player.length) return true;
   if (explicit.some((x) => facMatch(x, ctx.player))) return true;
@@ -171,7 +174,7 @@ export function detail(key) {
   };
 }
 
-// ---------- 战事、流寇 ----------
+// ---------- 战事、民变 ----------
 const PHASE = { march: '行军接敌', 'awaiting-command': '候旨临阵', battle: '交锋', siege: '围城' };
 export function battles() {
   const g = G();
@@ -184,11 +187,26 @@ export function battles() {
   }));
   return { active, history };
 }
+// 民变各股（GM.minxin.revolts 里正闹着的，与民心页同一口径）：首领、在哪州、众多少、它那支军。
+//   流寇池 11-21 删旧时没了，这里原读的 GM.rovingRebels 此后恒空，11-22 改读各股。剿、抚、赈从诏令进，由推演判，这里只列。
+//   军照 TM.RevoltBand.bandArmy 认；撤了、散了的不算，溃了的照列、注明
 export function rebels() {
-  return (Array.isArray(G().rovingRebels) ? G().rovingRebels : []).filter((r) => r && !r.disbanded && (Number(r.strength) || 0) > 0).map((r) => {
-    const n = Number(r.strength) || 0;
-    return { name: String(r.name || '流寇'), strength: n, regions: (r.regions || []).slice(0, 4).map(String), tier: n >= 100000 ? '燎原' : n >= 30000 ? '势盛' : '啸聚' };
-  });
+  const g = G();
+  const RB = w.TM && w.TM.RevoltBand;
+  const list = g.minxin && Array.isArray(g.minxin.revolts) ? g.minxin.revolts : [];
+  return list.filter((r) => r && r.status === 'ongoing').map((r) => {
+    let a = null;
+    try { a = RB && typeof RB.bandArmy === 'function' ? RB.bandArmy(g, r) : null; } catch (_e) { a = null; /* 认不出军只少一行「能战」，各股照列 */ }
+    const live = !!a && a.destroyed !== true && a.disbanded !== true && a.state !== 'disbanded';
+    return {
+      id: String(r.id || ''), leader: String(r.leaderName || '') || '无名', region: String(r.region || ''),
+      place: (r.province ? String(r.province) + '·' : '') + String(r.region || '某地'),
+      followers: Math.max(0, Math.round(Number(r.followers != null ? r.followers : r.scale) || 0)),
+      army: live ? String(a.name || '') : '', soldiers: live ? Math.max(0, Math.round(Number(a.soldiers != null ? a.soldiers : a.strength) || 0)) : 0,
+      routed: live && (a.routed === true || a.state === 'routed'),
+      since: r.turn != null ? dateOf(r.turn) : '', cause: String(r.cause || '')
+    };
+  }).sort((x, y) => y.followers - x.followers);
 }
 
 // ---------- 动作 ----------

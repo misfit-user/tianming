@@ -1,4 +1,4 @@
-// 军：军籍册。左叶「诸军」按兵种分组列各军（兵额为奏报之数），标出告急、欠饷、在途、缺帅；「战事」列进行中的战事与流寇。
+// 军：军籍册。左叶「诸军」按兵种分组列各军（兵额为奏报之数），标出告急、欠饷、在途、缺帅；「战事」列进行中的战事与民变各股。
 // 右叶为所选一军的全貌：统帅、驻地、军质、器械、动态，士气训练忠诚控制补给与兵变之险，兵种构成、编制、饷给、军令；
 // 案底：核饷点验、补饷、整训、调防、易将、付廷议、接战预勾。「战事」页右叶为近来战录。经 game.army。
 // 通用一套（非元首坐下）只看所统之兵：scope() 交回统帅名，诸军只列其人所统，册题写「所统」（所知之律：他军之数非其所能知）。
@@ -161,9 +161,10 @@ export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, 
       h('section.ar-grp', h('h4', h('span', '进行中'), h('small', `${num(B.active.length)}处`)),
         B.active.length ? B.active.map((b) => h('div.ar-war', h('b', `${b.attacker} 对 ${b.defender}`), h('span', [b.location, b.phase].filter(Boolean).join(' · '))))
           : h('p.ce-unk', '四境暂无交锋')),
-      h('section.ar-grp', h('h4', h('span', '流寇'), h('small', R.length ? `${num(R.length)}股 · 众${amt(R.reduce((s, r) => s + r.strength, 0))}` : '')),
-        R.length ? R.map((r) => h('div.ar-war.hot', h('b', r.name, h('em', r.tier)), h('span', `众${amt(r.strength)}${r.regions.length ? ` · 流窜${r.regions.join('、')}` : ''}`)))
-          : h('p.ce-unk', '境内无流寇')));
+      h('section.ar-grp', h('h4', h('span', '民变'), h('small', R.length ? `${num(R.length)}股 · 众${amt(R.reduce((s, r) => s + r.followers, 0))}` : '')),
+        R.length ? R.map((r) => h('div.ar-war.hot', h('b', r.leader, h('em', r.place)),
+          h('span', [`众${amt(r.followers)}`, r.army ? `能战${amt(r.soldiers)}（${r.army}${r.routed ? '·已溃' : ''}）` : '', r.since ? `起于${r.since}` : ''].filter(Boolean).join(' · '))))
+          : h('p.ce-unk', '境内无民变')));
     replaceChildren(right, h('header.ar-title', h('h3', '战录'), h('small', '近来交锋，新者在前')),
       B.history.length ? h('div.ar-history', B.history.map((r) => h('p',
         h('span.when', r.when),

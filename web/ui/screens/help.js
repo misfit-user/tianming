@@ -5,7 +5,7 @@ import { num } from '../core/numerals.js';
 import { homeMode } from '../core/settings.js';
 import { guideOf } from '../model/identity.js';
 
-const BOOK_NOTE = { map: '天下府州，七种看法', people: '人人一卷，可读列传', offices: '衙署职官，任免补缺', fiscal: '帑廪户口，收支借贷', army: '诸军名册，战事流寇',
+const BOOK_NOTE = { map: '天下府州，七种看法', people: '人人一卷，可读列传', offices: '衙署职官，任免补缺', fiscal: '帑廪户口，收支借贷', army: '诸军名册，战事民变',
   realm: '势力、党派、阶层', charge: '所掌辖区、本部或本衙门，点开翻方志、军务或官制', wenyuan: '诗文总集，品评查禁', keju: '开科取士，读卷放榜', gongwei: '后妃、皇嗣、宫苑', annals: '史记、起居、纪事、编年四库',
   gazette: '四方消息', registry: '辖区册籍', family: '尊长、配偶、子女、同辈', estate: '田宅产业' };
 // 通用一套的「史」是本人年谱（人物窗履历页），不是史馆

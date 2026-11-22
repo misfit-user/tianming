@@ -1,5 +1,5 @@
 // 舆图标记（照 CK3 图上的军队与事态标记）：本方诸军一处一面军旗（旗上番号首字、旗下兵数，告急朱边闪），
-// 行军的画一道虚线箭头指向去处；流寇一面墨旗；交战处一枚「战」字圆章。DOM 层，每帧跟着镜头摆位，压在舆图题名之上、界面之下。
+// 行军的画一道虚线箭头指向去处；民变各股所在一处一面墨旗；交战处一枚「战」字圆章。DOM 层，每帧跟着镜头摆位，压在舆图题名之上、界面之下。
 // 看得见哪些由调用方定（knows：所知之律——通用一套只见本人所统与所掌辖区内的）：返回 'exact' 知其确数，'rough' 只见其大概
 // （无官之人在本籍亲见驻军，只知数百、数千、数万），假则不画。
 import { h, replaceChildren } from '../core/dom.js';
@@ -89,16 +89,25 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArm
         routes.push({ path, from: r.center, to: to.center });
       }
     }
-    // 流寇：所在头一处一面墨旗
+    // 民变：各股落在所在州（认法同诸军），一处一面墨旗（旗上仍写「寇」）——旗下记众、旗角记几股，悬停逐股列首领、众与能战之数
+    const rebelsAt = new Map();
     for (const rb of rebels) {
-      const r = rb.regions.map(placeOf).find(Boolean);
+      const r = placeOf(rb.place);
       if (!r || !knows({ rebel: rb, region: r })) continue;
+      if (!rebelsAt.has(r.name)) rebelsAt.set(r.name, { r, list: [] });
+      rebelsAt.get(r.name).list.push(rb);
+    }
+    const bandLine = (rb) => `${rb.leader}　${rb.place}　众${shortCount(rb.followers)}${rb.army ? `　能战${shortCount(rb.soldiers)}${rb.routed ? '（已溃）' : ''}` : ''}`;
+    for (const { r, list } of rebelsAt.values()) {
+      const total = list.reduce((s, rb) => s + rb.followers, 0), one = list.length === 1 ? list[0] : null;
       const n = h('span.mk-n'), c = h('em.mk-c');
-      const pin = { kind: 'rebel', x: r.center[0] + 4, y: r.center[1] + 3, place: r.name, total: rb.strength || 0, count: 1, weight: 5e8 + (rb.strength || 0), n, c, absorbed: [], sig: null,
-        line: `${rb.name}　${shortCount(rb.strength)}　出没${rb.regions.slice(0, 3).join('、')}` };
-      const el = h('button.mk.mk-army.mk-rebel', { type: 'button', 'aria-label': rb.name, onclick: () => onRebels() },
+      const pin = { kind: 'rebel', x: r.center[0] + 4, y: r.center[1] + 3, place: r.name, total, count: list.length, weight: 5e8 + total, n, c, absorbed: [], sig: null,
+        line: list.map(bandLine).join('\n') };
+      const el = h('button.mk.mk-army.mk-rebel', { type: 'button', 'aria-label': `${r.name}民变`, onclick: () => onRebels() },
         h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', '寇'), n, c);
-      tiao(el, () => (pin.absorbed.length ? stackTip(pin) : { title: `${rb.name} · ${rb.tier}`, text: `约${num(rb.strength)}人\n出没：${rb.regions.join('、')}` }));
+      tiao(el, () => (pin.absorbed.length ? stackTip(pin)
+        : one ? { title: `${one.leader} · ${one.place}`, text: [`众约${num(one.followers)}人`, one.army ? `能战${num(one.soldiers)}（${one.army}${one.routed ? '，已溃' : ''}）` : '', one.since ? `起于${one.since}` : '', one.cause ? `起因：${one.cause}` : ''].filter(Boolean).join('\n') }
+        : { title: `${r.name} · 民变${num(list.length)}股`, text: pin.line }));
       els.push(el);
       pins.push(Object.assign(pin, { el }));
     }
@@ -111,7 +120,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArm
       els.push(el);
       pins.push({ el, kind: 'battle', x: r.center[0] - 4, y: r.center[1] - 2, weight: 2e9 });
     }
-    pins.sort((a, b) => b.weight - a.weight);      // 叠旗时先占位的：交战、告急的、流寇，再按兵多寡
+    pins.sort((a, b) => b.weight - a.weight);      // 叠旗时先占位的：交战、告急的、民变，再按兵多寡
     replaceChildren(marks, els);
     for (const c of [...svg.querySelectorAll('.mk-route')]) c.remove();
     for (const rt of routes) svg.append(rt.path);
@@ -171,7 +180,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArm
   function stackTip(p) {
     const all = [p, ...p.absorbed];
     const total = all.reduce((t, q) => t + q.total, 0);
-    const head = p.kind === 'rebel' ? `流寇${num(all.length)}股` : `${num(all.length)}处驻军`;
+    const head = p.kind === 'rebel' ? `民变${num(all.reduce((t, q) => t + q.count, 0))}股` : `${num(all.length)}处驻军`;
     return { title: `${head} · 合${p.kind === 'rough' ? roughCount(total) : shortCount(total)}`, text: all.map((q) => q.line).join('\n') + '\n镜头拉近即各归其处' };
   }
 

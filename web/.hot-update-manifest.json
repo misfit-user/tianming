@@ -4206,8 +4206,8 @@
     },
     {
       "path": "tm-captive-court.js",
-      "sha256": "761be2c471db42670447934df54ede982fb192d767450567d76113ec63cee576",
-      "size": 28840
+      "sha256": "7a373de78726b2cd726b120cfd3838a60337d7978cf228af42641dae5476dd6a",
+      "size": 29207
     },
     {
       "path": "tm-ceming.js",
@@ -4706,8 +4706,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "5062c6782af4d1918de61b915ff8626bbb2e16c6b73c2a979230888568a192ce",
-      "size": 366331
+      "sha256": "faa7d0b7ab32c9596b3b05417defe287ee14da5cbf00f1f60bb9364a0525f9f0",
+      "size": 368832
     },
     {
       "path": "tm-endturn-province.js",
@@ -5916,8 +5916,8 @@
     },
     {
       "path": "tm-political-actions.js",
-      "sha256": "8465f52b15b2cfe31dfdd985e8603f1445be35f306b91e3548c2b573d35ede6b",
-      "size": 42754
+      "sha256": "525ab4487c4378e7536d8417f805be70c30f19dd0dbb3beafe3ee7fe2aae2186",
+      "size": 44229
     },
     {
       "path": "tm-post-turn-jobs.js",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "03d209bdfb6c9224c937a31a6bc87c694628ef6b8809cfca65f2843539167f7f",
+      "sha256": "2b94677c9ea1af6ec342f18a77ff35ca12724ccd7df9dafafcd5ec9831d8a1d8",
       "size": 142619
     },
     {

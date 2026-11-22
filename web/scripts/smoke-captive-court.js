@@ -8,7 +8,9 @@
 //   放还写口 release（主推演 captive_release：验在俘、执者、国库付得起赎银；解除、回朝廷、监国撤、一朝二主）；
 //   执者那一家灭了放回（releaseOrphans，悬朝 tick 先跑）；主推演落账那段真代码原样抽出来跑。
 // 11-22 收尾（同志「去完成剩下这部分」）：赎金银粮布三样、国库或内帑出（不够整笔不动）、入执者的库；
-//   档里没记执者的按所在之地认执者（inferCaptor/fillCaptors）；君上回来「乘舆蒙尘」时政了结。
+//   档里没记执者的按所在之地认执者（inferCaptor/fillCaptors）；君上回来「乘舆蒙尘」时政了结；
+//   执者那家的决策材料里有本方所执之人（tm-political-actions.js heldCaptives），可走通用外交索赎、议放；
+//   主推演【被俘之人】照录执者与朝廷为此人往来的文书（tm-endturn-prompt.js，原样抽出来跑）。
 // 赎金的国库、内帑写口用替身（真身 tm-fiscal-engine.js trySpendFromGuoku：全额扣成或一文不扣；spendFromNeitang：有多少扣多少，
 //   所以放还写口先核内帑存数）；认地块归属用替身（真身 tm-faction-membership.js regionInfo）。
 'use strict';
@@ -249,6 +251,13 @@ var s14c = ransomSandbox({ money: 50000, grain: 0, cloth: 0 }, { money: 0 }), G1
 G14c.facs[1]._dissolvedTurn = 31;
 assert(s14c.TM.CaptiveCourt.release(G14c, { name: '朱祁镇', how: 'ransom', by: '瓦剌', ransom: 30000 }).ok === true && G14c.guoku.money === 20000
   && G14c.facs[1].treasury.money === 100 && G14c.chars[0]._captivityHistory[0].ransomTo === '', '执者那家已亡：赎金照付，不入它的库');
+var s14d = ransomSandbox({ money: 50000, grain: 0, cloth: 0 }, { money: 0 }), G14d = s14d.GM;
+G14d.facs[1].id = 'fac_wala';
+G14d.chars[0]._capturedBy = 'fac_wala';   // 御驾亲征被俘记的是得胜那家，可能是编号
+var r14d = s14d.TM.CaptiveCourt.release(G14d, { name: '朱祁镇', how: 'ransom', by: '瓦剌', ransom: 10000 });
+assert(r14d.ok === true && G14d.facs[1].treasury.money === 10100 && G14d.chars[0]._captivityHistory[0].by === '瓦剌'
+  && s14d._ebs.some(function (e) { return e.indexOf('朝廷以银 10000 两自「瓦剌」处赎还朱祁镇') >= 0; }),
+  '执者记的是编号：推演写名号也认，事件、经过按名号写，赎金入它的库（实得 ' + JSON.stringify(r14d.why || '') + '）');
 
 console.log('⑫ 档里没记执者的，按所在之地认执者；认出后执者灭了照样放回（11-22 收尾）');
 var s15 = releaseSandbox(), G15 = s15.GM, CC15 = s15.TM.CaptiveCourt;
@@ -302,10 +311,62 @@ s14.__run({ captive_release: [{ name: '朱祁镇', how: 'escape', by: '瓦剌' }
 assert(!s14.GM.chars[0]._captured && s14.GM.chars[0]._captivityHistory[0].how === 'escape', '逃归落成');
 assert(fails14.length === 1 && fails14[0].indexOf('captive_release|于谦|此人并未被俘') === 0, '没被俘的记写回落空、写明为什么（实得 ' + JSON.stringify(fails14) + '）');
 
+console.log('⑭ 主推演【被俘之人】那段真代码（tm-endturn-prompt.js 原样抽出）：执者与朝廷为此人往来的文书照录（11-22 收尾）');
+var promptBlock = between(fs.readFileSync(path.join(ROOT, 'tm-endturn-prompt.js'), 'utf8'), '// 被俘之人（11-22 放还写口）', '// 季节/时令');
+function promptOf(GMx) {
+  var sbp = { GM: GMx, P: { playerInfo: {} }, TM: { FactionDiplomacy: { TYPE_CN: { deal: '交易', peace: '媾和', ultimatum: '最后通牒' } } } };
+  vm.createContext(sbp);
+  vm.runInContext('var tp = "";\n' + promptBlock + '\nthis.__tp = tp;', sbp);
+  return sbp.__tp;
+}
+var deal = { schemaVersion: 2, id: 'dp:1', from: '瓦剌', to: '大明', type: 'deal', status: 'pending', terms: '以银十万两、布二万匹赎还朱祁镇' };
+var oldPeace = { schemaVersion: 2, id: 'dp:2', from: '大明', to: '瓦剌', type: 'peace', status: 'accepted', effectiveTurn: 31, terms: '罢兵，瓦剌送还朱祁镇，大明岁赐银五万',
+  obligations: [{ kind: 'public_transfer', status: 'fulfilled' }] };
+var refused = { schemaVersion: 2, id: 'dp:3', from: '瓦剌', to: '大明', type: 'ultimatum', status: 'rejected', terms: '割大同以赎朱祁镇' };
+var other = { schemaVersion: 2, id: 'dp:4', from: '鞑靼', to: '大明', type: 'deal', status: 'pending', terms: '互市，并送还朱祁镇' };
+var unrelated = { schemaVersion: 2, id: 'dp:5', from: '瓦剌', to: '大明', type: 'deal', status: 'pending', terms: '开马市于宣府' };
+var dealAgain = Object.assign({}, deal, { id: 'dp:6' });   // 同一家同一份条款又递了一回
+var G16 = { turn: 33, facs: [{ name: '大明', isPlayer: true, _incomingProposals: [deal, refused, other, unrelated, dealAgain] }, { name: '瓦剌', _incomingProposals: [oldPeace] }],
+  chars: [{ name: '朱祁镇', isPlayer: true, faction: '大明', alive: true, _captured: true, _capturedBy: '瓦剌', _capturedLocation: '瓦剌军中', _capturedTurn: 30 }] };
+var tp16 = promptOf(G16);
+assert(/【被俘之人】朱祁镇（执者瓦剌·陷于瓦剌军中·已3回合）/.test(tp16) && /写 captive_release/.test(tp16), '照旧列人与写法');
+assert(tp16.indexOf('「瓦剌」来议（交易·待答复）：以银十万两、布二万匹赎还朱祁镇') >= 0, '执者来议索赎：照录');
+assert(tp16.split('「瓦剌」来议（交易·待答复）').length === 2, '同一份条款递了两回：只列一行');
+assert(tp16.indexOf('朝廷去议「瓦剌」（媾和·已生效·第31回合起·约定的赎金已交付）：罢兵，瓦剌送还朱祁镇') >= 0, '朝廷去议、已生效、约定的赎金已交付：照录');
+assert(tp16.indexOf('割大同') < 0 && tp16.indexOf('鞑靼') < 0 && tp16.indexOf('马市') < 0, '见拒的、别家的、不提此人的不列');
+assert(/约定已生效的，执者照不照约放人、朝廷照不照约付赎由你按局势判/.test(tp16), '约定生效后放不放仍交推演判');
+G16.facs[1].id = 'fac_wala';
+G16.chars[0]._capturedBy = 'fac_wala';
+var tp16c = promptOf(G16);
+assert(/【被俘之人】朱祁镇（执者瓦剌·/.test(tp16c) && tp16c.indexOf('「瓦剌」来议（交易·待答复）') >= 0 && tp16c.indexOf('fac_wala') < 0, '执者记的是编号：按名号写、按名号比对文书');
+G16.facs[0]._incomingProposals = []; G16.facs[1]._incomingProposals = [];
+var tp16b = promptOf(G16);
+assert(tp16b.indexOf('往来的文书') < 0 && /【被俘之人】朱祁镇/.test(tp16b), '没有往来文书：不多出这一段');
+G16.chars[0]._captured = false;
+assert(promptOf(G16) === '', '没人在俘：整段不写');
+
+console.log('⑮ 执者那家的决策材料：本方所执之人（tm-political-actions.js heldCaptives 原样抽出）');
+var heldBlock = between(fs.readFileSync(path.join(ROOT, 'tm-political-actions.js'), 'utf8'), 'function heldCaptives(fac, g) {', '  function view(fac,context){');
+var sbh = {};
+vm.createContext(sbh);
+vm.runInContext('function A(x){return Array.isArray(x)?x:[];}\nfunction S(x){return x==null?"":String(x);}\n' + heldBlock + '\nthis.heldCaptives = heldCaptives;', sbh);
+var G17 = { turn: 40, chars: [
+  { id: 'c1', name: '朱祁镇', isPlayer: true, faction: '大明', officialTitle: '太上皇', alive: true, _captured: true, _capturedBy: '瓦剌', _capturedTurn: 30, _capturedLocation: '瓦剌军中' },
+  { id: 'c2', name: '杨善', faction: '大明', alive: true, _captured: true, _capturedBy: 'fac_wala', _capturedTurn: 38 },
+  { id: 'c3', name: '赵佶', faction: '大宋', alive: true, _captured: true, _capturedBy: '大金' },
+  { id: 'c4', name: '死者', faction: '大明', alive: false, _captured: true, _capturedBy: '瓦剌' },
+  { id: 'c5', name: '已回', faction: '大明', alive: true, _capturedBy: '瓦剌' }
+] };
+var held17 = sbh.heldCaptives({ id: 'fac_wala', name: '瓦剌' }, G17);
+assert(held17.length === 2 && held17[0].name === '朱祁镇' && held17[0].rulerOfOrganization === true && held17[0].heldTurns === 10 && held17[0].title === '太上皇'
+  && held17[0].place === '瓦剌军中' && held17[1].name === '杨善', '执者记本方名号或编号的才算，死了的、已回来的不算（实得 ' + JSON.stringify(held17.map(function (h) { return h.name; })) + '）');
+assert(sbh.heldCaptives({ id: 'fac_jin', name: '金' }, G17).length === 0 && sbh.heldCaptives({ id: 'fac_houjin', name: '后金' }, G17).length === 0,
+  '不按字面包含认：「金」「后金」都不算「大金」所执');
+
 console.log('');
 if (failures.length) {
   console.log('FAIL smoke-captive-court: ' + failures.length + ' 处失败');
   failures.forEach(function (f) { console.log('  - ' + f); });
   process.exit(1);
 }
-console.log('PASS smoke-captive-court (立新君三验/太上皇迁转/夺门三闸/谋泄冷却/监国/兜底轨/flag门/常态零行为/诏令全交AI判/放还写口/执者亡放回/赎金三样内帑入执者库/按地认执者/时政了结/落账真代码)');
+console.log('PASS smoke-captive-court (立新君三验/太上皇迁转/夺门三闸/谋泄冷却/监国/兜底轨/flag门/常态零行为/诏令全交AI判/放还写口/执者亡放回/赎金三样内帑入执者库/按地认执者/时政了结/落账真代码/提示词照录往来文书/执者知所执之人)');

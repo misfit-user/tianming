@@ -221,8 +221,22 @@
     var rows=ledger().ensurePlans(g).filter(function(p){return p.kind==='political_candidate'&&p.actorId===actor.id&&p.organizationId===fac.id&&p.status==='active'&&(!p.nextTurn||p.nextTurn<=g.turn);});
     var start=rows.length?(g.turn*8)%rows.length:0;return rows.slice(start).concat(rows.slice(0,start)).slice(0,8).map(function(p){return {id:p.id,intent:p.intent,operation:p.operation,sourceKind:'proposal'};});
   }
+  // 本方所执之人（11-22 破京之后·收尾）：别家的人陷在本方手里（_capturedBy 记的就是本方），执者一方据此可遣使索赎、挟以议和，
+  //   条款照常走 diplomacy（交易、媾和、最后通牒）；人放不放、几时放由主推演判（captive_release，落账走 tm-captive-court.js 放还）。
+  //   只认执者记的正是本方的名号或编号，不按字面包含（「金」不能同时算「大金」和「后金」）
+  function heldCaptives(fac, g) {
+    var own = [S(fac && fac.name), S(fac && fac.id)].filter(Boolean);
+    return A(g.chars).filter(function (c) {
+      return c && c._captured && c.alive !== false && c.dead !== true && own.indexOf(S(c._capturedBy).trim()) >= 0;
+    }).slice(0, 6).map(function (c) {
+      var since = c._capturedTurn != null ? c._capturedTurn : c._capturedSince;
+      return { id: c.id, name: c.name, organization: S(c.faction), title: S(c.officialTitle || c.title), rulerOfOrganization: !!c.isPlayer,
+        heldTurns: since != null ? Math.max(0, (Number(g.turn) || 0) - Number(since)) : null, place: S(c._capturedLocation) };
+    });
+  }
   function view(fac,context){
     if(!valid(context))return null;var actor=resolve('character',{id:context.actorId}),g=G(),d={organizationId:fac.id,actingPositionId:context.actingPositionId};
+    var held=heldCaptives(fac,g);
     var known=proposalKnowledge(actor,fac);Object.keys(context.knownProposals).forEach(function(k){delete context.knownProposals[k];});Object.assign(context.knownProposals,known);
     var offices=TM.OfficeHolderState.positions(g,{organizationId:fac.id}).filter(function(a){return !a.pos.hidden&&a.pos.visibility!=='private'||TM.OfficeHolderState.read(g,a.pos).characters.some(function(h){return h.char===actor;});}).map(function(a){return {id:a.pos.id,departmentId:a.node.id,name:a.pos.name,holders:TM.OfficeHolderState.read(g,a.pos).characters.map(function(h){return {id:h.characterId,name:h.name};}),vacancies:TM.OfficeHolderState.read(g,a.pos).vacancyCount};});
     var finance=authority(actor,d,'treasurySpend'),binding=finance&&(finance.pos&&finance.pos.treasuryBinding||finance.nativeAuthority&&finance.nativeAuthority.treasuryBinding)||{},refs=binding.accountRefs||(binding.accountRef?[binding.accountRef]:[]);
@@ -233,7 +247,8 @@
       collectiveRules:A(fac.politicalRules).filter(function(r){return r.status==='active'&&(!r.expiresTurn||g.turn<r.expiresTurn)&&TM.OfficeHolderState.activeAssignments(g,actor,{organizationId:fac.id}).some(function(a){var principal=a.delegated?TM.OfficeHolderState.identity(g,a.principalCharacterId).char:actor,av=TM.OfficeHolderState.availability(g,principal,a.pos);return A(r.positionIds).indexOf(a.pos.id)>=0&&av.char===actor&&av.capacity;});}).map(function(r){return {id:r.id,version:r.version,kind:r.kind,quorum:r.quorum,positionIds:r.positionIds,treatyTypes:r.treatyTypes};}),
       accounts:finance&&TM.PublicTreasury?refs.map(function(ref){return TM.PublicTreasury.getAccountView({game:g,ref:ref});}):null,
       recentResults:A(ledger().state(g).politicalPending).filter(function(p){return p.actorId===actor.id&&p.organizationId===fac.id&&p.result;}).slice(-4).map(function(p){return {sourceId:p.sourceId,turn:p.turn,status:p.status,results:A(p.result.results).concat(A(p.result.responses&&p.result.responses.results),A(p.result.proposals&&p.result.proposals.results)).map(function(r){return {actionId:r.actionId,outcome:r.outcome,reason:r.reason,operationRefs:r.operationRefs};})};}),
-      proposals:TM.FactionDiplomacy&&TM.FactionDiplomacy.inputView?TM.FactionDiplomacy.inputView(actor,fac):[]};
+      proposals:TM.FactionDiplomacy&&TM.FactionDiplomacy.inputView?TM.FactionDiplomacy.inputView(actor,fac):[],
+      captivesHeld:held.length?held:undefined};
   }
   function defer(context,decision){
     if(!valid(context))return result('expired','world_changed');var st=ledger().state(G());if(!st.politicalPending)st.politicalPending=[];
@@ -301,7 +316,7 @@
   function prompt(fac,context){
     var input=context&&valid(context)?view(fac,context):{organization:{id:fac.id,name:fac.name},publicOnly:true};
     return {system:'你是当前绑定的真实人物，以列出的本次职任思考。你可以建议、拒绝、还价、履行或等待。组织不是另一个全知人格。仅用已知材料；战略建议不等于已成立命令。无具体权限和材料时不要声称完成。collectiveRules 列出本人参与的议事程序；accept/approve 是本人的一票，达到程序条件后才可能形成组织签署。输出 JSON。',
-      user:JSON.stringify(input)+'\n输出 {rationale,actions,proposals,proposalResponses}；各不超过 4 项，也可为空。actions 支持 office_change {kind, targetId, positionId, actingPositionId}、fiscal_policy {fromAccount,toAccount,amounts,purpose,actingPositionId}；履行 proposals 的 public_transfer 义务时，还须引用 proposalId、proposalVersion、obligationId，与原条款完全一致、diplomacy {toFactionId,proposalType,terms,durationTurns,actingPositionId}；memorial/edict/court_alignment {targetId,content} 表示提交文书或协商，不能自行通过命令。actions 也支持 military_order {armyId,commanderId或destinationId,actingPositionId}、declare_war/join_war {targetOrganizationId,casusBelliId,actingPositionId,warId}，须具备对应权限。对 candidates 可填 sourcePlanId、decision(reject/defer)、reason 明确拒绝或暂缓。若采纳 candidates 中的事项，填对应 sourcePlanId，并补充自己选择的人选或办法。proposalResponses 须含 proposalId、proposalVersion、decision(accept/reject/counter/defer/approve)、actingPositionId；counter 须含完整 counterTerms。只是材料，不得填写完成凭据或财政/人数差额。'};
+      user:JSON.stringify(input)+'\n输出 {rationale,actions,proposals,proposalResponses}；各不超过 4 项，也可为空。actions 支持 office_change {kind, targetId, positionId, actingPositionId}、fiscal_policy {fromAccount,toAccount,amounts,purpose,actingPositionId}；履行 proposals 的 public_transfer 义务时，还须引用 proposalId、proposalVersion、obligationId，与原条款完全一致、diplomacy {toFactionId,proposalType,terms,durationTurns,actingPositionId}；memorial/edict/court_alignment {targetId,content} 表示提交文书或协商，不能自行通过命令。actions 也支持 military_order {armyId,commanderId或destinationId,actingPositionId}、declare_war/join_war {targetOrganizationId,casusBelliId,actingPositionId,warId}，须具备对应权限。对 candidates 可填 sourcePlanId、decision(reject/defer)、reason 明确拒绝或暂缓。若采纳 candidates 中的事项，填对应 sourcePlanId，并补充自己选择的人选或办法。proposalResponses 须含 proposalId、proposalVersion、decision(accept/reject/counter/defer/approve)、actingPositionId；counter 须含完整 counterTerms。captivesHeld 是本方所执的别家之人：可经 diplomacy 递交易、媾和或最后通牒，索赎或议放，条款写明其人与赎金（银、粮、布各几何）；条款只是约定，人放不放、几时放由推演按局势判。只是材料，不得填写完成凭据或财政/人数差额。'};
   }
   // 给职位定稳定 id（没有的按官制路径生成）、按唯一姓名补任职人 id；迁移旧档与补回外藩职任共用这一套
   function identifyPositions(g,tree,organizationId,ids){

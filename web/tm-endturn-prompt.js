@@ -368,13 +368,42 @@
         return c && c._captured && c.alive !== false && c.dead !== true && (c.isPlayer || !pfName || c.faction === pfName);
       });
       if (!list.length) return;
+      function facName(x){   // 执者记的是编号的（御驾亲征被俘记得胜那家）按名号写、按名号比对
+        x = String(x || '');
+        var f = (GM.facs||[]).find(function(ff){ return ff && (ff.name === x || (ff.id != null && String(ff.id) === x)); });
+        return f ? String(f.name) : x;
+      }
       var rows = list.slice(0, 8).map(function(c){
         var since = c._capturedTurn != null ? c._capturedTurn : c._capturedSince;
-        return c.name + '（' + (c._capturedBy ? '执者' + c._capturedBy : '执者未详') + (c._capturedLocation ? '·陷于' + c._capturedLocation : '')
+        return c.name + '（' + (c._capturedBy ? '执者' + facName(c._capturedBy) : '执者未详') + (c._capturedLocation ? '·陷于' + c._capturedLocation : '')
           + (since != null && GM.turn != null ? '·已' + Math.max(0, GM.turn - since) + '回合' : '') + '）';
       });
-      tp += '【被俘之人】' + rows.join('、') + (list.length > 8 ? '等 ' + list.length + ' 人' : '')
-        + '。朝廷遣使赎还、敌方放还、本人逃归、官军救回的，写 captive_release（name、how:ransom赎还/release放还/escape逃归/rescue救回、by执者、'
+      // 执者与朝廷之间提到此人的来议与约定（11-22 破京之后·收尾）：执者索赎、挟以议和走通用外交文书（tm-faction-diplomacy.js），
+      //   这里照录条款原文；约定生效后人放不放仍由推演判，落账照样走 captive_release
+      var STATUS = { draft: '拟议中', in_transit: '使者在途', pending: '待答复', accepted: '已生效' };
+      var TYPE_CN = (typeof TM !== 'undefined' && TM.FactionDiplomacy && TM.FactionDiplomacy.TYPE_CN) || {};
+      var talks = [], seenTalk = {};   // 同一家同一份条款递了几回的只列一行
+      list.slice(0, 8).forEach(function(c){
+        var by = facName(c._capturedBy);
+        if (!by || !pfName) return;
+        (GM.facs||[]).forEach(function(f){
+          (f && Array.isArray(f._incomingProposals) ? f._incomingProposals : []).forEach(function(p){
+            if (!p || p.schemaVersion !== 2 || !STATUS[p.status]) return;
+            var ends = [String(p.from || ''), String(p.to || '')], terms = String(p.terms || '');
+            if (ends.indexOf(by) < 0 || ends.indexOf(pfName) < 0 || terms.indexOf(c.name) < 0) return;
+            var paid = (p.obligations || []).some(function(o){ return o && o.kind === 'public_transfer' && o.status === 'fulfilled'; });
+            var line = '  ' + (p.from === by ? '「' + by + '」来议' : '朝廷去议「' + by + '」') + '（' + (TYPE_CN[p.type] || p.type || '文书') + '·' + STATUS[p.status]
+              + (p.status === 'accepted' && p.effectiveTurn != null ? '·第' + p.effectiveTurn + '回合起' : '') + (paid ? '·约定的赎金已交付' : '') + '）：' + terms.slice(0, 100);
+            if (seenTalk[line]) return;
+            seenTalk[line] = true;
+            talks.push(line);
+          });
+        });
+      });
+      tp += '【被俘之人】' + rows.join('、') + (list.length > 8 ? '等 ' + list.length + ' 人' : '') + '。\n'
+        + (talks.length ? '执者与朝廷为此往来的文书：\n' + talks.slice(0, 6).join('\n')
+          + '\n约定已生效的，执者照不照约放人、朝廷照不照约付赎由你按局势判；照约放回的写 captive_release，赎金照约写（约定的赎金已交付的不再写 ransom）。\n' : '')
+        + '朝廷遣使赎还、敌方放还、本人逃归、官军救回的，写 captive_release（name、how:ransom赎还/release放还/escape逃归/rescue救回、by执者、'
         + 'ransom赎金{money银两,grain粮石,cloth布匹}、from赎金出处guoku国库/neitang内帑、to回到哪）；赎金付不起的赎不回；没回来的不写。\n';
     })();
     // 季节/时令（增加叙事的时间感）

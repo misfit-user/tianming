@@ -216,7 +216,8 @@
 
   function _releaseChar(G, ch, how, opts) {
     opts = opts || {};
-    var turn = G.turn || 0, captor = String(ch._capturedBy || opts.by || '').trim();   // 档里没记执者也没认出的用推演说的
+    var turn = G.turn || 0, captorRaw = String(ch._capturedBy || opts.by || '').trim();   // 档里没记执者也没认出的用推演说的
+    var captorFac = captorRaw ? _faction(G, captorRaw) : null, captor = captorFac ? String(captorFac.name) : captorRaw;   // 记的是编号的（御驾亲征被俘记得胜那家）按名号写
     var to = String(opts.to || '').trim() || _courtSeat(G);
     var ransom = opts.ransom || _ransomOf(0), paidText = _ransomText(ransom);
     if (!Array.isArray(ch._captivityHistory)) ch._captivityHistory = [];
@@ -274,7 +275,8 @@
     var ch = hits[0];
     if (!ch._captured) return { ok: false, why: '此人并未被俘' };
     var captor = String(ch._capturedBy || '').trim(), by = String(decl.by || '').trim();
-    if (by && captor && !_sameCaptor(by, captor)) return { ok: false, why: '执者对不上（档里是「' + captor + '」）' };
+    var capFac = captor ? _faction(G, captor) : null, capName = capFac ? String(capFac.name) : captor;   // 记的是编号的按名号比
+    if (by && captor && !_sameCaptor(by, captor) && !_sameCaptor(by, capName)) return { ok: false, why: '执者对不上（档里是「' + capName + '」）' };
     var ransom = _ransomOf(how === 'ransom' ? decl.ransom : 0), from = String(decl.from || '').trim() === 'neitang' ? 'neitang' : 'guoku', paidTo = '';
     if (_ransomText(ransom)) {
       var paid = _payRansom(G, ch, ransom, from, captor || by);

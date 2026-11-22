@@ -135,7 +135,7 @@
     class_dissolve:{ type: 'array', desc: '阶层消亡' },
 
     // 被俘之人回来（11-22）：落账走 tm-captive-court.js 放还
-    captive_release: { type: 'array', desc: '被俘之人回来（how: ransom赎还/release放还/escape逃归/rescue救回；by 执者；ransom 赎银两；to 回到哪）', requiredSubFields: ['name', 'how'] },
+    captive_release: { type: 'array', desc: '被俘之人回来（how: ransom赎还/release放还/escape逃归/rescue救回；by 执者；ransom 赎金 {money 银两,grain 粮石,cloth 布匹}；from 赎金出处 guoku 国库/neitang 内帑；to 回到哪）', requiredSubFields: ['name', 'how'] },
 
     // ──────────────────────────────────────────────
     // 军事

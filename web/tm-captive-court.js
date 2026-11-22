@@ -89,9 +89,15 @@
   //      escape 逃归、rescue 救回；这里只验此人确在俘、执者对得上、国库付得起，落不成的由调用方记写回落空。
   //   ② 执者那一家灭了（除档，或推演 faction_dissolve 记了亡）：它手里的人放回（releaseOrphans，每回合悬朝 tick 先跑）。
   //   回来了：解除被俘、经过记进 _captivityHistory、人到推演说的去处（没说回京城；京城陷着就去新君、监国所在）、
-  //   开局按「北狩」记的在场状态改回在场；君上回来监国随之撤，新君在位就是一朝二主，夺门从此走得到。
+  //   开局按「北狩」记的在场状态改回在场；君上回来监国随之撤，新君在位就是一朝二主，夺门从此走得到；
+  //   御驾亲征被俘时上御案的「乘舆蒙尘」时政随之了结。
+  //   赎金（11-22 收尾）：银、粮、布都可（ransom 写一个数是银两，写 {money,grain,cloth} 是三样），从国库出，写 from:"neitang" 从内帑出，
+  //   不够整笔不动；执者那一家在，赎金入它的库（fac.treasury，各家的库都记在这里），两头对得上账。
+  //   档里没记执者的（绍宋开局北狩一行只记了在哪），按人所在之地认执者（inferCaptor）：开局与每回合悬朝 tick 先补记。
   var HOWS = { ransom: '赎还', release: '放还', escape: '逃归', rescue: '救回', captorGone: '得脱' };
   var CAPTIVE_TAG = /^(北狩|被俘|被掳|陷虏|没蕃)/;
+  var RES = ['money', 'grain', 'cloth'];
+  var RES_CN = { money: ['银', '两'], grain: ['粮', '石'], cloth: ['布', '匹'] };
 
   function _captureErr(e, where) {
     try { if (global.TM && global.TM.errors && typeof global.TM.errors.captureSilent === 'function') global.TM.errors.captureSilent(e, where); } catch (_) { /* 记错本身失败：只是少一条错误记录 */ }
@@ -105,6 +111,101 @@
     return (G.facs || []).filter(function (f) { return f && (f.name === name || (f.id != null && String(f.id) === name)); })[0] || null;
   }
   function _sameCaptor(a, b) { return a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0; }
+
+  // 赎金：写一个数是银两；写 {money,grain,cloth} 是三样；负数、不是数的当 0
+  function _ransomOf(v) {
+    var out = { money: 0, grain: 0, cloth: 0 };
+    if (v == null || v === '') return out;
+    if (typeof v !== 'object') { out.money = Math.max(0, Math.round(Number(v) || 0)); return out; }
+    RES.forEach(function (k) { out[k] = Math.max(0, Math.round(Number(v[k]) || 0)); });
+    return out;
+  }
+  function _ransomText(r) {
+    return RES.filter(function (k) { return r[k] > 0; }).map(function (k) { return RES_CN[k][0] + ' ' + r[k] + ' ' + RES_CN[k][1]; }).join('、');
+  }
+  // 内帑存数：账本说了算的（统一记账）看账本，否则看镜像数（内帑出账前会按它对账）
+  function _neitangStock(G, k) {
+    var nt = G.neitang || {}, led = nt.ledgers && nt.ledgers[k];
+    if (led && led._authoritativeStock && isFinite(Number(led.stock))) return Number(led.stock);
+    var v = nt[k] != null ? nt[k] : (k === 'money' ? nt.balance : null);
+    if (v != null && isFinite(Number(v))) return Number(v);
+    return led && isFinite(Number(led.stock)) ? Number(led.stock) : 0;
+  }
+  // 付赎金：国库走 trySpendFromGuoku（不够整笔不动）；内帑先核存数够不够，够了才扣（spendFromNeitang 本身是有多少扣多少）。
+  //   执者那一家在、不是本朝，赎金入它的库
+  function _payRansom(G, ch, r, from, captor) {
+    var FE = global.FiscalEngine, tag = '赎还·' + ch.name, paid = null;
+    if (from === 'neitang') {
+      if (!FE || typeof FE.spendFromNeitang !== 'function') return { ok: false, why: '内帑账本未加载，赎金无从出' };
+      var short = RES.filter(function (k) { return r[k] > _neitangStock(G, k); });
+      if (short.length) {
+        return { ok: false, why: '内帑付不起赎金（要' + _ransomText(r) + '；内帑' + short.map(function (k) {
+          return RES_CN[k][0] + '只有 ' + Math.floor(_neitangStock(G, k)) + ' ' + RES_CN[k][1];
+        }).join('、') + '）' };
+      }
+      try { paid = FE.spendFromNeitang(r, tag); } catch (e) { _captureErr(e, 'CaptiveCourt.release.neitang'); paid = null; }
+      if (!paid || !paid.ok) return { ok: false, why: '内帑扣赎金未成' };
+    } else {
+      if (!FE || typeof FE.trySpendFromGuoku !== 'function') return { ok: false, why: '财政账本未加载，赎金无从出' };
+      try { paid = FE.trySpendFromGuoku({ amounts: r, sinkTag: tag, gameRef: G }); } catch (e) { _captureErr(e, 'CaptiveCourt.release.ransom'); paid = null; }
+      if (!paid || !paid.ok) {
+        var res = paid && RES_CN[paid.resource];
+        return { ok: false, why: '国库付不起赎金（要' + _ransomText(r)
+          + (res && paid.available != null ? '；库存' + res[0] + ' ' + Math.floor(Number(paid.available) || 0) + ' ' + res[1] : '') + '）' };
+      }
+    }
+    var f = captor ? _faction(G, captor) : null;
+    if (!f || f.isPlayer || f._dissolvedTurn != null || f.destroyed === true) return { ok: true, to: '' };
+    if (!f.treasury || typeof f.treasury !== 'object') f.treasury = { money: 0, grain: 0, cloth: 0 };
+    RES.forEach(function (k) { if (r[k] > 0) f.treasury[k] = (Number(f.treasury[k]) || 0) + r[k]; });
+    return { ok: true, to: String(f.name) };
+  }
+
+  // 档里没记执者的，按人所在之地认执者：
+  //   ① 那块地现归谁（FactionMembership.regionInfo，与易主写口同一套认法；认不出走 tm-map-locations 的地名解析，两可的不认）。
+  //      整串认不出就逐段认，从细往粗（「金国·燕京」认燕京）；
+  //   ② 地名头一段是某家国号（「金国·上京」：上京不在图上，「金国」去掉大、国、朝等字与「大金」相合，只合一家才认）。
+  //   认出是本朝自己的、认不出、两可的都不记，交推演写 by
+  function _bareName(s) { return String(s || '').trim().replace(/^大/, '').replace(/(国|朝)$/, ''); }
+  function inferCaptor(G, ch) {
+    if (!G || !ch) return '';
+    var where = String(ch._capturedLocation || ch.location || '').replace(/[（(][^）)]*[）)]/g, '').trim();
+    if (!where) return '';
+    var own = String(ch.faction || ''), FM = global.TM && global.TM.FactionMembership, ML = global.TMMapLocations;
+    function ownerOf(ref) {
+      var info = null;
+      try { info = FM && typeof FM.regionInfo === 'function' ? FM.regionInfo(ref) : null; } catch (e) { info = null; /* 地名两可时它会抛：当认不出 */ }
+      if (!info && FM && ML && typeof ML.placeRegionIds === 'function') {
+        var ids = [];
+        try { ids = ML.placeRegionIds(ref, G) || []; } catch (e2) { ids = []; /* 地名解析出错：当认不出 */ }
+        if (ids.length === 1) { try { info = FM.regionInfo(ids[0]); } catch (e3) { info = null; /* 同上 */ } }
+      }
+      return info && info.owner ? String(info.owner) : '';
+    }
+    var segs = where.split(/[·・]/).map(function (s) { return s.trim(); }).filter(Boolean);
+    var tries = [where].concat(segs.length > 1 ? segs.slice().reverse() : []);
+    for (var i = 0; i < tries.length; i++) {
+      var o = ownerOf(tries[i]);
+      if (o) return o === own ? '' : o;   // 那块地归本朝：不像被敌所执，不猜
+    }
+    var head = _bareName(segs[0]);
+    if (!head) return '';
+    var hits = (G.facs || []).filter(function (f) { return f && f.name && f.name !== own && _bareName(f.name) === head; });
+    return hits.length === 1 ? String(hits[0].name) : '';
+  }
+  // 补记执者：档里没记执者的在俘之人，认得出就记上（另记 _captorInferred：是按所在之地认的）
+  function fillCaptors(G) {
+    var out = [];
+    ((G && G.chars) || []).forEach(function (c) {
+      if (!c || !c._captured || c.alive === false || c.dead === true || String(c._capturedBy || '').trim()) return;
+      var by = inferCaptor(G, c);
+      if (!by) return;
+      c._capturedBy = by;
+      c._captorInferred = true;
+      out.push(c.name);
+    });
+    return out;
+  }
   // 朝廷所在：京城没陷就是京城；陷着就去新君、监国那里
   function _courtSeat(G) {
     var cap = String(G._capital || G.capital || '');
@@ -115,21 +216,24 @@
 
   function _releaseChar(G, ch, how, opts) {
     opts = opts || {};
-    var turn = G.turn || 0, captor = String(ch._capturedBy || opts.by || '').trim();   // 档里没记执者（开局北狩）用推演说的
+    var turn = G.turn || 0, captor = String(ch._capturedBy || opts.by || '').trim();   // 档里没记执者也没认出的用推演说的
     var to = String(opts.to || '').trim() || _courtSeat(G);
+    var ransom = opts.ransom || _ransomOf(0), paidText = _ransomText(ransom);
     if (!Array.isArray(ch._captivityHistory)) ch._captivityHistory = [];
     ch._captivityHistory.push({
-      by: captor, place: String(ch._capturedLocation || ''), how: how, ransom: opts.ransom || 0, toTurn: turn,
+      by: captor, place: String(ch._capturedLocation || ''), how: how, ransom: ransom, ransomFrom: paidText ? (opts.from || 'guoku') : '',
+      ransomTo: opts.paidTo || '', toTurn: turn,
       fromTurn: ch._capturedTurn != null ? ch._capturedTurn : (ch._capturedSince != null ? ch._capturedSince : null)
     });
-    delete ch._captured; delete ch._capturedBy; delete ch._capturedLocation; delete ch._capturedTurn; delete ch._capturedSince; delete ch._captorSeen;
+    delete ch._captured; delete ch._capturedBy; delete ch._capturedLocation; delete ch._capturedTurn; delete ch._capturedSince;
+    delete ch._captorSeen; delete ch._captorInferred;
     ch._releasedTurn = turn;
     if (CAPTIVE_TAG.test(String(ch.presenceState || ''))) ch.presenceState = 'present';
     if (CAPTIVE_TAG.test(String(ch.status || ''))) delete ch.status;
     if (to) ch.location = to;
     if (G._playerCaptive && G._playerCaptive.name === ch.name) G._playerCaptive = null;  // arch-ok 御驾亲征被俘的全局信号随人回来撤
     var who = String(ch.name || ''), from = captor ? '「' + captor + '」' : '敌';
-    var text = how === 'ransom' ? '朝廷' + (opts.ransom ? '以银 ' + opts.ransom + ' 两' : '') + '自' + from + '处赎还' + who
+    var text = how === 'ransom' ? '朝廷' + (paidText ? (opts.from === 'neitang' ? '出内帑' : '以') + paidText : '') + '自' + from + '处赎还' + who
       : how === 'release' ? from + '放还' + who
       : how === 'escape' ? who + '自' + from + '处逃归'
       : how === 'rescue' ? '官军自' + from + '处救回' + who
@@ -141,6 +245,9 @@
         if (rg) delete rg._regent;
         G._regent = null;  // arch-ok 悬朝唯一写口·君上归，监国撤
       }
+      (Array.isArray(G.currentIssues) ? G.currentIssues : []).forEach(function (iss) {   // 「乘舆蒙尘」时政（tm-military.js 御驾亲征被俘时上的）了结
+        if (iss && iss._captive && iss.status !== 'resolved') { iss.status = 'resolved'; iss.resolvedTurn = turn; iss.resolution = '乘舆还朝'; }
+      });
       _ebCat('国变', '★乘舆还朝！' + text + (to ? '·归于' + to : '')
         + (rival ? '——新君' + rival + '在位，一朝二主之局自此始' : (hadRegent ? '·监国撤，君上复亲政' : '·君上复亲政')));
     } else {
@@ -152,10 +259,10 @@
         global.NpcMemorySystem.addMemory(who, '陷于' + (captor || '敌') + '，' + HOWS[how] + '归来', 9, 'career');
       }
     } catch (e) { _captureErr(e, 'CaptiveCourt.release.memory'); }
-    return { ok: true, name: who, how: how, to: to, ransom: opts.ransom || 0 };
+    return { ok: true, name: who, how: how, to: to, ransom: ransom, from: opts.from || '', paidTo: opts.paidTo || '' };
   }
 
-  // 主推演 captive_release 一条：{ name, how, by, ransom, to, narrative }；落不成返回 { ok:false, why }
+  // 主推演 captive_release 一条：{ name, how, by, ransom, from, to, narrative }；落不成返回 { ok:false, why }
   function release(G, decl) {
     G = G || global.GM;
     decl = decl || {};
@@ -168,17 +275,13 @@
     if (!ch._captured) return { ok: false, why: '此人并未被俘' };
     var captor = String(ch._capturedBy || '').trim(), by = String(decl.by || '').trim();
     if (by && captor && !_sameCaptor(by, captor)) return { ok: false, why: '执者对不上（档里是「' + captor + '」）' };
-    var ransom = how === 'ransom' ? Math.max(0, Math.round(Number(decl.ransom) || 0)) : 0;
-    if (ransom > 0) {
-      var FE = global.FiscalEngine, paid = null;
-      if (!FE || typeof FE.trySpendFromGuoku !== 'function') return { ok: false, why: '财政账本未加载，赎银无从出' };
-      try { paid = FE.trySpendFromGuoku({ amounts: { money: ransom }, sinkTag: '赎还·' + ch.name, gameRef: G }); }
-      catch (e) { _captureErr(e, 'CaptiveCourt.release.ransom'); paid = null; }
-      if (!paid || !paid.ok) {
-        return { ok: false, why: '国库付不起赎银（要 ' + ransom + ' 两' + (paid && paid.available != null ? '，库存 ' + Math.floor(Number(paid.available) || 0) + ' 两' : '') + '）' };
-      }
+    var ransom = _ransomOf(how === 'ransom' ? decl.ransom : 0), from = String(decl.from || '').trim() === 'neitang' ? 'neitang' : 'guoku', paidTo = '';
+    if (_ransomText(ransom)) {
+      var paid = _payRansom(G, ch, ransom, from, captor || by);
+      if (!paid.ok) return paid;
+      paidTo = paid.to;
     }
-    return _releaseChar(G, ch, how, { to: decl.to, by: by, ransom: ransom, narrative: decl.narrative });
+    return _releaseChar(G, ch, how, { to: decl.to, by: by, ransom: ransom, from: from, paidTo: paidTo, narrative: decl.narrative });
   }
 
   // 执者那一家灭了，它手里的人放回。只认真在势力表里见过的执者（见过记 _captorSeen）；执者没记、或只是一句「敌军」的不动，交推演判
@@ -298,6 +401,7 @@
     if (!enabled()) return;
     G = G || global.GM;
     if (!G) return;
+    try { fillCaptors(G); } catch (e0) { _captureErr(e0, 'CaptiveCourt.fillCaptors'); }        // 档里没记执者的先按所在之地补记
     try { releaseOrphans(G); } catch (e) { _captureErr(e, 'CaptiveCourt.releaseOrphans'); }   // 执者那家灭了的先放回
     var player = _player(G);
     if (!player) return;
@@ -324,7 +428,7 @@
   }
 
   var API = { tick: tick, courtScene: courtScene, _applyCourtOutcome: _applyCourtOutcome, _heirCandidates: _heirCandidates, _recentEdicts: _recentEdicts,
-    release: release, releaseOrphans: releaseOrphans, HOWS: HOWS,
+    release: release, releaseOrphans: releaseOrphans, inferCaptor: inferCaptor, fillCaptors: fillCaptors, HOWS: HOWS,
     enabled: enabled, FALLBACK_PROCLAIM_TURNS: FALLBACK_PROCLAIM_TURNS, CRACKDOWN_COOLDOWN: CRACKDOWN_COOLDOWN };
   global.TM = global.TM || {};
   global.TM.CaptiveCourt = API;

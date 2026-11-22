@@ -1696,6 +1696,10 @@ function doActualStart(sid, requestToken){
       }
     });
     if (typeof _dbg === 'function') _dbg('[被俘态] 标记 _captured ' + n + ' 人');
+    // 剧本没写执者的（绍宋北狩一行只记了在哪），按所在之地补记执者（tm-captive-court.js fillCaptors；此时认不出的，过回合悬朝 tick 再补）
+    try {
+      if (n && typeof TM !== 'undefined' && TM.CaptiveCourt && typeof TM.CaptiveCourt.fillCaptors === 'function') TM.CaptiveCourt.fillCaptors(GM);
+    } catch (_capE) { /* 补记不成只是执者未详，过回合再补 */ }
   })();
   GM.items=(P.items||[]).filter(function(t){return t.sid===sid;}).map(function(t){var c=deepClone(t);c.acquired=false;return c;});
   // 军队加载：优先 initialTroops（编辑器新 schema 完整部队表），armies 仅作兜底（旧字段通常只有少量代表部队）

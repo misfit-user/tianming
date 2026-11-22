@@ -4066,8 +4066,8 @@
     },
     {
       "path": "tm-ai-schema.js",
-      "sha256": "3a7c7136be817baad55f382659534d0490bdda4f1a590b39c39392984ba98230",
-      "size": 52380
+      "sha256": "c373fa44959730b1ce3b10f18d8d79830beb251d5f66ef139a82c254127d80a9",
+      "size": 52466
     },
     {
       "path": "tm-api-models.js",
@@ -4206,8 +4206,8 @@
     },
     {
       "path": "tm-captive-court.js",
-      "sha256": "fc49990060b8ab25f547db8a6a35fdf2b8b750b0e5bfca57078c24e5c134b3f1",
-      "size": 21792
+      "sha256": "761be2c471db42670447934df54ede982fb192d767450567d76113ec63cee576",
+      "size": 28840
     },
     {
       "path": "tm-ceming.js",
@@ -4631,8 +4631,8 @@
     },
     {
       "path": "tm-endturn-ai.js",
-      "sha256": "e3923e78d60f53a41960eabe4d596b44b22ce247ddf0c482422bd802250e551b",
-      "size": 397692
+      "sha256": "31d849f4884c887111fb09bc7d1e174e6b0e8362e0ee08512a5a8e9edd3ab923",
+      "size": 397813
     },
     {
       "path": "tm-endturn-apply-stages.js",
@@ -4706,8 +4706,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "370877e270f5e1b6bf9e77c87ff5e8588eb8ec9f39041fbc624e5a74079504f5",
-      "size": 366209
+      "sha256": "5062c6782af4d1918de61b915ff8626bbb2e16c6b73c2a979230888568a192ce",
+      "size": 366331
     },
     {
       "path": "tm-endturn-province.js",
@@ -5856,8 +5856,8 @@
     },
     {
       "path": "tm-patches-start.js",
-      "sha256": "300ef614cf4f825e1f51f946b64cc39f84a12305b1e64a990663976597227901",
-      "size": 134664
+      "sha256": "dc174d74cbae63c75b262ac72807e90e00f52850d7d098c537a0ad8cc86167dd",
+      "size": 135090
     },
     {
       "path": "tm-patches.js",
@@ -6141,7 +6141,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "11dcb1201c34166fb3282c69d975b2edbbb77dfbde157cbc074706329090a949",
+      "sha256": "03d209bdfb6c9224c937a31a6bc87c694628ef6b8809cfca65f2843539167f7f",
       "size": 142619
     },
     {

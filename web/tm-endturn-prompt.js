@@ -374,7 +374,8 @@
           + (since != null && GM.turn != null ? '·已' + Math.max(0, GM.turn - since) + '回合' : '') + '）';
       });
       tp += '【被俘之人】' + rows.join('、') + (list.length > 8 ? '等 ' + list.length + ' 人' : '')
-        + '。朝廷遣使赎还、敌方放还、本人逃归、官军救回的，写 captive_release（name、how:ransom赎还/release放还/escape逃归/rescue救回、by执者、ransom赎银两、to回到哪）；没回来的不写。\n';
+        + '。朝廷遣使赎还、敌方放还、本人逃归、官军救回的，写 captive_release（name、how:ransom赎还/release放还/escape逃归/rescue救回、by执者、'
+        + 'ransom赎金{money银两,grain粮石,cloth布匹}、from赎金出处guoku国库/neitang内帑、to回到哪）；赎金付不起的赎不回；没回来的不写。\n';
     })();
     // 季节/时令（增加叙事的时间感）
     var _dpvSeason = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;

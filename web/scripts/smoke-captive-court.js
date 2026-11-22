@@ -7,7 +7,10 @@
 // 11-22「破京之后」（同志「按你推荐来」甲）：归来后所下诏令全交 AI 判（不按「复辟」几个字筛）；
 //   放还写口 release（主推演 captive_release：验在俘、执者、国库付得起赎银；解除、回朝廷、监国撤、一朝二主）；
 //   执者那一家灭了放回（releaseOrphans，悬朝 tick 先跑）；主推演落账那段真代码原样抽出来跑。
-// 赎银的国库写口用替身（真身 tm-fiscal-engine.js trySpendFromGuoku：全额扣成或一文不扣）。
+// 11-22 收尾（同志「去完成剩下这部分」）：赎金银粮布三样、国库或内帑出（不够整笔不动）、入执者的库；
+//   档里没记执者的按所在之地认执者（inferCaptor/fillCaptors）；君上回来「乘舆蒙尘」时政了结。
+// 赎金的国库、内帑写口用替身（真身 tm-fiscal-engine.js trySpendFromGuoku：全额扣成或一文不扣；spendFromNeitang：有多少扣多少，
+//   所以放还写口先核内帑存数）；认地块归属用替身（真身 tm-faction-membership.js regionInfo）。
 'use strict';
 var fs = require('fs');
 var path = require('path');
@@ -151,13 +154,17 @@ var r9 = CC9.release(G9, { name: '朱祁镇', how: 'ransom', by: '瓦剌', ranso
 assert(r9.ok === false && /国库付不起/.test(r9.why) && p9._captured === true && G9.guoku.money === 50000, '国库付不起赎银：不放、一文不扣');
 G9._regent = { name: '于谦', sinceTurn: 21 }; G9.chars[3]._regent = true;
 G9._playerCaptive = { name: '朱祁镇', by: '瓦剌', turn: 20 };
+G9.currentIssues = [{ id: 'iss_captive_20', title: '乘舆蒙尘 · 天子蒙难', status: 'pending', _captive: true }, { id: 'iss_flood', title: '河决', status: 'pending' }];
 G9.turn = 25;
 var r9b = CC9.release(G9, { name: '朱祁镇', how: 'ransom', by: '瓦剌军', ransom: 30000, narrative: '遣使携金帛往瓦剌营迎驾' });
 assert(r9b.ok === true && G9.guoku.money === 20000 && s9.__spent[0] === '赎还·朱祁镇:30000', '赎还：赎银从国库出（执者写「瓦剌军」也认）');
 assert(!p9._captured && !p9._capturedBy && p9._releasedTurn === 25 && p9.location === '北京', '解除被俘、回京城');
 var h9 = p9._captivityHistory && p9._captivityHistory[0];
-assert(h9 && h9.by === '瓦剌' && h9.fromTurn === 20 && h9.toTurn === 25 && h9.how === 'ransom' && h9.ransom === 30000, '经过记一笔');
+assert(h9 && h9.by === '瓦剌' && h9.fromTurn === 20 && h9.toTurn === 25 && h9.how === 'ransom' && h9.ransom.money === 30000 && h9.ransom.cloth === 0
+  && h9.ransomFrom === 'guoku' && h9.ransomTo === '', '经过记一笔（赎金写一个数即银两；执者不在势力表里，赎金不入谁的库）');
 assert(G9._regent === null && !G9.chars[3]._regent && G9._playerCaptive === null, '君上回来：监国撤、御驾被俘的信号撤');
+assert(G9.currentIssues[0].status === 'resolved' && G9.currentIssues[0].resolvedTurn === 25 && G9.currentIssues[1].status === 'pending',
+  '「乘舆蒙尘」时政了结，别的时政不动');
 assert(s9._ebs.some(function (e) { return e.indexOf('国变·★乘舆还朝！朝廷以银 30000 两自「瓦剌」处赎还朱祁镇·归于北京·监国撤，君上复亲政') === 0; }), '事件写明怎么回来、回到哪');
 assert(G9._chronicle.some(function (c) { return c.text.indexOf('迎驾') >= 0; }), '推演写的经过入史');
 
@@ -197,7 +204,90 @@ G12.facs[0]._dissolvedTurn = 30;
 s12.TM.CaptiveCourt.tick(G12);
 assert(!G12.chars[0]._captured, '推演 faction_dissolve 记了亡：每回合悬朝 tick 先放回');
 
-console.log('⑪ 主推演落账那段真代码（tm-endturn-apply.js 原样抽出）：落成的解除，落不成的记写回落空');
+console.log('⑪ 赎金：银粮布三样，国库或内帑出（不够整笔不动），入执者的库（11-22 收尾）');
+// 国库替身照真身全额扣成或一文不扣；内帑替身照真身有多少扣多少（所以放还写口要先核存数）
+function ransomSandbox(guoku, neitang) {
+  var s = releaseSandbox();
+  s.GM.guoku = guoku;
+  s.GM.neitang = neitang;
+  s.GM.facs = [{ name: '大明', isPlayer: true }, { name: '瓦剌', treasury: { money: 100 } }];
+  s.FiscalEngine = {
+    trySpendFromGuoku: function (spec) {
+      var a = spec.amounts, g = s.GM.guoku, ks = ['money', 'grain', 'cloth'];
+      for (var i = 0; i < ks.length; i++) {
+        if ((a[ks[i]] || 0) > (g[ks[i]] || 0)) return { ok: false, code: 'insufficient-guoku-' + ks[i], resource: ks[i], required: a[ks[i]], available: g[ks[i]] || 0 };
+      }
+      ks.forEach(function (k) { g[k] = (g[k] || 0) - (a[k] || 0); });
+      s.__spent.push('国库:' + spec.sinkTag);
+      return { ok: true };
+    },
+    spendFromNeitang: function (a, tag) {
+      ['money', 'grain', 'cloth'].forEach(function (k) { s.GM.neitang[k] = (s.GM.neitang[k] || 0) - (a[k] || 0); });
+      s.__spent.push('内帑:' + tag);
+      return { ok: true };
+    }
+  };
+  return s;
+}
+var s13 = ransomSandbox({ money: 50000, grain: 1000, cloth: 0 }, { money: 30000, grain: 0, cloth: 8000 }), G13 = s13.GM, CC13 = s13.TM.CaptiveCourt, p13 = G13.chars[0];
+var r13a = CC13.release(G13, { name: '朱祁镇', how: 'ransom', by: '瓦剌', ransom: { money: 20000, cloth: 5000 } });
+assert(r13a.ok === false && /国库付不起赎金/.test(r13a.why) && /库存布 0 匹/.test(r13a.why) && p13._captured === true && G13.guoku.money === 50000 && !s13.__spent.length,
+  '国库布不够：整笔不动、不放（实得 ' + r13a.why + '）');
+G13.turn = 33;
+var r13b = CC13.release(G13, { name: '朱祁镇', how: 'ransom', by: '瓦剌', ransom: { money: 20000, cloth: 5000 }, from: 'neitang' });
+assert(r13b.ok === true && G13.neitang.money === 10000 && G13.neitang.cloth === 3000 && G13.guoku.money === 50000 && s13.__spent[0] === '内帑:赎还·朱祁镇',
+  '内帑出赎金：银布都从内帑扣，国库不动');
+assert(G13.facs[1].treasury.money === 20100 && G13.facs[1].treasury.cloth === 5000, '赎金入执者「瓦剌」的库（两头对得上账）');
+var h13 = p13._captivityHistory[0];
+assert(h13.ransom.money === 20000 && h13.ransom.cloth === 5000 && h13.ransomFrom === 'neitang' && h13.ransomTo === '瓦剌', '经过记下赎金几样、从哪出、交给谁');
+assert(s13._ebs.some(function (e) { return e.indexOf('国变·★乘舆还朝！朝廷出内帑银 20000 两、布 5000 匹自「瓦剌」处赎还朱祁镇') === 0; }), '事件写明赎金几样、出内帑');
+var s14b = ransomSandbox({ money: 0 }, { money: 1000, grain: 0, cloth: 0 }), G14b = s14b.GM;
+var r14b = s14b.TM.CaptiveCourt.release(G14b, { name: '朱祁镇', how: 'ransom', by: '瓦剌', ransom: 20000, from: 'neitang' });
+assert(r14b.ok === false && /内帑付不起赎金/.test(r14b.why) && /内帑银只有 1000 两/.test(r14b.why) && G14b.neitang.money === 1000 && !s14b.__spent.length && G14b.chars[0]._captured === true,
+  '内帑不够：先核存数，一文不扣、不放（实得 ' + r14b.why + '）');
+var s14c = ransomSandbox({ money: 50000, grain: 0, cloth: 0 }, { money: 0 }), G14c = s14c.GM;
+G14c.facs[1]._dissolvedTurn = 31;
+assert(s14c.TM.CaptiveCourt.release(G14c, { name: '朱祁镇', how: 'ransom', by: '瓦剌', ransom: 30000 }).ok === true && G14c.guoku.money === 20000
+  && G14c.facs[1].treasury.money === 100 && G14c.chars[0]._captivityHistory[0].ransomTo === '', '执者那家已亡：赎金照付，不入它的库');
+
+console.log('⑫ 档里没记执者的，按所在之地认执者；认出后执者灭了照样放回（11-22 收尾）');
+var s15 = releaseSandbox(), G15 = s15.GM, CC15 = s15.TM.CaptiveCourt;
+s15.TM.FactionMembership = { regionInfo: function (ref) {
+  if (ref === '燕京') return { id: 'ssr-0324', name: '燕京', owner: '大金' };
+  if (ref === '临安') return { id: 'ssr-0900', name: '临安', owner: '大宋' };
+  if (ref === '两可之地') throw new Error('引用不唯一');
+  return null;
+} };
+G15.facs = [{ name: '大宋', isPlayer: true }, { name: '大金' }, { name: '西夏' }];
+G15.chars = [
+  { name: '赵构', isPlayer: true, alive: true, faction: '大宋' },
+  { name: '赵桓', alive: true, faction: '大宋', presenceState: '北狩', _captured: true, _capturedLocation: '金国·燕京（北狩中）' },
+  { name: '韦氏', alive: true, faction: '大宋', _captured: true, _capturedLocation: '金国·上京（北狩中）' },
+  { name: '某甲', alive: true, faction: '大宋', _captured: true, _capturedLocation: '临安·西湖' },
+  { name: '某乙', alive: true, faction: '大宋', _captured: true, _capturedLocation: '两可之地' },
+  { name: '某丙', alive: true, faction: '大宋', _captured: true, _capturedBy: '伪齐', _capturedLocation: '燕京' }
+];
+assert(CC15.inferCaptor(G15, G15.chars[1]) === '大金', '「金国·燕京」：燕京这块地归大金');
+assert(CC15.inferCaptor(G15, G15.chars[2]) === '大金', '「金国·上京」：上京不在图上，国号「金国」与「大金」相合');
+assert(CC15.inferCaptor(G15, G15.chars[3]) === '', '所在之地归本朝：不猜');
+assert(CC15.inferCaptor(G15, G15.chars[4]) === '', '地名两可、认不出：不猜');
+G15.facs.push({ name: '金国' });
+assert(CC15.inferCaptor(G15, G15.chars[2]) === '', '国号同时合上两家（大金、金国）：不猜');
+G15.facs.pop();
+var filled15 = CC15.fillCaptors(G15);
+assert(filled15.join('、') === '赵桓、韦氏' && G15.chars[1]._capturedBy === '大金' && G15.chars[1]._captorInferred === true && G15.chars[5]._capturedBy === '伪齐',
+  '补记执者：认得出的两人记上，已记了执者的不动（实得 ' + filled15.join('、') + '）');
+G15.chars.push({ name: '邢秉懿', alive: true, faction: '大宋', _captured: true, _capturedLocation: '金国·燕京（北狩中）' });   // 旧档里开局时没补记上的
+CC15.tick(G15);
+assert(G15.chars[1]._captured === true && G15.chars[1]._captorSeen === true, '大金还在：不放，记下见过');
+assert(G15.chars[6]._capturedBy === '大金' && G15.chars[6]._captorSeen === true, '旧档开局时没补上的：每回合悬朝 tick 先补记');
+G15.facs = G15.facs.filter(function (f) { return f.name !== '大金'; });
+G15.turn = 40;
+CC15.tick(G15);
+assert(!G15.chars[1]._captured && !G15.chars[2]._captured && !G15.chars[6]._captured && G15.chars[1]._captivityHistory[0].by === '大金' && G15.chars[1]._captivityHistory[0].how === 'captorGone'
+  && !('_captorInferred' in G15.chars[1]) && G15.chars[1].presenceState === 'present', '认出的执者灭了：赵桓、韦氏得脱，在场状态改回');
+
+console.log('⑬ 主推演落账那段真代码（tm-endturn-apply.js 原样抽出）：落成的解除，落不成的记写回落空');
 // 从整份文件里抽出两个标记之间那段真代码（标记找不到就算败，抽出空段）
 function between(whole, from, to) {
   var a = whole.indexOf(from), b = whole.indexOf(to, a + 1);
@@ -218,4 +308,4 @@ if (failures.length) {
   failures.forEach(function (f) { console.log('  - ' + f); });
   process.exit(1);
 }
-console.log('PASS smoke-captive-court (立新君三验/太上皇迁转/夺门三闸/谋泄冷却/监国/兜底轨/flag门/常态零行为/诏令全交AI判/放还写口/执者亡放回/落账真代码)');
+console.log('PASS smoke-captive-court (立新君三验/太上皇迁转/夺门三闸/谋泄冷却/监国/兜底轨/flag门/常态零行为/诏令全交AI判/放还写口/执者亡放回/赎金三样内帑入执者库/按地认执者/时政了结/落账真代码)');

@@ -2244,7 +2244,8 @@
           "\"name\":\"被俘之人\","+
           "\"how\":\"ransom赎还/release放还/escape逃归/rescue救回\","+
           "\"by\":\"执者\","+
-          "\"ransom\":0,"+
+          "\"ransom\":{\"money\":0,\"grain\":0,\"cloth\":0},"+
+          "\"from\":\"guoku国库/neitang内帑(赎金出处·不写为国库)\","+
           "\"to\":\"回到哪(不写回朝廷所在)\","+
           "\"narrative\":\"经过\""+
         "}],"+

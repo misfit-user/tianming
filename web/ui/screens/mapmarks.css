@@ -1,5 +1,7 @@
 /* 舆图标记（screens/mapmarks.js）：军旗、行军箭头、流寇墨旗、交战圆章。
-   一面旗：旗杆脚落在治所上，杆顶挂一面燕尾旗（番号首字），杆脚下一块小牌写兵数；同处几部旗角记部数。--mk-s 随远近缩放 */
+   一面旗：旗杆脚落在治所上，杆顶挂一面燕尾旗（番号首字），杆脚下一块小牌写兵数；同处几部旗角记部数。--mk-s 随远近缩放。
+   旗按兵数分三等（--mk-t，一面旗连同并进来的一堆合计）：不足一万的小一号，三万以上的大一号、双燕尾；水师是一面带水纹的梯形旗。
+   远看（天下一档，.far）小旗不挂兵数牌，悬停或拉近才见。上下挨着时上面那面压在前（--mk-z）：下面那面的旗角不遮上面的兵数牌 */
 .map-marks { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
 .map-marks.off { visibility: hidden; }
 .mk-routes { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
@@ -8,31 +10,40 @@
 @keyframes mk-march { to { stroke-dashoffset: -14; } }
 .mk-pins { position: absolute; inset: 0; }
 
-.mk { position: absolute; left: 0; top: 0; width: 0; height: 0; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
-.mk-army { filter: drop-shadow(0 .125rem .1875rem rgba(20, 10, 4, .55)); }
-.mk-army > .mk-pole { position: absolute; left: -.09375rem; bottom: 0; width: .1875rem; height: calc(2.75rem * var(--mk-s, 1));
+.mk { position: absolute; left: 0; top: 0; width: 0; height: 0; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; z-index: var(--mk-z, 1); }
+.mk-army { --mk-k: calc(var(--mk-s, 1) * var(--mk-t, 1)); filter: drop-shadow(0 .125rem .1875rem rgba(20, 10, 4, .55)); }
+.mk-army.t1 { --mk-t: .84; }
+.mk-army.t3 { --mk-t: 1.16; }
+.mk-army > .mk-pole { position: absolute; left: -.09375rem; bottom: 0; width: .1875rem; height: calc(2.75rem * var(--mk-k, 1));
   background: linear-gradient(90deg, #5a3c22, #2a1a0d); border-radius: .09375rem; }
 .mk-army > .mk-pole::before { content: ''; position: absolute; left: 50%; top: -.25rem; width: .4375rem; height: .4375rem; transform: translateX(-50%); border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #f3d98f, #9b7430); }
-.mk-army > .mk-flag { position: absolute; left: .09375rem; bottom: calc(1.15rem * var(--mk-s, 1)); width: calc(1.875rem * var(--mk-s, 1)); height: calc(1.5rem * var(--mk-s, 1));
-  display: grid; place-items: center; padding-right: calc(.375rem * var(--mk-s, 1)); box-sizing: border-box;
-  font: 400 calc(1.0625rem * var(--mk-s, 1))/1 var(--f-title); color: #fbeed4; text-shadow: 0 1px 1px rgba(60, 10, 4, .8);
+.mk-army > .mk-flag { position: absolute; left: .09375rem; bottom: calc(1.15rem * var(--mk-k, 1)); width: calc(1.875rem * var(--mk-k, 1)); height: calc(1.5rem * var(--mk-k, 1));
+  display: grid; place-items: center; padding-right: calc(.375rem * var(--mk-k, 1)); box-sizing: border-box;
+  font: 400 calc(1.0625rem * var(--mk-k, 1))/1 var(--f-title); color: #fbeed4; text-shadow: 0 1px 1px rgba(60, 10, 4, .8);
   background: linear-gradient(160deg, #c2402f, #8a2416 60%, #6e1a10); clip-path: polygon(0 0, 100% 0, 78% 50%, 100% 100%, 0 100%);
   transform-origin: 0 50%; animation: mk-wave 3.2s ease-in-out infinite; }
 @keyframes mk-wave { 0%, 100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-3deg) scaleX(.95); } }
+/* 兵数牌：字不随远近缩到十一像素半以下（原先全图那一档只九像素上下） */
 .mk-army > .mk-n { position: absolute; left: 50%; top: .25rem; transform: translateX(-50%); padding: .0625rem .375rem .09375rem; white-space: nowrap;
-  font: calc(max(.75rem, 11px) * var(--mk-s, 1)) / 1.25 var(--f-kai); letter-spacing: .04em; color: #2a1608;
+  font: max(11.5px, calc(.8125rem * var(--mk-s, 1))) / 1.25 var(--f-kai); letter-spacing: .04em; color: #2a1608;
   background: linear-gradient(180deg, #f6ecd2, #e1cc9c); box-shadow: inset 0 0 0 1px rgba(120, 80, 30, .55); }
-.mk-army > .mk-c { position: absolute; left: calc(1.5rem * var(--mk-s, 1)); bottom: calc(2.25rem * var(--mk-s, 1)); min-width: 1rem; height: 1rem; padding: 0 .1875rem; box-sizing: border-box;
+.mk-army > .mk-c { position: absolute; left: calc(1.5rem * var(--mk-k, 1)); bottom: calc(2.25rem * var(--mk-k, 1)); min-width: 1rem; height: 1rem; padding: 0 .1875rem; box-sizing: border-box;
   border-radius: .5rem; font: normal .6875rem/1rem var(--f-kai); text-align: center; color: #2a1608; background: #f3e2b8; box-shadow: 0 0 0 1px rgba(122, 31, 19, .7); }
 /* 叠旗：几处并作一堆时，主旗后右上斜露一角旗影 */
-.mk-army > .mk-flag2 { display: none; position: absolute; left: calc(.40625rem * var(--mk-s, 1)); bottom: calc(1.46rem * var(--mk-s, 1)); width: calc(1.875rem * var(--mk-s, 1)); height: calc(1.5rem * var(--mk-s, 1));
+.mk-army > .mk-flag2 { display: none; position: absolute; left: calc(.40625rem * var(--mk-k, 1)); bottom: calc(1.46rem * var(--mk-k, 1)); width: calc(1.875rem * var(--mk-k, 1)); height: calc(1.5rem * var(--mk-k, 1));
   background: linear-gradient(160deg, #9c3324, #5e170e 70%); clip-path: polygon(0 0, 100% 0, 78% 50%, 100% 100%, 0 100%); opacity: .9; }
 .mk-army.stack > .mk-flag2 { display: block; }
+/* 大旗（三万以上）双燕尾；水师梯形旗、下缘一道水纹 */
+.mk-army.t3:not(.mk-rebel):not(.navy) > .mk-flag, .mk-army.t3:not(.mk-rebel):not(.navy) > .mk-flag2 { clip-path: polygon(0 0, 100% 0, 84% 25%, 100% 50%, 84% 75%, 100% 100%, 0 100%); }
+.mk-army.navy > .mk-flag, .mk-army.navy > .mk-flag2 { clip-path: polygon(0 0, 100% 14%, 100% 86%, 0 100%); }
+.mk-army.navy > .mk-flag { padding: 0 0 calc(.25rem * var(--mk-k, 1)); background-image: linear-gradient(180deg, transparent 80%, rgba(246, 236, 210, .65) 80% 88%, transparent 88%), linear-gradient(160deg, #c2402f, #8a2416 60%, #6e1a10); }
 .mk-rebel > .mk-flag2 { background: linear-gradient(160deg, #2c2a26, #121110 70%); clip-path: polygon(0 0, 100% 6%, 80% 50%, 96% 100%, 0 94%); }
 .mk-army.rough > .mk-flag2 { background: linear-gradient(160deg, #6f5431, #45321b 70%); }
 .mk-army > .mk-c[hidden] { display: none; }
-.mk-army:hover { filter: drop-shadow(0 .125rem .25rem rgba(20, 10, 4, .6)) brightness(1.12); z-index: 2; }
+.mk-army:hover { filter: drop-shadow(0 .125rem .25rem rgba(20, 10, 4, .6)) brightness(1.12); z-index: 9000; }
+/* 远看：小旗不挂兵数牌（旗多处只剩大军的数），悬停即见 */
+.map-marks.far .mk-army.t1:not(:hover) > .mk-n { display: none; }
 /* 告急：旗边一圈朱光一明一暗 */
 .mk-army.hot > .mk-flag { animation: mk-wave 3.2s ease-in-out infinite, mk-hot 1.4s ease-in-out infinite; }
 @keyframes mk-hot { 50% { filter: brightness(1.35) saturate(1.2); } }
@@ -52,6 +63,8 @@
 .mk-foe > .mk-pole::before { background: radial-gradient(circle at 35% 30%, #ebe7dd, #64605a); }
 .mk-foe > .mk-c { box-shadow: 0 0 0 1px color-mix(in srgb, var(--mk-fc, #8a7a66) 50%, #000); }
 .mk-foe.dim > .mk-flag { filter: saturate(.7) brightness(1.12); }
+.mk-foe.navy > .mk-flag { background-image: linear-gradient(180deg, transparent 80%, rgba(246, 236, 210, .6) 80% 88%, transparent 88%),
+  linear-gradient(160deg, color-mix(in srgb, var(--mk-fc, #8a7a66) 78%, #000), color-mix(in srgb, var(--mk-fc, #8a7a66) 50%, #000) 70%); }
 /* 交战：战字圆章，外一圈朱晕扩散 */
 .mk-battle > b { position: absolute; left: 0; top: 0; width: 1.75rem; height: 1.75rem; transform: translate(-50%, -50%); display: grid; place-items: center; border-radius: 50%;
   font: 400 1rem/1 var(--f-title); color: #fbeed4; background: radial-gradient(circle at 35% 30%, #c2402f, #6e1a10 75%);

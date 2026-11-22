@@ -16,6 +16,8 @@ export function shortCount(n) {
   if (n >= 1e3) { const k = Math.round(n / 100), a = Math.floor(k / 10), b = k % 10; return `${cnNum(a)}千${b ? cnNum(b) : ''}`; }
   return cnNum(Math.round(n / 10) * 10) || '〇';
 }
+// 旗分三等（一面旗连同并进来的一堆合计）：不足一万小旗，一万到三万中旗，三万以上大旗（双燕尾）
+const tierOf = (n) => (n >= 30000 ? 't3' : n >= 10000 ? 't2' : 't1');
 // 只见其大概：数百、千余、数千、万余、数万、十余万
 export function roughCount(n) {
   n = Math.max(0, Number(n) || 0);
@@ -85,7 +87,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       // 只见其大概的：不写番号字、不记几部、点了不翻军务册（册里本无此军）
       const n = h('span.mk-n'), c = h('em.mk-c');
       const pin = { kind: rough ? 'rough' : 'army', rough, x: r.center[0], y: r.center[1], place: r.name, total, count: list.length, weight: (hot ? 1e9 : 0) + total, n, c, absorbed: [], sig: null };
-      const el = h('button.mk.mk-army' + (hot ? '.hot' : '') + (marching ? '.march' : '') + (rough ? '.rough' : ''), { type: 'button', 'aria-label': `${r.name}驻军`,
+      const el = h('button.mk.mk-army.' + tierOf(total) + (hot ? '.hot' : '') + (marching ? '.march' : '') + (rough ? '.rough' : '') + (lead.naval ? '.navy' : ''), { type: 'button', 'aria-label': `${r.name}驻军`,
         onclick: rough ? null : () => onArmy(pin.absorbed.length ? null : lead.key) },
         h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '兵' : flagChar(lead.name)), n, c);
       const lines = list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : '　缺帅'}${about(a, r)}${a.hot ? '　告急' : ''}${a.march ? `　行军往${a.march.to}` : ''}`);
@@ -125,7 +127,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       const lead = list.slice().sort((a, b) => (b.soldiers || 0) - (a.soldiers || 0))[0];
       const n = h('span.mk-n'), c = h('em.mk-c');
       const pin = { kind: (rough ? 'foe~' : 'foe:') + fac, rough, foe: name, x: r.center[0], y: r.center[1], place: r.name, total, count: list.length, weight: total - 1e9, n, c, absorbed: [], sig: null };
-      const el = h('button.mk.mk-army.mk-foe' + (rough ? '.dim' : ''), { type: 'button', 'aria-label': `${r.name}${name}之军`, '--mk-fc': inkOf(map, fac), onclick: () => onFoe && onFoe(fac) },
+      const el = h('button.mk.mk-army.mk-foe.' + tierOf(total) + (rough ? '.dim' : '') + (lead.naval ? '.navy' : ''), { type: 'button', 'aria-label': `${r.name}${name}之军`, '--mk-fc': inkOf(map, fac), onclick: () => onFoe && onFoe(fac) },
         h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '' : flagChar(lead.name)), n, c);
       const lines = list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : ''}${about(a, r)}`);
       pin.line = rough ? `${r.name}　${name}之军约${roughCount(total)}` : `${r.name}　${name}·${list.length > 1 ? `${lead.name}等${num(list.length)}部` : lead.name}　${shortCount(total)}`;
@@ -149,7 +151,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       const n = h('span.mk-n'), c = h('em.mk-c');
       const pin = { kind: 'rebel', x: r.center[0] + 4, y: r.center[1] + 3, place: r.name, total, count: list.length, weight: 5e8 + total, n, c, absorbed: [], sig: null,
         line: list.map(bandLine).join('\n') };
-      const el = h('button.mk.mk-army.mk-rebel', { type: 'button', 'aria-label': `${r.name}民变`, onclick: () => onRebels() },
+      const el = h('button.mk.mk-army.mk-rebel.' + tierOf(total), { type: 'button', 'aria-label': `${r.name}民变`, onclick: () => onRebels() },
         h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', '寇'), n, c);
       tiao(el, () => (pin.absorbed.length ? stackTip(pin)
         : one ? { title: `${one.leader} · ${one.place}`, text: [`众约${num(one.followers)}人`, one.army ? `能战${num(one.soldiers)}（${one.army}${one.routed ? '，已溃' : ''}）` : '', one.since ? `起于${one.since}` : '', one.cause ? `起因：${one.cause}` : ''].filter(Boolean).join('\n') }
@@ -172,8 +174,9 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
     for (const rt of routes) svg.append(rt.path);
   }
 
-  // 每帧摆位：旗杆脚落在治所上；镜头后面、出了屏的藏起来。远看（全图）旗小一号
-  let shown = true;
+  // 每帧摆位：旗杆脚落在治所上；镜头后面、出了屏的藏起来。远看（全图）旗小一号；天下一档（.far）小旗收起兵数牌。
+  //   上下挨着的旗，屏上靠上的压在前（--mk-z）：下面那面的旗杆、旗角往上伸，原先会遮住上面那面的兵数牌（天启开局太原的旗角遮了大同的「三万五」）
+  let shown = true, far = null;
   // 根字号随窗宽变（流式 rem）：量一次，窗口变了再量，不每帧读样式
   let rem = 16;
   const measureRem = () => { rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16; };
@@ -185,10 +188,12 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
     if (!live) return;
     const dist = map.pose().dist;
     layer.style.setProperty('--mk-s', Math.max(0.72, Math.min(1, 900 / dist)).toFixed(3));
+    const isFar = map.tier === 'realm';
+    if (isFar !== far) { far = isFar; layer.classList.toggle('far', isFar); }
     const W = innerWidth, H = innerHeight;
     // 叠旗（照 CK3 远看时诸军并作一堆）：屏上挨得太近的同类旗，先占位的一面留着、并下邻旗——兵数记总、旗角记几部、悬停逐处列；镜头拉近散开各归其处
     const s = Math.max(0.72, Math.min(1, 900 / dist));
-    const gx = 4 * rem * s, gy = 3.8 * rem * s;            // 横看兵数牌宽、竖看旗杆连牌高
+    const gx = 4 * rem * s, gy = 4.3 * rem * s;            // 横看兵数牌宽、竖看旗杆连牌高（大旗杆高一成半，原先 3.8 时相州的牌压着开封的大旗）
     const kept = [];
     for (const p of pins) {
       const [sx, sy] = map.worldToScreen(p.x, p.y);
@@ -203,7 +208,11 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       }
       const hide = out || !!host;
       p.el.style.visibility = hide ? 'hidden' : '';
-      if (!hide) p.el.style.transform = `translate(${x.toFixed(1)}px, ${sy.toFixed(1)}px)`;
+      if (!hide) {
+        p.el.style.transform = `translate(${x.toFixed(1)}px, ${sy.toFixed(1)}px)`;
+        const z = (p.kind === 'battle' ? 6000 : 3000) - Math.round(sy);
+        if (z !== p.z) { p.z = z; p.el.style.setProperty('--mk-z', String(z)); }
+      }
     }
     for (const k of kept) paintStack(k);
     for (const rt of routes) {
@@ -227,6 +236,8 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
     p.c.textContent = count > 1 && !p.rough ? num(count) : '';
     p.c.hidden = !p.c.textContent;
     p.el.classList.toggle('stack', all.length > 1);
+    const tier = tierOf(total);
+    for (const t of ['t1', 't2', 't3']) p.el.classList.toggle(t, t === tier);
   }
   function stackTip(p) {
     const all = [p, ...p.absorbed];

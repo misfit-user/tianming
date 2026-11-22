@@ -7,13 +7,13 @@
 //
 //  君上 _captured(批四破京 captured 态)期间·朝廷由本层当一等演员：每回合悬朝 subcall——
 //  hold(观望·迎归/主战之争叙事)/regent(立监国)/proclaim_new(立新君·君上尊为太上皇)。
-//  君上归(赎驾链 release_captive)而新君在位=一朝二主：复辟旨(复辟/夺门/复位/正位关键词)
-//  喂入 subcall·AI 断 restoration(夺门成·太上皇复位)/crackdown(谋泄·蛰伏冷却)/hold。
+//  君上归(本文件放还写口 release：主推演 captive_release 赎还/放还/逃归/救回·执者那家灭了放回)而新君在位=一朝二主：
+//  太上皇归来后所下诏令全数喂入 subcall(有无复辟之谋由 AI 判·不按字面筛，11-22 改)·AI 断 restoration(夺门成·太上皇复位)/crackdown(谋泄·蛰伏冷却)/hold。
 //
-//  宪法闸(只验不产)：人选须在档活人非俘非玩家·夺门须君已归+真有复辟旨+不在谋泄冷却·
+//  宪法闸(只验不产)：人选须在档活人非俘非玩家·夺门须君已归+归后下过诏令+不在谋泄冷却·
 //  复位真复位(称号账本双清)。双轨：AI 缺席=被虏 6 回合朝廷自立储君(resolveHeir)兜底·
 //  兜底无监国无夺门(夺门之变非机械可断)。属于正式破京链。
-//  本文件为 _regent/_rivalEmperor/称号迁转的唯一写口(已登记 gm-writes owners)。
+//  本文件为 _regent/_rivalEmperor/称号迁转、解除被俘(_captured)的唯一写口(已登记 gm-writes owners)。
 // ============================================================
 (function (global) {
   'use strict';
@@ -71,13 +71,130 @@
     });
     return out.slice(0, 4);
   }
-  function _recentRestorationEdicts(G) {
-    var kw = ['复辟', '夺门', '复位', '正位', '反正'];
-    return (Array.isArray(G._edictTracker) ? G._edictTracker.slice(-8) : []).map(function (e) {
-      return String((e && (e.content || e.title)) || '');
-    }).filter(function (t) {
-      return t && kw.some(function (k) { return t.indexOf(k) >= 0; });
-    }).map(function (t) { return t.slice(0, 120); });
+  // 太上皇归来后所下的诏令（最近 8 道）：有无复辟之谋交悬朝那一幕的 AI 判，不按「复辟／夺门」几个字筛
+  //   （同志 11-14 定诏令只许 AI 判；11-22「按你推荐来」改）。没记归来回合的（旧档、开局）按最近 8 道算
+  function _recentEdicts(G, player) {
+    var since = player && player._releasedTurn != null ? Number(player._releasedTurn) : null;
+    return (Array.isArray(G._edictTracker) ? G._edictTracker : []).filter(function (e) {
+      return e && !(since != null && Number(e.turn) < since);
+    }).slice(-8).map(function (e) {
+      return String(e.content || e.title || '').slice(0, 120);
+    }).filter(Boolean);
+  }
+
+  // ── 被俘之人放还（同志 11-22「按你推荐来」甲）──────────────────────────────
+  //   全游戏解除被俘（_captured）只走这里。被俘记在三处：破京被执（tm-capital-fall.js）、御驾亲征被俘（tm-military.js）、
+  //   开局北狩（tm-patches-start.js）。回来两条路：
+  //   ① 主推演 captive_release：推演按局势与执者其人判谁回来、怎么回来——ransom 赎还（赎银两数推演给，从国库出）、release 放还、
+  //      escape 逃归、rescue 救回；这里只验此人确在俘、执者对得上、国库付得起，落不成的由调用方记写回落空。
+  //   ② 执者那一家灭了（除档，或推演 faction_dissolve 记了亡）：它手里的人放回（releaseOrphans，每回合悬朝 tick 先跑）。
+  //   回来了：解除被俘、经过记进 _captivityHistory、人到推演说的去处（没说回京城；京城陷着就去新君、监国所在）、
+  //   开局按「北狩」记的在场状态改回在场；君上回来监国随之撤，新君在位就是一朝二主，夺门从此走得到。
+  var HOWS = { ransom: '赎还', release: '放还', escape: '逃归', rescue: '救回', captorGone: '得脱' };
+  var CAPTIVE_TAG = /^(北狩|被俘|被掳|陷虏|没蕃)/;
+
+  function _captureErr(e, where) {
+    try { if (global.TM && global.TM.errors && typeof global.TM.errors.captureSilent === 'function') global.TM.errors.captureSilent(e, where); } catch (_) { /* 记错本身失败：只是少一条错误记录 */ }
+  }
+  function _ebCat(cat, msg) {
+    try { if (typeof global.addEB === 'function') global.addEB(cat, msg, { credibility: 'high' }); } catch (_) { /* 事件流写不进只少一行字，状态已落 */ }
+  }
+  function _faction(G, name) {
+    name = String(name || '').trim();
+    if (!name) return null;
+    return (G.facs || []).filter(function (f) { return f && (f.name === name || (f.id != null && String(f.id) === name)); })[0] || null;
+  }
+  function _sameCaptor(a, b) { return a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0; }
+  // 朝廷所在：京城没陷就是京城；陷着就去新君、监国那里
+  function _courtSeat(G) {
+    var cap = String(G._capital || G.capital || '');
+    if (cap && !G._capitalFallen) return cap;
+    function seatOf(nm) { var c = nm ? _findChar(G, nm) : null; return c && c.location ? String(c.location) : ''; }
+    return seatOf(G._rivalEmperor && G._rivalEmperor.name) || seatOf(G._regent && G._regent.name) || cap;
+  }
+
+  function _releaseChar(G, ch, how, opts) {
+    opts = opts || {};
+    var turn = G.turn || 0, captor = String(ch._capturedBy || opts.by || '').trim();   // 档里没记执者（开局北狩）用推演说的
+    var to = String(opts.to || '').trim() || _courtSeat(G);
+    if (!Array.isArray(ch._captivityHistory)) ch._captivityHistory = [];
+    ch._captivityHistory.push({
+      by: captor, place: String(ch._capturedLocation || ''), how: how, ransom: opts.ransom || 0, toTurn: turn,
+      fromTurn: ch._capturedTurn != null ? ch._capturedTurn : (ch._capturedSince != null ? ch._capturedSince : null)
+    });
+    delete ch._captured; delete ch._capturedBy; delete ch._capturedLocation; delete ch._capturedTurn; delete ch._capturedSince; delete ch._captorSeen;
+    ch._releasedTurn = turn;
+    if (CAPTIVE_TAG.test(String(ch.presenceState || ''))) ch.presenceState = 'present';
+    if (CAPTIVE_TAG.test(String(ch.status || ''))) delete ch.status;
+    if (to) ch.location = to;
+    if (G._playerCaptive && G._playerCaptive.name === ch.name) G._playerCaptive = null;  // arch-ok 御驾亲征被俘的全局信号随人回来撤
+    var who = String(ch.name || ''), from = captor ? '「' + captor + '」' : '敌';
+    var text = how === 'ransom' ? '朝廷' + (opts.ransom ? '以银 ' + opts.ransom + ' 两' : '') + '自' + from + '处赎还' + who
+      : how === 'release' ? from + '放还' + who
+      : how === 'escape' ? who + '自' + from + '处逃归'
+      : how === 'rescue' ? '官军自' + from + '处救回' + who
+      : from + '既亡，' + who + '得脱归来';
+    if (ch.isPlayer) {
+      var hadRegent = !!(G._regent && G._regent.name), rival = G._rivalEmperor && G._rivalEmperor.name;
+      if (hadRegent) {
+        var rg = _findChar(G, G._regent.name);
+        if (rg) delete rg._regent;
+        G._regent = null;  // arch-ok 悬朝唯一写口·君上归，监国撤
+      }
+      _ebCat('国变', '★乘舆还朝！' + text + (to ? '·归于' + to : '')
+        + (rival ? '——新君' + rival + '在位，一朝二主之局自此始' : (hadRegent ? '·监国撤，君上复亲政' : '·君上复亲政')));
+    } else {
+      _ebCat('人事', text + (to ? '·归于' + to : ''));
+    }
+    if (opts.narrative) _chron(G, opts.narrative);
+    try {
+      if (typeof global.NpcMemorySystem !== 'undefined' && typeof global.NpcMemorySystem.addMemory === 'function') {
+        global.NpcMemorySystem.addMemory(who, '陷于' + (captor || '敌') + '，' + HOWS[how] + '归来', 9, 'career');
+      }
+    } catch (e) { _captureErr(e, 'CaptiveCourt.release.memory'); }
+    return { ok: true, name: who, how: how, to: to, ransom: opts.ransom || 0 };
+  }
+
+  // 主推演 captive_release 一条：{ name, how, by, ransom, to, narrative }；落不成返回 { ok:false, why }
+  function release(G, decl) {
+    G = G || global.GM;
+    decl = decl || {};
+    var how = String(decl.how || '').trim();
+    if (!G || !HOWS[how] || how === 'captorGone') return { ok: false, why: '怎么回来不明（ransom 赎还／release 放还／escape 逃归／rescue 救回）' };
+    var name = String(decl.name || '').trim();
+    var hits = (G.chars || []).filter(function (c) { return c && c.name === name && c.alive !== false && c.dead !== true; });
+    if (hits.length !== 1) return { ok: false, why: hits.length ? '同名在世的不止一人' : '档里没有这个在世的人' };
+    var ch = hits[0];
+    if (!ch._captured) return { ok: false, why: '此人并未被俘' };
+    var captor = String(ch._capturedBy || '').trim(), by = String(decl.by || '').trim();
+    if (by && captor && !_sameCaptor(by, captor)) return { ok: false, why: '执者对不上（档里是「' + captor + '」）' };
+    var ransom = how === 'ransom' ? Math.max(0, Math.round(Number(decl.ransom) || 0)) : 0;
+    if (ransom > 0) {
+      var FE = global.FiscalEngine, paid = null;
+      if (!FE || typeof FE.trySpendFromGuoku !== 'function') return { ok: false, why: '财政账本未加载，赎银无从出' };
+      try { paid = FE.trySpendFromGuoku({ amounts: { money: ransom }, sinkTag: '赎还·' + ch.name, gameRef: G }); }
+      catch (e) { _captureErr(e, 'CaptiveCourt.release.ransom'); paid = null; }
+      if (!paid || !paid.ok) {
+        return { ok: false, why: '国库付不起赎银（要 ' + ransom + ' 两' + (paid && paid.available != null ? '，库存 ' + Math.floor(Number(paid.available) || 0) + ' 两' : '') + '）' };
+      }
+    }
+    return _releaseChar(G, ch, how, { to: decl.to, by: by, ransom: ransom, narrative: decl.narrative });
+  }
+
+  // 执者那一家灭了，它手里的人放回。只认真在势力表里见过的执者（见过记 _captorSeen）；执者没记、或只是一句「敌军」的不动，交推演判
+  function releaseOrphans(G) {
+    var out = [];
+    (G.chars || []).slice().forEach(function (c) {
+      if (!c || !c._captured || c.alive === false || c.dead === true) return;
+      var captor = String(c._capturedBy || '').trim();
+      if (!captor) return;
+      var f = _faction(G, captor);
+      if (f && f._dissolvedTurn == null && f.destroyed !== true) { c._captorSeen = true; return; }
+      if (!f && !c._captorSeen) return;
+      var r = _releaseChar(G, c, 'captorGone', {});
+      if (r.ok) out.push(r.name);
+    });
+    return out;
   }
 
   // ── 宪法闸落账（独立导出·smoke 不经真 AI 直验）──────────────────────────────
@@ -122,7 +239,7 @@
         // 宪法三闸：君已归(非俘)+新君在位+真有复辟旨·且不在谋泄冷却
         if (!player || player._captured) return { ok: false, why: '君犹在虏营·夺门无从谈起' };
         if (!G._rivalEmperor || !G._rivalEmperor.name) return { ok: false, why: '并无新君·无门可夺' };
-        if (!_recentRestorationEdicts(G).length) return { ok: false, why: '未见复辟之谋(须玩家真下旨谋划)' };
+        if (!_recentEdicts(G, player).length) return { ok: false, why: '太上皇归来后未下一道诏令·谈不上复辟之谋' };
         if (G._restorationSetback && turn - (G._restorationSetback.turn || 0) < CRACKDOWN_COOLDOWN) return { ok: false, why: '谋泄未久·党羽星散·须蛰伏' };
         var re = _findChar(G, G._rivalEmperor.name);
         if (re) { re._enthroned = false; re._dethroned = true; re.officialTitle = String(o.demotedTitle || '逊位亲王').slice(0, 12); }
@@ -159,9 +276,9 @@
       lines.push('【可断】hold(观望·迎归论与另立论相争·narrative记之)·regent(name=立监国)·proclaim_new(name=立新君·尊君上为太上皇·主战派得势/虏势要挟日甚时之决)。');
     } else if (rival) {
       lines.push('【局面】太上皇' + player.name + '已归而新君' + rival + '在位——一朝二主·名分多事·皇威' + ((G.huangwei && G.huangwei.index) || '?'));
-      var reds = _recentRestorationEdicts(G);
-      if (reds.length) lines.push('【太上皇密谋(其诏即其谋)】' + reds.join('｜'));
-      else lines.push('【太上皇未见有谋】无复辟旨意·朝局维持。');
+      var reds = _recentEdicts(G, player);
+      if (reds.length) lines.push('【太上皇归来后所下诏令(其诏即其谋·有无复辟之意由你判，不必字面写着复辟)】' + reds.join('｜'));
+      else lines.push('【太上皇归来后未下诏】朝局维持。');
       lines.push('【可断】hold(两宫相安或暗流·narrative记之)·restoration(夺门成·须太上皇真有其谋且朝中人心可用)·crackdown(谋泄被破·须真有其谋才谈得上泄)。');
     } else {
       return null;
@@ -181,6 +298,7 @@
     if (!enabled()) return;
     G = G || global.GM;
     if (!G) return;
+    try { releaseOrphans(G); } catch (e) { _captureErr(e, 'CaptiveCourt.releaseOrphans'); }   // 执者那家灭了的先放回
     var player = _player(G);
     if (!player) return;
     var captive = !!player._captured;
@@ -205,7 +323,9 @@
     }
   }
 
-  var API = { tick: tick, courtScene: courtScene, _applyCourtOutcome: _applyCourtOutcome, _heirCandidates: _heirCandidates, _recentRestorationEdicts: _recentRestorationEdicts, enabled: enabled, FALLBACK_PROCLAIM_TURNS: FALLBACK_PROCLAIM_TURNS, CRACKDOWN_COOLDOWN: CRACKDOWN_COOLDOWN };
+  var API = { tick: tick, courtScene: courtScene, _applyCourtOutcome: _applyCourtOutcome, _heirCandidates: _heirCandidates, _recentEdicts: _recentEdicts,
+    release: release, releaseOrphans: releaseOrphans, HOWS: HOWS,
+    enabled: enabled, FALLBACK_PROCLAIM_TURNS: FALLBACK_PROCLAIM_TURNS, CRACKDOWN_COOLDOWN: CRACKDOWN_COOLDOWN };
   global.TM = global.TM || {};
   global.TM.CaptiveCourt = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

@@ -7,8 +7,11 @@
 // 二、没见朝廷守过的不判（开局就不在手里）；京城名认不出不判、不抛错。
 // 三、定命交 AI：AI 在就排一幕，演出 captured 就被执、不叫裁决器；演不出（回的不是三择其一）按殉国走裁决器。
 // 四、定命三择其一落账：被执续玩、出走续玩、殉国只走玩家之死裁决器（继统续玩）、菜单外按殉国；裁决器缺席回落经典终局信号。
+// 五、收复京城（11-22，同志「按你推荐来」甲）：京城回到朝廷手里清破京标记、记一笔、「光复京师」；被执的君上不随之回来；
+//     破京判定与皇威那次 −30 重新上膛（再丢再判、再扣；皇威不另加）。
 // （原第五段「旧梯第 5 级的破京三拍删了」11-21 删旧时随五级梯、旧三件套一起去掉，旧档折算见 smoke-revolt-legacy。）
-// 真跑 tm-faction-membership.js（易主写口、认地块）、tm-capital-fall.js、tm-utils.js（别称表）、tm-map-locations.js（地名解析）。
+// 真跑 tm-faction-membership.js（易主写口、认地块）、tm-capital-fall.js、tm-utils.js（别称表）、tm-map-locations.js（地名解析）、
+//   tm-authority-complete.js（战报与国变接皇威）。
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
@@ -136,6 +139,32 @@ const flush = () => new Promise((r) => setTimeout(r, 0));
     const r2 = c2.TM.CapitalFall.applyOutcome(G2, { by: '大顺', regionName: '顺天府' }, { fate: 'death' });
     ok(r2.outcome === 'game-over' && G2._gameOver && G2._gameOver.type === 'dynasty_change' && G2._gameOver.breach === true && G2._gameOver.leader === '李自成' && G2._gameOver.region === '顺天府',
       '裁决器缺席：回落经典终局信号，字段照旧契约（实得 ' + JSON.stringify(G2._gameOver) + '）');
+  });
+
+  await part('五·收复京城：清破京标记、记一笔、「光复京师」；被执的君上不随之回来；破京判定与皇威 −30 重新上膛，皇威不另加（11-22）', async () => {
+    const c = sandbox({ adjudicate: { outcome: 'gameover' }, ai: '{"fate":"captured","scene":"闯军入大内·君上为贼所执"}', extra: ['tm-utils.js', 'tm-authority-complete.js'] });
+    const G = c.GM, CF = c.TM.CapitalFall, AC = c.AuthorityComplete, hw = [];
+    c.AuthorityEngines = { adjustHuangwei: (src, d) => { hw.push(src + ':' + d); return { ok: true, delta: d }; } };
+    G.huangwei = { index: 60 };
+    CF.check(G); take(c, 'd-shuntian', 'f-dashun'); CF.check(G);
+    await flush();
+    AC.autoDetectHuangwei({ turn: G.turn }, 1); AC.autoDetectHuangwei({ turn: G.turn }, 1);
+    ok(G._capitalFallen === true && G.chars[0]._captured === true && hw.join(',') === 'capitalFall:-30', '前提：破京被执，皇威扣一次 −30（实得 ' + hw.join(',') + '）');
+    G.turn = 33; take(c, 'd-shuntian', 'f-ming');
+    const res = CF.check(G);
+    ok(res && res.recovered === true && G._capitalFallen === false && G._capitalFall === undefined && G._capitalHeld.turn === 33, '官军打回京城：破京标记清掉（实得 ' + JSON.stringify(res) + '）');
+    const h = (G._capitalFallHistory || [])[0];
+    ok(h && h.fellTurn === 30 && h.by === '大顺' && h.fate === 'captured' && h.recoveredTurn === 33 && h.recoveredBy === '大明', '这次陷落连同光复记一笔（实得 ' + JSON.stringify(h) + '）');
+    ok(c.__events.some((e) => e === '国变|光复京师！顺天府重归朝廷（前为「大顺」所陷）'), '事件栏「光复京师」');
+    ok(G.chars[0]._captured === true, '被执的君上不随之回来（人在执者军中，回来走放还）');
+    AC.autoDetectHuangwei({ turn: G.turn }, 1);
+    ok(hw.length === 1 && G.huangwei._capitalFallSignaled === false, '皇威不另加，「破京已扣」复位（实得 ' + hw.join(',') + '）');
+    G.turn = 36; take(c, 'd-shuntian', 'f-jin');
+    const r2 = CF.check(G);
+    await flush();
+    ok(r2 && r2.scheduled === true && G._capitalFallen === true && G._capitalFall.by === '后金', '再丢京城：再判破京（实得 ' + JSON.stringify(G._capitalFall) + '）');
+    AC.autoDetectHuangwei({ turn: G.turn }, 1);
+    ok(hw.join(',') === 'capitalFall:-30,capitalFall:-30', '再扣一次 −30（实得 ' + hw.join(',') + '）');
   });
 
   // 原第五段（旧梯第 5 级的「进军京师」不再自己破京）11-21 随删旧去掉：五级梯与旧三件套整个删了，

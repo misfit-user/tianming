@@ -15,7 +15,9 @@
 //     captured 被执 → player._captured（社稷悬议、赎还等既有消费端认）；
 //     escaped  乘乱出走 → 驻跸于外诏勤王。
 //   菜单外的一律按殉国。没见朝廷守过的不判（开局就不在手里、迁都后还没守过、易主到无主）。
-// 未做：收复京城（_capitalFallen 照旧挂着）；总纲的「无人可承可另选一人」（换人那边接）。
+// 收复京城（11-22，同志「按你推荐来」甲）：京城回到朝廷手里，破京标记清掉、这次陷落连同光复记进 G._capitalFallHistory、
+//   事件栏「光复京师」；破京判定与皇威那次 −30 都重新上膛（再丢再判、再扣）。被执的君上不随之回来（回来走 tm-captive-court.js 放还）。
+// 未做：总纲的「无人可承可另选一人」（换人那边接）。
 // ============================================================
 (function (global) {
   'use strict';
@@ -81,11 +83,30 @@
     if (!G) return null;
     var info = capitalInfo(G), pf = playerFactionName(G);
     if (!info || !pf) return null;
-    if (info.owner === pf) { G._capitalHeld = { regionId: info.id, name: info.name, turn: num(G.turn, 0) }; return null; }
+    if (info.owner === pf) {
+      G._capitalHeld = { regionId: info.id, name: info.name, turn: num(G.turn, 0) };
+      return G._capitalFallen ? recover(G, info, pf) : null;
+    }
     if (G._capitalFallen) return null;
     var held = G._capitalHeld;
     if (!held || held.regionId !== info.id || !info.owner) return null;
     return fall(G, { by: info.owner, regionId: info.id, regionName: info.name, capital: str(G._capital || G.capital) });
+  }
+
+  // 收复京城：清破京标记，这次陷落连同光复记一笔，重新上膛。皇威不另加：打回来的那一仗自有战报接皇威；
+  //   皇威那次 −30 的「已扣」由 tm-authority-complete.js 见京城不再陷落自己复位。
+  //   怎么回来的（打回、议和归还、占城的一方没了）这里不知道，事件栏只写「前为谁所陷」，不写「败走」
+  function recover(G, info, pf) {
+    var cf = G._capitalFall || {}, turn = num(G.turn, 0);
+    if (!Array.isArray(G._capitalFallHistory)) G._capitalFallHistory = [];
+    G._capitalFallHistory.push({
+      fellTurn: num(cf.turn, 0), by: str(cf.by), fate: str(cf.fate), regionName: str(info.name || cf.regionName),
+      recoveredTurn: turn, recoveredBy: str(pf)
+    });
+    G._capitalFallen = false;
+    delete G._capitalFall;
+    eb('光复京师！' + (str(G._capital || G.capital) || str(info.name) || '京城') + '重归朝廷' + (cf.by ? '（前为「' + str(cf.by) + '」所陷）' : ''));
+    return { recovered: true, turn: turn };
   }
 
   // 破京：落旗、记下谁打下的；定命交 AI 场景（callAI 在才演），否则当场按殉国落
@@ -183,5 +204,5 @@
     return { fate: 'death', outcome: 'game-over' };
   }
 
-  TM.CapitalFall = { check: check, fall: fall, applyOutcome: applyOutcome, scheduleScene: scheduleScene, scene: scene, capitalInfo: capitalInfo };
+  TM.CapitalFall = { check: check, fall: fall, recover: recover, applyOutcome: applyOutcome, scheduleScene: scheduleScene, scene: scene, capitalInfo: capitalInfo };
 })(typeof window !== 'undefined' ? window : globalThis);

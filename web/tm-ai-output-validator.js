@@ -61,6 +61,7 @@
     party_create: 'array', party_splinter: 'array', party_merge: 'array', party_dissolve: 'array',
     faction_create: 'array', faction_succession: 'array', faction_dissolve: 'array',
     class_emerge: 'array', class_revolt: 'array', class_dissolve: 'array',
+    captive_release: 'array',
     // 行动类
     npc_actions: 'array', npc_interactions: 'array',
     npc_letters: 'array', npc_correspondence: 'array', cultural_works: 'array',

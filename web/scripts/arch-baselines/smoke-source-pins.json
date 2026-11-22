@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-17T14:46:29.274Z",
-  "total": 910,
+  "updatedAt": "2026-11-22T10:58:46.764Z",
+  "total": 909,
   "files": {
     "smoke-agency-covert-report.js": 2,
     "smoke-agent-mode-s1.js": 7,
@@ -177,7 +177,6 @@
     "smoke-reported-topbar-flip.js": 2,
     "smoke-restore-custom-scenarios.js": 2,
     "smoke-revolt-ai-merge.js": 2,
-    "smoke-revolt-amnesty-rejected.js": 1,
     "smoke-revolt-cases.js": 3,
     "smoke-revolt-guerrilla.js": 5,
     "smoke-right-rail-badge-semantics.js": 3,

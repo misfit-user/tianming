@@ -134,6 +134,9 @@
     class_revolt:  { type: 'array', desc: '阶层起义' },
     class_dissolve:{ type: 'array', desc: '阶层消亡' },
 
+    // 被俘之人回来（11-22）：落账走 tm-captive-court.js 放还
+    captive_release: { type: 'array', desc: '被俘之人回来（how: ransom赎还/release放还/escape逃归/rescue救回；by 执者；ransom 赎银两；to 回到哪）', requiredSubFields: ['name', 'how'] },
+
     // ──────────────────────────────────────────────
     // 军事
     // ──────────────────────────────────────────────

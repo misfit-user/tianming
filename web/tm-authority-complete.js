@@ -897,10 +897,12 @@
         }
       });
     }
-    // 都城沦陷（具体事实）
+    // 都城沦陷（具体事实）；京城收复了（tm-capital-fall.js recover）就复位，再陷再扣（11-22）
     if (G._capitalFallen && !hw._capitalFallSignaled) {
       hw._capitalFallSignaled = true;
       triggerHuangweiEvent('capitalFall', { reason: '\u90fd\u57ce\u6ca6\u9677' });
+    } else if (!G._capitalFallen && hw._capitalFallSignaled) {
+      hw._capitalFallSignaled = false;
     }
     // 抗疏（已发生的抗疏数量，客观数据）
     var recentAbductions = (G._abductions || []).filter(function(a) { return (G.turn - a.turn) < _turnsForMonthsLocal(3); });

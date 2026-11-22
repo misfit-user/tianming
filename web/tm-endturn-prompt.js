@@ -361,6 +361,21 @@
       var names = cap.map(function(c){ return c.name + (c.officialTitle?'('+c.officialTitle+')':''); }).join('、');
       tp += '【社稷悬议·君上蒙尘】本朝 ' + names + ' 陷于敌手(' + (cap[0]._capturedLocation||'敌境') + ')：敌可挟之以要挟、立傀儡；朝野有迎归之议，然迎归旧主恐动摇今上法统，迎銮与偏安自固两难——此为与敌博弈之关键筹码，须权衡。\n';
     })();
+    // 被俘之人（11-22 放还写口）：本朝陷在敌手的人；谁回来、怎么回来由推演判，写 captive_release（落账走 tm-captive-court.js 放还）
+    (function _captivesForRelease(){
+      var pfName = ((GM.facs||[]).find(function(f){return f && f.isPlayer;})||{}).name || (P.playerInfo && P.playerInfo.factionName) || '';
+      var list = (GM.chars||[]).filter(function(c){
+        return c && c._captured && c.alive !== false && c.dead !== true && (c.isPlayer || !pfName || c.faction === pfName);
+      });
+      if (!list.length) return;
+      var rows = list.slice(0, 8).map(function(c){
+        var since = c._capturedTurn != null ? c._capturedTurn : c._capturedSince;
+        return c.name + '（' + (c._capturedBy ? '执者' + c._capturedBy : '执者未详') + (c._capturedLocation ? '·陷于' + c._capturedLocation : '')
+          + (since != null && GM.turn != null ? '·已' + Math.max(0, GM.turn - since) + '回合' : '') + '）';
+      });
+      tp += '【被俘之人】' + rows.join('、') + (list.length > 8 ? '等 ' + list.length + ' 人' : '')
+        + '。朝廷遣使赎还、敌方放还、本人逃归、官军救回的，写 captive_release（name、how:ransom赎还/release放还/escape逃归/rescue救回、by执者、ransom赎银两、to回到哪）；没回来的不写。\n';
+    })();
     // 季节/时令（增加叙事的时间感）
     var _dpvSeason = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
     if (_dpvSeason > 1) {

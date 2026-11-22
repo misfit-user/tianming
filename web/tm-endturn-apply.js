@@ -1971,6 +1971,17 @@
           });
         }
 
+        // ── 被俘之人放还（同志 11-22「按你推荐来」甲）：推演判谁回来、怎么回来（ransom 赎还／release 放还／escape 逃归／rescue 救回），
+        //   落账只走 TM.CaptiveCourt.release（全游戏解除被俘的唯一写口：验在俘、执者、国库付得起赎银）；落不成的记写回落空
+        if (p1.captive_release && Array.isArray(p1.captive_release)) {
+          p1.captive_release.forEach(function(cr) {
+            if (!cr || !cr.name) return;
+            var _CC = (typeof TM !== 'undefined' && TM.CaptiveCourt && typeof TM.CaptiveCourt.release === 'function') ? TM.CaptiveCourt : null;
+            var _crR = _CC ? _CC.release(GM, cr) : { ok: false, why: 'captive court unavailable' };
+            if (!_crR || !_crR.ok) _tmRecordSemanticFailure('captive_release', String(cr.name), String((_crR && _crR.why) || ''));
+          });
+        }
+
         // ── 新群体形成：先建阶层再建党派，共用与 Agent/校准一致的写口 ──
         if ((p1.party_create && p1.party_create.length) || (p1.class_emerge && p1.class_emerge.length)) {
           if (!(TM && TM.SocialFormation)) throw new Error('新群体登记模块未加载，未虚报创建');

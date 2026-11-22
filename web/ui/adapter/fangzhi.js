@@ -121,6 +121,12 @@ export function regionIdOf(text) {
   const ids = L.placeRegionIds(text, G());
   return ids.length === 1 ? ids[0] : null;
 }
+// 一段所在落在哪些地块（舆图落点用，与内核同一套认法：剧本的别名表、粗区；京师、行在先换成实地）；粗区、两可给几块，认不出给空
+export function placeIds(text) {
+  const L = w.TMMapLocations;
+  if (!L || !L.placeRegionIds || !text) return [];
+  try { return L.placeRegionIds(String(text), G()).map(String); } catch (_e) { return []; /* 认不出：舆图再按文字认 */ }
+}
 // 此地几人（舆图小签用）
 export function folkCount(id) {
   const r = regionOf(id);

@@ -264,6 +264,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const inCharge = (r) => !!focus && focus.marked.some((i) => mapRegionList[i] && mapRegionList[i].name === r.name);
   const marks = createMapMarks({
     layer: marksLayer, map, game, placeOf: (text) => { const [i] = byPlace(text); return i == null ? null : mapRegionList[i] || null; },
+    regionOf: (ids, area) => { const i = pickIdx(ids, area); return i >= 0 ? mapRegionList[i] || null : null; },
     isLive: () => dive.mode === 'map' && !dive.busy,
     // 所知之律：元首、本人所统知其确数；所掌辖区内，有官者读册籍知确数，无官之人在本籍只见其大概；此外不画
     knows: ({ army, region }) => (per.tier === 'sovereign' || (army && army.commander === per.name) ? 'exact'
@@ -596,8 +597,25 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 辖区要在画案上绢图之前定下（绢图与立体舆图同一套着色，俯身入图时才接得上）
   let focus = null;
   const regionList = () => map.regions || [];
-  // 所在地认府州（京师、南京、「保定高阳」「广东东莞」都认得，见 model/place.js）
+  // 地块编号 → 舆图下标（舆图府州与内核绑定同一套编号）
+  let idIndex = new Map(), idIndexFor = null;
+  function indexOfId(id) {
+    const list = regionList();
+    if (idIndexFor !== list) { idIndex = new Map(list.map((r, i) => [String(r.id), i])); idIndexFor = list; }
+    const i = idIndex.get(String(id));
+    return i == null ? -1 : i;
+  }
+  // 几块候选里挑落点：一片（「福建沿海」）的落其中的京城、省会，没有就落头一块；两可（「宁远-锦州」）的落先写的那块
+  function pickIdx(ids, area = true) {
+    const idx = (ids || []).map(indexOfId).filter((i) => i >= 0);
+    const seat = area ? idx.find((i) => seatNames.has(regionList()[i].name)) : undefined;
+    return seat != null ? seat : idx.length ? idx[0] : -1;
+  }
+  // 所在地认府州：先问内核（剧本自带的别名表、粗区，京师、行在换成实地——绍宋的建康是江宁府，不是明朝的南京应天府）；
+  //   内核认不出的再按 model/place.js 的写法认（「保定高阳」「广东东莞」）
   function byPlace(text) {
+    const k = text ? pickIdx(game.fangzhi.placeIds(text)) : -1;
+    if (k >= 0) return [k];
     const i = placeIndex(text, regionList(), { capital: capitalIdx, seats: seatNames });
     return i >= 0 ? [i] : [];
   }

@@ -34,8 +34,9 @@ function flagChar(name) {
   return [...parts[0].replace(/^(南京|北京|御营)(?=..)/, '')][0] || '军';
 }
 
-// placeOf(地名) → 舆图上的府州（落旗于其治所；认法见 model/place.js，书案镜头落点同一份）
-export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArmy, onRebels }) {
+// 落点：诸军读内核绑定的地块（军上的 site：一块，或粗区、两可的几块候选），regionOf(候选, 是否一片) 挑一块；
+//   绑不上的、民变、交战按地名认：placeOf(地名) → 舆图上的府州（先问内核，再按 model/place.js；书案镜头落点同一份）。旗落其治所
+export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, knows, onArmy, onRebels }) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'mk-routes');
   svg.innerHTML = '<defs><marker id="mk-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 z" fill="#a3281b"/></marker></defs>';
@@ -51,14 +52,17 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArm
     // 诸军按所在府州归堆：一处一面旗
     const byPlace = new Map();
     for (const a of rows) {
-      const r = placeOf(a.location);
+      const r = (a.site && regionOf(a.site.ids, a.site.area)) || placeOf(a.location);
       const k = r && knows({ army: a, region: r });
       if (!k) continue;
-      if (!byPlace.has(r.name)) byPlace.set(r.name, { r, list: [], rough: false });
-      const g = byPlace.get(r.name);
+      const key = String(r.id || r.name);
+      if (!byPlace.has(key)) byPlace.set(key, { r, list: [], rough: false });
+      const g = byPlace.get(key);
       g.list.push(a);
       if (k === 'rough') g.rough = true;
     }
+    // 驻地没绑到一块的（只知一片、两处，剧本记的粗区代表点，或按地名约略认的），悬停注明原写的驻地
+    const about = (a, r) => (a.site && a.site.exact) || !a.location || a.location === r.name ? '' : `　约在${a.location}`;
     pins = [];
     routes = [];
     const els = [];
@@ -72,7 +76,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArm
       const el = h('button.mk.mk-army' + (hot ? '.hot' : '') + (marching ? '.march' : '') + (rough ? '.rough' : ''), { type: 'button', 'aria-label': `${r.name}驻军`,
         onclick: rough ? null : () => onArmy(pin.absorbed.length ? null : lead.key) },
         h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '兵' : flagChar(lead.name)), n, c);
-      const lines = list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : '　缺帅'}${a.hot ? '　告急' : ''}${a.march ? `　行军往${a.march.to}` : ''}`);
+      const lines = list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : '　缺帅'}${about(a, r)}${a.hot ? '　告急' : ''}${a.march ? `　行军往${a.march.to}` : ''}`);
       pin.line = `${r.name}　${rough ? '驻军' : list.length > 1 ? `${lead.name}等${num(list.length)}部` : lead.name}　${rough ? roughCount(total) : shortCount(total)}${hot ? '　告急' : ''}`;
       tiao(el, () => (pin.absorbed.length ? stackTip(pin)
         : rough ? { title: `${r.name} · 驻军`, text: `约${roughCount(total)}人\n本地所见，不知其番号、主将与确数` }
@@ -81,7 +85,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArm
       pins.push(Object.assign(pin, { el }));
       for (const a of list) {
         if (!a.march) continue;
-        const to = placeOf(a.march.to);
+        const to = (a.march.toIds && a.march.toIds.length && regionOf(a.march.toIds, a.march.toIds.length > 2)) || placeOf(a.march.to);
         if (!to || to === r) continue;
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('class', 'mk-route');

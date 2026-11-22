@@ -20,39 +20,64 @@ const FACTION = ['faction', 'factionName', 'owner', 'camp', 'force', 'realm', 'c
 const dateOf = (turn) => { const f = fn('getTSText'); return f && turn != null ? f(turn) : turnTag(turn); };
 
 // ---------- 本朝之军 ----------
+// 认本方按势力本身：军上记的势力编号或全名在势力表里查得到哪一家，就看那一家是不是玩家的。
+//   原先去掉「大」「朝廷」后按字面包含认，晚唐「唐·魏博镇」里含个「唐」、绍宋「吕宋诸邦」里含个「宋」，魏博、成德诸镇与吕宋的兵
+//   都算成本方——插红旗、进军务册、还能易将调防（11-22 查出）。表里查不到的写法（工坊剧本的「后金军」「明军」）才按名比，取对得最贴的一家
 const cleanFac = (v) => String(v || '').replace(/[\s·\-—_]/g, '').replace(/^大/, '').replace(/(朝廷|王朝|政权|汗国|幕府|朝)$/g, '');
-const facMatch = (v, names) => { const c = cleanFac(v); return !!c && names.some((n) => { const m = cleanFac(n); return m && (c === m || c.includes(m) || m.includes(c)); }); };
 const genericCourt = (v) => /^(朝廷|本朝|官府|内廷|宫廷|皇室|王室|帝室|朝中|中枢)$/.test(String(v || '').trim());
+const facKey = (f) => String(f.id || f.name || '');
+const facTable = () => { const g = G(); return [g.facs, g.factions].flatMap((l) => (Array.isArray(l) ? l : [])).filter((f) => f && (f.id || f.name)); };
+const facRecord = (v, facs) => { const s = String(v == null ? '' : v).trim(); return s ? facs.find((f) => f.id === s || f.name === s) || null : null; };
 function playerFactions() {
   const g = G(), p = w.P || {}, out = [];
   const add = (v) => { if (!v) return; if (typeof v === 'object') return add(v.name || v.factionName || v.id || v.key); v = String(v).trim(); if (v && !out.includes(v)) out.push(v); };
   const pi = p.playerInfo || {};
   add(pi.factionName); add(pi.characterFaction); add(g.playerFaction);
   const pc = Array.isArray(g.chars) ? g.chars.find((c) => c && c.isPlayer) : null;
-  add(pc && (pc.faction || pc.factionName));
+  add(pc && (pc.factionId || pc.faction || pc.factionName));
   [g.facs, g.factions].forEach((list) => (Array.isArray(list) ? list : []).forEach((f) => { if (f && (f.isPlayer || f.player || f.isPlayerFaction || (g.playerFaction && f.name === g.playerFaction))) add(f.name || f.id); }));
   return out;
 }
-function knownFactions() {
-  const g = G(), out = [];
-  [g.facs, g.factions].forEach((list) => (Array.isArray(list) ? list : []).forEach((f) => { if (f) [f.name, f.id].forEach((v) => { v = String(v || '').trim(); if (v && !out.includes(v)) out.push(v); }); }));
-  return out;
+// 表外的写法对哪一家：去掉「大」「朝廷」后整名相等的先；不然取它所含的最长一家（「后金军」对「后金」、「唐魏博镇军」对「唐魏博镇」不对「唐」）；
+//   再不然它只被唯一一家所含才算
+function nearestFaction(v, rows) {
+  const c = cleanFac(v);
+  if (!c) return null;
+  const named = rows.map((r) => ({ r, m: cleanFac(r.v) })).filter((x) => x.m);
+  const same = named.find((x) => x.m === c);
+  if (same) return same.r;
+  const inner = named.filter((x) => c.includes(x.m)).sort((a, b) => b.m.length - a.m.length)[0];
+  if (inner) return inner.r;
+  const outer = named.filter((x) => x.m.includes(c));
+  return outer.length === 1 ? outer[0].r : null;
+}
+function factionCtx() {
+  const facs = facTable(), player = playerFactions();
+  const mineKeys = new Set(player.map((v) => facRecord(v, facs)).filter(Boolean).map(facKey));
+  const rows = [];
+  facs.forEach((f) => [f.name, f.id].forEach((v) => { if (v) rows.push({ v: String(v), mine: mineKeys.has(facKey(f)) }); }));
+  player.forEach((v) => { if (!facRecord(v, facs)) rows.push({ v, mine: true }); });
+  return { player, facs, mineKeys, rows };
 }
 function mine(a, ctx) {
   if (!a || a.destroyed || a.disbanded || a.active === false) return false;
   // 民变各股的军（tm-revolt-band.js 立，带 _revoltBand、势力记「民变」，不在势力表里）不是本方的：原先因「势力不在表里」落到下面末一句
   //   当成本方，列进诸军、插上红色军旗（11-22 查出）。它列在「战事」页签的「民变」组与墨旗上；成势时军上这个记号随之撤掉，归新势力
   if (a._revoltBand) return false;
-  const explicit = FACTION.map((k) => a[k]).filter((x) => x != null && String(x).trim());
+  const explicit = ['factionId', ...FACTION].map((k) => a[k]).filter((x) => x != null && String(x).trim());
   if (!explicit.length || explicit.some(genericCourt) || !ctx.player.length) return true;
-  if (explicit.some((x) => facMatch(x, ctx.player))) return true;
-  if (ctx.known.length && explicit.some((x) => facMatch(x, ctx.known))) return false;
-  return true;
+  const rec = explicit.map((x) => facRecord(x, ctx.facs)).find(Boolean);
+  if (rec && ctx.mineKeys.size) return ctx.mineKeys.has(facKey(rec));
+  const near = explicit.map((x) => nearestFaction(x, ctx.rows)).find(Boolean);
+  return near ? near.mine : true;
 }
-function armies() {
+const liveArmies = () => {
   const g = G();
-  const raw = (Array.isArray(g.armies) && g.armies.length ? g.armies : (w.P && Array.isArray(w.P.armies) ? w.P.armies : [])).filter((a) => a && !a.destroyed && !a.disbanded && a.active !== false);
-  const ctx = { player: playerFactions(), known: knownFactions() };
+  return (Array.isArray(g.armies) && g.armies.length ? g.armies : (w.P && Array.isArray(w.P.armies) ? w.P.armies : [])).filter((a) => a && !a.destroyed && !a.disbanded && a.active !== false);
+};
+function armies() {
+  const raw = liveArmies();
+  const ctx = factionCtx();
   const own = raw.filter((a) => mine(a, ctx));
   return own.length || !raw.length ? own : raw;
 }
@@ -93,11 +118,31 @@ function locationOf(a) {
   const r = regions.find((x) => x && (x.id === v || x.name === v));
   return String((r && r.name) || first(a, ['locationName', 'garrisonName'], v) || '');
 }
+// 驻地落在哪块地块：读内核的绑定（tm-map-locations.js——开局、读档、行军到达、AI 改军时按驻地写定地块；剧本给粗区部署记的代表点
+//   也在里头；行在、随驾跟着天子走），舆图军旗照此落点。原先舆图拿驻地文字另认一遍：认不得行在、东京留守司、关陕这些写法，
+//   绍宋十五支军上不了图；又照明朝的别名把建康认成应天府（宋图的应天府是商丘），建康水军插到了商丘（11-22 查出）。
+//   绑到一块的给一块；只认到几块（「宁远-锦州」）或一片（「福建沿海」）的给候选、记 area，由舆图挑落点、注明约略；认不出的给空
+function siteOf(a) {
+  const L = w.TMMapLocations;
+  if (!L || typeof L.read !== 'function') return null;
+  let b = null;
+  try { b = L.read(a, 'army', G()); } catch (_e) { b = null; /* 舆图未载：返回空，舆图按驻地文字认 */ }
+  if (!b) return null;
+  if (b.regionId) return { ids: [String(b.regionId)], exact: b.precision !== 'representative', area: false };
+  const ids = (b.candidateRegionIds || []).map(String);
+  return ids.length ? { ids, exact: false, area: b.status === 'area' } : null;
+}
+// 一段地名落在哪些地块（行军去处用；通称先换成实地）
+function placeIds(text) {
+  const L = w.TMMapLocations;
+  if (!L || typeof L.placeRegionIds !== 'function' || !text) return [];
+  try { return L.placeRegionIds(String(text), G()).map(String); } catch (_e) { return []; /* 认不出：舆图按文字认 */ }
+}
 const ACTIVITY = { garrison: '驻防', stationed: '驻防', idle: '待命', marching: '行军', march: '行军', moving: '行军', siege: '围城', sieging: '围城', battle: '交战', fighting: '交战', training: '操练', patrol: '巡防', routed: '溃散', disbanded: '裁撤' };
 const activityText = (v) => { const raw = String(v || '').trim(); return raw ? ACTIVITY[raw.toLowerCase()] || raw : '驻防'; };
 function marchOf(a) {
   const mo = (G().marchOrders || []).find((o) => o && o.status === 'marching' && (o.armyId === a.id || o.armyName === a.name));
-  return mo ? { to: mo.to || '', progress: mo.progress || 0, total: mo.totalTurns || 0 } : null;
+  return mo ? { to: mo.to || '', toIds: placeIds(mo.to), progress: mo.progress || 0, total: mo.totalTurns || 0 } : null;
 }
 const hotOf = (a) => morale(a) < 45 || supply(a) < 35 || pct(a, ['mutinyRisk', 'rebellionRisk'], 0) >= 55;
 function commanderState(name) {
@@ -111,7 +156,7 @@ export function roster() {
   const groups = new Map();
   let total = 0, hot = 0, arrears = 0, marching = 0;
   armies().forEach((a, i) => {
-    const row = { key: keyOf(a, i), name: String(first(a, ['name', 'id'], '未名部队')), commander: commanderOf(a), location: locationOf(a), soldiers: soldiers(a),
+    const row = { key: keyOf(a, i), name: String(first(a, ['name', 'id'], '未名部队')), commander: commanderOf(a), location: locationOf(a), site: siteOf(a), soldiers: soldiers(a),
       hot: hotOf(a), arrears: Math.max(0, Math.round(Number(a.payArrearsMonths) || 0)), march: marchOf(a), vacant: commanderState(commanderOf(a)) !== 'ok' };
     const t = typeOf(a);
     if (!groups.has(t)) groups.set(t, []);
@@ -159,7 +204,7 @@ export function detail(key) {
   const CA = w.TM && w.TM.CommandAuthority;
   let command = '';
   try { if (CA && CA.enabled(a)) command = String(CA.describe(a) || ''); } catch (_e) { command = ''; }
-  const ctx = { player: playerFactions(), known: knownFactions() };
+  const ctx = factionCtx();
   return {
     key, name: String(first(a, ['name', 'id'], '未名部队')), type: typeOf(a), soldiers: soldiers(a),
     commander: cmd, commanderTitle: String(a.commanderTitle || ''), commanderState: commanderState(cmd),
@@ -248,7 +293,7 @@ export function marchable(key) {
   if (!M || typeof M.orderMarch !== 'function' || typeof M._getConfig !== 'function') return false;
   try { if (!M._getConfig().enabled) return false; } catch (_e) { return false; }
   const a = find(key);
-  return mine(a, { player: playerFactions(), known: knownFactions() }) && !marchOf(a);
+  return mine(a, factionCtx()) && !marchOf(a);
 }
 export function destinations() {
   const names = [];

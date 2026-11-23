@@ -385,7 +385,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   uniforms.uShadeTex = { value: painter.shade.texture };
   uniforms.uLookT = { value: 1 };
   uniforms.uNoise = { value: noiseTex() };
-  const terrain = new THREE.Mesh(gridGeometry(...q.mapGrid), new THREE.ShaderMaterial({ vertexShader: terrainVertex, fragmentShader: terrainFragment, uniforms }));
+  // WATER_FX：近看水面起伏与反光（低档机不算）
+  const terrain = new THREE.Mesh(gridGeometry(...q.mapGrid), new THREE.ShaderMaterial({ vertexShader: terrainVertex, fragmentShader: terrainFragment, uniforms, defines: { WATER_FX: q.tier === 'low' ? 0 : 1 } }));
   terrain.frustumCulled = false;
   scene.add(terrain);
   // 图外是御案：绫边、黄花梨案面（scene/map/desk.js）；载不下贴图就照旧露底色

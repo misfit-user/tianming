@@ -150,6 +150,9 @@ void main() {
 // ---------- 每帧 ----------
 export const terrainFragment = /* glsl */`
 precision highp float;
+#ifndef WATER_FX
+#define WATER_FX 1
+#endif
 uniform sampler2D uPaint;        // 底色（今设色）
 uniform sampler2D uPaintAged;    // 底色（案上旧绢）
 uniform sampler2D uShadeTex;     // 烘好的明暗：R 受光（0.62 为平地）、G 沟脊
@@ -184,7 +187,7 @@ uniform vec3 uFogColor;
 uniform float uFogNear;
 uniform float uFogFar;
 uniform float uPolitical;        // 1 显示势力色，0 纯山水
-uniform vec3 uSilk, uOchre, uBlue, uInk, uDeep, uSea, uSeaDeep, uVeil;
+uniform vec3 uSilk, uOchre, uBlue, uInk, uDeep, uSea, uSeaDeep, uSeaAbyss, uVeil;   // 海三色：陆架、深海、海槽
 uniform vec4 uAmp, uShade;
 varying vec2 vUv;
 varying vec3 vPos;
@@ -208,12 +211,31 @@ float regionAt(vec2 uv) {
 }
 vec4 infoOf(float id) { return texture2D(uRegionInfo, vec2((id + 0.5) / 4096.0, 0.5)); }
 vec3 realmColor(float realm) { return texture2D(uPalette, vec2((realm + 0.5) / 256.0, 0.5)).rgb; }
-// 网巾水：一行行相错的半圆弧（舆图画海的老法子）。p 以格为单位，w 线宽（格）
-float netWave(vec2 p, float w) {
-  p.x += 0.5 * mod(floor(p.y), 2.0);
-  vec2 c = fract(p) - vec2(0.5, 0.0);
-  float arc = abs(length(c) - 0.5);
-  return (1.0 - smoothstep(w * 0.5, w * 1.5, arc)) * smoothstep(0.0, 0.14, c.y);
+// 水面起伏：四层平滑的值噪声（带解析导数，不取 8 位噪声贴图，近看不起台阶）叠成波面，顺风方向拉长成一道道浪；
+// 各层朝不同方向缓缓流动，叠起来是活水。某一层在屏上不足四五个像素一格就淡掉，所以远看自然平、近看也不闪。返回水面斜率
+float hash12(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+vec3 noised(vec2 x) {
+  vec2 i = floor(x), f = fract(x);
+  vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0), du = 30.0 * f * f * (f * (f - 2.0) + 1.0);
+  float a = hash12(i), b = hash12(i + vec2(1.0, 0.0)), c = hash12(i + vec2(0.0, 1.0)), d = hash12(i + vec2(1.0, 1.0));
+  float k1 = b - a, k2 = c - a, k3 = a - b - c + d;
+  return vec3(a + k1 * u.x + k2 * u.y + k3 * u.x * u.y, du * (vec2(k1, k2) + k3 * u.yx));
+}
+vec2 waterSlope(vec2 wp, float pxW, float t) {
+  vec2 g = vec2(0.0);
+  float len = 9.0, ang = 0.5;
+  for (int i = 0; i < 4; i++) {
+    float fade = 1.0 - smoothstep(0.18, 0.3, pxW / len);
+    if (fade > 0.0) {
+      mat2 R = mat2(cos(ang), sin(ang), -sin(ang), cos(ang));
+      vec2 q = R * wp / len * vec2(1.0, 2.0) + vec2(0.0, t * (0.25 + 0.1 * float(i)));
+      vec2 dn = noised(q).yz * vec2(1.0, 2.0);
+      g += (transpose(R) * dn) * fade;
+    }
+    len /= 1.9;
+    ang += 1.7;
+  }
+  return g;
 }
 // 冲沟似的小褶：脊状噪声两层
 float microRelief(vec2 p) {
@@ -336,33 +358,44 @@ void main() {
     float gl0 = dot(ground, vec3(0.3, 0.59, 0.11));
     ground = mix(ground, mix(vec3(gl0), uSilk, 0.55) * 1.03, uFill * 0.5);
   }
-  ground = mix(ground, mix(uSea, vec3(0.78, 0.84, 0.78), 0.25), lake);
+  ground = mix(ground, mix(uSea, uSeaDeep, 0.25), lake);            // 湖与大江水面：比近海略深一点
   if (uLayer > 0.0 && id > 0.5) {
     vec4 lc = texture2D(uLayerTex, vec2((id + 0.5) / 4096.0, 0.5));
     float gl = dot(ground, vec3(0.3, 0.59, 0.11));
     ground = mix(ground, lc.rgb * (0.62 + 0.55 * gl), uLayer * lc.a * 0.6);
   }
 
-  // ---------- 海：近岸浅、远洋深；网巾水纹（格约 30 屏幕像素，随缩放换档）；近岸两道浪 ----------
+  // ---------- 海：真海深定浅深（陆架碧、海槽深蓝），近岸一圈浅；近看水面起伏、日光反光、天光，岸边一道进退的白沫 ----------
+  // 起伏、反光、白沫的进退只在今设色里有（uLookT 为 1）：案上那幅绢图、志窗卷首的小景是画，海是静的
   vec3 col = ground;
   if (land < 0.999) {
-    float sd = texture2D(uCoast, uv).r;
-    float seaDepth = texture2D(uAux, uv).g;
-    float d = max(-sd, 0.0);
-    vec3 sea = mix(mix(uSea, vec3(0.83, 0.86, 0.78), 0.4), uSea, smoothstep(0.3, 3.5, d));
-    sea = mix(sea, uSeaDeep, smoothstep(0.02, 0.45, seaDepth));
-    sea *= 0.97 + 0.06 * tfbm(wp * 0.006 + vec2(uTime * 0.002, 0.0));
-    float lv = log2(30.0 * pxW), lf = floor(lv), lt = lv - lf;
-    float c0 = exp2(lf), c1 = exp2(lf + 1.0);
-    vec2 squash = vec2(1.0, 1.7);
-    float net = mix(netWave(wp / c0 * squash, 1.1 * pxW / c0 * 1.7), netWave(wp / c1 * squash + 7.3, 1.1 * pxW / c1 * 1.7), lt);
-    float netPatch = 0.45 + 0.55 * smoothstep(0.3, 0.7, tnoise(wp * 0.011 + 4.0, 3));
-    sea = mix(sea, vec3(0.90, 0.91, 0.84), net * 0.3 * netPatch * smoothstep(3.0, 12.0, d / max(pxW, 0.05)));
-    float breathe = sin(uTime * 0.5) * 0.25;
-    float wd = max(pxW * 0.9, 0.1);
-    float waves = (1.0 - smoothstep(wd * 0.5, wd * 1.4, abs(d - 1.4 - breathe)))
-                + (1.0 - smoothstep(wd * 0.5, wd * 1.4, abs(d - 3.6 - breathe * 2.0))) * 0.6;
-    sea = mix(sea, vec3(0.94, 0.94, 0.88), clamp(waves, 0.0, 1.0) * 0.45 * smoothstep(0.6, 0.25, pxW));
+    float d = max(-texture2D(uCoast, uv).r, 0.0);                  // 离岸多远（世界像素）
+    float dz = clamp(texture2D(uAux, uv).g, 0.0, 1.0);             // 海深（海拔/6000）
+    float live = uLookT;
+    vec3 sea = mix(uSea, uSeaDeep, smoothstep(0.008, 0.06, dz));
+    sea = mix(sea, uSeaAbyss, smoothstep(0.07, 0.6, dz));
+    sea = mix(sea, mix(uSea, vec3(0.86, 0.92, 0.86), 0.45), exp(-d / max(2.0, 5.0 * pxW)) * 0.6);
+#if WATER_FX
+    // 天下档看不见浪；省道档渐有，府州档全有
+    float waveK = (1.0 - smoothstep(0.35, 0.7, pxW)) * live;
+    if (waveK > 0.001) {
+      vec2 s = waterSlope(wp, pxW, uTime) * 0.042 * waveK;
+      vec3 N = normalize(vec3(-s.x, 1.0, -s.y));
+      vec3 V = normalize(uCam - vPos);
+      vec3 L = normalize(vec3(-0.55, 0.75, -0.35));                 // 与山川受光同一个方向
+      float spec = pow(max(dot(N, normalize(L + V)), 0.0), 48.0);
+      float fres = pow(1.0 - max(dot(N, V), 0.0), 4.0);
+      sea *= 1.0 + 0.73 * s.x + 0.47 * s.y;                         // 迎光的波面亮、背光的暗（按 N·L 展开）
+      sea = mix(sea, uFogColor * 0.95, fres * 0.3);                  // 斜看远处映天光
+      sea += vec3(1.0, 0.97, 0.9) * spec * 0.16 * waveK;
+    }
+#endif
+    // 岸边白沫：离岸约一个世界像素处一道，随时间进退、碎成一段段；拉远淡去；绢图上只淡淡一道
+    float wd = max(pxW * 1.2, 0.12);
+    float swing = 0.35 * sin(uTime * 0.6 + wp.x * 0.05 + wp.y * 0.04) * live;
+    float foam = 1.0 - smoothstep(wd * 0.5, wd * 2.0, abs(d - 0.9 - swing));
+    foam *= 0.4 + 0.6 * smoothstep(0.45, 0.7, tnoise(wp * 0.6 + vec2(uTime * 0.05 * live, 0.0), 0));
+    sea = mix(sea, vec3(0.93, 0.95, 0.92), clamp(foam, 0.0, 1.0) * 0.7 * mix(0.35, 1.0, live) * (1.0 - smoothstep(0.2, 0.8, pxW)));
     col = mix(sea, ground, land);
   }
 

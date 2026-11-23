@@ -1,10 +1,12 @@
-// 舆图点景：程序现画的一张小图集（松、点叶、夹叶、杂树、柳、村舍、城郭、京城，聚落各档的庄、城、帐、寨、市镇、港），每格 64×64，竖着贴在地面上（点精灵）。
+// 舆图点景：程序现画的一张小图集（松、点叶、夹叶、杂树、柳、村舍、城郭、京城，聚落各档的庄、城、帐、寨、市镇、港，营造地标），每格 64×64，竖着贴在地面上（点精灵）。
 // 画法照山水画里的点景：墨线勾干、石绿石青点叶、屋顶淡墨；远看只是一点颜色，近看才认得出是什么。
 // 格序见 SPRITE（着色器按格号取）。
 export const SPRITE = {
   pine: 0, dot: 1, jia: 2, grove: 3, willow: 4, hamlet: 5, city: 6, capital: 7,
   // 聚落各档（model/settlement.js 定档）：庄、小城、大府、都会、残城、市镇、港、帐、牙帐、寨、大寨
-  hamletB: 8, town: 9, grand: 10, metro: 11, ruin: 12, market: 13, port: 14, yurtS: 15, yurtL: 16, stockS: 17, stockL: 18
+  hamletB: 8, town: 9, grand: 10, metro: 11, ruin: 12, market: 13, port: 14, yurtS: 15, yurtL: 16, stockS: 17, stockL: 18,
+  // 营造地标（真建了才画）：书院、仓廒、水利、工坊、堡、烽燧、佛寺、祠庙、驿、官署、在建、石桥
+  academy: 19, granary: 20, waterworks: 21, workshop: 22, fort: 23, beacon: 24, temple: 25, shrine: 26, relay: 27, yamen: 28, scaffold: 29, bridge: 30
 };
 const CELL = 64, COLS = 8, ROWS = 4;              // 着色器 spriteFragment 按 8×4 格取，改这里要一起改
 
@@ -295,6 +297,192 @@ const PAINT = {
     stilt(g, 50, 50, 16, 8);
     drumTower(g, 32, 52, 5);
     palisade(g, 2, 62, 63, 12);
+  },
+  // ---------- 营造地标：真建了的营造才画，落在治所四周（归类见 model/settlement.js landmarksOf） ----------
+  // 书院：两株松，粉墙黛瓦一圈院墙，墙上开门，墙后一座讲堂
+  academy(g, r) {
+    trunk(g, 10, 60, 34, 2, 2.4);
+    blob(g, 10, 32, 7, 6, rgba(DEEP, 0.92));
+    for (let k = 0; k < 6; k++) blob(g, 10 + (r() - 0.5) * 10, 32 + (r() - 0.5) * 8, 1, 0.7, INK + '0.5)');
+    trunk(g, 55, 60, 36, -2, 2.4);
+    blob(g, 55, 34, 7, 6, rgba(DEEP, 0.92));
+    hall(g, 32, 54, 26, 12, 'rgba(70,78,82,0.97)');
+    g.fillStyle = 'rgba(234,228,212,0.98)';
+    g.fillRect(14, 54, 36, 7);
+    g.strokeStyle = INK + '0.85)';
+    g.lineWidth = 1;
+    g.strokeRect(14, 54, 36, 7);
+    g.fillStyle = 'rgba(70,78,82,0.97)';
+    g.fillRect(13, 52.5, 38, 2);
+    gate(g, 32, 61, 5, 5);
+  },
+  // 仓廒：三座长仓错落，顶上开气楼（靠北那座先画，近处的压上去）
+  granary(g) {
+    for (const [x, y, w] of [[31, 52, 24], [17, 60, 24], [45, 62, 24]]) {
+      g.fillStyle = 'rgba(214,198,160,0.98)';
+      g.fillRect(x - w / 2, y - 8, w, 8);
+      g.strokeStyle = INK + '0.85)';
+      g.lineWidth = 1;
+      g.strokeRect(x - w / 2, y - 8, w, 8);
+      g.fillStyle = INK + '0.75)';
+      for (let k = 0; k < 3; k++) g.fillRect(x - w / 2 + 4 + k * 7, y - 6, 2.5, 6);
+      eave(g, x, y - 7, w, 5, 'rgba(92,100,104,0.96)');
+      eave(g, x, y - 12, w * 0.4, 2.5, 'rgba(92,100,104,0.96)');
+    }
+  },
+  // 水利：一道闸拦着水，闸上一间闸房，旁边一架水车
+  waterworks(g) {
+    g.fillStyle = 'rgba(112,152,166,0.88)';
+    g.beginPath(); g.moveTo(2, 56); g.lineTo(62, 50); g.lineTo(62, 62); g.lineTo(2, 62); g.closePath(); g.fill();
+    g.fillStyle = 'rgba(150,134,108,0.98)';
+    g.fillRect(20, 46, 22, 14);
+    g.strokeStyle = INK + '0.9)';
+    g.lineWidth = 1.1;
+    g.strokeRect(20, 46, 22, 14);
+    for (const x of [26, 31, 36]) { g.fillStyle = INK + '0.85)'; g.fillRect(x, 50, 2.5, 10); }
+    eave(g, 31, 46, 18, 4, ROOF);
+    g.beginPath(); g.arc(52, 48, 8, 0, Math.PI * 2); g.lineWidth = 1.4; g.stroke();
+    for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; g.beginPath(); g.moveTo(52, 48); g.lineTo(52 + Math.cos(a) * 8, 48 + Math.sin(a) * 8); g.lineWidth = 0.9; g.stroke(); }
+  },
+  // 工坊：一座窑，烟囱冒烟，旁一间棚
+  workshop(g) {
+    house(g, 16, 61, 18, 9, 'rgba(120,108,92,0.95)');
+    g.fillStyle = 'rgba(160,96,64,0.97)';
+    g.beginPath(); g.moveTo(32, 61); g.quadraticCurveTo(32, 44, 44, 44); g.quadraticCurveTo(56, 44, 56, 61); g.closePath(); g.fill();
+    g.strokeStyle = INK + '0.9)';
+    g.lineWidth = 1.1;
+    g.stroke();
+    g.fillStyle = INK + '0.85)';
+    g.beginPath(); g.arc(44, 61, 4, Math.PI, 0); g.fill();
+    g.fillStyle = 'rgba(120,96,80,0.98)';
+    g.fillRect(47, 30, 5, 16);
+    g.strokeRect(47, 30, 5, 16);
+    for (let k = 0; k < 4; k++) blob(g, 50 + k * 1.8, 25 - k * 6, 3 + k, 2.4 + k * 0.8, `rgba(${150 + k * 16},${148 + k * 16},${144 + k * 16},${0.7 - k * 0.12})`);
+  },
+  // 堡：一圈石墙，两角起敌台，当中一座门楼，楼上一面旗
+  fort(g) {
+    wall(g, 8, 56, 61, 14);
+    g.lineWidth = 1.1;
+    for (const x of [8, 51]) {
+      g.fillStyle = STONE;
+      g.fillRect(x - 2, 43, 9, 18);
+      g.strokeRect(x - 2, 43, 9, 18);
+      for (let k = 0; k < 2; k++) g.fillRect(x - 2 + k * 6, 40, 3, 3);
+    }
+    gate(g, 32, 61, 7, 7);
+    const top = tower(g, 32, 47, 14, 1);
+    banner(g, 32, top + 1, 13);
+  },
+  // 烽燧：一座夯土墩台，顶上一股狼烟
+  beacon(g) {
+    g.fillStyle = EARTH;
+    g.beginPath(); g.moveTo(22, 62); g.lineTo(26, 32); g.lineTo(40, 32); g.lineTo(44, 62); g.closePath(); g.fill();
+    g.strokeStyle = INK + '0.9)';
+    g.lineWidth = 1.2;
+    g.stroke();
+    for (let x = 26; x < 40; x += 4) g.fillRect(x, 29, 2.5, 3);
+    g.lineWidth = 0.6;
+    for (let y = 38; y < 62; y += 5) { g.beginPath(); g.moveTo(24, y); g.lineTo(42, y); g.stroke(); }
+    for (let k = 0; k < 5; k++) blob(g, 33 + k * 2.2, 25 - k * 5, 2.6 + k * 0.9, 2.2 + k * 0.7, `rgba(${70 + k * 24},${66 + k * 24},${62 + k * 24},${0.8 - k * 0.13})`);
+  },
+  // 佛寺：一座大殿，殿后一座塔
+  temple(g, r) {
+    pagoda(g, 46, 50, 5, 9);
+    hall(g, 26, 56, 28, 12, 'rgba(70,78,82,0.97)');
+    g.fillStyle = 'rgba(206,190,160,0.98)';
+    g.fillRect(12, 56, 28, 5);
+    g.strokeStyle = INK + '0.85)';
+    g.lineWidth = 1;
+    g.strokeRect(12, 56, 28, 5);
+    trunk(g, 8, 61, 40, 1, 2.2);
+    blob(g, 8, 38, 6, 6, rgba(GREEN, 0.95));
+    for (let k = 0; k < 5; k++) blob(g, 8 + (r() - 0.5) * 8, 38 + (r() - 0.5) * 7, 1, 0.7, INK + '0.5)');
+  },
+  // 祠庙宫观（道观、祠堂、城隍庙；清真寺、天主堂那时多是中式殿宇，同画）：台基上一座殿，殿前一座牌坊，旁一株古柏
+  shrine(g, r) {
+    trunk(g, 53, 61, 34, -1.5, 2.3);
+    blob(g, 53, 32, 7, 6.5, rgba(DEEP, 0.92));
+    for (let k = 0; k < 5; k++) blob(g, 53 + (r() - 0.5) * 9, 32 + (r() - 0.5) * 7, 1, 0.7, INK + '0.5)');
+    g.fillStyle = 'rgba(206,190,160,0.98)';
+    g.fillRect(9, 50, 36, 5);
+    g.strokeStyle = INK + '0.85)';
+    g.lineWidth = 1;
+    g.strokeRect(9, 50, 36, 5);
+    hall(g, 27, 50, 30, 13, 'rgba(62,70,74,0.97)');
+    g.fillStyle = PILLAR;
+    g.fillRect(15, 50, 2.6, 12);
+    g.fillRect(36.4, 50, 2.6, 12);
+    g.fillRect(14, 51.5, 26, 2.4);
+    g.strokeStyle = INK + '0.85)';
+    g.strokeRect(15, 50, 2.6, 12);
+    g.strokeRect(36.4, 50, 2.6, 12);
+    eave(g, 27, 51.5, 22, 3.6, ROOF);
+  },
+  // 驿：一间驿舍，门前拴着一匹马，竖一杆旗
+  relay(g) {
+    house(g, 22, 60, 24, 11);
+    banner(g, 40, 60, 24);
+    // 马：身、颈与头、四条腿、尾
+    g.fillStyle = 'rgba(122,88,60,0.97)';
+    g.beginPath(); g.ellipse(50, 52, 7, 3.5, 0, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.moveTo(54.5, 51); g.lineTo(57.5, 44); g.lineTo(62, 45.5); g.lineTo(61.5, 47.5); g.lineTo(58.8, 47.2); g.lineTo(57.5, 52.5); g.closePath(); g.fill();
+    g.strokeStyle = 'rgba(122,88,60,0.97)';
+    g.lineWidth = 1.4;
+    for (const x of [45, 48, 52, 55]) { g.beginPath(); g.moveTo(x, 54); g.lineTo(x, 61); g.stroke(); }
+    g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(43.5, 51); g.quadraticCurveTo(41, 53, 41.5, 58); g.stroke();
+  },
+  // 官署：衙门——朱红照墙开一座门楼，墙后一座大堂
+  yamen(g) {
+    hall(g, 32, 54, 34, 14, ROOF);
+    g.fillStyle = 'rgba(166,54,38,0.96)';
+    g.fillRect(8, 54, 48, 7);
+    g.strokeStyle = INK + '0.85)';
+    g.lineWidth = 1;
+    g.strokeRect(8, 54, 48, 7);
+    g.fillStyle = ROOF;
+    g.fillRect(7, 52.5, 50, 2);
+    gate(g, 32, 61, 7, 6);
+    eave(g, 32, 55, 16, 4.5, ROOF);
+  },
+  // 在建：竹木脚手架围着一座没上顶的屋架，一架吊杆
+  scaffold(g) {
+    g.strokeStyle = 'rgba(150,118,78,0.97)';
+    g.lineWidth = 1.4;
+    for (const x of [14, 24, 34, 44]) { g.beginPath(); g.moveTo(x, 62); g.lineTo(x, 30); g.stroke(); }
+    for (const y of [36, 46, 56]) { g.beginPath(); g.moveTo(12, y); g.lineTo(46, y); g.stroke(); }
+    g.lineWidth = 0.9;
+    for (const [x, y] of [[14, 56], [24, 46], [34, 36]]) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + 10, y - 10); g.stroke(); }
+    g.fillStyle = 'rgba(214,198,160,0.95)';
+    g.fillRect(18, 48, 22, 14);
+    g.strokeStyle = INK + '0.8)';
+    g.strokeRect(18, 48, 22, 14);
+    g.strokeStyle = INK + '0.9)';
+    g.lineWidth = 1.3;
+    g.beginPath(); g.moveTo(54, 62); g.lineTo(54, 20); g.lineTo(38, 26); g.stroke();
+    g.beginPath(); g.moveTo(42, 25); g.lineTo(42, 34); g.lineWidth = 0.7; g.stroke();
+    g.fillStyle = 'rgba(150,134,108,0.98)';
+    g.fillRect(39.5, 34, 5, 4);
+  },
+  // 石桥：一道五孔石拱桥跨着一湾水，桥面拱起，一溜栏板
+  bridge(g) {
+    g.fillStyle = 'rgba(112,152,166,0.86)';
+    g.beginPath(); g.ellipse(32, 59, 31, 4.5, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(184,170,142,0.98)';
+    g.beginPath();
+    g.moveTo(3, 58); g.quadraticCurveTo(32, 42, 61, 58); g.lineTo(61, 61); g.lineTo(3, 61); g.closePath();
+    g.fill();
+    g.strokeStyle = INK + '0.9)';
+    g.lineWidth = 1.2;
+    g.stroke();
+    g.fillStyle = 'rgba(60,84,96,0.9)';
+    for (const [x, rr] of [[14, 3], [23, 4], [32, 5], [41, 4], [50, 3]]) { g.beginPath(); g.moveTo(x - rr, 61); g.arc(x, 61, rr, Math.PI, 0); g.closePath(); g.fill(); }
+    g.lineWidth = 0.8;
+    g.beginPath(); g.moveTo(4, 55.5); g.quadraticCurveTo(32, 39.5, 60, 55.5); g.stroke();
+    for (let k = 1; k < 12; k++) {
+      const t = k / 12, x = 4 + 56 * t, y = (1 - t) * (1 - t) * 55.5 + 2 * (1 - t) * t * 39.5 + t * t * 55.5;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 2.6); g.stroke();
+    }
   }
 };
 

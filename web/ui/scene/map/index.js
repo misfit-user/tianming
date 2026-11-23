@@ -510,13 +510,20 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     scene.add(trees);
   }
 
-  // ---------- 聚落：府州治所的城郭（按繁华分档，见 model/settlement.js）、市镇、港；近看才显 ----------
+  // ---------- 聚落：府州治所的城郭（按繁华分档，见 model/settlement.js）、市镇、港、营造地标；近看才显 ----------
   // 没给分档时（舆图台、开局读数之前）照旧：京城、要府大一号、其余府城
   const cityUniforms = { ...spriteUniforms, uFadePx: { value: new THREE.Vector2(9, 15) }, uMaxPx: { value: 72 } };
   const CITY_SPRITE = [SPRITE.town, SPRITE.city, SPRITE.grand, SPRITE.metro];   // 小城、府城、大府、都会
   const CITY_SIZE = [3.4, 3.9, 4.6, 5.3];
+  // 营造地标（settle[i].landmarks 里的样子 → 图）；半损的画一小片残垣（借残城那张，画小）
+  const LANDMARK_SPRITE = {
+    academy: SPRITE.academy, granary: SPRITE.granary, waterworks: SPRITE.waterworks, workshop: SPRITE.workshop, fort: SPRITE.fort, beacon: SPRITE.beacon,
+    temple: SPRITE.temple, shrine: SPRITE.shrine, relay: SPRITE.relay, yamen: SPRITE.yamen, bridge: SPRITE.bridge, scaffold: SPRITE.scaffold, ruin: SPRITE.ruin, port: SPRITE.port
+  };
+  const LANDMARK_SIZE = { fort: 3.1, scaffold: 2.6, ruin: 2.5, port: 3.0 };    // 其余 2.8
   const wetOf = waterSampler(d.water);
-  const spotMemo = new Map();                 // 府州下标 → 市镇、港的落点（算一回留着；档变了只换显不显）
+  const spotMemo = new Map();                 // 府州下标 → 市镇、港、河埠的落点（算一回留着；档变了只换显不显）
+  const ringMemo = new Map();                 // 「府州下标|城郭大小」→ 地标的落点
   let cities = null;
   function seatSprite(i, k) {
     if (k === 2) return [SPRITE.capital, 6.0];
@@ -537,10 +544,19 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       const [sprite, size] = seatSprite(i, caps.has(i) ? 2 : seats.has(i) ? 1 : 0);
       items.push([x, heightAt(x, y), y, size, sprite]);
       const st = settle && settle[i];
-      if (!st || (!st.markets && !st.port)) return;
+      const marks = (st && st.landmarks) || [];
+      if (!st || (!st.markets && !st.port && !marks.length)) return;
       const sp = spotsOf(i);
       for (const [mx, my] of sp.markets.slice(0, st.markets)) items.push([mx, heightAt(mx, my), my, 2.5, SPRITE.market]);
-      if (st.port && sp.port) items.push([sp.port[0], heightAt(sp.port[0], sp.port[1]), sp.port[1], 3.0, SPRITE.port]);
+      // 港：近海设在海岸；不近海而真建了港（漕运码头、渡口）设在河边；近处连河也没有，就当一座地标摆在治所旁（港那张图船底自带一小片水）
+      const portAt = st.port ? sp.port || (st.portBuilt ? sp.wharf : null) : null;
+      if (portAt) items.push([portAt[0], heightAt(portAt[0], portAt[1]), portAt[1], 3.0, SPRITE.port]);
+      const ringed = st.portBuilt && !portAt ? ['port', ...marks] : marks;
+      const ring = ringed.length ? ringOf(i, size) : [];
+      ringed.forEach((k, j) => {
+        const at = ring[j];
+        if (at && LANDMARK_SPRITE[k] != null) items.push([at[0], heightAt(at[0], at[1]), at[1], LANDMARK_SIZE[k] || 2.8, LANDMARK_SPRITE[k]]);
+      });
     });
     items.sort((a, b) => a[2] - b[2]);
     cities = spriteLayer(items, cityUniforms);
@@ -576,8 +592,38 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
         break;
       }
     }
-    const out = { markets, port };
+    // 河埠（不近海而建了港时用）：治所近处本府州里的河边，由近及远找
+    let wharf = null;
+    for (let dd = 2.5; dd <= 9 && !wharf; dd += 1.5) {
+      for (let a = 0; a < 16; a++) {
+        const x = cx + Math.cos(a * Math.PI / 8) * dd, y = cy + Math.sin(a * Math.PI / 8) * dd;
+        if (regionIndexAt(x, y) === i && landOf(x, y) >= 0.5 && lines.nearRiver(x, y)) { wharf = [x, y]; break; }
+      }
+    }
+    const out = { markets, port, wharf };
     spotMemo.set(i, out);
+    return out;
+  }
+  // 营造地标的落点：绕治所摆开，离城郭半宽一截。先西、东两侧（略偏北，让开治所下方——府州名压着城郭时挪到城郭下方，竖写的挪到右边），
+  // 再往外的西、东，再西北、东北（半藏在城后），再西南、东南，更外的西、东，正南最后。要落在本府州的陆上、不在水上，
+  // 与市镇、港、河埠、彼此都隔开；落不下的跳过。落点只看府州与城郭大小，同一处地标回回落在同一处
+  const RING_SLOTS = [[0, Math.PI + 0.17], [0, -0.17], [2.8, Math.PI + 0.1], [2.8, -0.1], [0.6, Math.PI + 0.85], [0.6, -0.85],
+    [1.5, Math.PI - 0.6], [1.5, 0.6], [5.6, Math.PI], [5.6, 0], [2.2, Math.PI / 2]];
+  function ringOf(i, seatSize) {
+    const key = `${i}|${seatSize}`;
+    if (ringMemo.has(key)) return ringMemo.get(key);
+    const [cx, cy] = regions[i].center, sp = spotsOf(i);
+    const taken = [...sp.markets, sp.port, sp.wharf].filter(Boolean);
+    const R = seatSize / 2 + 1.5;
+    const out = [];
+    for (const [dr, a] of RING_SLOTS) {
+      if (out.length >= 7) break;
+      const x = cx + Math.cos(a) * (R + dr), y = cy + Math.sin(a) * (R + dr);
+      if (regionIndexAt(x, y) !== i || landOf(x, y) < 0.5 || wetOf(x, y)) continue;
+      if (taken.concat(out).some(([tx, ty]) => Math.hypot(tx - x, ty - y) < 2.8)) continue;
+      out.push([x, y]);
+    }
+    ringMemo.set(key, out);
     return out;
   }
 
@@ -948,6 +994,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       labels.setData(labelData());
       settle = null;
       spotMemo.clear();
+      ringMemo.clear();
       buildCities();
       buildTrees();
     },
@@ -958,7 +1005,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     },
     // 京城、要府（府州下标）：题名先占位、字大；城郭京城两重楼、要府大一号
     setCapitals(list) { labels.setCapitals(list); buildCities(); },
-    // 聚落等第（府州下标对齐 regions，每项 { style, tier, ruined, markets, port, village } 或 null）：城郭、市镇、港、四郊村舍照它重画。
+    // 聚落等第（府州下标对齐 regions，每项 { style, tier, ruined, markets, port, portBuilt, landmarks, village } 或 null）：城郭、市镇、港、地标、四郊村舍照它重画。
     // 给 null 或长短对不上就收回，照旧画
     setSettlements(list) {
       settle = Array.isArray(list) && list.length === regions.length ? list : null;

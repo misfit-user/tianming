@@ -85,6 +85,46 @@ function check(cond, msg) {
     check(v1 < v2 && v2 < v3, `密度大村舍密：${v1.toFixed(2)} < ${v2.toFixed(2)} < ${v3.toFixed(2)}`);
     check(m.villageFactor(1, 1e6) === 0.1 && m.villageFactor(1e9, 1) === 1.6, '疏密有上下限');
     check(m.villageFactor(0, 100) === 0.5 && m.villageFactor(100, 0) === 0.5, '缺数给中间值');
+
+    // 营造地标：按名字归类（三部官方剧本的营造类型名，加几个易混的），认不出看类别，都认不出不画
+    const KIND = {
+      书院: 'academy', '文庙·学宫': 'academy', 贡院: 'academy', 学校: 'academy',
+      城隍庙: 'shrine', 关帝庙: 'shrine', '宗祠·祠堂': 'shrine', 生祠: 'shrine', 道观: 'shrine', 清真寺: 'shrine', 天主堂: 'shrine',
+      佛寺: 'temple', 观音寺: 'temple', 寺院救济所: 'temple',
+      '箭楼·敌台': 'fort', 城墙: 'fort', '长城·关隘': 'fort', 关城: 'fort', 卫所: 'fort', '边镇·总兵府': 'fort', 水寨: 'fort',
+      烽火台: 'beacon', 烽候: 'beacon', 巡检司: 'beacon',
+      钞关: 'market', 会馆: 'market', '街市·商铺街区': 'market', 坊市设施: 'market',
+      市舶司: 'port', 漕运码头: 'port', 渡津: 'port', 港埠: 'port',
+      海塘: 'waterworks', '水利·河工': 'waterworks', 堰渠: 'waterworks',
+      '漕仓·京通十三仓': 'granary', '府仓·官仓': 'granary', 仓廪: 'granary',
+      织造局: 'workshop', '盐场·盐课提举司': 'workshop', 盐灶: 'workshop', 军械作坊: 'workshop',
+      驿站: 'relay', 驿舍: 'relay', 养马场: 'relay', '石桥·拱桥': 'bridge',
+      '府衙·县衙': 'yamen', '巡抚衙门·总督府': 'yamen', 文书库: 'yamen'
+    };
+    const wrong = Object.entries(KIND).filter(([name, k]) => m.landmarkOf({ name }) !== k).map(([name, k]) => `${name}→${m.landmarkOf({ name })}（应 ${k}）`);
+    check(!wrong.length, `营造按名字归类：${wrong.join('；')}`);
+    check(m.landmarkOf({ name: '劝农亭', category: 'administrative' }) === 'yamen', '名字认不出看类别');
+    check(m.landmarkOf({ name: '药舍', category: 'social' }) === null && m.landmarkOf({ name: '奇物' }) === null, '都认不出不画');
+
+    // 一处的营造：同样的只画一座；建成的至多四样，在建另画脚手架、半损另画残垣；失修照画；港、市不画地标
+    const B = (name, status = 'completed') => ({ name, status });
+    const w1 = m.worksOf([B('书院'), B('府学'), B('城墙', 'neglected'), B('佛寺'), B('常平仓'), B('织造局'), B('驿站', 'building'), B('烽火台', 'damaged'), B('市舶司'), B('钞关'), B('会馆')]);
+    check(JSON.stringify(w1.landmarks) === JSON.stringify(['academy', 'fort', 'temple', 'granary', 'scaffold', 'ruin']), `地标：${JSON.stringify(w1.landmarks)}`);
+    check(w1.port === true && w1.markets === 2, `建成的港、市：${JSON.stringify(w1)}`);
+    check(m.worksOf([B('市舶司', 'building')]).port === false, '在建的港不算港');
+    check(JSON.stringify(m.worksOf([B('药舍', 'building')]).landmarks) === '["scaffold"]', '认不出是什么的在建也画脚手架');
+    check(m.worksOf(null).landmarks.length === 0 && m.worksOf([null]).landmarks.length === 0, '没有营造不画');
+
+    // 接进聚落：建了港，商贸不够也设港（portBuilt）；残城不设；市镇连商贸带营造至多三处；帐幕之地建了互市也有市镇
+    const poorPort = m.settlementOf({ ...base, commerce: 5e5, kind: '直辖政区', buildings: [B('市舶司')] }, null);
+    check(poorPort.port && poorPort.portBuilt, '商贸五十万建了市舶司也设港');
+    check(!m.settlementOf({ ...poor, buildings: [B('市舶司'), B('钞关')] }, null).port, '残城建过港也不设');
+    check(m.settlementOf({ ...poor, buildings: [B('钞关')] }, null).markets === 0, '残城建过钞关也不设市镇');
+    check(m.settlementOf({ ...rich, buildings: [B('钞关'), B('会馆')] }, null).markets === 3, '市镇至多三处');
+    check(m.settlementOf({ ...rich, commerce: 3e6, buildings: [B('钞关')] }, null).markets === 2, '商贸一处加钞关一处');
+    check(m.settlementOf({ prosperity: 40, kind: '牧地', terrain: '草原', buildings: [B('互市')] }, null).markets === 1, '草原建了互市有市镇');
+    const withWorks = m.settlementOf({ ...poor, buildings: [B('书院'), B('城墙', 'building')] }, null);
+    check(withWorks.ruined && JSON.stringify(withWorks.landmarks) === '["academy","scaffold"]', '残城里建了的照画地标');
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

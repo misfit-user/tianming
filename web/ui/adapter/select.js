@@ -751,7 +751,8 @@ export async function mapLayer(mode) {
 
 // ---------- 舆图聚落：各府州治所画几等城郭（定档在 model/settlement.js）要的数 ----------
 // 户口、繁荣、商贸不受奏报失真遮盖（方志里照列真数；遮的是丁口、民心、吏治），外地方志也只给等第——城郭的档本就是等第，各处照画。
-// 返回 { 府州 id: { prosperity, commerce, mouths, damage, kind, terrain, factionType } }。逐块读要几百毫秒，分批让出主线程；同一回合内缓存
+// 营造也不遮（方志营造志外地照列）。返回 { 府州 id: { prosperity, commerce, mouths, damage, kind, terrain, factionType, buildings: [{ name, category, status }] } }。
+// 全图读一遍约六百毫秒（天启三百余块），分批让出主线程；同一回合内缓存
 const settleCache = new Map();
 export async function settlements() {
   const parts = w.TMPhase8FormalBridge && w.TMPhase8FormalBridge.__p8MapParts;
@@ -767,9 +768,37 @@ export async function settlements() {
     const f = facs.find((x) => String(x.id || x.name) === k || (n && x.name === n));
     return f ? String(f.type || f.factionType || '') : '';
   };
+  // 营造（画地标用）：在册建筑一回合只取一次，按所在府州名分好——内核 getAllBuildingsCompat 每调一回要走一遍整棵区划树。
+  // 一处府州的建筑照方志营造志（fangzhi.js worksOf）的取法：区划自己的 buildings 在前，再按区划名、府州名、全名找，按「所在|类型或名」去重
+  const byPlace = new Map();
+  if (typeof w.getAllBuildingsCompat === 'function') {
+    try {
+      for (const bld of w.getAllBuildingsCompat() || []) {
+        const t = bld && String(bld.territory || bld._territory || '');
+        if (!t) continue;
+        if (!byPlace.has(t)) byPlace.set(t, []);
+        byPlace.get(t).push(bld);
+      }
+    } catch (_e) { /* 无工籍：各处不画地标，城郭照画 */ }
+  }
+  const bw = w.TM && w.TM.BuildingWorks;
+  const worksAt = (r, live) => {
+    const divName = String((live && live.name) || r.name || '');
+    const seen = new Set(), list = [];
+    const add = (bld) => {
+      if (!bld) return;
+      const k = `${bld.territory || bld._territory || divName}|${bld.type || bld.name}`;
+      if (seen.has(k)) return;
+      seen.add(k);
+      const td = bw && bw.typeDefFor ? bw.typeDefFor(bld.name, w.P || {}) : null;
+      list.push({ name: String(bld.name || bld.type || ''), category: String((td && td.category) || bld.category || ''), status: String(bld.status || '') });
+    };
+    if (live && Array.isArray(live.buildings)) live.buildings.forEach(add);
+    [...new Set([divName, r.name, r.title, r.officialName].filter(Boolean).map(String))].forEach((nm) => (byPlace.get(nm) || []).forEach(add));
+    return list;
+  };
   const out = {};
-  for (let i = 0; i < regions.length; i++) {
-    const r = regions[i];
+  const readOne = (r) => {
     try {
       const b = parts.regionBundle(r);
       const d = b.data || {}, eb = d.economyBase || {}, live = b.liveDivision || null;
@@ -779,10 +808,17 @@ export async function settlements() {
         mouths: Number(d.population != null && d.population !== '' ? d.population : b.pop && b.pop.mouths),
         damage: der ? Math.max(Number(der.farmland) || 0, Number(der.commerceVolume) || 0) : 0,
         kind: String(parts.regionLevel ? parts.regionLevel(r) || '' : '').split(' · ')[0],
-        terrain: String(d.terrain || r.terrain || ''), factionType: facType(r)
+        terrain: String(d.terrain || r.terrain || ''), factionType: facType(r),
+        buildings: worksAt(r, live)
       };
     } catch (_e) { /* 这一块读不到就不给分档，舆图照旧画府城 */ }
-    if (i % 40 === 39) await new Promise((res) => setTimeout(res, 0));
+  };
+  // 一批批读，批与批之间让出主线程。批内套内核的开册渲染批次（withRenderBatch，通志一道各州也这样读）：
+  // 同一块地的 regionBundle（regionLevel 里还要再取一回）、全图军队索引、户籍叶子分组一批只算一次——不套时一块要八毫秒上下
+  const batch = typeof parts.withRenderBatch === 'function' ? parts.withRenderBatch : (f) => f();
+  for (let i0 = 0; i0 < regions.length; i0 += 24) {
+    batch(() => { for (let i = i0; i < Math.min(regions.length, i0 + 24); i++) readOne(regions[i]); });
+    await new Promise((res) => setTimeout(res, 0));
   }
   for (const k of settleCache.keys()) if (k !== key) settleCache.delete(k);
   settleCache.set(key, out);

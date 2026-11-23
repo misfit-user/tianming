@@ -1,6 +1,6 @@
 // smoke-army-region-march.js — 逐块行军（11-23 同志定乙：地块编号做根，行军按地块一块一块走）
 //
-// 军令记在 GM.marchOrders，每回合按日数沿路走，走满一程落到下一块，走完全程抵达。
+// 军令记在 GM.marchOrders，一日一日沿路走（过回合时逐日走满一回合的日数），走满一程落到下一块，走完全程抵达。
 // 日行一舍（17 公里），骑兵占九成以上的加倍，炮械兵占两成以上的减半，冬季与五万以上大军减速。
 // 先前按目的地走的那套不看远近一回合送到、旧三系统界面掷 15~35 日——有地块的剧本都改走这里。
 // 假舆图：甲城—乙城 255 公里、乙城—丙城 300、丙城—丁城 255；戊城不通路；「东路」是丙丁两块的片区。
@@ -316,6 +316,41 @@ console.log('[13] 接战规矩：两边的军同块或相邻才落；隔得更�
   noMap.GM.facs.push({ id: 'f-jin', name: '后金' });
   noMap.GM.armies.push({ id: 'j1', name: '两黄旗', faction: '后金', soldiers: 15000, garrison: '丁城', location: '丁城' });
   assert(noMap.MilitarySystems.applyBattleResult(fight('bt-nomap', 'a1'), noMap.GM).ok, '没有地块的剧本不判');
+}
+
+console.log('[14] 按日走（11-23 同志定：行军挪进日拍）：一回合里一日一日走，谁先到一块谁先占住');
+{
+  // 迎头对走：铁骑（日行 34）甲城往丁城，两黄旗（骑军，日行 34）丁城往甲城。
+  // 第 8 日分别进乙城、丙城，第 17 日都要进对方那块，各停原处——不再一支先走满一个月、另一支从它身边穿过去
+  const headOn = () => {
+    const c = context();
+    const j = withFoe(c, '丁城', true);
+    M(c).start(army(c, 'a2'), '丁城');
+    M(c).start(j, '甲城');
+    return c;
+  };
+  const ctx = headOn();
+  M(ctx).advance(ctx.GM, 30);
+  const a = army(ctx, 'a2'), foe = army(ctx, 'j1');
+  const oa = ctx.GM.marchOrders.find((o) => o.armyId === 'a2'), of = ctx.GM.marchOrders.find((o) => o.armyId === 'j1');
+  assert(a.location === '乙城' && foe.location === '丙城', '迎头对走在半路相遇：铁骑停乙城、两黄旗停丙城（实得 ' + a.location + '／' + foe.location + '）');
+  assert(oa && oa.blocked && oa.blocked.armyName === '两黄旗' && of && of.blocked && of.blocked.armyName === '铁骑', '两边都记为对方所阻');
+  // 上了时钟每日调一次：逐日调 30 次与一次走 30 日，落点、受阻、进度都相同
+  const daily = headOn();
+  for (let d = 0; d < 30; d++) M(daily).advance(daily.GM, 1);
+  const pick = (c) => c.GM.marchOrders.map((o) => [o.armyId, army(c, o.armyId).location, o.seg, o.segKm.toFixed(3), o.blocked ? o.blocked.armyId : '',
+    o.progress, o.totalTurns, o.eta, o.totalDays, o.daysMarched.toFixed(3)].join(',')).join(' | ');
+  assert(pick(daily) === pick(ctx), '逐日调 30 次与一次走 30 日相同：' + pick(daily) + '（一次走：' + pick(ctx) + '）');
+  // 先走开的敌不挡后到的：两黄旗在乙城往丁城去，第 9 日离开；步营甲城往丙城，第 15 日进乙城
+  const ctx2 = context();
+  const j2 = withFoe(ctx2, '乙城', true);
+  const b = army(ctx2, 'a1');
+  M(ctx2).start(b, '丙城');
+  M(ctx2).start(j2, '丁城');
+  M(ctx2).advance(ctx2.GM, 30);
+  const ob = ctx2.GM.marchOrders.find((o) => o.armyId === 'a1');
+  assert(b.location === '乙城' && ob && !ob.blocked && j2.location === '丁城' && j2.state === 'garrison',
+    '两黄旗第 17 日到丁城；步营第 15 日进乙城，不为早已走开的敌所阻（实得 ' + b.location + '／' + j2.location + '）');
 }
 
 if (failed) { console.log('FAIL smoke-army-region-march: ' + failed + ' 项'); process.exit(1); }

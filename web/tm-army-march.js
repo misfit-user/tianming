@@ -1,7 +1,7 @@
 /* tm-army-march.js — 逐块行军（11-23 同志定乙：地块编号做根，行军按地块一块一块走）
  *
  * 军令只记一本账：GM.marchOrders。玩家移防、军令回执、势力事件（都经 MarchSystem.createMarchOrder）、
- * AI 在 army_changes 里写的去处（tm-ai-change-army.js）都在这里立令；每回合按日数沿路走，
+ * AI 在 army_changes 里写的去处（tm-ai-change-army.js）都在这里立令；一日一日沿路走（过回合时在里头逐日走满这一回合的日数），
  * 走满一程就落到下一块地上（编号写进绑定，驻地文字写成那块的名字），走完全程即抵达。
  * 路线与人物赶路同一套路程（TM.MapRouteDays.planRoute：按地块中心连线量公里）。
  * 快慢（同志定乙）：日行一舍，三十里约 17 公里（《左传》「退三舍」，杜预注「一舍，三十里」）；
@@ -289,13 +289,54 @@
     return Math.max(0, left - order.segKm);
   }
 
-  // 每回合沿路走：按日数折成公里，走满一程就落到下一块；走完全程即抵达
+  // 「谁在哪块」随挪随记：同一回合里后走的军看得见先走的军已到哪块，不会从它身边穿过去
+  function shift(seen, army, from, to) {
+    var was = seen.byRegion.get(from), i = was ? was.indexOf(army) : -1;
+    if (i >= 0) was.splice(i, 1);
+    var now = seen.byRegion.get(to);
+    if (!now) seen.byRegion.set(to, now = []);
+    if (now.indexOf(army) < 0) now.push(army);
+  }
+
+  // 走一日（或不足一日的零头）：走满一程就落到下一块，走完全程即抵达；
+  // 下一程有交战之敌的，停在这块，这一日余下的路不走，打不打交推演；明日再看敌走了没有
+  function walkDay(w, today, game, seen) {
+    var order = w.order, army = w.army, budget = w.kmPerDay * today, prev = order.blocked;
+    delete order.blocked;
+    while (budget > 1e-6 && order.seg < order.segments.length) {
+      var s = order.segments[order.seg], need = Math.max(0, s.km - order.segKm);
+      // 只差百万分之一公里的算走满：逐日累加有零头误差，不能因此迟到一日
+      if (budget < need - 1e-6) { order.segKm += budget; budget = 0; break; }
+      var foe = foeIn(army, s.toRegionId, game, seen);
+      if (foe) {
+        var foeId = String(foe.id || foe.name);
+        order.blocked = { regionId: String(s.toRegionId), regionName: nameOf(game, s.toRegionId), armyId: foeId,
+          armyName: String(foe.name || '某军'), faction: facName(game, foe.faction || foe.factionId || ''),
+          sinceTurn: prev && prev.armyId === foeId ? prev.sinceTurn : (game.turn || 0) };
+        budget = 0;
+        break;
+      }
+      budget = Math.max(0, budget - need); order.segKm = 0; order.seg += 1;
+      locs().moveArmy(army, game, s.toRegionId);
+      shift(seen, army, String(order.regionPath[order.seg - 1]), String(s.toRegionId));
+      army.destinationRegionId = order.toRegionId;
+      w.passed.push(nameOf(game, s.toRegionId));
+    }
+    order.daysMarched = (order.daysMarched || 0) + (today - budget / Math.max(w.kmPerDay, 0.1));
+    if (order.seg >= order.segments.length) { w.done = true; arrive(order, army, game); }
+  }
+
+  // 沿路走（11-23 同志定：行军挪进日拍）：一日一日走，每日各军各走一日的路，谁先到一块谁先占住。
+  // 过回合调一次，在里头逐日走满这一回合的日数；上了时钟由日拍每日调一次（days=1），落点、受阻、进度都一样。
+  // 先前一回合一次走完：排在前头的军先走满一个月，后走的军会被早该走开的敌挡住，也会从刚到的敌军身边穿过去。
   function advance(game, days) {
     game = game || global.GM;
     if (!game || !usable(game)) return [];
     days = Number(days) > 0 ? Number(days) : turnDays();
     adoptLegacy(game);
-    var moved = [], seen = { pairs: warPairs(game), byRegion: armiesByRegion(game) };
+    // 旧的按目的地行军（tm-feudal-warfare.js）在有地块的剧本里不再动手，它留下的行军简报清掉，免得提示词里重复
+    game._marchReport = '';
+    var walking = [];
     (game.marchOrders || []).slice().forEach(function (order) {
       if (!order || order.status !== 'marching' || !Array.isArray(order.regionPath)) return;
       var army = armyOf(order, game);
@@ -314,46 +355,35 @@
       }
       var p = pace(army);
       order.kmPerDay = p.kmPerDay; order.pace = p.kind;
-      var budget = p.kmPerDay * days, passed = [], wasBlocked = order.blocked;
-      delete order.blocked;
-      while (budget > 1e-6 && order.seg < order.segments.length) {
-        var s = order.segments[order.seg], need = Math.max(0, s.km - order.segKm);
-        if (budget < need) { order.segKm += budget; budget = 0; break; }
-        // 下一程有交战之敌的军：停在这块，余下的日子按兵不动，打不打交推演
-        var foe = foeIn(army, s.toRegionId, game, seen);
-        if (foe) {
-          order.blocked = { regionId: String(s.toRegionId), regionName: nameOf(game, s.toRegionId), armyId: String(foe.id || foe.name),
-            armyName: String(foe.name || '某军'), faction: facName(game, foe.faction || foe.factionId || ''),
-            sinceTurn: wasBlocked && wasBlocked.armyId === String(foe.id || foe.name) ? wasBlocked.sinceTurn : (game.turn || 0) };
-          budget = 0;
-          break;
-        }
-        budget -= need; order.segKm = 0; order.seg += 1;
-        locs().moveArmy(army, game, s.toRegionId);
-        army.destinationRegionId = order.toRegionId;
-        passed.push(nameOf(game, s.toRegionId));
+      walking.push({ order: order, army: army, kmPerDay: p.kmPerDay, passed: [], wasBlocked: order.blocked, done: false });
+    });
+    // 没有在途的军就不点各军所在（日拍里空转的日子省下这一遍）
+    if (walking.length) {
+      var seen = { pairs: warPairs(game), byRegion: armiesByRegion(game) };
+      for (var rest = days; rest > 1e-6; rest -= 1) {
+        var today = Math.min(1, rest);
+        walking.forEach(function (w) { if (!w.done) walkDay(w, today, game, seen); });
       }
-      order.progress = (order.progress || 0) + 1;
-      order.daysMarched = (order.daysMarched || 0) + (days - budget / Math.max(p.kmPerDay, 0.1));
-      if (order.seg >= order.segments.length) {
-        arrive(order, army, game);
-        moved.push({ army: army.name, passed: passed, arrived: true });
-        return;
-      }
-      var left = kmLeft(order) / Math.max(p.kmPerDay, 0.1), turnsLeft = Math.max(1, Math.ceil(left / days));
+    }
+    var moved = [], td = turnDays();
+    walking.forEach(function (w) {
+      var order = w.order, army = w.army;
+      if (w.done) { moved.push({ army: army.name, passed: w.passed, arrived: true }); return; }
+      // 进度按已走的日数折回合（逐日调与一回合调一次得数相同）
+      var left = kmLeft(order) / Math.max(w.kmPerDay, 0.1), turnsLeft = Math.max(1, Math.ceil(left / td));
+      order.progress = Math.max(1, Math.ceil(order.daysMarched / td - 1e-9));
       order.totalDays = Math.ceil(order.daysMarched + left);
       order.totalTurns = order.progress + turnsLeft;
       order.eta = (game.turn || 0) + turnsLeft;
-      var bk = order.blocked;
-      if (bk && !(wasBlocked && wasBlocked.armyId === bk.armyId)) {
+      // 记事这一趟一条：新受阻的记受阻，否则记经过哪几块
+      var bk = order.blocked, was = w.wasBlocked;
+      if (bk && !(was && was.armyId === bk.armyId)) {
         note((army.name || '某军') + '往' + order.toName + '，行至' + nameOf(game, order.regionPath[order.seg]) + '，为' +
           foeLabel(bk) + '所阻（敌驻' + bk.regionName + '），止步待命。');
-      } else if (passed.length) note((army.name || '某军') + '经' + passed.join('、') + '，往' + order.toName + '尚余约' + Math.ceil(left) + '日。');
-      moved.push({ army: army.name, passed: passed, arrived: false });
+      } else if (w.passed.length) note((army.name || '某军') + '经' + w.passed.join('、') + '，往' + order.toName + '尚余约' + Math.ceil(left) + '日。');
+      moved.push({ army: army.name, passed: w.passed, arrived: false });
     });
     game.marchOrders = (game.marchOrders || []).filter(function (o) { return o && o.status === 'marching'; });
-    // 旧的按目的地行军（tm-feudal-warfare.js）在有地块的剧本里不再动手，它留下的行军简报清掉，免得提示词里重复
-    game._marchReport = '';
     return moved;
   }
 
@@ -382,8 +412,9 @@
   global.TM.ArmyMarch = { usable: usable, plan: plan, start: start, advance: advance, pace: pace, activeOrder: activeOrder,
     nearby: nearby, promptText: promptText, contact: contact, hostile: hostile, KM_PER_DAY: KM_PER_DAY };
 
-  // 排在 MarchSystem（33）之前：先把旧令换成逐块行军，余下没地块的旧令仍由它推进
+  // 排在 MarchSystem（33）之前：先把旧令换成逐块行军，余下没地块的旧令仍由它推进。
+  // 记在日拍（daily）：现在过回合各步一齐跑一次，ctx.days 是这一回合的日数；分批跑时 ctx.batchDays 是这一批的日数
   if (global.SettlementPipeline && typeof global.SettlementPipeline.register === 'function') {
-    global.SettlementPipeline.register('regionMarch', '逐块行军', function (ctx) { advance(global.GM, ctx && ctx.days); }, 32, 'perturn');
+    global.SettlementPipeline.register('regionMarch', '逐块行军', function (ctx) { advance(global.GM, ctx && (ctx.batchDays || ctx.days)); }, 32, 'daily');
   }
 })(typeof window !== 'undefined' ? window : globalThis);

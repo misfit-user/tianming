@@ -62,6 +62,80 @@
       + (Number(ps.recentImpeachLose) || 0);
   }
 
+  // 【诸军驻地】（11-23 同志定：地块编号做根，文字只作说明）：本方各军驻在哪块地、那块地四邻是谁；
+  // 本方疆域与驻军所在两程以内的别家之军另列。调兵移驻照这些地块名写，舆图上认不出的由写口退回（tm-ai-change-army.js）。
+  // 地块读内核绑定（TMMapLocations.read）；没有地块的剧本不列。
+  function _armyPlaceLines(GM, P) {
+    var L = global.TMMapLocations, map = GM && (GM.mapData || GM.map);
+    if (!L || typeof L.read !== 'function' || typeof L.enabled !== 'function' || !L.enabled(map) || !Array.isArray(GM.armies)) return [];
+    var regions = new Map(), idByName = new Map();
+    (map.regions || []).forEach(function(r) { if (r && r.id) regions.set(String(r.id), r); });
+    regions.forEach(function(r, id) { if (r.name && !idByName.has(String(r.name))) idByName.set(String(r.name), id); });
+    var nameOf = function(id) { var r = regions.get(id); return r ? String(r.name || id) : String(id); };
+    // 四邻：天启、绍宋记编号，晚唐记地名
+    var nbOf = function(id) {
+      var r = regions.get(id);
+      return (Array.isArray(r && r.neighbors) ? r.neighbors : []).map(function(n) { n = String(n); return regions.has(n) ? n : (idByName.get(n) || ''); }).filter(Boolean);
+    };
+    var pi = (P && P.playerInfo) || GM.playerInfo || {};
+    var keys = [GM.startContext && GM.startContext.playerFactionId, GM.playerFactionId, pi.factionId, pi.factionName].filter(Boolean).map(String);
+    if (!keys.length) return [];
+    var facs = Array.isArray(GM.facs) ? GM.facs : [];
+    facs.forEach(function(f) { if (f && (keys.indexOf(String(f.id)) >= 0 || keys.indexOf(String(f.name)) >= 0)) keys.push(String(f.id || ''), String(f.name || '')); });
+    var mine = function(a) { return keys.indexOf(String(a.factionId || '')) >= 0 || keys.indexOf(String(a.faction || '')) >= 0; };
+    var facName = function(a) { var v = String(a.faction || a.factionId || ''); var f = facs.find(function(x) { return x && (String(x.id) === v || x.name === v); }); return f ? f.name : (v || '无主'); };
+    var men = function(a) { return Math.max(0, Math.round(Number(a.soldiers || a.size || a.strength) || 0)); };
+    var own = new Map(), foreign = [];
+    GM.armies.forEach(function(a) {
+      if (!a || a.destroyed || a.disbanded || a.active === false || a._revoltBand || men(a) <= 0) return;
+      var b = L.read(a, 'army', GM);
+      if (!b || !b.regionId) return;
+      var x = { a: a, b: b, id: String(b.regionId) };
+      if (mine(a)) { if (!own.has(x.id)) own.set(x.id, []); own.get(x.id).push(x); }
+      else foreign.push(x);
+    });
+    if (!own.size) return [];
+    // 军名 兵数；落在代表点上的注明原写的驻地文字
+    var label = function(x) {
+      var text = String(x.a.garrison || x.a.location || '').trim();
+      var note = x.b.precision === 'representative' && text && text !== nameOf(x.id) ? '（约在此，原写「' + text.slice(0, 16) + '」）' : '';
+      return String(x.a.name || '某军') + ' ' + men(x.a) + note;
+    };
+    var total = function(list) { return list.reduce(function(s, x) { return s + men(x.a); }, 0); };
+    var ownIds = Array.from(own.keys()).sort(function(p, q) { return total(own.get(q)) - total(own.get(p)); });
+    var CAP = 40, lines = ['【诸军驻地】本方各军所在地块〔四邻〕：军名 兵数'];
+    ownIds.slice(0, CAP).forEach(function(id) {
+      var nb = nbOf(id).slice(0, 8).map(nameOf);
+      lines.push('  ' + nameOf(id) + (nb.length ? '〔' + nb.join('、') + '〕' : '') + '：' + own.get(id).map(label).join('、'));
+    });
+    if (ownIds.length > CAP) lines.push('  （另有 ' + (ownIds.length - CAP) + ' 处驻军从略，兵少者在后）');
+    // 近边：本方疆域与本方驻军所在的地块，往外两程以内（敌军入境的、压在边上的、边外屯着主力的都算；
+    // 天启后金诸旗屯沈阳、辽阳，离宁锦一线隔着一两块，只算接壤就漏了）
+    var near = new Set(), ring = new Set(own.keys());
+    regions.forEach(function(r, id) {
+      var owner = r.currentOwner != null && r.currentOwner !== '' ? r.currentOwner : r.owner;
+      if (owner != null && keys.indexOf(String(owner)) >= 0) ring.add(id);
+    });
+    for (var step = 0; step <= 2 && ring.size; step++) {
+      var next = new Set();
+      ring.forEach(function(id) { if (near.has(id)) return; near.add(id); if (step < 2) nbOf(id).forEach(function(n) { if (!near.has(n)) next.add(n); }); });
+      ring = next;
+    }
+    var foes = new Map();
+    foreign.forEach(function(x) { if (!near.has(x.id)) return; if (!foes.has(x.id)) foes.set(x.id, []); foes.get(x.id).push(x); });
+    if (foes.size) {
+      var FOE_CAP = 24, foeIds = Array.from(foes.keys()).sort(function(p, q) { return total(foes.get(q)) - total(foes.get(p)); });
+      lines.push('【近边别家之军】本方疆域与本方驻军所在两程以内地块上的别家之军');
+      foeIds.slice(0, FOE_CAP).forEach(function(id) {
+        // 军名已带势力名的（「察哈尔·主力」）不再重复冠名
+        lines.push('  ' + nameOf(id) + '：' + foes.get(id).map(function(x) { var f = facName(x.a); return (String(x.a.name || '').indexOf(f) === 0 ? '' : f + '·') + label(x); }).join('、'));
+      });
+      if (foeIds.length > FOE_CAP) lines.push('  （另有 ' + (foeIds.length - FOE_CAP) + ' 处别家驻军从略，兵少者在后）');
+    }
+    lines.push('  （调兵、移驻写 army_changes：去处 destination、驻地 location 只写舆图上的地块名，如上列各地及其四邻；舆图上认不出是哪块地的不落地，退回。）');
+    return lines;
+  }
+
   function appendPromptPolicyContext(sysP, ctx) {
     ctx = ctx || {};
     var GM = ctx.GM || global.GM || {};
@@ -193,6 +267,8 @@
           });
         }
       }
+      // 【诸军驻地】各军驻在哪块、四邻是谁（11-23 同志定：地块编号做根）
+      try { _armyPlaceLines(GM, ctx.P || global.P).forEach(function(l) { stateLines.push(l); }); } catch (_apE) { _capture(_apE, 'endturn.armyPlaces'); }
       // 当前战事（修·簇5#3：主推演从不注入战争状态→AI 对自己正在打的仗全盲，可能对已停战方再宣战或违背盟约）
       if (Array.isArray(GM.activeWars) && GM.activeWars.length > 0) {
         stateLines.push('【当前战事】');

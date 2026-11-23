@@ -3693,6 +3693,7 @@
     sysP += '\n- regent_decisions: \u6444\u653f\u51b3\u65ad\uFF08action\u3001subject\u3001regentName\u3001hardCeiling\u3001reason\uFF09';
     sysP += '\n- reissue_topics: \u5efa\u8bae\u5c06\u7559\u4e2d\u518c\u8bae\u9898\u8d77\u590d\u518d\u8bae\uff08topic\u3001reason\uff09';
     sysP += '\n- army_changes: 修改部队兵力/士气/训练(写 training_delta·练兵真生效)/统帅（降至0→全军覆没；统帅或主将变更必须写 commander/newCommander，不能只写在叙事里）';
+    sysP += '\n  调往别处写 destination（按路程行军）；location 只用于就地改驻（本地块或其四邻）。两者都只写舆图上的地块名（见【诸军驻地】），舆图上认不出是哪块地的不落地、退回。';
     sysP += '\n- armory_procurement: 采买军备（玩家诏令市买/外购军械时·银→军备入武库·应急且贵·非自产）。格式 [{"category":"火器","quantity":300,"channel":"市舶/茶马互市/边市","reason":"红夷炮外购"}]。category=甲胄/兵刃/弓弩/火器/战马(或原料铁/硝石/皮革/木)·按市价扣国库银(火器/战马尤贵·买比造贵)。★渠道把关:火器外购须已开海或通贡市舶、市马须有茶马互市边镇——无渠道则 feasibility 标不合理勿采。国库不继则按可负担减采。';
     sysP += '\n  ★敌我任一方有折损/减员，必须落此处（soldiers_delta 用负数）或 battleResult，不能只写在叙事里。name 须是该军的精确番号或其主帅姓名（如"后金·两红旗(代善领)"或"代善"）；只写势力名（如"后金"含多支旗军）无法定位到具体军，折损会落空——敌军每回合"折几千却永远杀不完"正是此故。';
     sysP += '\n- item_changes: 让角色获得或失去物品';

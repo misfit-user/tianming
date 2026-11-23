@@ -88,5 +88,19 @@ console.log('[4] 没有地块的剧本不列');
   assert(!out.includes('【诸军驻地】'), '不列【诸军驻地】');
 }
 
+console.log('[5] 在途的军注明往哪（逐块行军，11-23 同志定乙）');
+{
+  const GM = ming(false);
+  GM.marchOrders = [{ id: 'm1', armyId: 'a2', armyName: '京营·神机营', status: 'marching', regionPath: ['r-bj', 'r-ny'], toRegionId: 'r-ny', toName: '宁远城', seg: 0, segKm: 0, segments: [{ toRegionId: 'r-ny', km: 300 }] }];
+  const ctx = { console, Map, Set, WeakMap, JSON, Math, GM, P, TM: {} };
+  ctx.window = ctx; ctx.globalThis = ctx;
+  vm.createContext(ctx);
+  for (const f of ['tm-map-locations.js', 'tm-map-route-days.js', 'tm-army-march.js', 'tm-endturn-ai-context.js']) vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f });
+  GM.armies.forEach((a) => ctx.TMMapLocations.sync(a, 'army', GM));
+  const out = ctx.TM.EndTurnAIContext.appendPromptPolicyContext('', { GM, P });
+  assert(/顺天府〔宁远城〕：京营·神机营 20000（行军中，往宁远城）/.test(out), '京营在顺天府，注明行军中往宁远城');
+  assert(/关宁军主力 80000（约在此，原写「宁远-锦州」）(?!（行军中)/.test(out), '不在途的不注');
+}
+
 if (failed) { console.log('FAIL smoke-army-places-prompt: ' + failed + ' 项'); process.exit(1); }
 console.log('PASS smoke-army-places-prompt');

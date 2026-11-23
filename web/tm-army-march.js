@@ -88,6 +88,25 @@
     return best || String(ids[0]);
   }
 
+  // 一块地的四邻（编号）：neighbors 与 routeEdges 都认，记编号的、记地名的都换成编号
+  function neighborsOf(game, id) {
+    var r = regionRow(game, id), map = mapOf(game);
+    if (!r) return [];
+    var refs = (Array.isArray(r.neighbors) ? r.neighbors : []).concat((Array.isArray(r.routeEdges) ? r.routeEdges : []).map(function (e) { return e && (e.to != null ? e.to : e.target); }));
+    return refs.map(function (ref) { var x = routes().resolveRegion(map, ref); return x.status === 'resolved' ? String(x.region.id) : ''; }).filter(Boolean);
+  }
+
+  // 驻地写的是不是本块或四邻（就地改驻，当回合落）；写到更远处的改走行军（11-23 同志定：只有本块或四邻算就地改驻）。
+  // 认不出的、此军不知在哪的交回写口原规矩处理
+  function nearby(army, to, game) {
+    game = game || global.GM;
+    if (!usable(game)) return true;
+    var from = hereOf(army, game);
+    if (!from) return true;
+    var toId = targetOf(army, to, game, from);
+    return !toId || toId === from || neighborsOf(game, from).indexOf(toId) >= 0;
+  }
+
   function fail(reason) { return { ok: false, reason: reason }; }
 
   // 定路线：从此军现在所在的地块到去处，经哪几块、多少公里、约几日几回合（只算不写）
@@ -242,8 +261,29 @@
     return moved;
   }
 
+  // 主推演提示词【行军状况】：每支在途军往哪、现在哪块、还要经哪几块、约几日到
+  var PROMPT_CAP = 40;
+  function promptText(game) {
+    game = game || global.GM;
+    if (!usable(game)) return '';
+    var orders = ((game && game.marchOrders) || []).filter(function (o) { return o && o.status === 'marching' && Array.isArray(o.regionPath); });
+    if (!orders.length) return '';
+    var days = turnDays();
+    var lines = ['【行军状况】逐块行军：日行一舍（约 17 公里），骑军加倍，带炮械的减半，冬季与五万以上大军更迟；每回合 ' + days + ' 日'];
+    orders.slice(0, PROMPT_CAP).forEach(function (o) {
+      var rest = o.regionPath.slice(o.seg + 1).map(function (id) { return nameOf(game, id); });
+      var left = Math.ceil(kmLeft(o) / Math.max(Number(o.kmPerDay) || KM_PER_DAY, 0.1));
+      lines.push('  ' + (o.armyName || '某军') + '：往' + o.toName + '，现在' + nameOf(game, o.regionPath[o.seg]) +
+        (rest.length > 1 ? '，余经' + rest.slice(0, -1).join('、') : '') +
+        '，约 ' + left + ' 日（' + Math.max(1, Math.ceil(left / days)) + ' 回合）到');
+    });
+    if (orders.length > PROMPT_CAP) lines.push('  （另有 ' + (orders.length - PROMPT_CAP) + ' 支在途，从略）');
+    return lines.join('\n');
+  }
+
   global.TM = global.TM || {};
-  global.TM.ArmyMarch = { usable: usable, plan: plan, start: start, advance: advance, pace: pace, activeOrder: activeOrder, KM_PER_DAY: KM_PER_DAY };
+  global.TM.ArmyMarch = { usable: usable, plan: plan, start: start, advance: advance, pace: pace, activeOrder: activeOrder,
+    nearby: nearby, promptText: promptText, KM_PER_DAY: KM_PER_DAY };
 
   // 排在 MarchSystem（33）之前：先把旧令换成逐块行军，余下没地块的旧令仍由它推进
   if (global.SettlementPipeline && typeof global.SettlementPipeline.register === 'function') {

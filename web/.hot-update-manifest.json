@@ -3991,8 +3991,8 @@
     },
     {
       "path": "tm-ai-change-army.js",
-      "sha256": "9d5937489ea154476cf7d0c01cb779a5bbb035c1a510d43f59f693ea92eab703",
-      "size": 50914
+      "sha256": "2f76c5c7327ff07ae87fdef2f498374cfab6b7321c71cbffbb90c08228d060f0",
+      "size": 51459
     },
     {
       "path": "tm-ai-change-narrative.js",
@@ -4091,8 +4091,8 @@
     },
     {
       "path": "tm-army-march.js",
-      "sha256": "e273585e897b474f104d0db13c8ae2ce7876681630d43fe137e90f40c3d200bb",
-      "size": 14406
+      "sha256": "8c2a77c06df7f34068d3d7e82def51e0b91363bee9e1370bfb71314881109e5b",
+      "size": 16896
     },
     {
       "path": "tm-army-units.js",
@@ -4616,8 +4616,8 @@
     },
     {
       "path": "tm-endturn-ai-context.js",
-      "sha256": "5adddb782255a09678d4cab936f9ecf3d5528f8c228533bc70be94a342ce2530",
-      "size": 27457
+      "sha256": "47ee58ca0fc92062224d128c4130c336fa36a81547d39ca9ac1a8e141c91f104",
+      "size": 27771
     },
     {
       "path": "tm-endturn-ai-helpers.js",
@@ -4711,8 +4711,8 @@
     },
     {
       "path": "tm-endturn-prompt.js",
-      "sha256": "53f9eee5d54862df52fcfbff3b3fc43dfde077706a275e1796addc9021c9b3e9",
-      "size": 369084
+      "sha256": "dab0a4299c3315c99f5c576a6edd538f1d40f9174ee8d282cb37f5bd0d604dd2",
+      "size": 369671
     },
     {
       "path": "tm-endturn-province.js",
@@ -6146,7 +6146,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "6e68c354f31a9e2e4d5ec9ae7101d805f572dded2066de9de83f1831e724e25d",
+      "sha256": "29d161d8f1a3318dbc54c6aa2add1ead6379eeeccb44d0427ef531ce82aa94ba",
       "size": 142943
     },
     {

@@ -203,5 +203,30 @@ console.log('[9] 旧三系统界面调兵：有地块的按路程立令，不再
   assert(army(ctx, 'a1').marchDaysLeft === 0 && army(ctx, 'a1').location === '甲城', '没有掷出的日数，人还在甲城');
 }
 
+console.log('[10] AI 写驻地：本块或四邻当回合改驻；写到更远处的改走行军；不通路的退回');
+{
+  const ctx = context({ files: ['tm-ai-change-pathutils.js', 'tm-ai-change-army.js'] });
+  const W = ctx.TM.AIChange.Army;
+  const nearBy = W.applyAIArmyChange({ name: '步营', location: '乙城', reason: '移营' }, { source: 'army_changes' });
+  assert(nearBy.ok && army(ctx, 'a1').location === '乙城' && army(ctx, 'a1').garrisonRegionId === 'r-b' && !(ctx.GM.marchOrders || []).length, '四邻乙城：当回合改驻，不立令');
+  const far = W.applyAIArmyChange({ name: '铁骑', location: '丁城', reason: '移镇' }, { source: 'army_changes' });
+  const o = (ctx.GM.marchOrders || []).find((x) => x.armyId === 'a2');
+  assert(far.ok && o && o.toRegionId === 'r-d' && army(ctx, 'a2').location === '甲城', '远处丁城：不瞬移，改立行军令，人还在甲城');
+  const failedList = [];
+  W.applyAIArmyChangeList([{ name: '炮营', location: '戊城', morale_delta: 5, reason: '移镇' }], 'army_changes', { failed: failedList });
+  assert(failedList.length === 1 && /移驻「戊城」未成：无路可达戊城；此军仍驻甲城/.test(failedList[0].reason), '戊城不通路：这一项退回 ' + (failedList[0] && failedList[0].reason));
+}
+
+console.log('[11] 提示词【行军状况】：往哪、现在哪块、余经哪几块、约几日到');
+{
+  const ctx = context();
+  assert(M(ctx).promptText(ctx.GM) === '', '没有在途的不写');
+  M(ctx).start(army(ctx, 'a1'), '丁城');
+  M(ctx).advance(ctx.GM, 30);
+  const text = M(ctx).promptText(ctx.GM);
+  assert(/^【行军状况】逐块行军：日行一舍/.test(text) && /每回合 30 日/.test(text), '抬头写明日行一舍、每回合日数');
+  assert(text.includes('步营：往丁城，现在乙城，余经丙城，约 18 日（1 回合）到'), '步营现在乙城，余 300 公里约 18 日：' + text.split('\n')[1]);
+}
+
 if (failed) { console.log('FAIL smoke-army-region-march: ' + failed + ' 项'); process.exit(1); }
 console.log('PASS smoke-army-region-march');

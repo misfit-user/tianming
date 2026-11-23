@@ -95,11 +95,14 @@
       else foreign.push(x);
     });
     if (!own.size) return [];
-    // 军名 兵数；落在代表点上的注明原写的驻地文字
+    // 军名 兵数；落在代表点上的注明原写的驻地文字；在途的注明往哪（逐块行军，余程见【行军状况】）
+    var march = global.TM && global.TM.ArmyMarch;
     var label = function(x) {
       var text = String(x.a.garrison || x.a.location || '').trim();
       var note = x.b.precision === 'representative' && text && text !== nameOf(x.id) ? '（约在此，原写「' + text.slice(0, 16) + '」）' : '';
-      return String(x.a.name || '某军') + ' ' + men(x.a) + note;
+      var mo = march && typeof march.activeOrder === 'function' ? march.activeOrder(x.a, GM) : null;
+      var going = mo && mo.toName ? '（行军中，往' + mo.toName + '）' : '';
+      return String(x.a.name || '某军') + ' ' + men(x.a) + note + going;
     };
     var total = function(list) { return list.reduce(function(s, x) { return s + men(x.a); }, 0); };
     var ownIds = Array.from(own.keys()).sort(function(p, q) { return total(own.get(q)) - total(own.get(p)); });

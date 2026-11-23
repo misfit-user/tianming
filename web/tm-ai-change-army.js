@@ -594,6 +594,11 @@
         var newLoc = String(change.location || change.garrison || '').trim();
         if (!_onMap(newLoc)) {
           placeRejected = { part: { name: army.name || name, location: newLoc }, reason: '驻地「' + newLoc + '」在舆图上认不出是哪块地，未移；此军仍驻' + _stay() };
+        } else if (_march && _march.usable(G) && !_march.nearby(army, newLoc, G)) {
+          // 写到远处的驻地不瞬移，改走行军（11-23 同志定：只有本块或四邻算就地改驻）
+          var _far = _march.start(army, newLoc, { game: G, source: opts.source || 'ai-army-change' });
+          if (_far.ok) changed = true;
+          else if (!_far.here) placeRejected = { part: { name: army.name || name, location: newLoc }, reason: '移驻「' + newLoc + '」未成：' + _far.reason + '；此军仍驻' + _stay() };
         } else {
           army.location = change.location || change.garrison;
           army.garrison = change.garrison || change.location;

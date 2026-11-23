@@ -13,7 +13,8 @@ const TABS = [['armies', '诸军'], ['war', '战事']];
 
 // role()：此身份能做什么（screens/desk.js）——核饷、补饷、整训、调防、易将、付廷议只元首一档有；统兵之人对本部只列身份相符的，灰着写缘由
 // locate(驻地)：册页靠右、舆图露着时，点一支军镜头即飞到其驻地（照 CK3 军队列表点一支即看其所在）；不给或返回假则不飞
-export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, role = () => ({ sovereign: true, ro: '' }), locate = null }) {
+// pickOnMap(军)：移防时先问能不能在舆图上点选去处（逐块行军的剧本、舆图露着时由书案接手，返回真）；不能就照旧弹窗择地名
+export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, role = () => ({ sovereign: true, ro: '' }), locate = null, pickOnMap = null }) {
   const A = game.army;
   let tab = 'armies';
   let sel = '';
@@ -107,7 +108,7 @@ export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, 
         d.arrears ? h('button.q-yapai', { type: 'button', title: `欠饷${num(d.arrears)}月，自国库实付`, onclick: go(() => A.settle(d.key)) }, '补饷') : null,
         h('button.q-yapai', { type: 'button', title: '拟入议事清册', onclick: go(() => A.train(d.key)) }, '整训'),
         run(() => A.marchable(d.key))
-          ? h('button.q-yapai', { type: 'button', title: '下军令移防，沿途行军', onclick: () => marchTo(d) }, '移防')
+          ? h('button.q-yapai', { type: 'button', title: '下军令移防，沿途行军', onclick: () => { if (!(pickOnMap && pickOnMap(d))) marchTo(d); } }, '移防')
           : h('button.q-yapai', { type: 'button', title: '拟入议事清册', onclick: go(() => A.redeploy(d.key)) }, '调防'),
         d.own ? h('button.q-yapai', { type: 'button', onclick: () => pickCommander(d) }, '易将') : null,
         onCourt ? h('button.q-yapai', { type: 'button', onclick: () => { const t = run(() => A.courtTopic(d.key)); if (t) { hide(); onCourt(t); } } }, '付廷议') : null,
@@ -189,5 +190,7 @@ export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, 
     if (e.key === 'Escape') { e.stopPropagation(); hide(); }
   }, true);
   game.on('game:changed', () => { if (opened) render(); });
-  return { show, hide, get opened() { return opened; } };
+  // 图上点选时改按地名择（书案提示条上的「按地名」）
+  function typeIn(key) { const d = run(() => A.detail(key)); if (d) marchTo(d); }
+  return { show, hide, typeIn, get opened() { return opened; } };
 }

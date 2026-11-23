@@ -372,6 +372,18 @@ export function destinations() {
   Object.keys(roots).forEach((k) => walk(roots[k] && (roots[k].divisions || roots[k].children)));
   return names.slice(0, 400);
 }
+// 图上点选（同志 11-23 定乙·③）：逐块行军的剧本里，鼠标移到哪块就预算到那块的路线与日数（只算不写，TM.ArmyMarch.plan）
+export function mapPickable(key) {
+  const M = w.TM && w.TM.ArmyMarch;
+  return !!(M && typeof M.usable === 'function' && M.usable(G()) && marchable(key));
+}
+export function planMarch(key, regionId) {
+  const M = w.TM && w.TM.ArmyMarch;
+  if (!M || !M.usable(G())) return null;
+  const p = M.plan(find(key), String(regionId), G());
+  if (!p.ok) return { ok: false, here: !!p.here, reason: p.reason || '未能成行' };
+  return { ok: true, path: p.route.path.map(String), toName: p.toName, km: Math.round(p.route.km), days: Math.ceil(p.days), turns: p.turns };
+}
 export function march(key, to) {
   const a = find(key);
   const dest = String(to || '').trim();

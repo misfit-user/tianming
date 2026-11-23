@@ -64,6 +64,16 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
   const marks = h('div.mk-pins');
   layer.append(svg, marks);
   let pins = [], routes = [];
+  // 图上点选的预览线（书案 startPick，同志 11-23 定乙·③）：从此军所在沿路到鼠标所指那块；ids 为空收起
+  const previewPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  previewPath.setAttribute('class', 'mk-route preview');
+  previewPath.setAttribute('marker-end', 'url(#mk-arrow)');
+  let previewPts = null;
+  function preview(ids) {
+    const pts = (ids || []).map((id) => regionOf([id], false)).filter(Boolean).map((r) => r.center);
+    previewPts = pts.length >= 2 ? pts : null;
+    if (previewPts) svg.append(previewPath); else previewPath.remove();
+  }
 
   function refresh() {
     let rows = [], foes = [], rebels = [], battles = [];
@@ -186,6 +196,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
     replaceChildren(marks, els);
     for (const c of [...svg.querySelectorAll('.mk-route')]) c.remove();
     for (const rt of routes) svg.append(rt.path);
+    if (previewPts) svg.append(previewPath);
   }
 
   // 每帧摆位：旗杆脚落在治所上；镜头后面、出了屏的藏起来。远看（全图）旗小一号；天下一档（.far）小旗收起兵数牌。
@@ -229,19 +240,21 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       }
     }
     for (const k of kept) paintStack(k);
-    for (const rt of routes) {
-      // 镜头背后的点投出来会翻到画面另一头（拉近看辽东时，往贵阳的路线斜穿整幅）：只画镜头前连着的几截
-      const runs = [];
-      let run = [];
-      for (const c of rt.pts) {
-        const [x, y, behind] = map.worldToScreen(c[0], c[1]);
-        if (behind) { if (run.length) runs.push(run); run = []; } else run.push([x, y - 6]);
-      }
-      if (run.length) runs.push(run);
-      rt.path.setAttribute('d', runs.filter((p) => p.length >= 2).map((p) => routeD(p, rt.arc)).join(' '));
-    }
+    for (const rt of routes) drawRoute(rt.path, rt.pts, rt.arc);
+    if (previewPts) drawRoute(previewPath, previewPts, false);
   });
 
+  // 镜头背后的点投出来会翻到画面另一头（拉近看辽东时，往贵阳的路线斜穿整幅）：只画镜头前连着的几截
+  function drawRoute(el, pts, arc) {
+    const runs = [];
+    let run = [];
+    for (const c of pts) {
+      const [x, y, behind] = map.worldToScreen(c[0], c[1]);
+      if (behind) { if (run.length) runs.push(run); run = []; } else run.push([x, y - 6]);
+    }
+    if (run.length) runs.push(run);
+    el.setAttribute('d', runs.filter((p) => p.length >= 2).map((p) => routeD(p, arc)).join(' '));
+  }
   // 一截行军线的 path：两点的弧一点（旧令中点往左手偏开两成；受阻的不弧，直指挡路那块）；
   //   多点的沿路走——过各块治所两两连线的中点连二次曲线，线穿过各块而不在治所上折角
   function routeD(p, arc) {
@@ -276,5 +289,5 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
     return { title: `${head} · 合${p.rough ? '约' + roughCount(total) : shortCount(total)}`, text: all.map((q) => q.line).join('\n') + '\n镜头拉近即各归其处' };
   }
 
-  return { refresh };
+  return { refresh, preview };
 }

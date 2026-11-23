@@ -213,9 +213,12 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const card = h('div.map-card.hide');
   // 悬停题签：指针停在府州上片刻即出，跟着指针走
   const tip = h('div.map-tip.hide');
+  // 图上点选去处的提示条与所选之军（逐块行军，startPick）
+  const pickBar = h('div.map-pickbar.hide');
+  let picking = null;   // { key, name, hoverId, plan }
   const backLabel = h('b.q-gold', '');
   const back = h('button.q-qi.q-pai.back', { type: 'button', onclick: () => dive.rise() }, backLabel, h('small', '起身离图'));
-  const mapEl = h('section.scr.scr-map', mappanel, back, card, tip);
+  const mapEl = h('section.scr.scr-map', mappanel, back, card, tip, pickBar);
 
   root.append(el, mapEl);
   const turnVeil = createTurnVeil({ root, game });   // 推演幕：过回合时铺满全屏（screens/turnveil.js）
@@ -342,7 +345,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const ok = atDesk();
     const overMap = ok && !!study.pickMap(ev.clientX, ev.clientY);
     const prop = ok && !overMap ? study.pickProp(ev.clientX, ev.clientY, Object.keys(prof.tags)) : null;
-    stage.canvas.style.cursor = overMap ? 'zoom-in' : prop ? 'pointer' : '';
+    stage.canvas.style.cursor = picking ? 'crosshair' : overMap ? 'zoom-in' : prop ? 'pointer' : '';
     for (const t of tagEls) t.classList.toggle('hot', t.dataset.k === prop);
   });
   let down = null;
@@ -352,6 +355,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   stage.canvas.addEventListener('pointermove', (ev) => { tipAt = [ev.clientX, ev.clientY]; placeTip(); });
   stage.canvas.addEventListener('pointerdown', hideTip);
   map.onHover((r) => {
+    pickHover(r);
     tipRegion = r;
     clearTimeout(tipTimer);
     if (!r) { tip.classList.add('hide'); return; }
@@ -378,6 +382,14 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   function paintTip() {
     const r = tipRegion;
     if (!r || dive.mode !== 'map' || dive.busy || !card.classList.contains('hide') || document.querySelector('.q-kewei')) return;
+    if (picking) {
+      const p = picking.plan;
+      const text = !p ? '' : p.ok ? `经${num(p.path.length - 1)}程 · ${num(p.km)}公里 · 约${num(p.days)}日（${num(p.turns)}回合）` : p.here ? '此军已驻于此' : p.reason;
+      replaceChildren(tip, h('b', `往${r.name}`), h('small', text));
+      tip.classList.remove('hide');
+      placeTip();
+      return;
+    }
     const fac = r.faction && factions[r.faction];
     const g = r.group;
     if (g && g.tier !== 'pref') {
@@ -397,6 +409,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   stage.canvas.addEventListener('pointerup', (ev) => {
     if (dive.mode !== 'map' || dive.busy || !down || Math.hypot(ev.clientX - down[0], ev.clientY - down[1]) > 5) return;
     const r = map.pickScreen(ev.clientX, ev.clientY);
+    if (picking) { pickClick(r); return; }
     if (!r) { card.classList.add('hide'); map.select(null); return; }
     map.select(r.index, r.tier);
     // 志窗开着：点府州就换成那一处的方志，点省道换通志（照 CK3 地块页开着时点别处）；天下档仍出势力小签
@@ -411,6 +424,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   stage.canvas.addEventListener('contextmenu', (ev) => {
     if (dive.mode !== 'map' || dive.busy) return;
     ev.preventDefault();
+    if (picking) { endPick(true); return; }
     const r = map.pickScreen(ev.clientX, ev.clientY);
     if (!r) return;
     map.select(r.index, 'pref');
@@ -1385,7 +1399,63 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const gongweiPage = createGongwei({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name, 'private'); } });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, role, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show(),
-    scope: () => (per.tier === 'sovereign' ? null : per.name), locate: (text) => booksDocked() && locatePlace(text) });
+    scope: () => (per.tier === 'sovereign' ? null : per.name), locate: (text) => booksDocked() && locatePlace(text), pickOnMap: (d) => startPick(d) });
+
+  // ---------- 图上点选去处（逐块行军，同志 11-23 定乙·③）----------
+  // 军务册点「移防」：册子收起，舆图上鼠标移到哪块就预画路线、签上写经几程约几日几回合；点下即发令（要回执的照旧等回执），
+  //   右键或 Esc 作罢（册子回来）。舆图没露着（坐在书案前）或剧本不逐块行军的，照旧弹窗择地名
+  const toastText =(text) => { if (text) bus.emit('kernel:toast', { text }); };
+  function startPick(d) {
+    if (!booksDocked() || dive.mode !== 'map' || dive.busy) return false;
+    let ok = false;
+    try { ok = game.army.mapPickable(d.key); } catch (_e) { ok = false; }   // 此军已不在册之类：照旧弹窗，由弹窗报缘由
+    if (!ok) return false;
+    picking = { key: d.key, name: d.name, hoverId: '', plan: null };
+    armyPage.hide();
+    card.classList.add('hide');
+    map.select(null);
+    replaceChildren(pickBar, h('b', `为「${d.name}」择去处`), h('span', '舆图上点一块地即发军令；右键或 Esc 作罢'),
+      h('button.q-yapai', { type: 'button', onclick: () => { const k = picking && picking.key; endPick(false); if (k) armyPage.typeIn(k); } }, '按地名'),
+      h('button.q-yapai', { type: 'button', onclick: () => endPick(true) }, '作罢'));
+    pickBar.classList.remove('hide');
+    stage.canvas.style.cursor = 'crosshair';
+    return true;
+  }
+  function endPick(reopen) {
+    if (!picking) return;
+    const k = picking.key;
+    picking = null;
+    pickBar.classList.add('hide');
+    marks.preview(null);
+    stage.canvas.style.cursor = '';
+    tip.classList.add('hide');
+    if (reopen) armyPage.show(k);
+  }
+  function pickHover(r) {
+    if (!picking) return;
+    if (dive.mode !== 'map') { endPick(false); return; }
+    const id = r ? String(r.id) : '';
+    if (id === picking.hoverId) return;
+    picking.hoverId = id;
+    let p = null;
+    try { p = id ? game.army.planMarch(picking.key, id) : null; } catch (e) { p = { ok: false, reason: e.message }; }
+    picking.plan = p;
+    marks.preview(p && p.ok ? p.path : null);
+  }
+  function pickClick(r) {
+    const p = picking.plan;
+    if (!r || !p || String(r.id) !== picking.hoverId) return;
+    if (!p.ok) { toastText(p.here ? '此军已驻于此' : p.reason); return; }
+    let msg = '';
+    try { msg = game.army.march(picking.key, r.name); } catch (e) { toastText(e.message); return; }
+    endPick(true);
+    toastText(msg);
+  }
+  window.addEventListener('keydown', (e) => {
+    if (!picking || e.key !== 'Escape') return;
+    e.stopPropagation(); e.preventDefault();
+    endPick(true);
+  }, true);
   const officesPage = createOffices({ root, game, profile: () => prof, role, onPerson: (name) => { if (!booksDocked()) officesPage.hide(); renwu.show(name); } });
   // 舆图上诸册靠右展开（atlas.css）：册里点人名，左边开人物窗、册不收，两扇并看；开寻人则收起诸册（同在右边一扇）
   function booksDocked() { return homeMap() && el.classList.contains('inmap'); }

@@ -178,6 +178,13 @@ a.card-folk { cursor: pointer; color: #8a5a12; text-decoration: underline dotted
 a.card-folk:hover { color: #a3301f; }
 .map-tip > b { font: 400 var(--fs-4) var(--f-title); letter-spacing: .15em; color: #241a10; }
 .map-tip > small, .map-card header > small { display: flex; align-items: center; gap: .375rem; font-size: var(--fs-2); letter-spacing: .06em; color: var(--ink-soft, #5a4632); }
+/* 图上点选去处的提示条（逐块行军·书案 startPick）：屏上居中靠上一条，点选时才露 */
+.map-pickbar { position: fixed; left: 50%; top: 4.5rem; z-index: 31; transform: translateX(-50%); display: flex; align-items: center; gap: .75rem;
+  padding: .375rem .5rem .375rem .875rem; font-family: var(--f-kai); color: var(--ink); background: var(--paper-grain), var(--paper);
+  border: 1px solid var(--paper-edge); border-left: .1875rem solid var(--verm); }
+.map-pickbar.hide { display: none; }
+.map-pickbar > b { font: 400 var(--fs-4) var(--f-title); letter-spacing: .1em; }
+.map-pickbar > span { font-size: var(--fs-2); letter-spacing: .06em; color: var(--ink-soft); }
 .mm-chip { flex: none; width: .625rem; height: .625rem; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(40, 24, 14, .45); }
 .mm-lv { display: flex; align-items: center; gap: .375rem; font-size: var(--fs-2); color: #3b2c1c; }
 .mm-lv > i { width: .625rem; height: .625rem; box-shadow: inset 0 0 0 1px rgba(40, 24, 14, .4); }

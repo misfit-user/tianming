@@ -117,5 +117,38 @@ console.log('— §a · orderMarch 引擎行为 —');
   ok(c8.GM.marchOrders.length === 0, '到达单清理');
 })();
 
+/* ── §c 有地块的剧本逐块行军（11-23 同志定乙）：移防、回执、势力事件经 createMarchOrder 立逐块令 ── */
+console.log('— §c · 有地块的剧本逐块行军 —');
+(function () {
+  var edge = function (to, km) { return { to: to, km: km }; };
+  var rg = function (id, name, lon, edges) {
+    return { id: id, name: name, center: [lon * 10, 0], geographicCenter: [100 + lon, 30], routeEdges: edges, neighbors: edges.map(function (x) { return x.to; }) };
+  };
+  function mkRegion() {
+    var c = mk({ mapData: { regions: [
+      rg('r-sh', '顺天府', 0, [edge('r-bd', 150)]),
+      rg('r-bd', '保定府', 1, [edge('r-sh', 150), edge('r-zd', 200)]),
+      rg('r-zd', '真定府', 2, [edge('r-bd', 200)]),
+      rg('r-gz', '广州府', 20, [])
+    ] } });
+    ['tm-map-route-days.js', 'tm-map-locations.js', 'tm-army-march.js'].forEach(function (f) { vm.runInContext(read(f), c, { filename: f }); });
+    c.GM.armies.forEach(function (a) { c.TMMapLocations.sync(a, 'army', c.GM); });
+    return c;
+  }
+  var c = mkRegion();
+  var r = c.MarchSystem.orderMarch('京营', '真定府');
+  ok(r.ok === true && r.order.regionPath && r.order.regionPath.join(',') === 'r-sh,r-bd,r-zd', '移防立逐块令：经保定府到真定府');
+  ok(c.GM.marchOrders.length === 1 && c.GM.armies[0].destination === '真定府' && r.order.totalTurns === 1, '令记在 GM.marchOrders，350 公里约 21 日一回合');
+  c.MarchSystem.advanceAll();
+  ok(c.GM.armies[0].garrisonRegionId === 'r-sh' && c.GM.marchOrders.length === 1 && c.GM.marchOrders[0].progress === 0, 'MarchSystem 不再推进逐块令（不瞬移）');
+  c.TM.ArmyMarch.advance(c.GM, 30);
+  ok(c.GM.armies[0].location === '真定府' && c.GM.armies[0].state === 'garrison' && c.GM.marchOrders.length === 0, '逐块行军一回合抵达真定府');
+  var c2 = mkRegion();
+  ok(/^无路可达广州府/.test(c2.MarchSystem.orderMarch('京营', '广州府').reason || ''), '不通路的拒单，不造瞬移单');
+  ok(/认不出/.test(c2.MarchSystem.orderMarch('京营', '海外仙山').reason || ''), '舆图上认不出的拒单');
+  var o = c2.MarchSystem.createMarchOrder(c2.GM.armies[0], '顺天府', '保定府', null);
+  ok(!!(o && o.regionPath && o.toRegionId === 'r-bd' && o.to === '保定府'), '回执与势力事件走的 createMarchOrder 也立逐块令，令上照记原写的去处');
+})();
+
 console.log('\nsmoke-army-march-order ' + (F0 === 0 ? 'PASS' : 'FAIL') + ' ' + P0 + '/' + (P0 + F0));
 process.exit(F0 === 0 ? 0 : 1);

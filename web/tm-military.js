@@ -1490,7 +1490,8 @@ var MarchSystem = (function() {
     if ((army.commandChain && army.commandChain.mode === 'receipt' && !ticket) || (ticket && !ticket.allowed)) return null;
     var cfg = _getConfig();
     if (!cfg.enabled) return null;
-
+    var regionMarch = typeof TM !== 'undefined' && TM.ArmyMarch && TM.ArmyMarch.usable(GM) ? TM.ArmyMarch.start(army, to, { source: 'march-order' }) : null; // 有地块的剧本逐块行军（11-23 同志定乙·tm-army-march.js），令仍记在 GM.marchOrders
+    if (regionMarch) { if (regionMarch.ok && ticket) TM.CommandAuthority.commit(army, ticket); return regionMarch.ok ? regionMarch.order : null; }
     var mapEnabled = P && P.map && P.map.enabled && GM.mapData && GM.mapData.adjacencyGraph;
     var marchDays = 0;
     var routeDesc = '';
@@ -1577,7 +1578,7 @@ var MarchSystem = (function() {
   function advanceAll() {
     if (!GM.marchOrders || !GM.marchOrders.length) return;
     GM.marchOrders.forEach(function(order) {
-      if (order.status !== 'marching') return;
+      if (order.status !== 'marching' || order.regionPath) return; // 逐块行军的令由 tm-army-march.js 推进
       order.progress++;
       if (order.progress >= order.totalTurns) {
         order.status = 'arrived';
@@ -1679,9 +1680,9 @@ var MarchSystem = (function() {
       return o && o.status === 'marching' && (o.armyId === army.id || o.armyName === army.name);
     });
     if (inTransit) return { ok: false, reason: '此军已在途中·未可再令' };
-    var mapEnabled = P && P.map && P.map.enabled && GM.mapData && GM.mapData.adjacencyGraph;
+    var regionPlan = typeof TM !== 'undefined' && TM.ArmyMarch && TM.ArmyMarch.usable(GM) ? TM.ArmyMarch.plan(army, to, GM) : null; if (regionPlan && !regionPlan.ok) return { ok: false, reason: regionPlan.reason };
+    var mapEnabled = !regionPlan && P && P.map && P.map.enabled && GM.mapData && GM.mapData.adjacencyGraph, pr = null;
     if (mapEnabled && typeof findPath === 'function') {
-      var pr = null;
       try { pr = findPath(from, to, { avoidEnemy: true, faction: army.faction }); } catch (_prE) { pr = null; }
       if (!pr || !pr.path || !pr.path.length) return { ok: false, reason: '无路可达' + to + '（道路不通或为敌境所阻）' };
     }

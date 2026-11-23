@@ -532,7 +532,8 @@
     GM.armies.forEach(function(a) {
       extendArmyFields(a);
       // 1. 行军/围城消耗
-      if (a.state === 'marching' && a.marchDaysLeft > 0) {
+      // 有地块的剧本逐块行军（tm-army-march.js），这里不再按天数倒计时送到
+      if (a.state === 'marching' && a.marchDaysLeft > 0 && !(global.TM && global.TM.ArmyMarch && global.TM.ArmyMarch.usable(GM))) {
         a.marchDaysLeft = Math.max(0, a.marchDaysLeft - daysPerTurn);
         a.supply = Math.max(0, a.supply - Math.round(daysPerTurn * 0.4));
         if (a.marchDaysLeft === 0 && a.destination) {

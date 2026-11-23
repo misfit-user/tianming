@@ -296,6 +296,17 @@
     }
     return out;
   }
+  // 按编号把军挪到一块地上（逐块行军走满一程时用）：编号为真，驻地文字写成这块的名字。
+  // 先把绑定换成这块再认文字——地块重名时 settleArmy 先认原在的那块，不会认岔
+  function moveArmy(army, game, regionId) {
+    game = game || global.GM; var map = game && (game.mapData || game.map);
+    if (!army || !enabled(map)) return null;
+    var id = String(regionId == null ? '' : regionId), r = index(map).ids.get(id);
+    if (!r) return null;
+    army.mapLocationBinding = Object.assign({}, army.mapLocationBinding || {}, { regionId: id });
+    army.garrisonRegionId = army.regionId = army.mapRegionId = id;
+    return sync(army, 'army', game, String(r.name || id));
+  }
   function syncDestination(entity, kind, game) {
     game = game || global.GM; var map = game && (game.mapData || game.map); if (!enabled(map) || !entity) return null;
     var text = kind === 'army' ? entity.destination : entity._travelTo;
@@ -325,5 +336,5 @@
     run(game.armies || (game.military && game.military.initialTroops), 'army', 'armies');
     return summary;
   }
-  global.TMMapLocations = { schema: SCHEMA, enabled: enabled, read: read, sync: sync, syncWorld: syncWorld, syncDestination: syncDestination, resolveText: resolveText, placeRegionIds: placeRegionIds, syncCharacters: syncCharacters, readable: readable };
+  global.TMMapLocations = { schema: SCHEMA, enabled: enabled, read: read, sync: sync, syncWorld: syncWorld, syncDestination: syncDestination, resolveText: resolveText, placeRegionIds: placeRegionIds, syncCharacters: syncCharacters, readable: readable, moveArmy: moveArmy };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -63,7 +63,8 @@ const mapDataModules=['tm-map-circuits.js','tm-division-reassign.js','tm-map-rou
 mapDataModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 const timeModules=['tm-sim-time.js'];
 timeModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)<scriptNames.indexOf('tm-ai-infra.js'),'simulation clock precedes date consumers');});
-const travelModules=['tm-npc-travel.js'];
+// 人物赶路与逐块行军（11-23 同志定乙）：都按 tm-map-route-days.js 的路程走，装在它之后；回合结算期才调用
+const travelModules=['tm-npc-travel.js','tm-army-march.js'];
 travelModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-map-route-days.js'),'travel domain follows its route provider');});
 const tenureModules=['tm-office-tenure.js'];
 tenureModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-npc-decision-ai-driven.js'),'tenure adapter loads after the NPC registry');});

@@ -307,7 +307,12 @@
       _pushEdict('谕：调 ' + aname + ' 赴 ' + dest + '，令军中覆报点集与开拔日期。', '调兵');
       _toast('军令已发，候军中回报'); return;
     }
-    if (a) {
+    var march = global.TM && TM.ArmyMarch;
+    if (a && march && march.usable(global.GM)) {
+      // 有地块的剧本逐块行军（11-23 同志定乙）：按路程走，不再掷 15~35 日
+      var r = march.start(a, dest, { source: 'three-systems-ui' });
+      if (!r.ok) { _toast(r.reason); return; }
+    } else if (a) {
       a.destination = dest;
       a.state = 'marching';
       var dist = 15 + Math.round(Math.random() * 20);

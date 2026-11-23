@@ -573,9 +573,15 @@
       var _locs = global.TMMapLocations;
       var _onMap = function (text) { return !_locs || typeof _locs.readable !== 'function' || _locs.readable(text, army, 'army', G); };
       var _stay = function () { return String(army.garrisonRegionName || army.garrison || army.location || '原驻地'); };
+      var _march = global.TM && global.TM.ArmyMarch;
       if (change.destination && typeof change.destination === 'string') {
         if (!_onMap(change.destination)) {
           placeRejected = { part: { name: army.name || name, destination: change.destination }, reason: '去处「' + change.destination + '」在舆图上认不出是哪块地，未调；此军仍在' + _stay() };
+        } else if (_march && _march.usable(G)) {
+          // 逐块行军（11-23 同志定乙）：立行军令，每回合沿路走；已在那块的不动，无路可达的这一项退回
+          var _go = _march.start(army, change.destination, { game: G, source: opts.source || 'ai-army-change' });
+          if (_go.ok) changed = true;
+          else if (!_go.here) placeRejected = { part: { name: army.name || name, destination: change.destination }, reason: '调往「' + change.destination + '」未成：' + _go.reason + '；此军仍在' + _stay() };
         } else {
           army.destination = change.destination;
           army._remainingDistance = 0;

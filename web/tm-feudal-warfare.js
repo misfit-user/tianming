@@ -906,6 +906,8 @@ SettlementPipeline.register('scheme', '阴谋推进', function() { SchemeSystem.
 // 与MarchSystem并行——MarchSystem处理marchOrders，本步骤处理armies的destination
 // ============================================================
 SettlementPipeline.register('armyMarch', '军队行军', function() {
+  // 有地块的剧本逐块行军（11-23 同志定乙）：去处由 tm-army-march.js 立令沿路走，这里不再按固定 600 里一步送到
+  if (typeof TM !== 'undefined' && TM.ArmyMarch && TM.ArmyMarch.usable(GM)) return;
   if (!GM.armies) GM.armies = [];
   var dpv = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
   var marchReports = [];

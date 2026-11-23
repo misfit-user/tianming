@@ -142,9 +142,14 @@ function placeIds(text) {
 }
 const ACTIVITY = { garrison: '驻防', stationed: '驻防', idle: '待命', marching: '行军', march: '行军', moving: '行军', siege: '围城', sieging: '围城', battle: '交战', fighting: '交战', training: '操练', patrol: '巡防', routed: '溃散', disbanded: '裁撤' };
 const activityText = (v) => { const raw = String(v || '').trim(); return raw ? ACTIVITY[raw.toLowerCase()] || raw : '驻防'; };
+// 在途的令：逐块行军（11-23 同志定乙）的令带地块路线——path 是从现在这块起余下要经的各块（编号），blocked 是挡路的敌军；旧令只有去处的地名
 function marchOf(a) {
   const mo = (G().marchOrders || []).find((o) => o && o.status === 'marching' && (o.armyId === a.id || o.armyName === a.name));
-  return mo ? { to: mo.to || '', toIds: placeIds(mo.to), progress: mo.progress || 0, total: mo.totalTurns || 0 } : null;
+  if (!mo) return null;
+  const path = Array.isArray(mo.regionPath) ? mo.regionPath.slice(Math.max(0, Number(mo.seg) || 0)).map(String) : [];
+  const bk = mo.blocked;
+  return { to: mo.toName || mo.to || '', toIds: mo.toRegionId ? [String(mo.toRegionId)] : placeIds(mo.to), progress: mo.progress || 0, total: mo.totalTurns || 0,
+    path, blocked: bk ? { army: String(bk.armyName || ''), at: String(bk.regionName || ''), regionId: String(bk.regionId || '') } : null };
 }
 const hotOf = (a) => morale(a) < 45 || supply(a) < 35 || pct(a, ['mutinyRisk', 'rebellionRisk'], 0) >= 55;
 function commanderState(name) {

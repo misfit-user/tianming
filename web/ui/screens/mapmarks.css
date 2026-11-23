@@ -8,6 +8,8 @@
 .mk-route { fill: none; stroke: #a3281b; stroke-width: 2.4; stroke-dasharray: 8 6; stroke-linecap: round; opacity: .92;
   filter: drop-shadow(0 0 1.5px rgba(246, 238, 220, .95)); animation: mk-march 1.1s linear infinite; }
 @keyframes mk-march { to { stroke-dashoffset: -14; } }
+/* 受阻（逐块行军遇敌停步）：线只到挡路那块、线头一道横杠，不流动、虚线更碎更淡 */
+.mk-route.blocked { animation: none; stroke-dasharray: 3 6; opacity: .7; }
 .mk-pins { position: absolute; inset: 0; }
 
 .mk { position: absolute; left: 0; top: 0; width: 0; height: 0; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; z-index: var(--mk-z, 1); }

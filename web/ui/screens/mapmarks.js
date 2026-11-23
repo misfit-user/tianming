@@ -59,7 +59,8 @@ function inkOf(map, key) {
 export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, knows, sightOfFoes, onArmy, onFoe, onRebels }) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'mk-routes');
-  svg.innerHTML = '<defs><marker id="mk-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 z" fill="#a3281b"/></marker></defs>';
+  svg.innerHTML = '<defs><marker id="mk-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 z" fill="#a3281b"/></marker>' +
+    '<marker id="mk-stop" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M5,0 L5,10" stroke="#a3281b" stroke-width="3.2" stroke-linecap="round"/></marker></defs>';
   const marks = h('div.mk-pins');
   layer.append(svg, marks);
   let pins = [], routes = [];
@@ -98,7 +99,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       const el = h('button.mk.mk-army.' + tierOf(total) + (hot ? '.hot' : '') + (marching ? '.march' : '') + (rough ? '.rough' : '') + (lead.naval ? '.navy' : '') + (!rough && lead.vacant ? '.vacant' : ''), { type: 'button', 'aria-label': `${r.name}驻军`,
         onclick: rough ? null : () => onArmy(pin.absorbed.length ? null : lead.key) },
         h('i.mk-pole'), h('i.mk-flag2'), h('b.mk-flag', rough ? '兵' : markOf(lead)), n, c);
-      const lines = list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : '　缺帅'}${about(a, r)}${a.hot ? '　告急' : ''}${a.march ? `　行军往${a.march.to}` : ''}`);
+      const lines = list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : '　缺帅'}${about(a, r)}${a.hot ? '　告急' : ''}${a.march ? `　行军往${a.march.to}${a.march.blocked ? `，为${a.march.blocked.army}所阻（敌驻${a.march.blocked.at}）` : ''}` : ''}`);
       pin.line = `${r.name}　${rough ? '驻军' : list.length > 1 ? `${lead.name}等${num(list.length)}部` : lead.name}　${rough ? roughCount(total) : shortCount(total)}${hot ? '　告急' : ''}`;
       tiao(el, () => (pin.absorbed.length ? stackTip(pin)
         : rough ? { title: `${r.name} · 驻军`, text: `约${roughCount(total)}人\n本地所见，不知其番号、主将与确数` }
@@ -107,12 +108,17 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       pins.push(Object.assign(pin, { el }));
       for (const a of list) {
         if (!a.march) continue;
-        const to = (a.march.toIds && a.march.toIds.length && regionOf(a.march.toIds, a.march.toIds.length > 2)) || placeOf(a.march.to);
+        // 逐块行军的令沿实际路线画（现在这块 → 余下要经的各块 → 去处）；受阻的只画到挡路的那块、线头一道横杠、线不流动。
+        //   旧令没有路线的照旧从此处到去处画一道弧
+        const way = (a.march.path || []).map((id) => regionOf([id], false)).filter(Boolean);
+        const stop = a.march.blocked && regionOf([a.march.blocked.regionId], false);
+        const to = stop || (way.length ? way[way.length - 1] : (a.march.toIds && a.march.toIds.length && regionOf(a.march.toIds, a.march.toIds.length > 2)) || placeOf(a.march.to));
         if (!to || to === r) continue;
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('class', 'mk-route');
-        path.setAttribute('marker-end', 'url(#mk-arrow)');
-        routes.push({ path, from: r.center, to: to.center });
+        path.setAttribute('class', 'mk-route' + (stop ? ' blocked' : ''));
+        path.setAttribute('marker-end', stop ? 'url(#mk-stop)' : 'url(#mk-arrow)');
+        const pts = stop || way.length < 2 ? [r.center, to.center] : [r.center].concat(way.filter((x, i) => i > 0 || x !== r).map((x) => x.center));
+        routes.push({ path, pts, arc: !stop && way.length < 2 });
       }
     }
     // 别家之军：照那一家在舆图上的底色插旗、旗顶铁色（本方金顶朱旗），所知之律定画不画——知其确数的旗上番号字、牌上兵数，
@@ -224,14 +230,30 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
     }
     for (const k of kept) paintStack(k);
     for (const rt of routes) {
-      const [ax, ay] = map.worldToScreen(rt.from[0], rt.from[1]);
-      const [bx, by] = map.worldToScreen(rt.to[0], rt.to[1]);
-      // 弧一点：中点往左手偏开两成
-      const mx = (ax + bx) / 2, my = (ay + by) / 2, dx = bx - ax, dy = by - ay;
-      const cx = mx - dy * 0.2, cy = my + dx * 0.2;
-      rt.path.setAttribute('d', `M${ax.toFixed(1)},${(ay - 6).toFixed(1)} Q${cx.toFixed(1)},${(cy - 6).toFixed(1)} ${bx.toFixed(1)},${(by - 6).toFixed(1)}`);
+      // 镜头背后的点投出来会翻到画面另一头（拉近看辽东时，往贵阳的路线斜穿整幅）：只画镜头前连着的几截
+      const runs = [];
+      let run = [];
+      for (const c of rt.pts) {
+        const [x, y, behind] = map.worldToScreen(c[0], c[1]);
+        if (behind) { if (run.length) runs.push(run); run = []; } else run.push([x, y - 6]);
+      }
+      if (run.length) runs.push(run);
+      rt.path.setAttribute('d', runs.filter((p) => p.length >= 2).map((p) => routeD(p, rt.arc)).join(' '));
     }
   });
+
+  // 一截行军线的 path：两点的弧一点（旧令中点往左手偏开两成；受阻的不弧，直指挡路那块）；
+  //   多点的沿路走——过各块治所两两连线的中点连二次曲线，线穿过各块而不在治所上折角
+  function routeD(p, arc) {
+    const f = (q) => `${q[0].toFixed(1)},${q[1].toFixed(1)}`;
+    if (arc || p.length < 3) {
+      const a = p[0], b = p[p.length - 1], k = arc ? 0.2 : 0;
+      return `M${f(a)} Q${f([(a[0] + b[0]) / 2 - (b[1] - a[1]) * k, (a[1] + b[1]) / 2 + (b[0] - a[0]) * k])} ${f(b)}`;
+    }
+    let d = `M${f(p[0])}`;
+    for (let i = 1; i < p.length - 1; i++) d += ` Q${f(p[i])} ${f([(p[i][0] + p[i + 1][0]) / 2, (p[i][1] + p[i + 1][1]) / 2])}`;
+    return `${d} L${f(p[p.length - 1])}`;
+  }
 
   // 一面旗（或一堆）的兵数牌与旗角：成员变了才重写
   function paintStack(p) {

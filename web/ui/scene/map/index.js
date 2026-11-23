@@ -874,10 +874,10 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     get labelsReady() { return labels.ready; },
     get labelStats() { return labels.stats; },
     get labelsPlaced() { return labels.placed; },
-    // 舆图世界坐标落在屏幕上的位置（高度取地形）
+    // 舆图世界坐标落在屏幕上的位置（高度取地形）；第三项为真＝这点在镜头背后（或远过远截面），投出来的位置会翻到画面另一头，不可用
     worldToScreen(x, y) {
       tmp.set(x, heightAt(x, y) * uniforms.uRelief.value + 2, y).project(camera);
-      return [(tmp.x * 0.5 + 0.5) * stage.size.w, (-tmp.y * 0.5 + 0.5) * stage.size.h];
+      return [(tmp.x * 0.5 + 0.5) * stage.size.w, (-tmp.y * 0.5 + 0.5) * stage.size.h, tmp.z > 1];
     },
     pickScreen(clientX, clientY) {
       const rect = stage.canvas.getBoundingClientRect();

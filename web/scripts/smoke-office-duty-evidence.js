@@ -16,7 +16,7 @@ function world(options = {}) {
   c.GM.memorials = [{ id: 'matter-water', version: 1, kind: 'public_work', public: true, status: 'open', organizationId: 'court', subjectId: 'water-1', allowPublicTransfer: true, transferPolicy: { allowMoney: true, maxMoney: 80, allowPartial: true }, sourceRefs: options.missing ? [] : [{ kind: 'document', id: 'doc-water', version: 1 }] }];
   c.actor('b', '库吏', { officialTitle: '库吏' });
   c.load('tm-sim-time.js');
-  c.load('tm-political-actions.js');
+  c.load('tm-power-lines.js');c.load('tm-political-actions.js');
   c.load('tm-npc-daily-activities.js');
   c.load('tm-npc-local-ai.js');
   return c;

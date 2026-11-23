@@ -6052,6 +6052,11 @@
         var input = row.querySelector('[data-office-power="' + key + '"]');
         if (input) position.powers[key] = !!input.checked;
       });
+      // 外交线三权（tm-power-lines.js，11-23 同志定）：这一行画了才收，只动外交三项；旧记的「谈」「签」照认
+      var dipInputs = Array.from(row.querySelectorAll('[data-office-dip-power]'));
+      if (dipInputs.length && global.TM && global.TM.PowerLines) {
+        global.TM.PowerLines.write(position.powers, 'diplomacy', dipInputs.filter(function(el) { return el.checked; }).map(function(el) { return el.getAttribute('data-office-dip-power'); }));
+      }
       position._deleteFromOfficeWorkbench = !!(row.querySelector('[data-office-position-delete]') || {}).checked;
     });
     collectOfficeDepartments(state.scenario.officeTree, '', [], 0).forEach(function(item) {
@@ -18235,6 +18240,11 @@
     var positionHtml = positions.slice(0, 160).map(function(row) {
       var position = row.position || {};
       var powers = isObject(position.powers) ? position.powers : {};
+      // 外交线三权：装了职权表（tm-power-lines.js）才画这三项
+      var dipHeld = global.TM && global.TM.PowerLines ? global.TM.PowerLines.held(powers, 'diplomacy') : null;
+      var dipHtml = dipHeld ? [['negotiate', '谈判'], ['sign', '署名'], ['decide', '定夺']].map(function(p) {
+        return '<label class="toggle-pill" title="外交·' + p[1] + '"><input data-office-dip-power="' + p[0] + '" type="checkbox"' + (dipHeld.indexOf(p[0]) >= 0 ? ' checked' : '') + '><span>' + p[1] + '</span></label>';
+      }).join('') : '';
       return '<div class="office-position-row" data-office-position-path="' + escapeHtml(row.positionPath) + '">' +
         '<div class="office-position-title"><strong>' + escapeHtml(position.name || '未命名官职') + '</strong><span>' + escapeHtml(row.deptName + ' · ' + row.positionPath) + '</span></div>' +
         '<input data-office-position-field="name" value="' + escapeHtml(position.name || '') + '" placeholder="官职">' +
@@ -18251,6 +18261,7 @@
           '<label class="toggle-pill"><input data-office-power="appointment" type="checkbox"' + (powers.appointment ? ' checked' : '') + '><span>任免权</span></label>' +
           '<label class="toggle-pill"><input data-office-power="impeach" type="checkbox"' + (powers.impeach ? ' checked' : '') + '><span>弹劾权</span></label>' +
           '<label class="toggle-pill"><input data-office-power="supervise" type="checkbox"' + (powers.supervise ? ' checked' : '') + '><span>监察权</span></label>' +
+          dipHtml +
           '<label class="toggle-pill"><input data-office-position-field="dutiesLock" type="checkbox" disabled><span>职责</span></label>' +
         '</div>' +
         '<textarea class="office-position-duties" data-office-position-field="duties" placeholder="职责、任免条件、运行规则">' + escapeHtml(position.duties || position.desc || '') + '</textarea>' +

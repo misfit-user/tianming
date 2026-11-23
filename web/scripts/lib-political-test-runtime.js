@@ -1,7 +1,7 @@
 'use strict';
 // Full production boundary for older focused smoke sandboxes. No domain function is reimplemented.
 const fs=require('fs'),path=require('path'),vm=require('vm');
-const files=['tm-office-holder-state.js','tm-office-system.js','tm-public-treasury.js','tm-npc-engine.js','tm-npc-action-ledger.js','tm-npc-decision.js','tm-npc-decision-ai-driven.js','tm-help-social.js','tm-relations.js','tm-mechanics-memory.js','tm-ai-change-pathutils.js','tm-ai-change-army.js','tm-ai-change-narrative.js','generated/tm-ai-change-applier.bundle.js','tm-political-actions.js','tm-feudal-warfare.js','tm-faction-action-engine.js','tm-faction-diplomacy.js'];
+const files=['tm-office-holder-state.js','tm-office-system.js','tm-public-treasury.js','tm-npc-engine.js','tm-npc-action-ledger.js','tm-npc-decision.js','tm-npc-decision-ai-driven.js','tm-help-social.js','tm-relations.js','tm-mechanics-memory.js','tm-ai-change-pathutils.js','tm-ai-change-army.js','tm-ai-change-narrative.js','generated/tm-ai-change-applier.bundle.js','tm-power-lines.js','tm-political-actions.js','tm-feudal-warfare.js','tm-faction-action-engine.js','tm-faction-diplomacy.js'];
 function install(c){
  const element=()=>({style:{},classList:{add(){},remove(){}},addEventListener(){},appendChild(){},remove(){},querySelector(){return null;},querySelectorAll(){return [];}});
  Object.assign(c,{Map,WeakMap,WeakSet,Set,Promise,Symbol});

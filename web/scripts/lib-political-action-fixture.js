@@ -12,7 +12,7 @@ function politicalFixture(options={}){
   c.fa.officeTree=[{id:'da',name:'甲署',positions:[{id:'pa',name:'甲使',holderId:'a',holder:'甲代表',powers:{appointment:true,diplomacy:true,treatySign:true,treasurySpend:true}},{id:'va',name:'甲缺',actualHolders:[],headCount:1}]}];
   c.fb.officeTree=[{id:'db',name:'乙署',positions:[{id:'pb',name:'乙使',holderId:'b',holder:'乙代表',powers:{appointment:true,diplomacy:true,treatySign:true,treasurySpend:true}},{id:'vb',name:'乙缺',actualHolders:[],headCount:1}]}];
   c.GM._facIndex={'甲国':{chars:[c.a,c.liaison]},'乙国':{chars:[c.b,c.subject]}};
-  ['tm-political-actions.js','tm-feudal-warfare.js','tm-faction-action-engine.js','tm-faction-diplomacy.js','tm-faction-npc-guoku.js'].forEach(c.load);
+  ['tm-power-lines.js','tm-political-actions.js','tm-feudal-warfare.js','tm-faction-action-engine.js','tm-faction-diplomacy.js','tm-faction-npc-guoku.js'].forEach(c.load);
   return c;
 }
 module.exports={politicalFixture};

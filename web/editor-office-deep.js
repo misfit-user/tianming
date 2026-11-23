@@ -136,6 +136,15 @@
     h += '<label><input type="checkbox" id="pd_pwSuperv" ' + (pw.supervise?'checked':'') + '> 监察</label>';
     h += '<label><input type="checkbox" id="pd_pwTax" ' + (pw.taxCollect?'checked':'') + '> 征税</label>';
     h += '<label><input type="checkbox" id="pd_pwMil" ' + (pw.militaryCommand?'checked':'') + '> 调兵</label>';
+    // 外交线三权（tm-power-lines.js，11-23 同志定）：旧记的「谈」「签」照认，存时按新记法
+    var lines = global.TM && global.TM.PowerLines;
+    if (lines) {
+      var dip = lines.held(pw, 'diplomacy');
+      h += '<span style="opacity:0.75;">外交：</span>';
+      h += '<label><input type="checkbox" id="pd_pwDipNegotiate" ' + (dip.indexOf('negotiate')>=0?'checked':'') + '> 谈判</label>';
+      h += '<label><input type="checkbox" id="pd_pwDipSign" ' + (dip.indexOf('sign')>=0?'checked':'') + '> 署名</label>';
+      h += '<label><input type="checkbox" id="pd_pwDipDecide" ' + (dip.indexOf('decide')>=0?'checked':'') + '> 定夺</label>';
+    }
     h += '</div>';
     h += '</div>';
 
@@ -187,6 +196,11 @@
       taxCollect: ck('pd_pwTax'),
       militaryCommand: ck('pd_pwMil')
     };
+    // 外交三权：表单上有这一行才收（没装职权表时不画这一行，也不动这几项）
+    if (document.getElementById('pd_pwDipNegotiate')) {
+      pos.diplomacyHeld = [['negotiate', 'pd_pwDipNegotiate'], ['sign', 'pd_pwDipSign'], ['decide', 'pd_pwDipDecide']]
+        .filter(function (x) { return ck(x[1]); }).map(function (x) { return x[0]; });
+    }
     pos.hooks = {
       triggerOnLowTreasury: _gv('pd_hookLowT'),
       triggerOnUnrest: _gv('pd_hookUnrest'),
@@ -398,7 +412,12 @@
     pos.publicTreasuryInit = deep.publicTreasuryInit;
     pos.bindingHint = deep.bindingHint;
     pos.privateIncome = deep.privateIncome;
-    pos.powers = deep.powers;
+    // 只改这里勾的几项，别的权（刑名、营造、拟稿、动帑、外交……）一个不碰；先前整个换掉，存一次就把它们清了
+    var powers = (pos.powers && typeof pos.powers === 'object' && !Array.isArray(pos.powers)) ? pos.powers : {};
+    Object.keys(deep.powers || {}).forEach(function (k) { powers[k] = deep.powers[k]; });
+    var lines = global.TM && global.TM.PowerLines;
+    if (lines && Array.isArray(deep.diplomacyHeld)) lines.write(powers, 'diplomacy', deep.diplomacyHeld);
+    pos.powers = powers;
     pos.hooks = deep.hooks;
   }
 

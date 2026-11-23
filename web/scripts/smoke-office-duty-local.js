@@ -13,7 +13,7 @@ c.GM._tmTime = null;
 let apiCalls = 0;
 c.callAI = () => { apiCalls++; throw new Error('local office duty must not call a model'); };
 c.load('tm-sim-time.js');
-c.load('tm-political-actions.js');
+c.load('tm-power-lines.js');c.load('tm-political-actions.js');
 c.load('tm-npc-daily-activities.js');
 c.load('tm-npc-local-ai.js');
 

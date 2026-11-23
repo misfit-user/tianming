@@ -3091,8 +3091,8 @@
     },
     {
       "path": "editor-office-deep.js",
-      "sha256": "1893951edba18ca444f5f9e36e869ae51d2bf80859ce875ef7a465a1667f687c",
-      "size": 21793
+      "sha256": "35c372d357f251e39c6f55cb1c6e48d1a25380271e7c3194ff669f403186a344",
+      "size": 23372
     },
     {
       "path": "editor-presets.js",
@@ -3131,8 +3131,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "42b8d59891a041f62d6f2b8fd271af7ba6795fb46764bb150e3ae5aad4dc6fca",
-      "size": 80719
+      "sha256": "12cb3bc852a68d78dcc7cb720586c5ed7cb5d8f3288d6b5411e568a7cbf80ce6",
+      "size": 80920
     },
     {
       "path": "INDEX.md",
@@ -3891,8 +3891,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-app.js",
-      "sha256": "491ddd73e239f02296e05e172460e745f596471ef605ec81b6cc76aa7aa71ec5",
-      "size": 1415761
+      "sha256": "c23f338687091838c0febe7904c95d7be7c3ab7702b6d1a65163475df4d45779",
+      "size": 1416832
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
@@ -3901,8 +3901,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
-      "sha256": "bedbe6ac0a209b4b1c94ad52532229a016c80cbddbb061101002d13ebf842d2a",
-      "size": 34384
+      "sha256": "1fb7a625a773799ff411d02eacf20d636a46f422fd29b4b4a2de797aa2aa9ee5",
+      "size": 34454
     },
     {
       "path": "preview/scenario-editor-reset-style.css",
@@ -3961,8 +3961,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "72c2ab223bcd7eec0ab16612bd19be7b56983f0dc3274b526ade7e9a077349bd",
-      "size": 391952
+      "sha256": "58c0f97672d74273ad7c714110a100c12c2666d2336423717138e9cee38ab679",
+      "size": 392503
     },
     {
       "path": "styles.css",
@@ -4841,8 +4841,8 @@
     },
     {
       "path": "tm-faction-diplomacy.js",
-      "sha256": "c0f0f9c2c5d2c4c65fac105bb377d267645141cc7492a6afdb312892ac313884",
-      "size": 29733
+      "sha256": "eb614c08169d92de45cffd14f7532f755e0e5048d6110d7e3e89492a0e5175ad",
+      "size": 30028
     },
     {
       "path": "tm-faction-goal-stack.js",
@@ -5921,13 +5921,18 @@
     },
     {
       "path": "tm-political-actions.js",
-      "sha256": "525ab4487c4378e7536d8417f805be70c30f19dd0dbb3beafe3ee7fe2aae2186",
-      "size": 44229
+      "sha256": "44712bc35a5e4baa9edbd9fbb99e38e76494c8c325370eadd94ea1e6ed519fdb",
+      "size": 44571
     },
     {
       "path": "tm-post-turn-jobs.js",
       "sha256": "aad8d466fda510e5c2b74fcd2d97ee46657c928a5a09f2f25702396041350ac5",
       "size": 35701
+    },
+    {
+      "path": "tm-power-lines.js",
+      "sha256": "7af17a3a36e6e069210d57f30e886c62b677c5851687a1f5f10148625366e04b",
+      "size": 4988
     },
     {
       "path": "tm-project-assets.js",
@@ -6146,8 +6151,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "6d0f510069e36c2aa057a5820428605842d2f7a4132a384eeb6cb87f72d19496",
-      "size": 142943
+      "sha256": "4e474f1496a11f7d20dc4b17a6e65a804e7b5b9f867f0f9219277692a3573e32",
+      "size": 143258
     },
     {
       "path": "tm-start-selector.js",

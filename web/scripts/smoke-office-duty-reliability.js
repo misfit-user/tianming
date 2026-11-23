@@ -21,7 +21,7 @@ function setup() {
   ];
   c.GM.publicTreasuryConfig = { schema: 'tm-public-treasury/2', accounts: ['source', 'dest', 'reserve'].map(id => ({ id, kind: 'physical', factionId: 'court', source: { kind: 'department', id } })) };
   c.load('tm-sim-time.js');
-  c.load('tm-political-actions.js');
+  c.load('tm-power-lines.js');c.load('tm-political-actions.js');
   c.load('tm-npc-daily-activities.js');
   c.load('tm-npc-local-ai.js');
   const requester = c.actor('a', '申请人');

@@ -22,11 +22,13 @@
     if(!text.trim()||text.length>12000||raw.obligations!=null&&!Array.isArray(raw.obligations)||A(raw.obligations).length>20||n!=null&&(!Number.isInteger(n)||n<0||n>1200))return null;
     return {text:text,durationTurns:n==null?36:n,effectiveRule:'both_signatures',obligations:copy(raw.obligations||[])};
   }
+  // 外交线三权（tm-power-lines.js，11-23 同志定）：谈判＝收书、问来意、递条款、还价；定夺＝准驳与成约。署名分级到外3 再用。
+  // 旧键照认：先前的 diplomacy 算谈判，treatySign 算署名加定夺。
   function hasPower(ch,org,power,ref){return P().authority(ch,Object.assign({},ref||{},{organizationId:org.id}),power);}
   function representative(org,explicit,requireSign){
     if(!org)return null;
     var rows=A(G().chars).filter(function(c){return P().live(c)&&(!explicit||S(c.id)===S(explicit))&&
-      (role(c,org,{},!!requireSign)||TM.OfficeHolderState.activeAssignments(G(),c,{organizationId:org.id}).some(function(a){return hasPower(c,org,'treatySign',{actingPositionId:a.pos.id})||!requireSign&&hasPower(c,org,'diplomacy',{actingPositionId:a.pos.id});}));});
+      (role(c,org,{},!!requireSign)||TM.OfficeHolderState.activeAssignments(G(),c,{organizationId:org.id}).some(function(a){return hasPower(c,org,'diplomacy.decide',{actingPositionId:a.pos.id})||!requireSign&&hasPower(c,org,'diplomacy.negotiate',{actingPositionId:a.pos.id});}));});
     rows.sort(function(a,b){return S(a.id).localeCompare(S(b.id));});return rows[0]||null;
   }
   function councilRole(ch,org,ref){
@@ -43,7 +45,7 @@
     return A(G().chars).find(function(ch){var r=councilRole(ch,org,{treatyType:p.type});return r&&r.collectiveRule.id===rule.id&&!A(p.collectiveVotes).some(function(v){return v.actorId===ch.id&&v.version===p.version&&v.ruleVersion===rule.version;});})||null;
   }
   function role(ch,org,ref,sign){
-    return hasPower(ch,org,sign?'treatySign':'diplomacy',ref)||(!sign&&hasPower(ch,org,'treatySign',ref))||councilRole(ch,org,ref||{});
+    return hasPower(ch,org,sign?'diplomacy.decide':'diplomacy.negotiate',ref)||(!sign&&hasPower(ch,org,'diplomacy.decide',ref))||councilRole(ch,org,ref||{});
   }
   function signed(p,orgId){return A(p.decisions).find(function(d){return d.organizationId===orgId&&d.version===p.version&&d.choice==='sign';});}
   function entry(p,d,kind,extra){

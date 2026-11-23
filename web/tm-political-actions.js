@@ -27,6 +27,8 @@
   }
   function live(ch){return !!ch&&ch.alive!==false&&!ch.dead&&!ch._missing&&!ch._imprisoned&&!ch.imprisoned;}
   function nativeState(g){return g&&g.startContext&&g.startContext.schemaVersion==='tm-start-context/1'?g.nativeWorld:null;}
+  // 职权按线列权能（tm-power-lines.js，11-23 同志定）：新记法「线.权能」与旧键都认
+  function holdsPower(powers,name){return TM.PowerLines?TM.PowerLines.holds(powers,name):!!powers&&powers[name]===true;}
   function authority(actor,d,power,subject,world){
     var g=world||G(),hs=TM.OfficeHolderState,org=resolve('organization',{id:d.organizationId},g);
     if(!live(actor)||!org||!hs)return null;
@@ -35,7 +37,7 @@
     if(d.appointmentId)rows=rows.filter(function(a){return a.appointmentId===S(d.appointmentId);});
     rows=rows.filter(function(a){
       var p=a.pos,h=a.holder||{},scope=p.authorityScope||{};
-      if(!p.powers||p.powers[power]!==true||p.status==='abolished'||p.enabled===false||h.expiresTurn!=null&&g.turn>=h.expiresTurn||p.expiresTurn!=null&&g.turn>=p.expiresTurn)return false;
+      if(!holdsPower(p.powers,power)||p.status==='abolished'||p.enabled===false||h.expiresTurn!=null&&g.turn>=h.expiresTurn||p.expiresTurn!=null&&g.turn>=p.expiresTurn)return false;
       var principal=a.delegated?hs.identity(g,a.principalCharacterId).char:actor,available=hs.availability(g,principal,p);
       if(!available.capacity||available.char!==actor)return false;
       if(subject&&subject.organizationId!==a.organizationId)return false;
@@ -47,7 +49,7 @@
     });
     if(rows.length===1)return Object.assign({},rows[0],{actorId:actor.id,power:power,organizationId:org.id,basisSource:rows[0].pos.authoritySource||'current_office_powers'});
     if(rows.length>1||!d.authorityRef&&(d.actingPositionId||d.appointmentId))return null;
-    var aliases={appointment:['appoint'],treasurySpend:['public_transfer','treasury'],diplomacy:['negotiate','diplomacy'],treatySign:['treaty_sign'],militaryCommand:['military_order'],declareWar:['declare_war']};
+    var aliases={appointment:['appoint'],treasurySpend:['public_transfer','treasury'],diplomacy:['negotiate','diplomacy'],treatySign:['treaty_sign'],'diplomacy.negotiate':['negotiate','diplomacy'],'diplomacy.sign':['treaty_sign'],'diplomacy.decide':['treaty_sign'],militaryCommand:['military_order'],declareWar:['declare_war']};
     var n=nativeState(g),grants=n&&A(n.authorities).filter(function(a){
       return a&&S(a.characterId)===S(actor.id)&&a.status==='active'&&(!d.authorityRef||a.id===d.authorityRef)&&
         (a.expiresTurn==null||g.turn<a.expiresTurn)&&(!a.fromTurn||g.turn>=a.fromTurn)&&(aliases[power]||[power]).some(function(v){return A(a.grants).indexOf(v)>=0;})&&

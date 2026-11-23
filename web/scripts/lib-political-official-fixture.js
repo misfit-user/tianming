@@ -4,7 +4,7 @@ function official(prefix){
  const dir=path.resolve(__dirname,'../../scenarios'),file=fs.readdirSync(dir).find(f=>f.startsWith(prefix)&&f.endsWith('（官方）.json')),s=JSON.parse(fs.readFileSync(path.join(dir,file),'utf8')),c=fixture();
  c.GM={sid:s.id,turn:1,running:true,chars:s.characters,facs:s.factions,armies:s.military&&s.military.initialTroops||[],officeTree:s.officeTree||[],adminHierarchy:s.adminHierarchy||{},playerInfo:s.playerInfo,publicTreasuryConfig:s.publicTreasuryConfig,fiscalConfig:s.fiscalConfig,memorials:[],letters:[],evtLog:[],rels:{},vars:{},_npcPlans:[],_turnContext:{npcActionsThisTurn:[]}};
  c.P={...c.P,playerInfo:s.playerInfo,conf:{npcAiPrecision:true},time:s.time,fiscalConfig:s.fiscalConfig};
- ['tm-faction-index.js','tm-faction-membership.js','tm-political-actions.js','tm-feudal-warfare.js','tm-faction-action-engine.js','tm-faction-diplomacy.js','tm-faction-npc-guoku.js','tm-faction-npc-memorial.js','tm-faction-npc-edict.js','tm-faction-npc-chaoyi.js','tm-faction-npc-office.js'].forEach(c.load);
+ ['tm-faction-index.js','tm-faction-membership.js','tm-power-lines.js','tm-political-actions.js','tm-feudal-warfare.js','tm-faction-action-engine.js','tm-faction-diplomacy.js','tm-faction-npc-guoku.js','tm-faction-npc-memorial.js','tm-faction-npc-edict.js','tm-faction-npc-chaoyi.js','tm-faction-npc-office.js'].forEach(c.load);
  c.TM.FactionMembership.migrateCharsAddFactionId();c.TM.FactionIndex.rebuild();
  const player=c.GM.facs.find(f=>f.id===s.playerInfo.factionId||f.name===s.playerInfo.factionName);if(player)c.GM.guoku=player.treasury;c.GM.neitang=s.neitang;
  c.GM._isFreshNewGame=true;

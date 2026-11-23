@@ -476,3 +476,69 @@ void main() {
   if (a < 0.02) discard;
   gl_FragColor = vec4(mix(t.rgb, uFogColor, vFog * 0.6) * a, a);    // 预乘
 }`;
+
+// 城郭立体模型（towns3d.js）：实例化，每座一个落脚点、转角、缩放。落脚处地面高乘起伏倍率（随远近变），模型本身的高度不乘；
+// aColor.a 为 0 的顶点（港的栈桥、船）贴海面。占地宽在屏上太小就整座收掉（按落脚点算，一座城各顶点一致，不会扯出尖刺）
+export const townVertex = /* glsl */`
+attribute vec4 aColor;
+attribute vec3 aBase;
+attribute vec2 aYS;
+uniform float uRelief;
+uniform float uPx;
+uniform float uSize;
+uniform vec2 uFadePx;
+uniform vec3 uLod;             // 近看、远看两份换的像素宽（x 起、y 止）；z：0 只此一份、1 近看那份、2 远看那份
+uniform float uFogNear;
+uniform float uFogFar;
+uniform vec3 uCam;
+varying vec3 vColor;
+varying vec3 vNormal;
+varying float vY;
+varying float vFade;
+varying float vFog;
+void main() {
+  vec3 base = vec3(aBase.x, aBase.y * uRelief, aBase.z);
+  vec4 mb = viewMatrix * vec4(base, 1.0);
+  float px = uSize * aYS.y * uPx / max(-mb.z, 1.0);
+  float lod = uLod.z < 0.5 ? 1.0 : (uLod.z < 1.5 ? smoothstep(uLod.x, uLod.y, px) : 1.0 - smoothstep(uLod.x, uLod.y, px));
+  vFade = smoothstep(uFadePx.x, uFadePx.y, px) * lod;
+  if (vFade <= 0.0) { gl_Position = vec4(0.0, 0.0, 2.0, 1.0); return; }
+  float c = cos(aYS.x), s = sin(aYS.x);
+  vec3 p = position * aYS.y;
+  vec3 wp = vec3(base.x + p.x * c + p.z * s, base.y * aColor.a + p.y, base.z - p.x * s + p.z * c);
+  vNormal = vec3(normal.x * c + normal.z * s, normal.y, -normal.x * s + normal.z * c);
+  vColor = aColor.rgb;
+  vY = position.y;
+  vFog = smoothstep(uFogNear, uFogFar, distance(wp, uCam));
+  gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
+}`;
+// 受光与山川同一个方向（西北高处），另加天光、镜头这边一点补光（朝南的墙面不至于黑成一片）；墙脚、屋脚按离地高低压暗。
+// 远了以抖点淡去（不用半透明，免排序）；近看、远看两份换时远看那份抖点取反，两份恰好互补；案上旧绢褪色发黄；远雾同地面
+export const townFragment = /* glsl */`
+uniform vec3 uFogColor;
+uniform float uLookT;
+uniform vec3 uLod;
+varying vec3 vColor;
+varying vec3 vNormal;
+varying float vY;
+varying float vFade;
+varying float vFog;
+float bayer2(vec2 a) { a = floor(a); return fract(a.x * 0.5 + a.y * a.y * 0.75); }
+float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
+void main() {
+  float b = bayer4(gl_FragCoord.xy);
+  if (uLod.z > 1.5) { if (vFade < 1.0 && vFade < 1.0 - b) discard; }
+  else if (vFade < 1.0 && vFade <= b) discard;
+  vec3 N = normalize(gl_FrontFacing ? vNormal : -vNormal);
+  vec3 L = normalize(vec3(-0.55, 0.75, -0.35));
+  float sun = max(dot(N, L), 0.0);
+  float sky = 0.5 + 0.5 * N.y;
+  float fill = max(dot(N, normalize(vec3(0.35, 0.4, 0.85))), 0.0);
+  float ao = mix(0.62, 1.0, smoothstep(-0.02, 0.3, vY));
+  vec3 light = (0.42 + 0.18 * sky) * vec3(0.94, 0.97, 1.03) + 0.55 * sun * vec3(1.0, 0.95, 0.86) + vec3(0.16 * fill);
+  vec3 col = vColor * light * ao;
+  float g = dot(col, vec3(0.3, 0.59, 0.11));
+  col = mix(mix(vec3(g), col, 0.4) * vec3(1.05, 0.97, 0.84), col, uLookT);
+  col = mix(col, uFogColor, vFog);
+  gl_FragColor = vec4(col, 1.0);
+}`;

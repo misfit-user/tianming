@@ -8,6 +8,7 @@ import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
+import { createTowns, townModel } from './towns3d.js';
 import { createLabels, realmTitle } from './labels.js';
 import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb } from './looks.js';
 import { createPainter, noiseTex } from './paint.js';
@@ -178,7 +179,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   controls.enabled = false;
   controls.enableDamping = true;
   controls.screenSpacePanning = false;
-  controls.minDistance = 120;
+  controls.minDistance = 70;                    // 立体城郭近看才显出城楼街巷（照 CK3 能推到很近）
   controls.maxDistance = 2600;
   controls.minPolarAngle = 0.12;
   controls.maxPolarAngle = 1.2;
@@ -422,6 +423,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   let vs = 977;
   const vrnd = () => ((vs = (vs * 1664525 + 1013904223) >>> 0) / 4294967296);
   let settle = null;                          // 聚落等第（府州下标对齐 regions），setSettlements 给
+  let footprints = [];                        // 立体城郭的占地 [x0, z0, x1, z1]：林木、村舍落在里头的不画（buildCities 给）
   if (q.trees) {
     let s = 41;
     const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -501,18 +503,36 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     }
     return out;
   }
+  // 落在立体城郭占地里的点景去掉（树、村舍不从城里的屋顶上冒出来）。占地按八个世界像素一格分好再查
+  function outsideTowns(list) {
+    if (!footprints.length) return list;
+    const G = 8, grid = new Map();
+    for (const f of footprints) {
+      for (let gx = Math.floor(f[0] / G); gx <= Math.floor(f[2] / G); gx++) {
+        for (let gz = Math.floor(f[1] / G); gz <= Math.floor(f[3] / G); gz++) { const k = gx * 4096 + gz; if (!grid.has(k)) grid.set(k, []); grid.get(k).push(f); }
+      }
+    }
+    return list.filter((t) => { const fs = grid.get(Math.floor(t[0] / G) * 4096 + Math.floor(t[2] / G)); return !fs || !fs.some((f) => t[0] > f[0] && t[0] < f[2] && t[2] > f[1] && t[2] < f[3]); });
+  }
   function buildTrees() {
     if (!q.trees) return;
     if (trees) { scene.remove(trees); trees.geometry.dispose(); trees.material.dispose(); trees = null; }
     // 由北往南排（镜头多朝北看，远的先画、近的压上去）
-    const all = treeItems.concat(villagesNow()).sort((a, b) => a[2] - b[2]);
+    const all = outsideTowns(treeItems.concat(villagesNow())).sort((a, b) => a[2] - b[2]);
     trees = spriteLayer(all, spriteUniforms);
     scene.add(trees);
   }
 
   // ---------- 聚落：府州治所的城郭（按繁华分档，见 model/settlement.js）、市镇、港、营造地标；近看才显 ----------
-  // 没给分档时（舆图台、开局读数之前）照旧：京城、要府大一号、其余府城
+  // 中、高画质画立体城郭（towns3d.js，照 CK3 地图上的领地模型）；低画质照旧画点景小图。营造地标暂仍是点景小图。
+  // 没给分档时（舆图台、开局读数之前）：京城，要府大一号，其余小一号（立体的画府城、小城）
   const cityUniforms = { ...spriteUniforms, uFadePx: { value: new THREE.Vector2(9, 15) }, uMaxPx: { value: 72 } };
+  const towns = q.tier === 'low' ? null : createTowns({
+    uRelief: uniforms.uRelief, uPx: uniforms.uPx, uCam: uniforms.uCam, uFogNear: uniforms.uFogNear, uFogFar: uniforms.uFogFar,
+    uFogColor: uniforms.uFogColor, uLookT: uniforms.uLookT, uFadePx: { value: new THREE.Vector2(11, 18) }
+  });
+  if (towns) scene.add(towns.group);
+  const CITY_KIND = ['town', 'city', 'grand', 'metro'];
   const CITY_SPRITE = [SPRITE.town, SPRITE.city, SPRITE.grand, SPRITE.metro];   // 小城、府城、大府、都会
   const CITY_SIZE = [3.4, 3.9, 4.6, 5.3];
   // 营造地标（settle[i].landmarks 里的样子 → 图）；半损的画一小片残垣（借残城那张，画小）
@@ -525,39 +545,87 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const spotMemo = new Map();                 // 府州下标 → 市镇、港、河埠的落点（算一回留着；档变了只换显不显）
   const ringMemo = new Map();                 // 「府州下标|城郭大小」→ 地标的落点
   let cities = null;
+  // 京城那一套（外城套皇城）只给繁华到大府以上的城郭之都；草原上的汗庭画牙帐、山寨之地画大寨，小国小部的都城照它自己的档画
+  const palaceAt = (st) => !st || (st.style === 'city' && !st.ruined && st.tier >= 2);
   function seatSprite(i, k) {
-    if (k === 2) return [SPRITE.capital, 6.0];
     const st = settle && settle[i];
+    if (k === 2 && palaceAt(st)) return [SPRITE.capital, 6.0];
+    if (k === 2 && st.style === 'nomad') return [SPRITE.yurtL, 4.0];
+    if (k === 2 && st.style === 'tribal') return [SPRITE.stockL, 3.9];
     if (!st) return [SPRITE.city, k === 1 ? 3.3 : 2.6];
     if (st.style === 'nomad') return st.tier ? [SPRITE.yurtL, 4.0] : [SPRITE.yurtS, 3.2];
     if (st.style === 'tribal') return st.tier ? [SPRITE.stockL, 3.9] : [SPRITE.stockS, 3.2];
     if (st.ruined) return [SPRITE.ruin, 3.8];
-    return [CITY_SPRITE[st.tier] ?? SPRITE.city, (CITY_SIZE[st.tier] ?? 3.9) + (k === 1 ? 0.3 : 0)];
+    return [CITY_SPRITE[st.tier] ?? SPRITE.city, (CITY_SIZE[st.tier] ?? 3.9) + (k >= 1 ? 0.3 : 0)];
+  }
+  // 立体城郭：样子、档 → 模型（城郭四档各两种街巷，按府州下标单双取）
+  const TOWN_SCALE = 0.85;                    // 模型比例：江南府州挨得紧，再大城与城就碰上了
+  const KIND_SCALE = { yurtS: 1.5, yurtL: 1.35, stockS: 1.2, stockL: 1.1 };   // 帐、寨本身小，放大些与城郭相当（一处牧地、一处土司也是一方之治）
+  function seatModel(i, k) {
+    const st = settle && settle[i], v = i % 2;
+    if (k === 2 && palaceAt(st)) return 'capital';
+    if (k === 2 && st.style === 'nomad') return 'yurtL';
+    if (k === 2 && st.style === 'tribal') return 'stockL';
+    if (!st) return k === 1 ? `city${v}` : `town${v}`;
+    if (st.style === 'nomad') return st.tier ? 'yurtL' : 'yurtS';
+    if (st.style === 'tribal') return st.tier ? 'stockL' : 'stockS';
+    if (st.ruined) return 'ruin';
+    return `${CITY_KIND[st.tier] || 'city'}${v}`;
+  }
+  // 落脚处的地面高：占地四角与正中取最高（坡地上城不陷进山里，低的那边墙往下伸）
+  function groundOf(x, z, hw) {
+    let h = heightAt(x, z);
+    for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) h = Math.max(h, heightAt(x + sx * hw * 0.7, z + sz * hw * 0.7));
+    return h;
   }
   function buildCities() {
     if (cities) { scene.remove(cities); cities.geometry.dispose(); cities.material.dispose(); cities = null; }
-    if (!regions.length) return;
+    if (!regions.length) { if (towns) towns.set([]); footprints = []; return; }
     const caps = labels.capitals, seats = labels.important;
-    const items = [];
+    const items = [], solid = [], foot = [];
     regions.forEach((r, i) => {
       const [x, y] = r.center;
-      const [sprite, size] = seatSprite(i, caps.has(i) ? 2 : seats.has(i) ? 1 : 0);
-      items.push([x, heightAt(x, y), y, size, sprite]);
+      const k = caps.has(i) ? 2 : seats.has(i) ? 1 : 0;
+      let seat;
+      if (towns) {
+        // 立体城郭往北挪，南沿落在治所那一点：府州名、军旗都在治所下方，不压着城
+        const kind = seatModel(i, k), s = TOWN_SCALE * (KIND_SCALE[kind] || 1) * (k >= 1 && kind !== 'capital' ? 1.08 : 1), mdl = townModel(kind), zc = y - mdl.south * s;
+        solid.push({ kind, x, z: zc, h: groundOf(x, zc, mdl.hw * s), yaw: 0, scale: s });
+        foot.push([x - mdl.hw * s - 0.5, zc - mdl.north * s - 0.5, x + mdl.hw * s + 0.5, y + 0.5]);
+        seat = { hw: mdl.hw * s, depth: (mdl.north + mdl.south) * s };
+      } else {
+        const [sprite, size] = seatSprite(i, k);
+        items.push([x, heightAt(x, y), y, size, sprite]);
+        seat = size;
+      }
       const st = settle && settle[i];
       const marks = (st && st.landmarks) || [];
       if (!st || (!st.markets && !st.port && !marks.length)) return;
       const sp = spotsOf(i);
-      for (const [mx, my] of sp.markets.slice(0, st.markets)) items.push([mx, heightAt(mx, my), my, 2.5, SPRITE.market]);
-      // 港：近海设在海岸；不近海而真建了港（漕运码头、渡口）设在河边；近处连河也没有，就当一座地标摆在治所旁（港那张图船底自带一小片水）
+      sp.markets.slice(0, st.markets).forEach(([mx, my], j) => {
+        if (!towns) { items.push([mx, heightAt(mx, my), my, 2.5, SPRITE.market]); return; }
+        solid.push({ kind: 'market', x: mx, z: my, h: groundOf(mx, my, 1.1), yaw: ((i + j) % 4) * Math.PI / 2, scale: TOWN_SCALE });
+        foot.push([mx - 1.3, my - 1.3, mx + 1.3, my + 1.3]);
+      });
+      // 港：近海设在海岸（栈桥朝海）；不近海而真建了港（漕运码头、渡口）设在河边；近处连河也没有，就摆在治所旁
       const portAt = st.port ? sp.port || (st.portBuilt ? sp.wharf : null) : null;
-      if (portAt) items.push([portAt[0], heightAt(portAt[0], portAt[1]), portAt[1], 3.0, SPRITE.port]);
+      if (portAt && towns) {
+        const sea = portAt === sp.port, dir = sea ? sp.portDir : [0, 1];
+        solid.push({ kind: sea ? 'port' : 'wharf', x: portAt[0] + dir[0] * (sea ? 0.45 : 0), z: portAt[1] + dir[1] * (sea ? 0.45 : 0), h: heightAt(portAt[0], portAt[1]), yaw: sea ? Math.atan2(dir[0], dir[1]) : (i % 4) * Math.PI / 2, scale: TOWN_SCALE });
+        foot.push([portAt[0] - 1.1, portAt[1] - 1.1, portAt[0] + 1.1, portAt[1] + 1.1]);
+      } else if (portAt) items.push([portAt[0], heightAt(portAt[0], portAt[1]), portAt[1], 3.0, SPRITE.port]);
       const ringed = st.portBuilt && !portAt ? ['port', ...marks] : marks;
-      const ring = ringed.length ? ringOf(i, size) : [];
-      ringed.forEach((k, j) => {
+      const ring = ringed.length ? ringOf(i, seat) : [];
+      ringed.forEach((kk, j) => {
         const at = ring[j];
-        if (at && LANDMARK_SPRITE[k] != null) items.push([at[0], heightAt(at[0], at[1]), at[1], LANDMARK_SIZE[k] || 2.8, LANDMARK_SPRITE[k]]);
+        if (!at) return;
+        if (towns && kk === 'port') { solid.push({ kind: 'wharf', x: at[0], z: at[1], h: groundOf(at[0], at[1], 0.8), yaw: (i % 4) * Math.PI / 2, scale: TOWN_SCALE }); return; }
+        if (LANDMARK_SPRITE[kk] != null) items.push([at[0], heightAt(at[0], at[1]), at[1], LANDMARK_SIZE[kk] || 2.8, LANDMARK_SPRITE[kk]]);
       });
     });
+    footprints = foot;
+    if (towns) towns.set(solid);
+    if (!items.length) return;
     items.sort((a, b) => a[2] - b[2]);
     cities = spriteLayer(items, cityUniforms);
     cities.renderOrder = 21;
@@ -574,21 +642,27 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     const rr = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
     const [cx, cy] = r.center;
     const flat = (x, y) => regionIndexAt(x, y) === i && landOf(x, y) >= 0.5 && !wetOf(x, y) && heightAt(x, y) < 0.08;
+    // 立体城郭占着治所往北一大片（照这一处可能长到的最大一样留空：京城或都会）
+    let away = (x, y) => Math.hypot(x - cx, y - cy) >= 4;
+    if (towns) {
+      const big = townModel(labels.capitals.has(i) ? 'capital' : 'metro0'), ex = [cx - big.hw - 1.6, cy - big.north - big.south - 1.6, cx + big.hw + 1.6, cy + 1.8];
+      away = (x, y) => !(x > ex[0] && x < ex[2] && y > ex[1] && y < ex[3]);
+    }
     const markets = [];
     for (const needRiver of [true, false]) {
       for (let t = 0; t < 120 && markets.length < 3; t++) {
         const x = x0 + rr() * (x1 - x0), y = y0 + rr() * (y1 - y0);
-        if (!flat(x, y) || Math.hypot(x - cx, y - cy) < 4 || markets.some(([mx, my]) => Math.hypot(mx - x, my - y) < 4)) continue;
+        if (!flat(x, y) || !away(x, y) || markets.some(([mx, my]) => Math.hypot(mx - x, my - y) < 4)) continue;
         if (needRiver && !lines.nearRiver(x, y)) continue;
         markets.push([x, y]);
       }
     }
-    let port = null, best = Infinity;
+    let port = null, portDir = null, best = Infinity;
     for (let a = 0; a < 24; a++) {
       const dx = Math.cos(a * Math.PI / 12), dy = Math.sin(a * Math.PI / 12);
       for (let dd = 0.5; dd <= 9; dd += 0.5) {
         if (landOf(cx + dx * dd, cy + dy * dd) >= 0.5) continue;
-        if (dd < best) { best = dd; port = [cx + dx * (dd - 0.7), cy + dy * (dd - 0.7)]; }
+        if (dd < best) { best = dd; port = [cx + dx * (dd - 0.7), cy + dy * (dd - 0.7)]; portDir = [dx, dy]; }
         break;
       }
     }
@@ -600,25 +674,34 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
         if (regionIndexAt(x, y) === i && landOf(x, y) >= 0.5 && lines.nearRiver(x, y)) { wharf = [x, y]; break; }
       }
     }
-    const out = { markets, port, wharf };
+    const out = { markets, port, portDir, wharf };
     spotMemo.set(i, out);
     return out;
   }
   // 营造地标的落点：绕治所摆开，离城郭半宽一截。先西、东两侧（略偏北，让开治所下方——府州名压着城郭时挪到城郭下方，竖写的挪到右边），
   // 再往外的西、东，再西北、东北（半藏在城后），再西南、东南，更外的西、东，正南最后。要落在本府州的陆上、不在水上，
   // 与市镇、港、河埠、彼此都隔开；落不下的跳过。落点只看府州与城郭大小，同一处地标回回落在同一处
+  // 立体城郭（seat 给 { hw 半宽, depth 南北进深 }，城在治所以北）：先城的东西两侧靠南、靠北，再往外，再西南、东南，城北最后
   const RING_SLOTS = [[0, Math.PI + 0.17], [0, -0.17], [2.8, Math.PI + 0.1], [2.8, -0.1], [0.6, Math.PI + 0.85], [0.6, -0.85],
     [1.5, Math.PI - 0.6], [1.5, 0.6], [5.6, Math.PI], [5.6, 0], [2.2, Math.PI / 2]];
-  function ringOf(i, seatSize) {
-    const key = `${i}|${seatSize}`;
+  const ringSlots = (seat) => {
+    if (typeof seat === 'object') {
+      const { hw, depth: D } = seat;
+      return [[-(hw + 1.7), -0.3 * D], [hw + 1.7, -0.3 * D], [-(hw + 1.7), -0.75 * D], [hw + 1.7, -0.75 * D], [-(hw + 4.5), -0.4 * D], [hw + 4.5, -0.4 * D],
+        [-(hw + 1.5), 1.7], [hw + 1.5, 1.7], [0, -(D + 1.8)]];
+    }
+    const R = seat / 2 + 1.5;
+    return RING_SLOTS.map(([dr, a]) => [Math.cos(a) * (R + dr), Math.sin(a) * (R + dr)]);
+  };
+  function ringOf(i, seat) {
+    const key = typeof seat === 'object' ? `${i}|${seat.hw.toFixed(2)}|${seat.depth.toFixed(2)}` : `${i}|${seat}`;
     if (ringMemo.has(key)) return ringMemo.get(key);
     const [cx, cy] = regions[i].center, sp = spotsOf(i);
     const taken = [...sp.markets, sp.port, sp.wharf].filter(Boolean);
-    const R = seatSize / 2 + 1.5;
     const out = [];
-    for (const [dr, a] of RING_SLOTS) {
+    for (const [dx, dy] of ringSlots(seat)) {
       if (out.length >= 7) break;
-      const x = cx + Math.cos(a) * (R + dr), y = cy + Math.sin(a) * (R + dr);
+      const x = cx + dx, y = cy + dy;
       if (regionIndexAt(x, y) !== i || landOf(x, y) < 0.5 || wetOf(x, y)) continue;
       if (taken.concat(out).some(([tx, ty]) => Math.hypot(tx - x, ty - y) < 2.8)) continue;
       out.push([x, y]);
@@ -633,6 +716,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const labelData = () => ({ regions, realms: realmList, circuits, realmByRegion, circuitOf, ids });
   labels.setData(labelData());
   buildCities();
+  if (towns) buildTrees();                    // 林木、村舍先于城郭撒下，城郭占地定了再筛一回
   const tmp = new THREE.Vector3();
 
   // ---------- 层级：随镜头远近定设色浓淡、按势力还是省道设色、起伏倍率；跨档时通知 ----------
@@ -777,6 +861,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uniforms.uCam.value.copy(camera.position);
     lines.update(pose().dist * 1.6);
     uniforms.uZoom.value = 0;
+    if (towns) towns.update(camera);              // 城郭按这一镜重挑
     const c = shoot(width, height);
     const g = c.getContext('2d');
     g.strokeStyle = 'rgba(40,24,14,0.7)';
@@ -829,6 +914,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     const zoom = uniforms.uZoom.value;
     uniforms.uZoom.value = 1 - Math.min(1, Math.max(0, (dist - 700) / 700));
     lines.update(dist);
+    if (towns) towns.update(camera);              // 城郭按这一镜重挑
     const c = shoot(width, height);
     uniforms.uZoom.value = zoom;
     lines.setViewport(stage.size.w, stage.size.h);
@@ -888,6 +974,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       const hk = g ? MODE[g.tier] + ':' + g.key : '';
       lines.update(dist, tier);
       if (trees) trees.visible = dist < 1100;
+      if (towns) { towns.group.visible = dist < 1400; if (towns.group.visible) towns.update(camera); }   // 再远最大的京城也小过十一像素，整层不画
       if (hk !== hoverKey) {
         hoverKey = hk;
         uniforms.uHover.value = g ? g.key : -1;
@@ -1015,6 +1102,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     setImportant(list) { labels.setImportant(list); buildCities(); },
     get labelsReady() { return labels.ready; },
     get labelStats() { return labels.stats; },
+    get townStats() { return towns ? towns.stats : null; },          // 立体城郭：几座、多少面（低画质为 null）
     get labelsPlaced() { return labels.placed; },
     // 舆图世界坐标落在屏幕上的位置（高度取地形）；第三项为真＝这点在镜头背后（或远过远截面），投出来的位置会翻到画面另一头，不可用
     worldToScreen(x, y) {

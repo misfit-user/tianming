@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>天命 · 城郭谱</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #c9bd9c; }
+  canvas { display: block; }
+  .info { position: fixed; left: 12px; bottom: 10px; font: 13px/1.5 "Microsoft YaHei", sans-serif; color: #2a2118; background: rgba(240, 232, 214, 0.8); padding: 4px 10px; border-radius: 4px; }
+</style>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+</head>
+<body>
+<div class="info" id="info"></div>
+<script type="module">
+// 城郭谱：舆图上的城郭立体模型（scene/map/towns3d.js）一字排开，受光、着色与舆图一样，只是摆在平地上。
+// ?kinds=town0,city0,…（默认全部）　?dist=26　?polar=0.95　?az=0　?cols=4　?gap=9（格距，世界单位）　?lod=far（看远看那一份）
+// 截图脚本经 window.__towns.view({ dist, polar, az, target }) 换机位
+import * as THREE from 'three';
+import { TOWN_KINDS, townModel, createTowns } from '../scene/map/towns3d.js';
+
+const q = new URLSearchParams(location.search);
+const kinds = (q.get('kinds') || TOWN_KINDS.join(',')).split(',').filter((k) => TOWN_KINDS.includes(k));
+const cols = Number(q.get('cols') || 4), gap = Number(q.get('gap') || 9);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+renderer.setSize(innerWidth, innerHeight);
+document.body.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0.79, 0.74, 0.61);
+const fov = 30;
+const camera = new THREE.PerspectiveCamera(fov, innerWidth / innerHeight, 0.5, 4000);
+const shared = {
+  uRelief: { value: 20 }, uPx: { value: innerHeight / (2 * Math.tan(THREE.MathUtils.degToRad(fov / 2))) }, uCam: { value: new THREE.Vector3() },
+  uFogNear: { value: 1e6 }, uFogFar: { value: 2e6 }, uFogColor: { value: new THREE.Vector3(0.91, 0.87, 0.78) }, uLookT: { value: 1 },
+  uFadePx: { value: new THREE.Vector2(0, 0.001) }
+};
+// 看远看那一份：把「屏上多宽」的估算压小，各城都落到远看那份（淡去门槛已设为零，不会淡掉）
+if (q.get('lod') === 'far') shared.uPx.value *= 0.02;
+// 地面：青绿里的一块平原色
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.66, 0.68, 0.5) }));
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+const towns = createTowns(shared);
+scene.add(towns.group);
+const rows = Math.ceil(kinds.length / cols);
+const list = kinds.map((kind, i) => ({ kind, x: (i % cols - (cols - 1) / 2) * gap, z: (Math.floor(i / cols) - (rows - 1) / 2) * gap, h: 0, yaw: 0, scale: 1 }));
+towns.set(list);
+const pose = { target: [0, 0, 0], dist: Number(q.get('dist') || 26 * Math.max(cols, rows) / 2), polar: Number(q.get('polar') || 0.95), az: Number(q.get('az') || 0) };
+function view(p = {}) {
+  Object.assign(pose, p);
+  const [tx, ty, tz] = pose.target;
+  camera.position.set(tx + pose.dist * Math.sin(pose.polar) * Math.sin(pose.az), ty + pose.dist * Math.cos(pose.polar), tz + pose.dist * Math.sin(pose.polar) * Math.cos(pose.az));
+  camera.lookAt(tx, ty, tz);
+  shared.uCam.value.copy(camera.position);
+  towns.update(camera);
+  renderer.render(scene, camera);
+}
+view();
+const info = kinds.map((k) => `${k} ${townModel(k).tris} 面 宽${(townModel(k).hw * 2).toFixed(1)}`).join(' · ');
+document.getElementById('info').textContent = info;
+window.__towns = { view, kinds, list, stats: () => towns.stats, model: townModel };
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

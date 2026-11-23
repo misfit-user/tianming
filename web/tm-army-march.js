@@ -5,7 +5,7 @@
  * 走满一程就落到下一块地上（编号写进绑定，驻地文字写成那块的名字），走完全程即抵达。
  * 路线与人物赶路同一套路程（TM.MapRouteDays.planRoute：按地块中心连线量公里）。
  * 快慢（同志定乙）：日行一舍，三十里约 17 公里（《左传》「退三舍」，杜预注「一舍，三十里」）；
- *   骑兵占九成以上的骑军加倍，带炮与攻城器械的减半；冬季、五万以上大军照 MarchSystem 配置减速。
+ *   骑兵占九成以上的骑军加倍，炮械兵占两成以上的减半；冬季、五万以上大军照 MarchSystem 配置减速。
  * 先前三套行军各走各的：按目的地走的那套不看远近固定 600 里，一两回合必到；军令移防那套的旧令
  * 到期时又把军设回当初的去处。有地块的剧本今后只走这里；没有地块的剧本照旧。
  */
@@ -16,6 +16,9 @@
   var RATIO = { infantry: 1, cavalry: 2, siege: 0.5 };
   var MOUNTED = /骑|马甲|铁鹞|拐子马|铁浮屠|cavalry/i;
   var HEAVY = /炮|攻城|床弩|siege/i;
+  // 炮械兵占两成以上才按辎重走（11-23 同志同意改按比例）：不足两成的，炮械轻便或随后跟进，不拖慢全军。
+  // 天启带炮的八支军里只有京营·神机营占二成五；关宁军主力炮兵三千，不到半成；绍宋四支都在一成六以下。
+  var HEAVY_SHARE = 0.2;
 
   function mapOf(game) { return game && (game.mapData || game.map); }
   function locs() { return global.TMMapLocations; }
@@ -52,18 +55,18 @@
     return B && typeof B._getSeason === 'function' ? B._getSeason() : '';
   }
 
-  // 这支军一日走多少公里：带炮与攻城器械的按辎重，骑兵占九成以上的按骑军，其余按步军
+  // 这支军一日走多少公里：炮械兵占两成以上的按辎重，骑兵占九成以上的按骑军，其余按步军
   function pace(army) {
     var cfg = global.MarchSystem && typeof global.MarchSystem._getConfig === 'function' ? global.MarchSystem._getConfig() : {};
-    var total = 0, mounted = 0, heavy = false;
+    var total = 0, mounted = 0, heavy = 0;
     (Array.isArray(army && army.composition) ? army.composition : []).forEach(function (c) {
       var n = Math.max(0, Number(c && c.count) || 0);
       var label = String((c && (c.type || c.name)) || '') + ' ' + String((c && c.unitTypeId) || '');
       total += n;
       if (MOUNTED.test(label)) mounted += n;
-      if (n > 0 && HEAVY.test(label)) heavy = true;
+      if (HEAVY.test(label)) heavy += n;
     });
-    var kind = heavy ? 'siege' : (total > 0 && mounted / total >= 0.9 ? 'cavalry' : 'infantry');
+    var kind = total > 0 && heavy / total >= HEAVY_SHARE ? 'siege' : (total > 0 && mounted / total >= 0.9 ? 'cavalry' : 'infantry');
     var km = KM_PER_DAY * RATIO[kind], why = [];
     if (season() === '冬') { km *= Number(cfg.winterPenalty) || 0.7; why.push('冬季'); }
     if ((Number(army && army.soldiers) || 0) > (Number(cfg.largeSizeThreshold) || 50000)) { km *= Number(cfg.largeSizePenalty) || 0.8; why.push('大军'); }
@@ -362,7 +365,7 @@
     var orders = ((game && game.marchOrders) || []).filter(function (o) { return o && o.status === 'marching' && Array.isArray(o.regionPath); });
     if (!orders.length) return '';
     var days = turnDays();
-    var lines = ['【行军状况】逐块行军：日行一舍（约 17 公里），骑军加倍，带炮械的减半，冬季与五万以上大军更迟；每回合 ' + days + ' 日'];
+    var lines = ['【行军状况】逐块行军：日行一舍（约 17 公里），骑军加倍，炮械兵占两成以上的减半，冬季与五万以上大军更迟；每回合 ' + days + ' 日'];
     orders.slice(0, PROMPT_CAP).forEach(function (o) {
       var rest = o.regionPath.slice(o.seg + 1).map(function (id) { return nameOf(game, id); });
       var left = Math.ceil(kmLeft(o) / Math.max(Number(o.kmPerDay) || KM_PER_DAY, 0.1)), bk = o.blocked;

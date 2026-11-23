@@ -4091,8 +4091,8 @@
     },
     {
       "path": "tm-army-march.js",
-      "sha256": "7a70d179a80185311e4f06f1ba0179062909efb1aca604e4f9cf382c2d04565b",
-      "size": 22383
+      "sha256": "e408f1c89e5f059401bf1e30cb8dfda7a244d2f5c8abae7a5fd62150387c974d",
+      "size": 22752
     },
     {
       "path": "tm-army-units.js",
@@ -6146,7 +6146,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "c24e7c5a37b965770646002c683c8b1bf47fc065b2b6be24439d0482a8a37a64",
+      "sha256": "d85ba24f670e28fe972c31749523bcd517c09e13793e1f357dbd699cc4442937",
       "size": 142943
     },
     {

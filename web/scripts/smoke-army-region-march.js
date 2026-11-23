@@ -1,7 +1,7 @@
 // smoke-army-region-march.js — 逐块行军（11-23 同志定乙：地块编号做根，行军按地块一块一块走）
 //
 // 军令记在 GM.marchOrders，每回合按日数沿路走，走满一程落到下一块，走完全程抵达。
-// 日行一舍（17 公里），骑兵占九成以上的加倍，带炮的减半，冬季与五万以上大军减速。
+// 日行一舍（17 公里），骑兵占九成以上的加倍，炮械兵占两成以上的减半，冬季与五万以上大军减速。
 // 先前按目的地走的那套不看远近一回合送到、旧三系统界面掷 15~35 日——有地块的剧本都改走这里。
 // 假舆图：甲城—乙城 255 公里、乙城—丙城 300、丙城—丁城 255；戊城不通路；「东路」是丙丁两块的片区。
 'use strict';
@@ -33,7 +33,7 @@ function context(opts) {
       armies: [
         { id: 'a1', name: '步营', faction: '明朝廷', soldiers: 10000, composition: foot(10000), garrison: '甲城', location: '甲城' },
         { id: 'a2', name: '铁骑', faction: '明朝廷', soldiers: 5000, composition: [{ type: '骑兵', count: 5000 }], garrison: '甲城', location: '甲城' },
-        { id: 'a3', name: '炮营', faction: '明朝廷', soldiers: 8500, composition: [{ type: '步兵', count: 8000 }, { type: '炮兵', count: 500 }], garrison: '甲城', location: '甲城' },
+        { id: 'a3', name: '炮营', faction: '明朝廷', soldiers: 8500, composition: [{ type: '步兵', count: 6000 }, { type: '炮兵', count: 2500 }], garrison: '甲城', location: '甲城' },
         { id: 'a4', name: '大军', faction: '明朝廷', soldiers: 60000, composition: foot(60000), garrison: '甲城', location: '甲城' },
         { id: 'a5', name: '卫所总览', faction: '明朝廷', soldiers: 90000, dispersed: true, garrison: '各地卫所', location: '各地卫所' },
       ],
@@ -69,12 +69,18 @@ function context(opts) {
 const M = (ctx) => ctx.TM.ArmyMarch;
 const army = (ctx, id) => ctx.GM.armies.find((a) => a.id === id);
 
-console.log('[1] 快慢：日行一舍 17 公里，骑军加倍，带炮减半，五万以上与冬季减速');
+console.log('[1] 快慢：日行一舍 17 公里，骑军加倍，炮械兵占两成以上减半，五万以上与冬季减速');
 {
   const ctx = context();
   assert(M(ctx).pace(army(ctx, 'a1')).kmPerDay === 17, '步营日行 17 公里');
   assert(M(ctx).pace(army(ctx, 'a2')).kmPerDay === 34 && M(ctx).pace(army(ctx, 'a2')).kind === 'cavalry', '全是骑兵的铁骑日行 34 公里');
-  assert(M(ctx).pace(army(ctx, 'a3')).kmPerDay === 8.5 && M(ctx).pace(army(ctx, 'a3')).kind === 'siege', '带炮兵的炮营日行 8.5 公里');
+  assert(M(ctx).pace(army(ctx, 'a3')).kmPerDay === 8.5 && M(ctx).pace(army(ctx, 'a3')).kind === 'siege', '炮兵近三成的炮营日行 8.5 公里');
+  const light = M(ctx).pace({ soldiers: 8500, composition: [{ type: '步兵', count: 8000 }, { type: '炮兵', count: 500 }] });
+  assert(light.kmPerDay === 17 && light.kind === 'infantry', '炮兵不到一成的照步军走，日行 17 公里（实得 ' + light.kmPerDay + '）');
+  const edge = M(ctx).pace({ soldiers: 10000, composition: [{ type: '步兵', count: 8000 }, { type: '炮兵', count: 2000 }] });
+  assert(edge.kmPerDay === 8.5 && edge.kind === 'siege', '炮兵恰占两成的按辎重走，日行 8.5 公里（实得 ' + edge.kmPerDay + '）');
+  const cav = M(ctx).pace({ soldiers: 10000, composition: [{ type: '骑兵', count: 9500 }, { type: '炮兵', count: 500 }] });
+  assert(cav.kmPerDay === 34 && cav.kind === 'cavalry', '骑兵九成五、带五百炮兵的仍按骑军走（实得 ' + cav.kmPerDay + '）');
   assert(M(ctx).pace(army(ctx, 'a4')).kmPerDay === 13.6, '六万大军 17×0.8＝13.6 公里（实得 ' + M(ctx).pace(army(ctx, 'a4')).kmPerDay + '）');
   const w = context({ winter: true });
   assert(M(w).pace(army(w, 'a1')).kmPerDay === 11.9, '冬季步营 17×0.7＝11.9 公里（实得 ' + M(w).pace(army(w, 'a1')).kmPerDay + '）');

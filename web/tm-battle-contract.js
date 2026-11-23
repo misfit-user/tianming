@@ -53,6 +53,26 @@
     var key = String(ref);
     return battleParticipants(br, G).some(function(p) { return p.army && p.army._revoltBand && String(p.army.faction || '') === key; });
   }
+  // 接战规矩（11-23 同志定甲）：两边的军须同在一块或相邻一程，隔得更远的仗不落、退回记进未落地。
+  //   每支参战的军都得挨着对面至少一支；认不出在哪块的军不判；没有地块的剧本不判（地块与四邻见 tm-army-march.js）
+  function contactErrors(br, G) {
+    var march = global.TM && global.TM.ArmyMarch;
+    if (!march || typeof march.contact !== 'function' || !march.usable(G)) return [];
+    var parts = battleParticipants(br, G), errors = [], told = [];
+    var facOf = function(p) { return battleFactionName(p.army.factionId || p.army.faction, G); };
+    var sideOf = function(p) { var s = String(p.side || (p.entry && p.entry.side) || ''); return /attack|攻/i.test(s) ? 'A' : /defen|守/i.test(s) ? 'D' : ''; };
+    var opposed = function(p, q) { var sp = sideOf(p), sq = sideOf(q); return sp && sq ? sp !== sq : facOf(p) !== facOf(q); };
+    parts.forEach(function(p) {
+      var seen = parts.filter(function(q) { return q !== p && opposed(p, q); })
+        .map(function(q) { return { q: q, c: march.contact(p.army, q.army, G) }; })
+        .filter(function(x) { return x.c; });
+      if (!seen.length || seen.some(function(x) { return x.c.touch; })) return;
+      if (told.indexOf(seen[0].q.army) >= 0 && told.indexOf(p.army) >= 0) return;   // 同一对军正反只说一遍
+      told.push(p.army, seen[0].q.army);
+      errors.push('两军不相接·「' + (p.army.name || p.army.id) + '」在' + seen[0].c.a + '，对面「' + (seen[0].q.army.name || seen[0].q.army.id) + '」在' + seen[0].c.b + '，不在同一块也不相邻');
+    });
+    return errors;
+  }
   function validateBattleResult(br, G) {
     var errors = []; br = br || {}; G = G || _root();
     var winner = br.winnerFactionId || br.winnerFaction || br.winner, loser = br.loserFactionId || br.loserFaction || br.loser;
@@ -75,6 +95,7 @@
       if (!ch || ch.alive === false || ch.dead) errors.push('主将不存在或已故·' + fate.name);
     }
     if (!battleParticipants(br, G).length) errors.push('未识别任何参战军队');
+    contactErrors(br, G).forEach(function(e) { errors.push(e); });
     return { ok: !errors.length, errors: errors };
   }
   function findSettledBattle(br, G) {
@@ -145,6 +166,8 @@
     ensureBattleId(br,G);
     var prior = findSettledBattle(br, G);
     if (prior) return { ok: true, duplicate: true, result: prior, applied: prior.applied };
+    var apart = contactErrors(br, G);   // 主推演的战果直接落这里，不经 validateBattleResult，接战规矩在此再把一道
+    if (apart.length) return { ok: false, reason: apart.join('；'), apart: true };
     // 民变的军打赢、战报写了占城：这里不落城（「民变」还不是势力，城没处归），城留在战报上；
     //   结算后在这一仗的记录上写明哪几支民变的军占了哪几城（bandOccupied），过回合民变那一步据此立成势力、城走易主写口（成势，11-18）
     var win = br.winnerFactionId || br.winnerFaction || br.winner;

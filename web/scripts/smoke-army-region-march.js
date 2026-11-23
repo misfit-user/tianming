@@ -228,5 +228,89 @@ console.log('[11] 提示词【行军状况】：往哪、现在哪块、余经�
   assert(text.includes('步营：往丁城，现在乙城，余经丙城，约 18 日（1 回合）到'), '步营现在乙城，余 300 公里约 18 日：' + text.split('\n')[1]);
 }
 
+// 加一家后金、一支敌军；war 为真时明与后金交战
+function withFoe(ctx, at, war) {
+  ctx.GM.facs.push({ id: 'f-jin', name: '后金' });
+  if (war) ctx.GM.factionRelations = [{ from: '明朝廷', to: '后金', type: 'war', value: -95 }];
+  const foe = { id: 'j1', name: '两黄旗', faction: '后金', soldiers: 15000, composition: [{ type: '骑兵', count: 15000 }], garrison: at, location: at };
+  ctx.GM.armies.push(foe);
+  ctx.TMMapLocations.sync(foe, 'army', ctx.GM);
+  return foe;
+}
+
+console.log('[12] 遇敌停步：下一程有交战之敌的军，停在前一块；敌走了接着走；不交战的、民变不反的不挡');
+{
+  const ctx = context();
+  const foe = withFoe(ctx, '丙城', true);
+  const a = army(ctx, 'a1');
+  M(ctx).start(a, '丁城');
+  M(ctx).advance(ctx.GM, 30);
+  M(ctx).advance(ctx.GM, 30);
+  const o = ctx.GM.marchOrders[0];
+  assert(a.location === '乙城' && o && o.blocked && o.blocked.armyName === '两黄旗' && o.blocked.regionName === '丙城', '第二回合要进丙城，为两黄旗所阻，停在乙城（实得 ' + a.location + '）');
+  assert(ctx._ebs.some((x) => /步营往丁城，行至乙城，为后金·两黄旗所阻（敌驻丙城），止步待命/.test(x)), '事件簿记受阻');
+  const text = M(ctx).promptText(ctx.GM);
+  assert(text.includes('步营：往丁城，现在乙城，为后金·两黄旗所阻（敌驻丙城，与此相邻），止步待命') && /打不打由推演定/.test(text), '【行军状况】写明受阻、打不打由推演定');
+  ctx.TMMapLocations.moveArmy(foe, ctx.GM, 'r-e');
+  M(ctx).advance(ctx.GM, 30);
+  assert(a.location === '丁城' && a.state === 'garrison' && !ctx.GM.marchOrders.length, '两黄旗走了，接着走到丁城');
+  const named = context();
+  withFoe(named, '乙城', true).name = '后金·两黄旗';
+  M(named).start(army(named, 'a1'), '丁城');
+  M(named).advance(named.GM, 30);
+  assert(/为后金·两黄旗所阻/.test(M(named).promptText(named.GM)) && !/后金·后金/.test(M(named).promptText(named.GM) + named._ebs.join('')), '军名已带势力名的不再冠一遍');
+  const calm = context();
+  withFoe(calm, '丙城', false);
+  M(calm).start(army(calm, 'a1'), '丁城');
+  M(calm).advance(calm.GM, 30); M(calm).advance(calm.GM, 30);
+  assert(army(calm, 'a1').location === '丁城', '不交战的别家之军不挡');
+  const song = context();
+  song.GM.facs = [{ id: 'f-ming', name: '明朝廷', warState: { active: [{ enemy: '后金', since: '1626' }] } }];
+  withFoe(song, '乙城', false);
+  M(song).start(army(song, 'a1'), '丁城');
+  M(song).advance(song.GM, 30);
+  assert(army(song, 'a1').location === '甲城' && song.GM.marchOrders[0].blocked, 'warState 里写明的敌（绍宋那样记）也认：甲城就停住');
+  const band = context();
+  const rb = { id: 'b1', name: '王二部', faction: '民变', _revoltBand: true, soldiers: 3000, garrison: '乙城', location: '乙城' };
+  band.GM.armies.push(rb); band.TMMapLocations.sync(rb, 'army', band.GM);
+  M(band).start(army(band, 'a1'), '丁城');
+  M(band).advance(band.GM, 30);
+  assert(army(band, 'a1').location === '甲城' && band.GM.marchOrders[0].blocked && band.GM.marchOrders[0].blocked.armyName === '王二部', '在明朝廷地上起事的民变挡明军');
+  const passer = withFoe(band, '甲城', false);
+  M(band).start(passer, '丁城');
+  M(band).advance(band.GM, 30);
+  assert(passer.location !== '甲城' && !(band.GM.marchOrders.find((x) => x.armyId === 'j1') || {}).blocked, '民变不挡别家（后金）的军');
+}
+
+console.log('[13] 接战规矩：两边的军同块或相邻才落；隔得更远的退回，写明各在哪');
+{
+  const ctx = context({ files: [] });
+  const applied = [];
+  ctx.MilitarySystems = {
+    findBattleArmy: (ref, G) => (G.armies || []).find((a) => a.id === ref || a.name === ref) || null,
+    applyBattleResult: (br) => { applied.push(br.battleId); return { ok: true, result: { battleId: br.battleId, winner: br.winnerFactionId, loser: br.loserFactionId, affectedArmies: [] } }; },
+  };
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-battle-contract.js'), 'utf8'), ctx, { filename: 'tm-battle-contract.js' });
+  const foe = withFoe(ctx, '丁城', true);
+  const fight = (id, att) => ({ battleId: id, winnerFactionId: '明朝廷', loserFactionId: '后金', attackerArmyId: att, defenderArmyId: 'j1', casualties: { attacker: 100, defender: 300 } });
+  const far = ctx.MilitarySystems.applyBattleResult(fight('bt-far', 'a1'), ctx.GM);
+  assert(far.ok === false && far.apart && /两军不相接·「步营」在甲城，对面「两黄旗」在丁城/.test(far.reason) && applied.indexOf('bt-far') < 0, '甲城打丁城（隔两块）：不落，写明各在哪：' + far.reason);
+  const v = ctx.MilitarySystems.validateBattleResult(fight('bt-far2', 'a1'), ctx.GM);
+  assert(!v.ok && v.errors.some((e) => /两军不相接/.test(e)), '军事子调用走的校验也拦');
+  ctx.TMMapLocations.moveArmy(foe, ctx.GM, 'r-b');
+  const near = ctx.MilitarySystems.applyBattleResult(fight('bt-near', 'a1'), ctx.GM);
+  assert(near.ok && applied.indexOf('bt-near') >= 0, '敌在相邻的乙城：照落');
+  ctx.TMMapLocations.moveArmy(foe, ctx.GM, 'r-a');
+  assert(ctx.MilitarySystems.applyBattleResult(fight('bt-same', 'a1'), ctx.GM).ok, '同在甲城：照落');
+  const loose = ctx.MilitarySystems.applyBattleResult(fight('bt-disp', 'a5'), ctx.GM);
+  assert(loose.ok, '散驻各地、认不出在哪块的军不判');
+  const noMap = context({ noMap: true });
+  noMap.MilitarySystems = { findBattleArmy: (ref, G) => (G.armies || []).find((a) => a.id === ref || a.name === ref) || null, applyBattleResult: () => ({ ok: true, result: {} }) };
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-battle-contract.js'), 'utf8'), noMap, { filename: 'tm-battle-contract.js' });
+  noMap.GM.facs.push({ id: 'f-jin', name: '后金' });
+  noMap.GM.armies.push({ id: 'j1', name: '两黄旗', faction: '后金', soldiers: 15000, garrison: '丁城', location: '丁城' });
+  assert(noMap.MilitarySystems.applyBattleResult(fight('bt-nomap', 'a1'), noMap.GM).ok, '没有地块的剧本不判');
+}
+
 if (failed) { console.log('FAIL smoke-army-region-march: ' + failed + ' 项'); process.exit(1); }
 console.log('PASS smoke-army-region-march');

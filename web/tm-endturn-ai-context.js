@@ -101,7 +101,7 @@
       var text = String(x.a.garrison || x.a.location || '').trim();
       var note = x.b.precision === 'representative' && text && text !== nameOf(x.id) ? '（约在此，原写「' + text.slice(0, 16) + '」）' : '';
       var mo = march && typeof march.activeOrder === 'function' ? march.activeOrder(x.a, GM) : null;
-      var going = mo && mo.toName ? '（行军中，往' + mo.toName + '）' : '';
+      var going = mo && mo.toName ? '（行军中，往' + mo.toName + (mo.blocked ? '，为' + mo.blocked.armyName + '所阻' : '') + '）' : '';
       return String(x.a.name || '某军') + ' ' + men(x.a) + note + going;
     };
     var total = function(list) { return list.reduce(function(s, x) { return s + men(x.a); }, 0); };

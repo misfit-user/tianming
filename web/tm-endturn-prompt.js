@@ -3349,6 +3349,7 @@
     sysP += '\n- char_updates: 修改角色忠诚/野心/压力/所在地/立场/党派等（new_location/new_stance/new_party）';
     sysP += '\n- battleResult: 结构化战斗结果。若本回合明确发生战斗，请输出 {winnerFactionId, loserFactionId, occupiedCityIds, casualties:{attacker,defender}, affectedArmies:[{armyId,side,loss,moraleDelta,loyaltyDelta,state,commanderFate}], commanderFate:{name,outcome}, huangweiDelta, postBattleEffects[]}，胜负/占城/伤亡不得只写在叙事里。★【玩家胜仗必出 battleResult】玩家方（朝廷/官军）本回合只要交战并取胜，必须输出本字段且 winnerFactionId 填玩家势力——否则军胜不会结算进皇威（玩家会看到「军胜」项纹丝不动）；叙事一旦出现"大破/大捷/收复/克城/歼敌/平虏/破贼"等胜果字样，必须配套 battleResult，不能只写在叙事里。\n  ※ huangweiDelta 0~8：仅当赢家是玩家势力时按战果定皇威加分——灭国级大捷/收复重镇 6~8、击溃主力 3~5、小胜/边境摩擦 1~2；敌胜或平局给 0。漏给则引擎按保底 +2/场落地。';
     sysP += '\n  ※ 伤亡定位：affectedArmies[].armyId 与败方军队引用，须用精确番号或主帅姓名（如"代善"），不能只给势力名——"后金"对应多支旗军，引擎无法定位到具体军，伤亡会落空、敌军杀不完。';
+    sysP += '\n  ※ 接战须相接：两边的军须同在一块或相邻（四邻见【诸军驻地】，别家驻在哪见【近边别家之军】）；隔得更远的仗不落地、退回。要打远处的敌，先用 army_changes 的 destination 调过去，行军遇敌会停在敌军前一块（见【行军状况】），下回合再写这一仗。';
     _mark('base');
     sysP += '\n\n【NPC自主行为系统·核心——每回合必须生成】';
     sysP += '\nnpc_actions是世界活力的引擎。每回合应有5-10条NPC自主行为，涵盖不同层级的角色。';

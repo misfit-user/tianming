@@ -107,6 +107,85 @@
     return !toId || toId === from || neighborsOf(game, from).indexOf(toId) >= 0;
   }
 
+  // ── 遇敌停步（11-23 同志定甲）：下一程有交战之敌的军，就停在前一块，打不打交推演 ──
+  // 交战的两家：交战记录（activeWars）、势力关系写着战争或敌的、势力 warState 里写明的敌（绍宋）；写成一句话的战况不按字面认。
+  // 民变的军（_revoltBand）与它所在地块的那一家为敌。
+  var WAR_TYPES = ['war', '战争', '交战', 'enemy', 'enemy_total'];
+  function facKey(game, ref) {
+    var s = String(ref == null ? '' : ref).trim();
+    if (!s) return '';
+    var f = (game.facs || []).find(function (x) { return x && (String(x.id) === s || x.name === s); });
+    return f ? String(f.id || f.name) : s;
+  }
+  function warPairs(game) {
+    var pairs = new Set();
+    var add = function (a, b) {
+      a = facKey(game, a); b = facKey(game, b);
+      if (a && b && a !== b) { pairs.add(a + '|' + b); pairs.add(b + '|' + a); }
+    };
+    (game.activeWars || []).forEach(function (w) { if (w) add(w.attacker, w.defender); });
+    (game.factionRelations || []).forEach(function (r) { if (r && WAR_TYPES.indexOf(String(r.type)) >= 0) add(r.from, r.to); });
+    (game.facs || []).forEach(function (f) {
+      var ws = f && f.warState;
+      (ws && Array.isArray(ws.active) ? ws.active : []).forEach(function (e) { if (e && typeof e === 'object' && e.enemy) add(f.id || f.name, e.enemy); });
+    });
+    return pairs;
+  }
+  function ownerOf(game, regionId) {
+    var r = regionRow(game, regionId);
+    var o = r && (r.currentOwner != null && r.currentOwner !== '' ? r.currentOwner : r.owner);
+    return o == null ? '' : facKey(game, o);
+  }
+  function hostile(a, b, game, pairs) {
+    game = game || global.GM;
+    if (!a || !b || a === b) return false;
+    if (a._revoltBand || b._revoltBand) {
+      if (a._revoltBand && b._revoltBand) return false;
+      var band = a._revoltBand ? a : b, other = band === a ? b : a, own = ownerOf(game, hereOf(band, game));
+      return !!own && own === facKey(game, other.factionId || other.faction);
+    }
+    var fa = facKey(game, a.factionId || a.faction), fb = facKey(game, b.factionId || b.faction);
+    return !!(fa && fb && fa !== fb && (pairs || warPairs(game)).has(fa + '|' + fb));
+  }
+  function armiesByRegion(game) {
+    var m = new Map();
+    (game.armies || []).forEach(function (a) {
+      if (!a || a.destroyed || a.disbanded || a.dispersed === true || !(Number(a.soldiers) > 0)) return;
+      var id = hereOf(a, game);
+      if (!id) return;
+      if (!m.has(id)) m.set(id, []);
+      m.get(id).push(a);
+    });
+    return m;
+  }
+  // 受阻时怎么称那支敌军：势力名·军名（军名已带势力名的不再冠）
+  function foeLabel(bk) {
+    var fac = String(bk.faction || ''), name = String(bk.armyName || '某军');
+    return fac && name.indexOf(fac) !== 0 ? fac + '·' + name : name;
+  }
+  function facName(game, ref) {
+    var s = String(ref == null ? '' : ref);
+    var f = (game.facs || []).find(function (x) { return x && (String(x.id) === s || x.name === s); });
+    return f ? String(f.name || f.id) : s;
+  }
+  // 这块地上与此军交战之敌的军（兵最多的那支），没有给 null
+  function foeIn(army, regionId, game, seen) {
+    var list = (seen.byRegion.get(String(regionId)) || []).filter(function (x) {
+      return x !== army && !x.destroyed && !x.disbanded && Number(x.soldiers) > 0 && hereOf(x, game) === String(regionId) && hostile(army, x, game, seen.pairs);
+    });
+    list.sort(function (p, q) { return (Number(q.soldiers) || 0) - (Number(p.soldiers) || 0); });
+    return list[0] || null;
+  }
+
+  // 接战规矩（11-23 同志定甲）：两支军同在一块或相邻一程才相接。哪支认不出在哪块的给 null（不判）
+  function contact(a, b, game) {
+    game = game || global.GM;
+    if (!a || !b || !usable(game)) return null;
+    var x = hereOf(a, game), y = hereOf(b, game);
+    if (!x || !y) return null;
+    return { touch: x === y || neighborsOf(game, x).indexOf(y) >= 0 || neighborsOf(game, y).indexOf(x) >= 0, a: nameOf(game, x), b: nameOf(game, y) };
+  }
+
   function fail(reason) { return { ok: false, reason: reason }; }
 
   // 定路线：从此军现在所在的地块到去处，经哪几块、多少公里、约几日几回合（只算不写）
@@ -213,7 +292,7 @@
     if (!game || !usable(game)) return [];
     days = Number(days) > 0 ? Number(days) : turnDays();
     adoptLegacy(game);
-    var moved = [];
+    var moved = [], seen = { pairs: warPairs(game), byRegion: armiesByRegion(game) };
     (game.marchOrders || []).slice().forEach(function (order) {
       if (!order || order.status !== 'marching' || !Array.isArray(order.regionPath)) return;
       var army = armyOf(order, game);
@@ -232,10 +311,20 @@
       }
       var p = pace(army);
       order.kmPerDay = p.kmPerDay; order.pace = p.kind;
-      var budget = p.kmPerDay * days, passed = [];
+      var budget = p.kmPerDay * days, passed = [], wasBlocked = order.blocked;
+      delete order.blocked;
       while (budget > 1e-6 && order.seg < order.segments.length) {
         var s = order.segments[order.seg], need = Math.max(0, s.km - order.segKm);
         if (budget < need) { order.segKm += budget; budget = 0; break; }
+        // 下一程有交战之敌的军：停在这块，余下的日子按兵不动，打不打交推演
+        var foe = foeIn(army, s.toRegionId, game, seen);
+        if (foe) {
+          order.blocked = { regionId: String(s.toRegionId), regionName: nameOf(game, s.toRegionId), armyId: String(foe.id || foe.name),
+            armyName: String(foe.name || '某军'), faction: facName(game, foe.faction || foe.factionId || ''),
+            sinceTurn: wasBlocked && wasBlocked.armyId === String(foe.id || foe.name) ? wasBlocked.sinceTurn : (game.turn || 0) };
+          budget = 0;
+          break;
+        }
         budget -= need; order.segKm = 0; order.seg += 1;
         locs().moveArmy(army, game, s.toRegionId);
         army.destinationRegionId = order.toRegionId;
@@ -252,7 +341,11 @@
       order.totalDays = Math.ceil(order.daysMarched + left);
       order.totalTurns = order.progress + turnsLeft;
       order.eta = (game.turn || 0) + turnsLeft;
-      if (passed.length) note((army.name || '某军') + '经' + passed.join('、') + '，往' + order.toName + '尚余约' + Math.ceil(left) + '日。');
+      var bk = order.blocked;
+      if (bk && !(wasBlocked && wasBlocked.armyId === bk.armyId)) {
+        note((army.name || '某军') + '往' + order.toName + '，行至' + nameOf(game, order.regionPath[order.seg]) + '，为' +
+          foeLabel(bk) + '所阻（敌驻' + bk.regionName + '），止步待命。');
+      } else if (passed.length) note((army.name || '某军') + '经' + passed.join('、') + '，往' + order.toName + '尚余约' + Math.ceil(left) + '日。');
       moved.push({ army: army.name, passed: passed, arrived: false });
     });
     game.marchOrders = (game.marchOrders || []).filter(function (o) { return o && o.status === 'marching'; });
@@ -272,18 +365,19 @@
     var lines = ['【行军状况】逐块行军：日行一舍（约 17 公里），骑军加倍，带炮械的减半，冬季与五万以上大军更迟；每回合 ' + days + ' 日'];
     orders.slice(0, PROMPT_CAP).forEach(function (o) {
       var rest = o.regionPath.slice(o.seg + 1).map(function (id) { return nameOf(game, id); });
-      var left = Math.ceil(kmLeft(o) / Math.max(Number(o.kmPerDay) || KM_PER_DAY, 0.1));
+      var left = Math.ceil(kmLeft(o) / Math.max(Number(o.kmPerDay) || KM_PER_DAY, 0.1)), bk = o.blocked;
       lines.push('  ' + (o.armyName || '某军') + '：往' + o.toName + '，现在' + nameOf(game, o.regionPath[o.seg]) +
-        (rest.length > 1 ? '，余经' + rest.slice(0, -1).join('、') : '') +
-        '，约 ' + left + ' 日（' + Math.max(1, Math.ceil(left / days)) + ' 回合）到');
+        (bk ? '，为' + foeLabel(bk) + '所阻（敌驻' + bk.regionName + '，与此相邻），止步待命' :
+          (rest.length > 1 ? '，余经' + rest.slice(0, -1).join('、') : '') + '，约 ' + left + ' 日（' + Math.max(1, Math.ceil(left / days)) + ' 回合）到'));
     });
+    if (orders.some(function (o) { return o.blocked; })) lines.push('  （受阻的军与敌相邻，打不打由推演定：要打写 battleResult；敌退了下回合接着走）');
     if (orders.length > PROMPT_CAP) lines.push('  （另有 ' + (orders.length - PROMPT_CAP) + ' 支在途，从略）');
     return lines.join('\n');
   }
 
   global.TM = global.TM || {};
   global.TM.ArmyMarch = { usable: usable, plan: plan, start: start, advance: advance, pace: pace, activeOrder: activeOrder,
-    nearby: nearby, promptText: promptText, KM_PER_DAY: KM_PER_DAY };
+    nearby: nearby, promptText: promptText, contact: contact, hostile: hostile, KM_PER_DAY: KM_PER_DAY };
 
   // 排在 MarchSystem（33）之前：先把旧令换成逐块行军，余下没地块的旧令仍由它推进
   if (global.SettlementPipeline && typeof global.SettlementPipeline.register === 'function') {

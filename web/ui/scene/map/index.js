@@ -415,6 +415,13 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uDpr: { value: stage.size.dpr || 1 }, uFadePx: { value: new THREE.Vector2(7, 12) }, uMaxPx: { value: 34 }, uAtlas: { value: atlas() }
   };
   let trees = null;                           // 点景远看都小过数像素、淡尽了，整层不画
+  let treeItems = [];                         // 林木（开局按地形定死）
+  // 村舍候选：[x, 高, y, 大小, 样子, 门槛]。门槛小于所在府州的疏密（settle[i].village，原样为 1）才画，见 villagesNow
+  const villageCands = [];
+  const VILLAGE_MAX = 1.6;
+  let vs = 977;
+  const vrnd = () => ((vs = (vs * 1664525 + 1013904223) >>> 0) / 4294967296);
+  let settle = null;                          // 聚落等第（府州下标对齐 regions），setSettlements 给
   if (q.trees) {
     let s = 41;
     const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -436,9 +443,14 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
         const px = x + (rnd() - 0.5) * 4.5, py = y + (rnd() - 0.5) * 4.5;
         if (landAt(px, py) < 0.5 || wetAt(px, py) || heightAt(px, py) > 0.06 || massifAt(px, py) > 0.05) continue;
         const byRiver = lines.nearRiver(px, py);
-        if (rnd() > 0.02 + 0.22 * cluster(px, py) ** 2 + (byRiver ? 0.22 : 0)) continue;
+        // 疏密随府州户口密度乘一个数（至多 VILLAGE_MAX）：这里把至多那么多倍的候选都留下，画哪些由 villagesNow 挑。
+        // 原本就有的那些照旧取主随机数（后面林木的位置一点不变），多留的取另一路随机数
+        const accept = 0.02 + 0.22 * cluster(px, py) ** 2 + (byRiver ? 0.22 : 0);
+        const roll = rnd();
+        if (roll > accept * VILLAGE_MAX) continue;
+        const pick = roll <= accept ? rnd : vrnd;
         const nearWater = byRiver || wetAt(px + 2, py) || wetAt(px - 2, py) || wetAt(px, py + 2) || wetAt(px, py - 2);
-        items.push([px, heightAt(px, py), py, 1.5 + rnd() * 0.6, nearWater && rnd() < 0.3 ? SPRITE.willow : SPRITE.hamlet]);
+        villageCands.push([px, heightAt(px, py), py, 1.5 + pick() * 0.6, nearWater && pick() < 0.3 ? SPRITE.willow : SPRITE.hamlet, roll / accept]);
       }
     }
     // 林：沙盘上一丛丛的树——丘陵山坡与湿润处成片（江南、西南、关东密，中原、塞外稀），树线以上、水上不长。
@@ -475,26 +487,98 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
         items.push([px, heightAt(px, py), py, (hilly > 0.5 ? 1.25 : 1.05) + rnd() * 0.5, kind]);
       }
     }
+    treeItems = items;
+    buildTrees();
+  }
+  // 村舍：疏密照所在府州（settle[i].village）；人烟稠处一部分换成大村（庄）
+  function villagesNow() {
+    const out = [];
+    for (const c of villageCands) {
+      let f = 1;
+      if (settle) { const i = regionIndexAt(c[0], c[2]); const st = i >= 0 ? settle[i] : null; if (st && st.village != null) f = st.village; }
+      if (c[5] >= f) continue;
+      out.push([c[0], c[1], c[2], c[3], c[4] === SPRITE.hamlet && f > 1.05 && c[5] < (f - 1.05) * 1.2 ? SPRITE.hamletB : c[4]]);
+    }
+    return out;
+  }
+  function buildTrees() {
+    if (!q.trees) return;
+    if (trees) { scene.remove(trees); trees.geometry.dispose(); trees.material.dispose(); trees = null; }
     // 由北往南排（镜头多朝北看，远的先画、近的压上去）
-    items.sort((a, b) => a[2] - b[2]);
-    trees = spriteLayer(items, spriteUniforms);
+    const all = treeItems.concat(villagesNow()).sort((a, b) => a[2] - b[2]);
+    trees = spriteLayer(all, spriteUniforms);
     scene.add(trees);
   }
 
-  // ---------- 城郭：府州治所（京城两重城楼）；近看才显 ----------
-  const cityUniforms = { ...spriteUniforms, uFadePx: { value: new THREE.Vector2(9, 15) }, uMaxPx: { value: 46 } };
+  // ---------- 聚落：府州治所的城郭（按繁华分档，见 model/settlement.js）、市镇、港；近看才显 ----------
+  // 没给分档时（舆图台、开局读数之前）照旧：京城、要府大一号、其余府城
+  const cityUniforms = { ...spriteUniforms, uFadePx: { value: new THREE.Vector2(9, 15) }, uMaxPx: { value: 72 } };
+  const CITY_SPRITE = [SPRITE.town, SPRITE.city, SPRITE.grand, SPRITE.metro];   // 小城、府城、大府、都会
+  const CITY_SIZE = [3.4, 3.9, 4.6, 5.3];
+  const wetOf = waterSampler(d.water);
+  const spotMemo = new Map();                 // 府州下标 → 市镇、港的落点（算一回留着；档变了只换显不显）
   let cities = null;
+  function seatSprite(i, k) {
+    if (k === 2) return [SPRITE.capital, 6.0];
+    const st = settle && settle[i];
+    if (!st) return [SPRITE.city, k === 1 ? 3.3 : 2.6];
+    if (st.style === 'nomad') return st.tier ? [SPRITE.yurtL, 4.0] : [SPRITE.yurtS, 3.2];
+    if (st.style === 'tribal') return st.tier ? [SPRITE.stockL, 3.9] : [SPRITE.stockS, 3.2];
+    if (st.ruined) return [SPRITE.ruin, 3.8];
+    return [CITY_SPRITE[st.tier] ?? SPRITE.city, (CITY_SIZE[st.tier] ?? 3.9) + (k === 1 ? 0.3 : 0)];
+  }
   function buildCities() {
     if (cities) { scene.remove(cities); cities.geometry.dispose(); cities.material.dispose(); cities = null; }
     if (!regions.length) return;
     const caps = labels.capitals, seats = labels.important;
-    cities = spriteLayer(regions.map((r, i) => {
+    const items = [];
+    regions.forEach((r, i) => {
       const [x, y] = r.center;
-      const k = caps.has(i) ? 2 : seats.has(i) ? 1 : 0;
-      return [x, heightAt(x, y), y, k === 2 ? 4.2 : k === 1 ? 3.3 : 2.6, k === 2 ? SPRITE.capital : SPRITE.city];
-    }), cityUniforms);
+      const [sprite, size] = seatSprite(i, caps.has(i) ? 2 : seats.has(i) ? 1 : 0);
+      items.push([x, heightAt(x, y), y, size, sprite]);
+      const st = settle && settle[i];
+      if (!st || (!st.markets && !st.port)) return;
+      const sp = spotsOf(i);
+      for (const [mx, my] of sp.markets.slice(0, st.markets)) items.push([mx, heightAt(mx, my), my, 2.5, SPRITE.market]);
+      if (st.port && sp.port) items.push([sp.port[0], heightAt(sp.port[0], sp.port[1]), sp.port[1], 3.0, SPRITE.port]);
+    });
+    items.sort((a, b) => a[2] - b[2]);
+    cities = spriteLayer(items, cityUniforms);
     cities.renderOrder = 21;
     scene.add(cities);
+  }
+  // 市镇落在本府州里傍河、低平处（离治所四个世界像素以外，彼此也隔开；傍河处找不够再找别处）；
+  // 港落在离治所最近的海岸（九个世界像素以内，没有就不设）。按府州下标定随机数，每回落点一样
+  function spotsOf(i) {
+    if (spotMemo.has(i)) return spotMemo.get(i);
+    const r = regions[i];
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const ring of r.rings || [r.poly]) for (const [x, y] of ring) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+    let seed = (7919 + i * 104729) >>> 0;
+    const rr = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+    const [cx, cy] = r.center;
+    const flat = (x, y) => regionIndexAt(x, y) === i && landOf(x, y) >= 0.5 && !wetOf(x, y) && heightAt(x, y) < 0.08;
+    const markets = [];
+    for (const needRiver of [true, false]) {
+      for (let t = 0; t < 120 && markets.length < 3; t++) {
+        const x = x0 + rr() * (x1 - x0), y = y0 + rr() * (y1 - y0);
+        if (!flat(x, y) || Math.hypot(x - cx, y - cy) < 4 || markets.some(([mx, my]) => Math.hypot(mx - x, my - y) < 4)) continue;
+        if (needRiver && !lines.nearRiver(x, y)) continue;
+        markets.push([x, y]);
+      }
+    }
+    let port = null, best = Infinity;
+    for (let a = 0; a < 24; a++) {
+      const dx = Math.cos(a * Math.PI / 12), dy = Math.sin(a * Math.PI / 12);
+      for (let dd = 0.5; dd <= 9; dd += 0.5) {
+        if (landOf(cx + dx * dd, cy + dy * dd) >= 0.5) continue;
+        if (dd < best) { best = dd; port = [cx + dx * (dd - 0.7), cy + dy * (dd - 0.7)]; }
+        break;
+      }
+    }
+    const out = { markets, port };
+    spotMemo.set(i, out);
+    return out;
   }
 
   // ---------- 题名（写在地面上，见 labels.js） ----------
@@ -862,7 +946,10 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       labels.setCapitals([]);
       labels.setImportant([]);
       labels.setData(labelData());
+      settle = null;
+      spotMemo.clear();
       buildCities();
+      buildTrees();
     },
     setOwnership(changes) {
       for (const [i, fac] of Object.entries(changes)) if (regions[i]) regions[i].faction = fac;
@@ -871,6 +958,13 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     },
     // 京城、要府（府州下标）：题名先占位、字大；城郭京城两重楼、要府大一号
     setCapitals(list) { labels.setCapitals(list); buildCities(); },
+    // 聚落等第（府州下标对齐 regions，每项 { style, tier, ruined, markets, port, village } 或 null）：城郭、市镇、港、四郊村舍照它重画。
+    // 给 null 或长短对不上就收回，照旧画
+    setSettlements(list) {
+      settle = Array.isArray(list) && list.length === regions.length ? list : null;
+      buildCities();
+      buildTrees();
+    },
     setImportant(list) { labels.setImportant(list); buildCities(); },
     get labelsReady() { return labels.ready; },
     get labelStats() { return labels.stats; },

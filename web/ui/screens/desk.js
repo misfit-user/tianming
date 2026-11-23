@@ -48,6 +48,7 @@ import { createXunren } from './xunren.js';
 import { openAllVars } from './allvars.js';
 import { openGazette } from './gazette.js';
 import { openAnnals } from './annals.js';
+import { settlementOf, villageFactor } from '../model/settlement.js';
 import { openSaves } from './saves.js';
 import { createMapMarks } from './mapmarks.js';
 
@@ -957,6 +958,30 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     return [title, lines];
   }
 
+  // 聚落：各府州治所画几等城郭、四郊村舍多密（model/settlement.js 定档）。开局、读档、每回合推演之后各算一回；
+  // settleMemo 记着上回的档（回差用：月月微动的数不让城郭来回换样），换剧本、读档时清掉
+  let settleGen = 0;
+  const settleMemo = new Map();
+  let capitalSet = new Set();
+  const areaOf = (r) => (r.rings || [r.poly]).reduce((sum, ring) => {
+    let a = 0;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) a += (ring[j][0] + ring[i][0]) * (ring[j][1] - ring[i][1]);
+    return sum + Math.abs(a / 2);
+  }, 0);
+  async function applySettlements() {
+    const gen = ++settleGen;
+    let data = null;
+    try { data = await game.select.settlements(); } catch (err) { console.warn('[newui] 聚落等第读不到，舆图照旧画府城', err); return; }
+    if (gen !== settleGen || !data || !mapRegionList.length) return;
+    map.setSettlements(mapRegionList.map((r, i) => {
+      const info = data[r.id];
+      if (!info) return null;
+      const s = settlementOf({ ...info, capital: capitalSet.has(i) }, settleMemo.get(r.id) || null);
+      settleMemo.set(r.id, s);
+      return { ...s, village: villageFactor(info.mouths, areaOf(r)) };
+    }));
+  }
+
   // 开局、读档后：舆图换上本剧本的府州，案上绢图重画（带势力名）
   async function loadWorld() {
     const mr = game.select.mapRegions();
@@ -969,12 +994,15 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const caps = seats.capitals.map((alts) => alts.map(indexOf).find((i) => i >= 0));
     capitalIdx = caps[0] ?? -1;                     // 头一个是本方（区划树里 player 在前）
     map.setCapitals(caps.filter((i) => i >= 0));
+    capitalSet = new Set(caps.filter((i) => i >= 0));
+    settleMemo.clear();
     const seatIdx = seats.seats.map(indexOf).filter((i) => i >= 0);
     map.setImportant(seatIdx);
     seatNames = new Set([...seatIdx, ...caps.filter((i) => i >= 0)].map((i) => mapRegionList[i].name));
     replaceChildren(regionDl, mapRegionList.map((r) => h('option', { value: r.name }, [r.circuit, r.parent].filter(Boolean).join(' · '))));
     await applyFocus();
     marks.refresh();
+    applySettlements();
   }
   // 回合过后：府州易主就重画疆界、设色与题名（只在真有变化时；同一套府州才比，换了剧本走 loadWorld）
   function syncOwnership() {
@@ -1548,7 +1576,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       refresh();
       el.classList.add('on');
       game.setSurface(true);
-      offs.push(game.on('game:changed', refresh), game.on('game:advanced', refresh), game.on('game:advanced', syncOwnership), game.on('view:changed', refresh),
+      offs.push(game.on('game:changed', refresh), game.on('game:advanced', refresh), game.on('game:advanced', syncOwnership), game.on('game:advanced', () => applySettlements()), game.on('view:changed', refresh),
         game.on('game:turn-result', (r) => annals(r && r.idx)),
         game.on('ui:pause', pause), game.on('ui:saves', () => { if (el.classList.contains('on')) openSaves({ game, inGame: true }); }),
         game.on('ui:help', () => { if (el.classList.contains('on')) helpPage.show(); }),

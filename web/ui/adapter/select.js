@@ -749,6 +749,46 @@ export async function mapLayer(mode) {
   return out;
 }
 
+// ---------- 舆图聚落：各府州治所画几等城郭（定档在 model/settlement.js）要的数 ----------
+// 户口、繁荣、商贸不受奏报失真遮盖（方志里照列真数；遮的是丁口、民心、吏治），外地方志也只给等第——城郭的档本就是等第，各处照画。
+// 返回 { 府州 id: { prosperity, commerce, mouths, damage, kind, terrain, factionType } }。逐块读要几百毫秒，分批让出主线程；同一回合内缓存
+const settleCache = new Map();
+export async function settlements() {
+  const parts = w.TMPhase8FormalBridge && w.TMPhase8FormalBridge.__p8MapParts;
+  if (!parts || typeof parts.regionBundle !== 'function' || typeof parts.getMapData !== 'function') return null;
+  const g = G();
+  const key = `${g.turn}@${w._tmLoadGen || 0}`;
+  if (settleCache.has(key)) return settleCache.get(key);
+  const map = parts.getMapData();
+  const regions = (map && map.regions) || [];
+  const facs = (g.facs || []).filter(Boolean);
+  const facType = (r) => {
+    const k = parts.ownerKey ? String(parts.ownerKey(r) || '') : '', n = parts.ownerName ? String(parts.ownerName(r) || '') : '';
+    const f = facs.find((x) => String(x.id || x.name) === k || (n && x.name === n));
+    return f ? String(f.type || f.factionType || '') : '';
+  };
+  const out = {};
+  for (let i = 0; i < regions.length; i++) {
+    const r = regions[i];
+    try {
+      const b = parts.regionBundle(r);
+      const d = b.data || {}, eb = d.economyBase || {}, live = b.liveDivision || null;
+      const der = live && live._disasterEconomyReduce;
+      out[r.id] = {
+        prosperity: Number(d.prosperity), commerce: Number(eb.commerceVolume),
+        mouths: Number(d.population != null && d.population !== '' ? d.population : b.pop && b.pop.mouths),
+        damage: der ? Math.max(Number(der.farmland) || 0, Number(der.commerceVolume) || 0) : 0,
+        kind: String(parts.regionLevel ? parts.regionLevel(r) || '' : '').split(' · ')[0],
+        terrain: String(d.terrain || r.terrain || ''), factionType: facType(r)
+      };
+    } catch (_e) { /* 这一块读不到就不给分档，舆图照旧画府城 */ }
+    if (i % 40 === 39) await new Promise((res) => setTimeout(res, 0));
+  }
+  for (const k of settleCache.keys()) if (k !== key) settleCache.delete(k);
+  settleCache.set(key, out);
+  return out;
+}
+
 // ---------- 舆图府州：剧本地图坐标 → 舆图世界坐标（用内核山河境的同一套投影） ----------
 export function mapRegions() {
   const g = G();

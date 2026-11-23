@@ -60,7 +60,7 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'mk-routes');
   svg.innerHTML = '<defs><marker id="mk-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 z" fill="#a3281b"/></marker>' +
-    '<marker id="mk-stop" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M5,0 L5,10" stroke="#a3281b" stroke-width="3.2" stroke-linecap="round"/></marker></defs>';
+    '<marker id="mk-stop" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="11" markerHeight="11" orient="auto"><path d="M5,0.5 L5,9.5" stroke="#a3281b" stroke-width="2.8" stroke-linecap="round"/></marker></defs>';
   const marks = h('div.mk-pins');
   layer.append(svg, marks);
   let pins = [], routes = [];
@@ -118,8 +118,8 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
       pins.push(Object.assign(pin, { el }));
       for (const a of list) {
         if (!a.march) continue;
-        // 逐块行军的令沿实际路线画（现在这块 → 余下要经的各块 → 去处）；受阻的只画到挡路的那块、线头一道横杠、线不流动。
-        //   旧令没有路线的照旧从此处到去处画一道弧
+        // 逐块行军的令沿实际路线画（现在这块 → 余下要经的各块 → 去处）；受阻的只画到与挡路那块的交界、线头一道横杠、线不流动
+        //   （画到挡路那块的中心，横杠正压在敌旗底下看不见）。旧令没有路线的照旧从此处到去处画一道弧
         const way = (a.march.path || []).map((id) => regionOf([id], false)).filter(Boolean);
         const stop = a.march.blocked && regionOf([a.march.blocked.regionId], false);
         const to = stop || (way.length ? way[way.length - 1] : (a.march.toIds && a.march.toIds.length && regionOf(a.march.toIds, a.march.toIds.length > 2)) || placeOf(a.march.to));
@@ -127,7 +127,8 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, regionOf, kn
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('class', 'mk-route' + (stop ? ' blocked' : ''));
         path.setAttribute('marker-end', stop ? 'url(#mk-stop)' : 'url(#mk-arrow)');
-        const pts = stop || way.length < 2 ? [r.center, to.center] : [r.center].concat(way.filter((x, i) => i > 0 || x !== r).map((x) => x.center));
+        const pts = stop ? [r.center, [(r.center[0] + to.center[0]) / 2, (r.center[1] + to.center[1]) / 2]]
+          : way.length < 2 ? [r.center, to.center] : [r.center].concat(way.filter((x, i) => i > 0 || x !== r).map((x) => x.center));
         routes.push({ path, pts, arc: !stop && way.length < 2 });
       }
     }

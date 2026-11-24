@@ -8,7 +8,7 @@ import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
-import { createTowns, createScatter, townModel, LANDMARK_MODEL, localKind } from './towns3d.js';
+import { createTowns, createScatter, townModel, LANDMARK_MODEL, SCATTER_KINDS, localKind } from './towns3d.js';
 import { EAST_KIND } from './towns3d-east.js';
 import { SOUTH_KIND } from './towns3d-south.js';
 import { createLabels, realmTitle } from './labels.js';
@@ -416,6 +416,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   // SCATTER_OUT 那么大时小图淡出、立体的以抖点淡入。两边按同一把尺子（小图的屏上大小）量，恰好接上
   const SCATTER_OUT = new THREE.Vector2(16, 24);
   const SCATTER_K = { pine: 0.8, dot: 0.85, jia: 0.9, grove: 0.9, willow: 0.9, hamlet: 1, hamletB: 1 };   // 点景小图大小 → 模型比例（树的小图四边留白多，立体的缩一点才一般大）
+  for (const kd of SCATTER_KINDS) if (!(kd in SCATTER_K)) SCATTER_K[kd] = 1;     // 日本、朝鲜、大越、南洋的村舍与原样一般大
   const SCATTER_OF = { [SPRITE.pine]: 'pine', [SPRITE.dot]: 'dot', [SPRITE.jia]: 'jia', [SPRITE.grove]: 'grove', [SPRITE.willow]: 'willow', [SPRITE.hamlet]: 'hamlet', [SPRITE.hamletB]: 'hamletB' };
   const scatter = q.trees && q.tier !== 'low' ? createScatter({
     uRelief: uniforms.uRelief, uPx: uniforms.uPx, uCam: uniforms.uCam, uFogNear: uniforms.uFogNear, uFogFar: uniforms.uFogFar,
@@ -505,14 +506,18 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     treeItems = items;
     buildTrees();
   }
-  // 村舍：疏密照所在府州（settle[i].village）；人烟稠处一部分换成大村（庄）
+  // 村舍：疏密照所在府州（settle[i].village）；人烟稠处一部分换成大村（庄）。末一位记所在府州的地域（立体的那层按它换当地的村舍）
   function villagesNow() {
     const out = [];
     for (const c of villageCands) {
-      let f = 1;
-      if (settle) { const i = regionIndexAt(c[0], c[2]); const st = i >= 0 ? settle[i] : null; if (st && st.village != null) f = st.village; }
+      let f = 1, culture = null;
+      if (settle) {
+        const i = regionIndexAt(c[0], c[2]), st = i >= 0 ? settle[i] : null;
+        if (st && st.village != null) f = st.village;
+        if (st) culture = st.culture || null;
+      }
       if (c[5] >= f) continue;
-      out.push([c[0], c[1], c[2], c[3], c[4] === SPRITE.hamlet && f > 1.05 && c[5] < (f - 1.05) * 1.2 ? SPRITE.hamletB : c[4]]);
+      out.push([c[0], c[1], c[2], c[3], c[4] === SPRITE.hamlet && f > 1.05 && c[5] < (f - 1.05) * 1.2 ? SPRITE.hamletB : c[4], culture]);
     }
     return out;
   }
@@ -535,13 +540,13 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     trees = spriteLayer(all, spriteUniforms);
     scene.add(trees);
     if (!scatter) return;
-    // 立体的那层：同一批位置。树随手转个向；村舍大体坐北朝南，只偏一点
+    // 立体的那层：同一批位置。树随手转个向；村舍大体坐北朝南，只偏一点，日本、朝鲜、大越、南洋诸处换当地的村舍（localKind）
     const list = [];
-    for (const [x, h, y, size, t] of all) {
-      const kind = SCATTER_OF[t];
-      if (!kind) continue;
+    for (const [x, h, y, size, t, culture] of all) {
+      const base = SCATTER_OF[t];
+      if (!base) continue;
       const r = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
-      list.push({ kind, x, z: y, h, size, yaw: kind.startsWith('hamlet') ? (r - 0.5) * 0.7 : r * Math.PI * 2 });
+      list.push({ kind: localKind(base, culture), x, z: y, h, size, yaw: base.startsWith('hamlet') ? (r - 0.5) * 0.7 : r * Math.PI * 2 });
     }
     scatter.set(list);
   }

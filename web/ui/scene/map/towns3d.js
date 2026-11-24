@@ -1100,7 +1100,7 @@ function scHamletB(m) {
 // 递给别处诸样（towns3d-east.js、towns3d-south.js）的器件；far() 问此刻搭的是不是远看那份
 const KIT = {
   C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, archway, hall, courtyard, tree, pagoda, quarter, pool, flag, smoke,
-  wallRing, stilt, palisade, junk, rng, pick, tint, far: () => FAR
+  wallRing, stilt, palisade, junk, crown, trunk, rng, pick, tint, far: () => FAR
 };
 const BUILD = {
   town0: (m) => town(m, 0), town1: (m) => town(m, 1), city0: (m) => city(m, 0), city1: (m) => city(m, 1),
@@ -1113,8 +1113,9 @@ const BUILD = {
   ...eastBuilders(KIT),
   ...southBuilders(KIT)
 };
-// 林木、村舍那几样（createScatter 画的）
-export const SCATTER_KINDS = ['pine', 'dot', 'jia', 'grove', 'willow', 'hamlet', 'hamletB'];
+// 林木、村舍那几样（createScatter 画的）；村舍另有日本、朝鲜、大越、南洋（西洋据点四郊同南洋）的样子，按地域换（localKind）
+export const SCATTER_KINDS = ['pine', 'dot', 'jia', 'grove', 'willow', 'hamlet', 'hamletB',
+  'jpHamlet', 'jpHamletB', 'koHamlet', 'koHamletB', 'vnHamlet', 'vnHamletB', 'seaHamlet', 'seaHamletB'];
 export const TOWN_KINDS = Object.keys(BUILD);
 // 有远看那一份的（城郭、京城、残城）；帐、寨、市镇、港、营造地标本就几百到一两千面，不另做
 const HAS_FAR = /^(town|city|grand|metro)\d$|^(jp|jo|ko|vn|sea|we)\d\d$|^(capital|ruin|jpCap|joCap|koCap|vnCap|seaCap|weCap)$/;
@@ -1355,11 +1356,12 @@ export function createScatter(shared, k) {
   }
   return {
     group, set, update,
-    // 全图几处、分几块，上一帧挑出来画的几处、多少面
+    // 全图几处、分几块，上一帧挑出来画的几处、多少面；kinds 各样全图几处
     get stats() {
       let n = 0, drawn = 0, tris = 0;
-      for (const p of parts.values()) { n += p.total; drawn += p.geo.instanceCount; tris += p.geo.instanceCount * p.model.tris; }
-      return { instances: n, chunks: chunks.length, drawn, drawnTris: tris };
+      const kinds = {};
+      for (const p of parts.values()) { n += p.total; drawn += p.geo.instanceCount; tris += p.geo.instanceCount * p.model.tris; if (p.total) kinds[p.kind] = p.total; }
+      return { instances: n, chunks: chunks.length, drawn, drawnTris: tris, kinds };
     },
     dispose() { for (const p of parts.values()) { p.geo.dispose(); p.mesh.material.dispose(); } parts.clear(); chunks = []; }
   };

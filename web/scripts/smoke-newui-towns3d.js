@@ -2,7 +2,7 @@
 // 新界面舆图的立体城郭与营造地标（web/ui/scene/map/towns3d.js）：各样模型都搭得出、顶点没有坏数、远看那份比近看省面；
 // 聚落等第（web/ui/model/settlement.js）会给的每样营造地标都有立体模型；各地标的名义半宽罩得住模型本身（摆放、占地、多远开始显都按它）；
 // 林木、村舍的立体版省面，分块挑着画：近看只画镜头里那一片、远了不画；日本、朝鲜（towns3d-east.js）与大越、南洋、西洋据点（towns3d-south.js）诸样各档都有、越档越大；
-// 那几处的城外诸样（市镇、港、河埠与寺、祠庙、教堂、书院、堡、官署）照地域换了样子，占地不比舆图留的大，港贴海面、河埠随地面，其余各处一样。
+// 那几处的城外诸样（市镇、港、河埠与寺、祠庙、教堂、书院、堡、官署）与四郊村舍照地域换了样子，占地不比舆图留的大，港贴海面、河埠随地面，其余各处一样。
 // 模块是 ES 模块、引着 three：拷进临时目录（目录标成 ES 模块），three 取仓里 vendor 的那份放进临时目录的 node_modules。
 'use strict';
 const fs = require('fs');
@@ -103,6 +103,11 @@ function badVertices(geometry) {
       }
     }
     for (const base of ['granary', 'waterworks', 'workshop', 'beacon', 'relay', 'bridge', 'scaffold', 'ruinS']) check(Object.values(s.CULTURE).every((c) => t.localKind(base, c) === base), `${base} 各处一样`);
+    // 四郊村舍也照地域换（换成的在林木村舍那层里，省面那条见下）；林木各处一样
+    for (const c of Object.values(s.CULTURE)) {
+      check(['hamlet', 'hamletB'].every((b) => t.localKind(b, c) !== b && t.SCATTER_KINDS.includes(t.localKind(b, c))), `${c} 的村舍换当地的样子：${t.localKind('hamlet', c)}、${t.localKind('hamletB', c)}`);
+      check(['pine', 'dot', 'jia', 'grove', 'willow'].every((b) => t.localKind(b, c) === b), `${c} 的林木照原样`);
+    }
     check(['market', 'port', 'temple', 'church'].every((b) => t.localKind(b, null) === b && t.localKind(b, '') === b), '没给地域（中原）照原样');
     check(t.LANDMARK_MODEL.church === 'church' && t.localKind('church', 'west') !== 'church' && t.localKind('church', 'japan') === 'church', '教堂：西洋据点画西式的，别处照中原画殿');
     check(t.localKind('temple', 'west') === 'temple' && t.localKind('shrine', 'west') === 'shrine', '西洋据点的寺、祠庙照中原（华人的庙）');
@@ -147,6 +152,7 @@ function badVertices(geometry) {
     const spot = (x0, z0, kindOf) => Array.from({ length: 40 }, (_, i) => ({ kind: kindOf(i), x: x0 + (i % 8) * 2, z: z0 + Math.floor(i / 8) * 2, h: 0.05, yaw: 0, size: 1.5 }));
     sc.set(spot(1000, 800, (i) => (i % 2 ? 'pine' : 'hamlet')).concat(spot(1600, 300, () => 'pine'), spot(1000, 930, () => 'pine'), [{ kind: '不认得', x: 1000, z: 800, h: 0, yaw: 0, size: 1.5 }]));
     check(sc.stats.instances === 120, `收下 120 处（不认得的不收）：${sc.stats.instances}`);
+    check(sc.stats.kinds.pine === 100 && sc.stats.kinds.hamlet === 20 && !('不认得' in sc.stats.kinds), `各样几处照收下的数：${JSON.stringify(sc.stats.kinds)}`);
     const cam = new THREE.PerspectiveCamera(30, 16 / 9, 0.5, 4000);
     const look = (dist) => {
       cam.position.set(1008, 1 + dist * Math.cos(0.95), 804 + dist * Math.sin(0.95));

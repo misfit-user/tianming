@@ -14,11 +14,12 @@
 //   城柵（外一圈木栅，栅里国衙、望楼），官署即国衙。
 //   朝鲜——场市（白布遮阳棚、酒幕旗、榉树）；浦口（瓦仓、草房，白布帆、草席帆的船）；寺刹（天王门、石台上大雄殿、三层石塔、
 //   梵钟阁）；祠堂（三门、红箭门）；书院（石台上两层门楼、讲堂、东西斋、后头祠堂）；镇堡（随势小石城、虹霓门、将台）；官衙（三门、东轩、内衙、红箭门）。
+// 四郊村舍（点景近看换上的，每样八十面以内）：日本茅草农家、小土蔵、杉、稻架；朝鲜草房、瓦房、酱缸台。
 // k：towns3d.js 递来的器件（颜色、方块、屋顶、民居、街坊……，far() 问此刻搭的是不是远看那份）。各样搭完返回占地半宽。
 const YAW = { s: 0, e: Math.PI / 2, n: Math.PI, w: -Math.PI / 2 };
 
 export function eastBuilders(k) {
-  const { C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, hall, courtyard, tree, pagoda, quarter, pool, flag, palisade, junk, rng, pick } = k;
+  const { C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, hall, courtyard, tree, pagoda, quarter, pool, flag, palisade, junk, crown, trunk, rng, pick } = k;
   const far = k.far;
 
   // ======================= 日本 =======================
@@ -281,7 +282,7 @@ export function eastBuilders(k) {
   const K = {
     stone: [0.77, 0.76, 0.72], stoneTop: [0.7, 0.69, 0.66], roof: [0.32, 0.33, 0.35], roofDark: [0.26, 0.27, 0.29],
     pillar: [0.62, 0.27, 0.2], green: [0.32, 0.56, 0.46], wall: [0.94, 0.91, 0.84], earth: [0.8, 0.69, 0.53], thatch: [0.69, 0.61, 0.45],
-    ground: [0.8, 0.76, 0.66], street: [0.86, 0.83, 0.75]
+    ground: [0.8, 0.76, 0.66], street: [0.86, 0.83, 0.75], jar: [0.36, 0.26, 0.2]
   };
   // 圆转的城圈：超椭圆 |x/a|^p + |z/b|^p = 1 上取 n 点（p 越大越方）
   function loopPts(a, b, p, n, wob = 0, r = null) {
@@ -750,7 +751,71 @@ export function eastBuilders(k) {
     return 0.9;
   }
 
-  const out = { jpCap, joCap, koCap };
+  // ======================= 四郊村舍（点景近看换上的那种，几千处一起画，每样八十面以内） =======================
+  // 日本农家：板壁，陡的茅草四坡顶（一道短脊）
+  function minka(m, x, z, w, d, wh, rot, wall = J.wood) {
+    m.push(x, 0, z, rot ? Math.PI / 2 : 0);
+    box(m, -w / 2, -0.3, -d / 2, w / 2, wh, d / 2, wall, { faces: 'nsew' });
+    mound(m, 0, 0, w / 2 + 0.035, d / 2 + 0.04, w * 0.28, 0.012, wh, wh + d * 0.62, C.thatch);
+    m.pop();
+  }
+  // 小土蔵：白壁、黛瓦两坡
+  function kuraS(m, x, z, w, d, wh) {
+    box(m, x - w / 2, -0.3, z - d / 2, x + w / 2, wh, z + d / 2, J.plaster, { faces: 'nsew' });
+    gableRoof(m, x, wh, z, w / 2 + 0.02, d / 2 + 0.025, d * 0.45, J.roof, J.plaster, w / 2, d / 2);
+  }
+  // 村：一座茅草农家、一座小土蔵，屋后一株杉
+  function jpHamlet(m) {
+    minka(m, -0.12, 0.04, 0.42, 0.26, 0.11, false);
+    kuraS(m, 0.27, 0.16, 0.2, 0.16, 0.12);
+    trunk(m, 0.3, -0.22, 0.3, 0.022);
+    crown(m, 0.3, 0.46, -0.22, 0.11, 0.42, C.deep, 5, false);
+    return 0.44;
+  }
+  // 庄：两座茅草农家（一座白壁）、一座土蔵，场边一架稻架，屋后一株杉
+  function jpHamletB(m) {
+    minka(m, -0.04, -0.22, 0.5, 0.26, 0.12, false);
+    minka(m, -0.4, 0.06, 0.34, 0.22, 0.11, true, J.plaster);
+    kuraS(m, 0.4, 0.04, 0.2, 0.26, 0.13);
+    box(m, 0.02, 0, 0.18, 0.26, 0.09, 0.2, C.hay);
+    trunk(m, -0.42, -0.36, 0.3, 0.022);
+    crown(m, -0.42, 0.46, -0.36, 0.11, 0.42, C.deep, 5, false);
+    return 0.52;
+  }
+  // 朝鲜草房、瓦房（省面版）：土墙或白墙，一个圆鼓的草顶或四坡的黛瓦顶
+  function chogaS(m, x, z, w, d, wh, rot) {
+    m.push(x, 0, z, rot ? Math.PI / 2 : 0);
+    box(m, -w / 2, -0.3, -d / 2, w / 2, wh, d / 2, K.earth, { faces: 'nsew' });
+    mound(m, 0, 0, w / 2 + 0.03, d / 2 + 0.035, w * 0.3, d * 0.16, wh, wh + d * 0.42, K.thatch);
+    m.pop();
+  }
+  function kHouseS(m, x, z, w, d, wh, rot) {
+    m.push(x, 0, z, rot ? Math.PI / 2 : 0);
+    box(m, -w / 2, -0.3, -d / 2, w / 2, wh, d / 2, K.wall, { faces: 'nsew' });
+    mound(m, 0, 0, w / 2 + 0.035, d / 2 + 0.04, w * 0.3, 0.01, wh, wh + d * 0.4, K.roof);
+    m.pop();
+  }
+  // 村：两座草房，院角一处酱缸台，屋后一株树
+  function koHamlet(m) {
+    chogaS(m, -0.12, 0.04, 0.4, 0.24, 0.1, false);
+    chogaS(m, 0.25, 0.17, 0.28, 0.2, 0.09, true);
+    box(m, 0.02, -0.1, 0.24, 0.1, 0.04, 0.32, K.jar);
+    trunk(m, 0.3, -0.2, 0.26, 0.025);
+    crown(m, 0.3, 0.38, -0.2, 0.17, 0.28, C.jade, 5, false);
+    return 0.44;
+  }
+  // 庄：两座草房、一座瓦房（地主家）围着一块场，屋后一株树
+  function koHamletB(m) {
+    flat(m, -0.2, -0.06, 0.24, 0.24, 0.014, K.ground);
+    chogaS(m, -0.04, -0.22, 0.5, 0.24, 0.11, false);
+    chogaS(m, -0.4, 0.06, 0.34, 0.2, 0.1, true);
+    kHouseS(m, 0.4, 0.02, 0.32, 0.2, 0.11, true);
+    trunk(m, -0.42, -0.34, 0.28, 0.025);
+    crown(m, -0.42, 0.42, -0.34, 0.18, 0.3, C.jade, 5, false);
+    return 0.52;
+  }
+
+  const out = { jpCap, joCap, koCap, jpHamlet, jpHamletB, koHamlet, koHamletB };
   for (let t = 0; t < 4; t++) for (let v = 0; v < 2; v++) { out[`jp${t}${v}`] = jp(t, v); out[`jo${t}${v}`] = jo(t, v); out[`ko${t}${v}`] = ko(t, v); }
   Object.assign(out, {
     jpMarket: (m) => jpMarket(m), joMarket: (m) => jpMarket(m, true), koMarket,
@@ -766,9 +831,12 @@ export function eastBuilders(k) {
 
 // 地域 → 模型名的前缀（城郭四档 0～3 后跟街巷那一位 0、1；都城另一样）
 export const EAST_KIND = { japan: 'jp', japanOld: 'jo', korea: 'ko' };
-// 地域 → 城外诸样（市镇、港、河埠与几样地标）换成的模型；没列的（仓廒、水利、工坊、烽燧、驿、桥、在建、残垣、教堂）照原样
+// 地域 → 城外诸样（市镇、港、河埠、几样地标与四郊村舍）换成的模型；没列的（仓廒、水利、工坊、烽燧、驿、桥、在建、残垣、教堂、林木）照原样
 export const EAST_LOCAL = {
-  japan: { market: 'jpMarket', port: 'jpPort', wharf: 'jpWharf', temple: 'jpTemple', shrine: 'jpShrine', academy: 'jpAcademy', fort: 'jpFort', yamen: 'jpYamen' },
-  japanOld: { market: 'joMarket', port: 'joPort', wharf: 'joWharf', temple: 'joTemple', shrine: 'jpShrine', academy: 'joAcademy', fort: 'joFort', yamen: 'joYamen' },
-  korea: { market: 'koMarket', port: 'koPort', wharf: 'koWharf', temple: 'koTemple', shrine: 'koShrine', academy: 'koAcademy', fort: 'koFort', yamen: 'koYamen' }
+  japan: { market: 'jpMarket', port: 'jpPort', wharf: 'jpWharf', temple: 'jpTemple', shrine: 'jpShrine', academy: 'jpAcademy', fort: 'jpFort', yamen: 'jpYamen',
+    hamlet: 'jpHamlet', hamletB: 'jpHamletB' },
+  japanOld: { market: 'joMarket', port: 'joPort', wharf: 'joWharf', temple: 'joTemple', shrine: 'jpShrine', academy: 'joAcademy', fort: 'joFort', yamen: 'joYamen',
+    hamlet: 'jpHamlet', hamletB: 'jpHamletB' },
+  korea: { market: 'koMarket', port: 'koPort', wharf: 'koWharf', temple: 'koTemple', shrine: 'koShrine', academy: 'koAcademy', fort: 'koFort', yamen: 'koYamen',
+    hamlet: 'koHamlet', hamletB: 'koHamletB' }
 };

@@ -12,11 +12,12 @@
 //   祠（砖墙里砖塔三座）；学（佛殿、长长的讲亭、小金塔）；堡（砖墙垛口、营堂）；王府（层层收顶的殿、高脚长屋）。教堂照西洋据点画。
 //   西洋据点——市（石铺广场、喷泉、石屋、白布摊棚、尼巴屋）；港（石砌货栈、石码头、西洋帆船与华船）；教堂（大教堂、修院、十字架）；
 //   学院（石屋围院、小教堂）；堡（棱堡小城、炮）；官署（两层石厅、下层拱廊、广场、旗）。寺、祠庙照原样（华人的庙）。
+// 四郊村舍（点景近看换上的，每样八十面以内）：大越草屋与红瓦屋、槟榔；南洋高脚屋、椰（西洋据点四郊的尼巴屋同此）。
 // k：towns3d.js 递来的器件。各样搭完返回占地半宽。
 const YAW = { s: 0, e: Math.PI / 2, n: Math.PI, w: -Math.PI / 2 };
 
 export function southBuilders(k) {
-  const { C, box, flat, mound, hipRoof, skirt, house, pavilion, hall, courtyard, pagoda, quarter, pool, flag, rng, pick, stilt, palisade, wallRing, junk } = k;
+  const { C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, hall, courtyard, pagoda, quarter, pool, flag, rng, pick, stilt, palisade, wallRing, junk } = k;
   const far = k.far;
   const S = {
     brick: [0.68, 0.43, 0.33], brickTop: [0.62, 0.4, 0.31], vnWall: [0.69, 0.62, 0.53], vnWallTop: [0.62, 0.56, 0.48],
@@ -665,7 +666,57 @@ export function southBuilders(k) {
     return 0.9;
   }
 
-  const out = { vnCap, seaCap, weCap };
+  // ======================= 四郊村舍（点景近看换上的那种，几千处一起画，每样八十面以内） =======================
+  // 椰（省面版）：一根干，顶上五片垂下的羽叶
+  function palmS(m, x, z, s) {
+    const h = 0.3 * s, w = 0.01 * s, r = 0.13 * s;
+    box(m, x - w, -0.2, z - w, x + w, h, z + w, S.trunk, { faces: 'nsew' });
+    for (let i = 0; i < 5; i++) {
+      const t = i / 5 * Math.PI * 2 + 0.3, c = Math.cos(t), sn = Math.sin(t), px = -sn * 0.02 * s, pz = c * 0.02 * s;
+      m.tri([x + px, h, z + pz], [x - px, h, z - pz], [x + c * r, h - 0.06 * s, z + sn * r], i % 2 ? S.palm : S.palmDark);
+    }
+  }
+  // 高脚屋（省面版）：楼身架在两根柱上，陡草两坡
+  function stiltS(m, x, z, w, d, raise, wh, rot) {
+    m.push(x, 0, z, rot ? Math.PI / 2 : 0);
+    for (const [sx, sz] of [[-1, -1], [1, 1]]) box(m, sx * w * 0.4 - 0.014, -0.3, sz * d * 0.4 - 0.014, sx * w * 0.4 + 0.014, raise, sz * d * 0.4 + 0.014, C.wood, { faces: 'ns' });
+    box(m, -w / 2, raise, -d / 2, w / 2, raise + wh, d / 2, C.woodLight, { faces: 'nsew' });
+    gableRoof(m, 0, raise + wh, 0, w / 2 + 0.05, d / 2 + 0.07, d * 0.75, S.palmThatch, C.woodLight, w / 2, d / 2);
+    m.pop();
+  }
+  // 大越村：一座草顶土屋、一座红瓦白墙屋，屋旁一株槟榔
+  function vnHamlet(m) {
+    house(m, -0.12, 0.04, 0.42, 0.24, 0.12, C.earthHouse, S.palmThatch, false, -0.3);
+    house(m, 0.25, 0.17, 0.3, 0.2, 0.11, S.white, S.vnRoof, true, -0.3);
+    palm(m, 0.24, -0.2, 1.4, 0.8);
+    return 0.44;
+  }
+  // 大越庄：红瓦正屋、两座草顶厢屋围着一块场，一株槟榔
+  function vnHamletB(m) {
+    flat(m, -0.2, -0.06, 0.24, 0.24, 0.014, C.ground);
+    house(m, -0.04, -0.22, 0.52, 0.24, 0.13, S.white, S.vnRoof, false, -0.3);
+    house(m, -0.4, 0.06, 0.36, 0.2, 0.12, C.earthHouse, S.palmThatch, true, -0.3);
+    house(m, 0.4, 0.02, 0.32, 0.2, 0.11, C.earthHouse, S.palmThatch, true, -0.3);
+    palm(m, -0.34, -0.34, 1.45, 2.4);
+    return 0.52;
+  }
+  // 南洋村（西洋据点四郊的尼巴屋同此）：两座高脚屋，一株椰
+  function seaHamlet(m) {
+    stiltS(m, -0.12, 0.04, 0.4, 0.24, 0.1, 0.1, false);
+    stiltS(m, 0.26, 0.17, 0.28, 0.2, 0.09, 0.09, true);
+    palmS(m, 0.3, -0.2, 1.5);
+    return 0.44;
+  }
+  // 南洋庄：三座高脚屋，一株椰
+  function seaHamletB(m) {
+    stiltS(m, -0.04, -0.22, 0.48, 0.24, 0.1, 0.11, false);
+    stiltS(m, -0.4, 0.08, 0.32, 0.2, 0.09, 0.1, true);
+    stiltS(m, 0.38, 0.04, 0.3, 0.2, 0.09, 0.1, true);
+    palmS(m, 0.05, 0.22, 1.4);
+    return 0.52;
+  }
+
+  const out = { vnCap, seaCap, weCap, vnHamlet, vnHamletB, seaHamlet, seaHamletB };
   for (let t = 0; t < 4; t++) for (let v = 0; v < 2; v++) { out[`vn${t}${v}`] = vn(t, v); out[`sea${t}${v}`] = sea(t, v); out[`we${t}${v}`] = we(t, v); }
   Object.assign(out, {
     vnMarket, seaMarket, weMarket,
@@ -678,9 +729,12 @@ export function southBuilders(k) {
 
 // 地域 → 模型名的前缀（城郭四档 0～3 后跟一位 0、1；都城另一样）
 export const SOUTH_KIND = { viet: 'vn', seasia: 'sea', west: 'we' };
-// 地域 → 城外诸样（市镇、港、河埠与几样地标）换成的模型；没列的照原样（西洋据点的寺、祠庙是华人的庙，照中原画）
+// 地域 → 城外诸样（市镇、港、河埠、几样地标与四郊村舍）换成的模型；没列的照原样（西洋据点的寺、祠庙是华人的庙，照中原画）
 export const SOUTH_LOCAL = {
-  viet: { market: 'vnMarket', port: 'vnPort', wharf: 'vnWharf', temple: 'vnTemple', shrine: 'vnShrine', academy: 'vnAcademy', fort: 'vnFort', yamen: 'vnYamen' },
-  seasia: { market: 'seaMarket', port: 'seaPort', wharf: 'seaWharf', temple: 'seaTemple', shrine: 'seaShrine', church: 'weChurch', academy: 'seaAcademy', fort: 'seaFort', yamen: 'seaYamen' },
-  west: { market: 'weMarket', port: 'wePort', wharf: 'weWharf', church: 'weChurch', academy: 'weAcademy', fort: 'weFort', yamen: 'weYamen' }
+  viet: { market: 'vnMarket', port: 'vnPort', wharf: 'vnWharf', temple: 'vnTemple', shrine: 'vnShrine', academy: 'vnAcademy', fort: 'vnFort', yamen: 'vnYamen',
+    hamlet: 'vnHamlet', hamletB: 'vnHamletB' },
+  seasia: { market: 'seaMarket', port: 'seaPort', wharf: 'seaWharf', temple: 'seaTemple', shrine: 'seaShrine', church: 'weChurch', academy: 'seaAcademy', fort: 'seaFort',
+    yamen: 'seaYamen', hamlet: 'seaHamlet', hamletB: 'seaHamletB' },
+  west: { market: 'weMarket', port: 'wePort', wharf: 'weWharf', church: 'weChurch', academy: 'weAcademy', fort: 'weFort', yamen: 'weYamen',
+    hamlet: 'seaHamlet', hamletB: 'seaHamletB' }
 };

@@ -764,12 +764,22 @@ export function eastBuilders(k) {
     box(m, x - w / 2, -0.3, z - d / 2, x + w / 2, wh, z + d / 2, J.plaster, { faces: 'nsew' });
     gableRoof(m, x, wh, z, w / 2 + 0.02, d / 2 + 0.025, d * 0.45, J.roof, J.plaster, w / 2, d / 2);
   }
+  // 杉：一根干，两层五棱的尖冠（下宽上窄，瘦高）
+  function sugi(m, x, z) {
+    trunk(m, x, z, 0.22, 0.02);
+    for (const [y, r, hh] of [[0.18, 0.11, 0.3], [0.36, 0.075, 0.3]]) {
+      const apex = [x, y + hh, z];
+      for (let i = 0; i < 5; i++) {
+        const a0 = i / 5 * Math.PI * 2, a1 = (i + 1) / 5 * Math.PI * 2;
+        m.tri([x + Math.cos(a0) * r, y, z + Math.sin(a0) * r], [x + Math.cos(a1) * r, y, z + Math.sin(a1) * r], apex, C.deep);
+      }
+    }
+  }
   // 村：一座茅草农家、一座小土蔵，屋后一株杉
   function jpHamlet(m) {
     minka(m, -0.12, 0.04, 0.42, 0.26, 0.11, false);
     kuraS(m, 0.27, 0.16, 0.2, 0.16, 0.12);
-    trunk(m, 0.3, -0.22, 0.3, 0.022);
-    crown(m, 0.3, 0.46, -0.22, 0.11, 0.42, C.deep, 5, false);
+    sugi(m, 0.3, -0.22);
     return 0.44;
   }
   // 庄：两座茅草农家（一座白壁）、一座土蔵，场边一架稻架，屋后一株杉
@@ -778,8 +788,7 @@ export function eastBuilders(k) {
     minka(m, -0.4, 0.06, 0.34, 0.22, 0.11, true, J.plaster);
     kuraS(m, 0.4, 0.04, 0.2, 0.26, 0.13);
     box(m, 0.02, 0, 0.18, 0.26, 0.09, 0.2, C.hay);
-    trunk(m, -0.42, -0.36, 0.3, 0.022);
-    crown(m, -0.42, 0.46, -0.36, 0.11, 0.42, C.deep, 5, false);
+    sugi(m, -0.42, -0.36);
     return 0.52;
   }
   // 朝鲜草房、瓦房（省面版）：土墙或白墙，一个圆鼓的草顶或四坡的黛瓦顶

@@ -1,7 +1,8 @@
 // 舆图城郭立体模型（照 CK3 地图上的领地模型）：府州治所按聚落等第（model/settlement.js）画成立在地形上的小城。
 // 城郭四档越大墙越高、门楼越多、民居越密：小城土墙一门；府城砖墙雉堞、四门城楼、鼓楼、衙署；大府添角楼、瓮城、钟楼、塔、关厢；
 // 都会四门瓮城、正南箭楼、护城河、七级塔、寺。京城外城之内套一座朱墙黄瓦的皇城。残城断墙塌楼、屋舍焦黑、两股烟；
-// 帐幕、山寨、市镇、港、河埠各一套。
+// 帐幕、山寨、市镇、港、河埠各一套。府州名下真建了的营造另画营造地标（书院、仓廒、水利、工坊、堡、烽燧、佛寺、祠庙、驿、官署、
+// 石桥，在建的脚手架、半损的残垣），摆在城郭四周。
 // 全用代码现搭，不带模型文件：每样一份几何（城郭四档各两种街巷，相邻府州不雷同），同一样的城实例化一回画完。
 // 尺度：世界一单位约五公里，城比真城大五六倍——最近处一座府城也才六十来像素宽，所以块面要简明好认（CK3 美术也这么说：
 // 照最大缩放、最小地块定尺寸，形要硬朗，不能像玩具）。高度不随起伏倍率伸缩，只有落脚处的地面高跟着地形走；
@@ -19,7 +20,10 @@ const C = {
   water: [0.37, 0.53, 0.57], wood: [0.47, 0.35, 0.25], woodLight: [0.62, 0.48, 0.33], thatch: [0.7, 0.6, 0.4],
   felt: [0.92, 0.89, 0.81], feltGold: [0.84, 0.68, 0.34], feltDark: [0.66, 0.58, 0.45],
   leaf: [0.33, 0.47, 0.34], leafDark: [0.26, 0.39, 0.29], burnt: [0.27, 0.24, 0.22], ash: [0.4, 0.38, 0.36], smoke: [0.46, 0.45, 0.44],
-  hull: [0.41, 0.31, 0.22], sail: [0.66, 0.35, 0.23], pole: [0.26, 0.21, 0.17], banner: [0.7, 0.21, 0.15], black: [0.17, 0.15, 0.14]
+  hull: [0.41, 0.31, 0.22], sail: [0.66, 0.35, 0.23], pole: [0.26, 0.21, 0.17], banner: [0.7, 0.21, 0.15], black: [0.17, 0.15, 0.14],
+  brick: [0.64, 0.4, 0.3], bamboo: [0.72, 0.65, 0.43], dust: [0.75, 0.69, 0.58], willow: [0.47, 0.6, 0.38], arch: [0.2, 0.25, 0.27],
+  paddy: [0.5, 0.63, 0.36], paddyWet: [0.46, 0.6, 0.57], rice: [0.79, 0.71, 0.42], dike: [0.69, 0.63, 0.47],
+  horse: [0.52, 0.36, 0.23], horseDark: [0.27, 0.21, 0.17], horseLight: [0.85, 0.81, 0.73]
 };
 
 // ---------- 搭几何：三角形逐个放（法线按面，着色器按正反面翻，绕向不拘），带顶点色；可套平移、绕竖轴转 ----------
@@ -273,10 +277,10 @@ function tree(m, x, z, s, col = C.leaf) {
   const ring = [[x + r, y, z], [x, y, z + r], [x - r, y, z], [x, y, z - r]];
   for (let i = 0; i < 4; i++) { const p = ring[i], q = ring[(i + 1) % 4]; m.tri(p, q, top, col); m.tri(q, p, bot, tint(col, 0.8)); }
 }
-// 烟：几团八面体，越往上越大越淡
-function smoke(m, x, z, y0, n = 4) {
+// 烟：几团八面体，越往上越大越淡；s 整股的大小（小景用小一号的）
+function smoke(m, x, z, y0, n = 4, s = 1) {
   for (let i = 0; i < n; i++) {
-    const r = 0.07 + i * 0.045, cx = x + i * 0.05, cy = y0 + i * 0.2 + r, c = tint(C.smoke, 0.82 + i * 0.07);
+    const r = (0.07 + i * 0.045) * s, cx = x + i * 0.05 * s, cy = y0 + i * 0.2 * s + r, c = tint(C.smoke, 0.82 + i * 0.07);
     const top = [cx, cy + r, z], bot = [cx, cy - r, z], ring = [[cx + r, cy, z], [cx, cy, z + r], [cx - r, cy, z], [cx, cy, z - r]];
     for (let k = 0; k < 4; k++) { const p = ring[k], q = ring[(k + 1) % 4]; m.tri(p, q, top, c); m.tri(q, p, bot, c); }
   }
@@ -590,14 +594,415 @@ function port(m, sea = true) {
   return 0.8;
 }
 
+// ---------- 营造地标（府州名下真建了的营造，摆在城郭四周；归类见 model/settlement.js） ----------
+// 每样比城郭小一圈（半宽一上下），一眼认得出是什么：书院门外泮池、石坊，院里讲堂、藏书楼；仓廒几排长廒带气楼、几座圆囤；
+// 水利一道渠、一座闸房、一架水车、几方水田；工坊馒头窑、高烟囱冒烟、一座敞棚；堡高墙四角敌台、当中敌楼；烽燧一座高墩冒狼烟；
+// 佛寺黄墙、重檐大殿后起七级塔；祠庙朱墙、门外木牌坊、院里戏台和古柏；驿有官道、马厩、马圈里的马；官署门前一堵照壁、两根旗杆；
+// 在建的是一座没上全顶的屋架，围着脚手架、立着吊杆；石桥五孔跨着一湾水；半损的是一圈断墙、几根焦柱、一片塌顶。都坐北朝南（门朝 +z）。
+
+// 松柏：一截干、三层六棱的尖冠，越往上越小
+function pine(m, x, z, s, col = C.leafDark) {
+  if (FAR) return;
+  box(m, x - 0.012 * s, -0.2, z - 0.012 * s, x + 0.012 * s, 0.06 * s, z + 0.012 * s, C.pole, { faces: 'nsew' });
+  for (const [y0, r, h, k] of [[0.05, 0.11, 0.15, 0.85], [0.13, 0.085, 0.13, 0.93], [0.21, 0.06, 0.12, 1]]) {
+    const apex = [x, (y0 + h) * s, z], c = tint(col, k);
+    for (let i = 0; i < 6; i++) {
+      const a0 = i * Math.PI / 3, a1 = a0 + Math.PI / 3;
+      m.tri([x + Math.cos(a0) * r * s, y0 * s, z + Math.sin(a0) * r * s], [x + Math.cos(a1) * r * s, y0 * s, z + Math.sin(a1) * r * s], apex, c);
+    }
+  }
+}
+// 一片水（或台面）：椭圆的一段扇面，心 x,z、半轴 rx×rz，从角 a0 到 a1（0 朝东、π/2 朝南）
+function pool(m, x, z, rx, rz, y, col, a0 = 0, a1 = Math.PI * 2, n = 16) {
+  for (let i = 0; i < n; i++) {
+    const b0 = a0 + (a1 - a0) * i / n, b1 = a0 + (a1 - a0) * (i + 1) / n;
+    m.tri([x, y, z], [x + Math.cos(b0) * rx, y, z + Math.sin(b0) * rz], [x + Math.cos(b1) * rx, y, z + Math.sin(b1) * rz], col);
+  }
+}
+// 牌坊：四柱三间，立在 z 那条线上，半宽 w、明间柱高 h。给了 roof 是木牌楼（明间、次间各起一道庑殿顶），
+// 没给是石坊（柱头各压一块石，书院的棂星门那样）
+function paifang(m, x, z, w, h, post, roof = null) {
+  const pw = 0.024, inner = w / 3;
+  for (const px of [-w, -inner, inner, w]) {
+    const ph = Math.abs(px) > inner + 1e-6 ? h * 0.78 : h;
+    box(m, x + px - pw, -0.3, z - pw, x + px + pw, ph, z + pw, post);
+    box(m, x + px - pw * 2.2, -0.05, z - pw * 2.2, x + px + pw * 2.2, 0.06, z + pw * 2.2, C.stoneTop);
+    if (!roof) box(m, x + px - pw * 1.8, ph, z - pw * 1.4, x + px + pw * 1.8, ph + 0.03, z + pw * 1.4, C.stoneTop);
+  }
+  box(m, x - inner, h * 0.78, z - pw * 0.8, x + inner, h * 0.9, z + pw * 0.8, post);
+  for (const sx of [-1, 1]) {
+    const a = x + sx * inner, b = x + sx * w;
+    box(m, Math.min(a, b), h * 0.58, z - pw * 0.8, Math.max(a, b), h * 0.68, z + pw * 0.8, post);
+  }
+  if (roof) {
+    hipRoof(m, x, h, z, inner + 0.07, 0.065, 0.065, roof, { lift: 0.022, bands: 2, ridge: roof });
+    for (const sx of [-1, 1]) hipRoof(m, x + sx * (w + inner) / 2, h * 0.78, z, (w - inner) / 2 + 0.05, 0.055, 0.05, roof, { lift: 0.018, bands: 2 });
+  }
+}
+// 圆囤：八棱的身，尖草顶
+function silo(m, x, z, r, h, wall = C.plaster2, roof = C.thatch) {
+  const n = 8, R = r * 1.22;
+  for (let i = 0; i < n; i++) {
+    const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
+    m.quad([x + c0 * r, -0.3, z + s0 * r], [x + c1 * r, -0.3, z + s1 * r], [x + c1 * r, h, z + s1 * r], [x + c0 * r, h, z + s0 * r], wall);
+    m.tri([x + c0 * R, h - 0.02, z + s0 * R], [x + c1 * R, h - 0.02, z + s1 * R], [x, h + r * 1.05, z], roof);
+  }
+}
+// 长廒：一座东西向的长仓（宽 w、深 d、墙高 wh），脊上一道气楼，南墙一排气窗
+function barn(m, x, z, w, d, wh) {
+  box(m, x - w / 2, -0.4, z - d / 2, x + w / 2, wh, z + d / 2, C.plaster2, { faces: 'nsew' });
+  gableRoof(m, x, wh, z, w / 2 + 0.03, d / 2 + 0.04, d * 0.42, C.tile, C.plaster2, w / 2, d / 2);
+  const ry = wh + d * 0.42;
+  box(m, x - w * 0.3, ry - 0.02, z - 0.03, x + w * 0.3, ry + 0.03, z + 0.03, C.plaster2, { faces: 'nsew' });
+  gableRoof(m, x, ry + 0.03, z, w * 0.3 + 0.02, 0.06, 0.03, C.tileDark, C.plaster2, w * 0.3, 0.03);
+  for (let k = 0; k < 5; k++) {
+    const px = x - w / 2 + w * (k + 0.5) / 5, zf = z + d / 2 + 0.003;
+    m.quad([px - 0.025, wh * 0.45, zf], [px + 0.025, wh * 0.45, zf], [px + 0.025, wh * 0.8, zf], [px - 0.025, wh * 0.8, zf], C.hole);
+  }
+}
+// 馒头窑：八棱的穹顶，正南突出一截窑门
+function kiln(m, x, z, r, h, col = C.brick) {
+  const n = 8, rings = [[1, -0.3], [0.94, 0.4], [0.7, 0.78], [0.32, 0.97]];    // [半径比, 高]：-0.3 是埋进地里那截，余为高的几成
+  const P = (rr, yy, a) => [x + Math.cos(a) * r * rr, yy < 0 ? yy : yy * h, z + Math.sin(a) * r * rr];
+  const A = (i) => (i + 0.5) / n * Math.PI * 2;                               // 错开半格，正南是一面而不是一道棱
+  for (let k = 0; k < rings.length - 1; k++) {
+    const [r0, y0] = rings[k], [r1, y1] = rings[k + 1], c = tint(col, 0.88 + 0.06 * k);
+    for (let i = 0; i < n; i++) m.quad(P(r0, y0, A(i)), P(r0, y0, A(i + 1)), P(r1, y1, A(i + 1)), P(r1, y1, A(i)), c);
+  }
+  const [rt, yt] = rings[rings.length - 1];
+  for (let i = 0; i < n; i++) m.tri(P(rt, yt, A(i)), P(rt, yt, A(i + 1)), [x, h, z], tint(col, 1.06));
+  box(m, x - 0.075, -0.3, z + r * 0.7, x + 0.075, h * 0.4, z + r + 0.05, col);
+  archway(m, x, 0, z + r + 0.054, 0.08, h * 0.32);
+}
+// 敞棚：几根柱子架一道草顶，四面不砌墙（窑场、马厩用）；脊沿 x
+function shed(m, x, z, w, d, ph, roof = C.thatch) {
+  for (const fx of [-0.5, 0, 0.5]) for (const fz of [-0.5, 0.5]) {
+    const px = x + fx * (w - 0.04), pz = z + fz * (d - 0.04);
+    box(m, px - 0.013, -0.2, pz - 0.013, px + 0.013, ph, pz + 0.013, C.wood, { faces: 'nsew' });
+  }
+  gableRoof(m, x, ph, z, w / 2 + 0.04, d / 2 + 0.05, d * 0.4, roof, C.wood, w / 2, d / 2);
+}
+// 马：身、颈、头、四腿、尾，头朝本身的 +x（yaw 转向）；长约 0.25
+function horse(m, x, z, yaw, col) {
+  m.push(x, 0, z, yaw);
+  box(m, -0.08, 0.07, -0.03, 0.07, 0.13, 0.03, col);
+  box(m, 0.05, 0.11, -0.022, 0.1, 0.19, 0.022, col);
+  box(m, 0.08, 0.16, -0.02, 0.15, 0.2, 0.02, col);
+  for (const [lx, lz] of [[-0.065, -0.02], [-0.065, 0.02], [0.055, -0.02], [0.055, 0.02]]) box(m, lx - 0.01, -0.1, lz - 0.01, lx + 0.01, 0.075, lz + 0.01, tint(col, 0.8), { faces: 'nsew' });
+  box(m, -0.1, 0.05, -0.008, -0.075, 0.12, 0.008, tint(col, 0.6));
+  m.pop();
+}
+// 木栏：沿一圈折线，一根根桩、两道横木（横木无厚）
+function fence(m, pts, hh = 0.07) {
+  for (let i = 0; i < pts.length; i++) {
+    const [x0, z0] = pts[i], [x1, z1] = pts[(i + 1) % pts.length];
+    for (const y of [hh * 0.45, hh * 0.9]) m.quad([x0, y - 0.008, z0], [x1, y - 0.008, z1], [x1, y + 0.008, z1], [x0, y + 0.008, z0], C.woodLight);
+    const k = Math.max(1, Math.round(Math.hypot(x1 - x0, z1 - z0) / 0.12));
+    for (let j = 0; j < k; j++) {
+      const px = x0 + (x1 - x0) * j / k, pz = z0 + (z1 - z0) * j / k;
+      box(m, px - 0.008, -0.1, pz - 0.008, px + 0.008, hh, pz + 0.008, C.wood, { faces: 'nsew' });
+    }
+  }
+}
+// 水车（筒车）：轮面朝南（立在 x-y 面上），轮心 x、cy、z，半径 R；两圈轮辋、八根辐、轮缘一圈竹筒，两侧木架托着轴
+function waterWheel(m, x, cy, z, R) {
+  const n = 14, t = 0.03, w = 0.008;
+  for (const dz of [-0.035, 0.035]) {
+    const P = (rr, a) => [x + Math.cos(a) * rr, cy + Math.sin(a) * rr, z + dz];
+    for (let i = 0; i < n; i++) {
+      const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2;
+      m.quad(P(R, a0), P(R, a1), P(R - t, a1), P(R - t, a0), C.wood);
+    }
+    for (let i = 0; i < 8; i++) {
+      const a = i / 8 * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a), e = R - t;
+      m.quad([x - sa * w, cy + ca * w, z + dz], [x + ca * e - sa * w, cy + sa * e + ca * w, z + dz], [x + ca * e + sa * w, cy + sa * e - ca * w, z + dz], [x + sa * w, cy - ca * w, z + dz], C.woodLight);
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    const a = (i + 0.5) / n * Math.PI * 2, px = x + Math.cos(a) * (R - t / 2), py = cy + Math.sin(a) * (R - t / 2);
+    box(m, px - 0.02, py - 0.02, z - 0.045, px + 0.02, py + 0.02, z + 0.045, C.bamboo);
+  }
+  box(m, x - 0.018, cy - 0.018, z - 0.2, x + 0.018, cy + 0.018, z + 0.2, C.wood);
+  for (const dz of [-0.17, 0.17]) box(m, x - 0.02, -0.3, z + dz - 0.02, x + 0.02, cy + 0.02, z + dz + 0.02, C.wood, { faces: 'nsew' });
+}
+// 水田：一块地分成 nx×nz 方，田埂隔开；有的插了秧、有的灌着水、有的稻黄了
+function paddies(m, r, x0, z0, x1, z1, nx, nz) {
+  flat(m, x0, z0, x1, z1, 0.012, C.dike);
+  const g = 0.035, w = (x1 - x0) / nx, d = (z1 - z0) / nz;
+  for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
+    flat(m, x0 + i * w + g / 2, z0 + j * d + g / 2, x0 + (i + 1) * w - g / 2, z0 + (j + 1) * d - g / 2, 0.02, pick(r, [C.paddy, C.paddy, C.paddyWet, C.rice]));
+  }
+}
+
+// 书院：粉墙黛瓦一圈院墙，南墙一座朱门；院里讲堂、两厢斋舍、后面两层的藏书楼，门内两株松；门外半月泮池、一座石坊（棂星门）
+function lmAcademy(m) {
+  const cz = -0.2;
+  flat(m, -0.78, cz - 0.66, 0.78, cz + 0.66, 0.016, C.pave);
+  courtyard(m, 0, cz, 0.82, 0.7, 0.11, 0.04, C.plaster, C.tileDark, 0.3);
+  house(m, 0, cz + 0.68, 0.38, 0.14, 0.1, C.red, C.tileDark);
+  archway(m, 0, 0, cz + 0.754, 0.1, 0.1);
+  hall(m, 0, cz - 0.02, 0.32, 0.15, 0.12, C.tile, { lift: 0.035 });
+  hall(m, 0, cz - 0.47, 0.27, 0.1, 0.1, C.tileDark, { tiers: 2 });
+  for (const sx of [-1, 1]) house(m, sx * 0.6, cz + 0.12, 0.62, 0.16, 0.09, C.plaster, C.tile, true);
+  pine(m, -0.3, cz + 0.42, 1.0); pine(m, 0.3, cz + 0.42, 1.0);
+  pool(m, 0, cz + 0.84, 0.36, 0.22, 0.012, C.stoneTop, 0, Math.PI, 10);
+  pool(m, 0, cz + 0.84, 0.3, 0.17, 0.018, C.water, 0, Math.PI, 10);
+  paifang(m, 0, cz + 1.14, 0.38, 0.3, C.stone);
+  return 0.9;
+}
+// 仓廒：一圈土墙，三排长廒，东边几座圆囤
+function lmGranary(m) {
+  flat(m, -0.9, -0.76, 0.9, 0.76, 0.016, C.ground);
+  courtyard(m, 0, 0, 0.94, 0.8, 0.1, 0.05, C.earth, C.earthTop, 0.3);
+  for (const sx of [-1, 1]) box(m, sx * 0.15 - 0.05, -0.3, 0.74, sx * 0.15 + 0.05, 0.17, 0.84, C.earth, { top: C.earthTop });
+  for (const z of [-0.5, -0.1, 0.3]) barn(m, -0.2, z, 1.0, 0.24, 0.12);
+  silo(m, 0.64, -0.42, 0.13, 0.17); silo(m, 0.64, -0.04, 0.13, 0.17); silo(m, 0.66, 0.36, 0.11, 0.15);
+  return 0.95;
+}
+// 水利：一道东西的渠，石砌两岸；西段两座石墩夹一道闸板、墩上一间闸房，东段一架水车，轮顶一道木槽引水进渠北的田；渠南几方田、闸夫的屋、柳
+function lmWaterworks(m) {
+  const r = rng(903);
+  paddies(m, r, -1.0, -0.98, 1.0, -0.28, 4, 2);
+  paddies(m, r, -0.05, 0.28, 1.0, 0.95, 3, 2);
+  flat(m, -1.05, -0.15, 1.05, 0.15, 0.014, C.water);
+  box(m, -1.05, -0.3, 0.15, 1.05, 0.04, 0.21, C.stone, { top: C.stoneTop });
+  box(m, -1.05, -0.3, -0.21, 1.05, 0.04, -0.15, C.stone, { top: C.stoneTop });
+  const gx = -0.5;
+  box(m, gx - 0.11, -0.3, 0.06, gx + 0.11, 0.13, 0.26, C.stone, { top: C.stoneTop });
+  box(m, gx - 0.11, -0.3, -0.26, gx + 0.11, 0.13, -0.06, C.stone, { top: C.stoneTop });
+  box(m, gx - 0.03, -0.1, -0.06, gx + 0.03, 0.1, 0.06, C.wood);
+  m.push(gx, 0.13, 0);
+  house(m, 0, 0, 0.5, 0.2, 0.09, C.plaster2, C.tile, true, 0);
+  m.pop();
+  waterWheel(m, 0.42, 0.2, 0, 0.3);
+  box(m, 0.385, 0.38, -0.7, 0.455, 0.43, -0.05, C.wood);
+  flat(m, 0.397, -0.69, 0.443, -0.06, 0.433, C.water);
+  for (const z of [-0.36, -0.64]) box(m, 0.405, -0.2, z - 0.015, 0.435, 0.38, z + 0.015, C.wood, { faces: 'nsew' });
+  house(m, -0.6, 0.55, 0.42, 0.22, 0.1, C.plaster, C.tile);
+  tree(m, -0.25, 0.42, 1.2, C.willow); tree(m, -0.9, 0.85, 1.0, C.willow);
+  return 1.05;
+}
+// 工坊：两座馒头窑，窑后各一根高烟囱冒烟；南边一座敞棚，棚下一排坯；一垛柴、一垛砖
+function lmWorkshop(m) {
+  flat(m, -0.88, -0.78, 0.88, 0.72, 0.016, C.dust);
+  kiln(m, -0.36, -0.2, 0.32, 0.34);
+  kiln(m, 0.36, -0.3, 0.25, 0.27);
+  mound(m, -0.36, -0.62, 0.075, 0.075, 0.05, 0.05, -0.3, 0.66, C.brick, C.black);
+  mound(m, 0.36, -0.64, 0.065, 0.065, 0.045, 0.045, -0.3, 0.54, C.brick, C.black);
+  smoke(m, -0.36, -0.62, 0.66, 4);
+  smoke(m, 0.36, -0.64, 0.54, 3);
+  shed(m, 0.08, 0.42, 0.92, 0.32, 0.13);
+  for (let k = 0; k < 6; k++) { const x = -0.26 + k * 0.13; box(m, x - 0.035, -0.05, 0.36, x + 0.035, 0.05, 0.47, C.earthHouse); }
+  box(m, -0.84, -0.2, 0.18, -0.6, 0.1, 0.56, C.wood, { top: C.woodLight });
+  box(m, 0.62, -0.2, 0.06, 0.84, 0.08, 0.28, C.brick);
+  return 0.92;
+}
+// 堡：一圈高石墙带雉堞，南门一座城楼；四角敌台高出墙一截；当中偏北一座高台两层的敌楼，楼顶大旗；南半两排营房，前两座敌台各插一面旗
+function lmFort(m) {
+  const hw = 1.0, h = 0.44, t = 0.16;
+  flat(m, -hw + t, -hw + t, hw - t, hw - t, 0.02, C.ground);
+  flat(m, -0.11, 0, 0.11, hw - t, 0.028, C.street);
+  wallRing(m, hw, h, t, C.stone, C.stoneTop, 0.2);
+  gate(m, hw, h, t, 0.44, 1, C.stone, C.stoneTop, C.tile);
+  for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+    const x = sx * (hw - 0.07), z = sz * (hw - 0.07), s = 0.19;
+    box(m, x - s, -1, z - s, x + s, h + 0.15, z + s, C.stone, { top: C.stoneTop });
+    pavilion(m, x, h + 0.15, z, s * 0.62, s * 0.62, 0.1, 1, C.tileDark, { lift: 0.025, ridge: null });
+  }
+  box(m, -0.27, -0.5, -0.56, 0.27, 0.36, -0.04, C.stone, { top: C.stoneTop });
+  archway(m, 0, 0, -0.036, 0.13, 0.22);
+  pavilion(m, 0, 0.36, -0.3, 0.2, 0.18, 0.14, 2, C.tile);
+  flag(m, 0, -0.3, 1.02);
+  for (const sx of [-1, 1]) house(m, sx * 0.48, 0.42, 0.5, 0.2, 0.1, C.plaster2, C.tile);
+  for (const sx of [-1, 1]) flag(m, sx * 0.93, 0.93, h + 0.62);
+  return 1.12;
+}
+// 烽燧：夯土墩台下大上小，一层层夯土深浅相间，台顶一圈垛口、一股狼烟；墩前一座小坞（矮墙、一间屋、一杆旗）
+function lmBeacon(m) {
+  const N = 6, y0 = -0.4, y1 = 0.95, a0 = 0.27, a1 = 0.17, tz = -0.3;
+  for (let k = 0; k < N; k++) {
+    const t0 = k / N, t1 = (k + 1) / N;
+    mound(m, 0, tz, a0 + (a1 - a0) * t0, a0 + (a1 - a0) * t0, a0 + (a1 - a0) * t1, a0 + (a1 - a0) * t1, y0 + (y1 - y0) * t0, y0 + (y1 - y0) * t1, k % 2 ? C.earth : C.earthTop, C.earthTop);
+  }
+  for (let i = 0; i < 4; i++) {
+    m.push(0, 0, tz, i * Math.PI / 2);
+    for (const x of [-0.12, 0, 0.12]) box(m, x - 0.03, y1, a1 - 0.04, x + 0.03, y1 + 0.06, a1, C.earth, { top: C.earthTop });
+    m.pop();
+  }
+  smoke(m, 0, tz, y1 + 0.02, 5, 0.85);
+  courtyard(m, 0, 0.3, 0.46, 0.28, 0.08, 0.04, C.earth, C.earthTop, 0.16);
+  house(m, -0.18, 0.28, 0.3, 0.16, 0.08, C.earthHouse, C.thatch);
+  flag(m, 0.22, 0.24, 0.5);
+  return 0.7;
+}
+// 佛寺：黄墙一圈，南墙一座山门；院中重檐大殿，殿前钟鼓二楼、一座香炉，殿后正中一座七级塔，两株古树
+function lmTemple(m) {
+  const cz = -0.04;
+  flat(m, -0.86, cz - 0.86, 0.86, cz + 0.86, 0.016, C.pave);
+  courtyard(m, 0, cz, 0.9, 0.9, 0.16, 0.045, C.ochre, C.tileDark, 0.32);
+  hall(m, 0, cz + 0.88, 0.2, 0.08, 0.1, C.tile, { body: C.red });
+  archway(m, 0, 0.06, cz + 0.964, 0.1, 0.09);
+  hall(m, 0, cz + 0.1, 0.34, 0.19, 0.13, C.tile, { tiers: 2, lift: 0.045 });
+  for (const sx of [-1, 1]) {
+    box(m, sx * 0.56 - 0.1, -0.4, cz + 0.4, sx * 0.56 + 0.1, 0.12, cz + 0.6, C.stone, { top: C.stoneTop });
+    pavilion(m, sx * 0.56, 0.12, cz + 0.5, 0.07, 0.07, 0.08, 2, C.tile);
+  }
+  pagoda(m, 0, cz - 0.55, 7, 0.24);
+  box(m, -0.045, -0.1, cz + 0.475, 0.045, 0.07, cz + 0.565, C.black);
+  tree(m, -0.6, cz - 0.6, 1.3); tree(m, 0.6, cz - 0.62, 1.2);
+  return 1.0;
+}
+// 祠庙宫观：朱墙一圈，南墙一座门；门外一座木牌坊；进门迎面一座戏台（台口朝北对着正殿），正殿坐高台、翘角，殿前香炉；两株古柏
+function lmShrine(m) {
+  const cz = -0.16;
+  flat(m, -0.8, cz - 0.72, 0.8, cz + 0.72, 0.016, C.pave);
+  courtyard(m, 0, cz, 0.84, 0.76, 0.12, 0.045, C.red, C.tileDark, 0.3);
+  house(m, 0, cz + 0.74, 0.4, 0.15, 0.11, C.red, C.tileDark);
+  archway(m, 0, 0, cz + 0.819, 0.11, 0.1);
+  box(m, -0.2, -0.4, cz + 0.22, 0.2, 0.09, cz + 0.5, C.stone, { top: C.wood });
+  for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+    const px = sx * 0.17, pz = cz + 0.36 + sz * 0.11;
+    box(m, px - 0.014, 0.09, pz - 0.014, px + 0.014, 0.24, pz + 0.014, C.red, { faces: 'nsew' });
+  }
+  box(m, -0.18, 0.09, cz + 0.46, 0.18, 0.24, cz + 0.48, C.red, { faces: 'ns' });
+  hipRoof(m, 0, 0.24, cz + 0.36, 0.27, 0.19, 0.12, C.tileDark, { lift: 0.05, ridge: C.tileDark });
+  hall(m, 0, cz - 0.36, 0.34, 0.18, 0.13, C.tileDark, { lift: 0.05, y: 0.06 });
+  box(m, -0.045, -0.1, cz - 0.025, 0.045, 0.07, cz + 0.065, C.black);
+  paifang(m, 0, cz + 1.08, 0.42, 0.36, C.red, C.tileDark);
+  pine(m, 0.6, cz + 0.06, 1.45); pine(m, -0.6, cz - 0.12, 1.25);
+  return 0.92;
+}
+// 驿：南边一条东西的官道；西半一座驿舍院（门楼、正房、厢房），东半一座马厩敞棚、棚前木栏圈着两匹马；门前拴一匹白马、竖一杆旗
+function lmRelay(m) {
+  flat(m, -1.05, 0.6, 1.05, 0.8, 0.016, C.street);
+  const cx = -0.42, cz = -0.2;
+  flat(m, cx - 0.48, cz - 0.42, cx + 0.48, cz + 0.42, 0.016, C.ground);
+  courtyard(m, cx, cz, 0.5, 0.46, 0.1, 0.04, C.earthHouse, C.tile, 0.24);
+  house(m, cx, cz - 0.24, 0.62, 0.2, 0.1, C.plaster, C.tile);
+  house(m, cx - 0.3, cz + 0.08, 0.32, 0.14, 0.085, C.plaster2, C.tile, true);
+  house(m, cx, cz + 0.46, 0.3, 0.12, 0.1, C.earthHouse, C.tileDark);
+  archway(m, cx, 0, cz + 0.524, 0.09, 0.09);
+  shed(m, 0.55, -0.44, 0.76, 0.26, 0.11);
+  fence(m, [[0.15, -0.24], [0.95, -0.24], [0.95, 0.4], [0.15, 0.4]], 0.075);
+  horse(m, 0.38, 0.02, 0.35, C.horse);
+  horse(m, 0.72, 0.2, Math.PI + 0.5, C.horseDark);
+  horse(m, 0.02, 0.5, 0.15, C.horseLight);
+  flag(m, -0.12, 0.42, 0.78);
+  tree(m, -0.98, 0.42, 1.1);
+  return 1.02;
+}
+// 官署：朱墙一圈，南墙三间大门；院里大堂、二堂，东西六房；门前两根旗杆、一堵照壁
+function lmYamen(m) {
+  const cz = -0.24;
+  flat(m, -0.76, cz - 0.62, 0.76, cz + 0.62, 0.016, C.pave);
+  courtyard(m, 0, cz, 0.8, 0.66, 0.12, 0.045, C.palace, C.tileDark, 0.3);
+  hall(m, 0, cz + 0.66, 0.2, 0.08, 0.1, C.tile, { body: C.palace });
+  archway(m, 0, 0.06, cz + 0.744, 0.1, 0.09);
+  hall(m, 0, cz + 0.06, 0.34, 0.16, 0.13, C.tile, { lift: 0.035 });
+  hall(m, 0, cz - 0.4, 0.26, 0.11, 0.1, C.tile);
+  for (const sx of [-1, 1]) house(m, sx * 0.58, cz + 0.1, 0.62, 0.16, 0.09, C.plaster2, C.tile, true);
+  for (const sx of [-1, 1]) flag(m, sx * 0.3, cz + 0.94, 0.86);
+  box(m, -0.44, -0.3, cz + 1.14, 0.44, 0.2, cz + 1.2, C.palace, { top: null });
+  gableRoof(m, 0, 0.2, cz + 1.17, 0.48, 0.07, 0.05, C.tileDark, C.palace, 0.44, 0.03);
+  return 0.92;
+}
+// 在建：石台基上一座屋架（柱、梁、脊檩），北坡已铺瓦、南坡只上了椽子；南、东两面竹脚手架；西北一根吊杆吊着石料；一垛木料、一堆石料、一堆土
+function lmScaffold(m) {
+  box(m, -0.5, -0.4, -0.32, 0.5, 0.05, 0.32, C.stoneTop);
+  const xs = [-0.42, -0.14, 0.14, 0.42], zs = [-0.26, 0, 0.26], ph = 0.3, ry = ph + 0.17;
+  for (const x of xs) for (const z of zs) box(m, x - 0.016, 0.05, z - 0.016, x + 0.016, ph, z + 0.016, C.woodLight, { faces: 'nsew' });
+  for (const z of zs) box(m, -0.44, ph - 0.03, z - 0.014, 0.44, ph, z + 0.014, C.woodLight);
+  for (const x of xs) box(m, x - 0.014, ph - 0.03, -0.28, x + 0.014, ph, 0.28, C.woodLight);
+  box(m, -0.5, ry - 0.025, -0.016, 0.5, ry + 0.005, 0.016, C.wood);
+  m.quad([-0.5, ph - 0.01, -0.34], [0.5, ph - 0.01, -0.34], [0.5, ry, 0], [-0.5, ry, 0], C.tile);
+  for (let x = -0.46; x < 0.47; x += 0.075) m.quad([x - 0.008, ph - 0.01, 0.34], [x + 0.008, ph - 0.01, 0.34], [x + 0.008, ry, 0], [x - 0.008, ry, 0], C.wood);
+  const bam = C.bamboo, zf = 0.44;
+  for (const x of [-0.6, -0.3, 0, 0.3, 0.6]) box(m, x - 0.009, -0.2, zf - 0.009, x + 0.009, 0.66, zf + 0.009, bam, { faces: 'nsew' });
+  for (const y of [0.18, 0.37, 0.56]) box(m, -0.62, y - 0.008, zf - 0.008, 0.62, y + 0.008, zf + 0.008, bam);
+  for (const [xa, xb] of [[-0.6, -0.3], [0.3, 0.6]]) m.quad([xa, 0, zf + 0.012], [xa + 0.02, 0, zf + 0.012], [xb + 0.02, 0.56, zf + 0.012], [xb, 0.56, zf + 0.012], bam);
+  for (const z of [-0.3, 0, 0.3]) box(m, 0.6 - 0.009, -0.2, z - 0.009, 0.6 + 0.009, 0.66, z + 0.009, bam, { faces: 'nsew' });
+  for (const y of [0.18, 0.37, 0.56]) box(m, 0.6 - 0.008, y - 0.008, -0.32, 0.6 + 0.008, y + 0.008, zf, bam);
+  const kx = -0.66, kz = -0.3, ty = 0.98, bx = -0.2, by = 0.86;
+  box(m, kx - 0.016, -0.2, kz - 0.016, kx + 0.016, ty, kz + 0.016, C.wood, { faces: 'nsew' });
+  m.quad([kx, ty - 0.015, kz], [bx, by - 0.015, kz], [bx, by + 0.015, kz], [kx, ty + 0.015, kz], C.wood);
+  m.quad([kx, ty, kz - 0.015], [bx, by, kz - 0.015], [bx, by, kz + 0.015], [kx, ty, kz + 0.015], C.wood);
+  m.quad([bx - 0.004, by, kz], [bx + 0.004, by, kz], [bx + 0.004, 0.5, kz], [bx - 0.004, 0.5, kz], C.pole);
+  box(m, bx - 0.05, 0.42, kz - 0.04, bx + 0.05, 0.5, kz + 0.04, C.stone, { top: C.stoneTop });
+  for (let k = 0; k < 3; k++) box(m, 0.22 + k * 0.04, -0.1, 0.6 + k * 0.02, 0.8 - k * 0.04, 0.04 + k * 0.04, 0.76 - k * 0.02, C.woodLight, { top: C.wood });
+  box(m, -0.78, -0.2, 0.5, -0.56, 0.07, 0.72, C.stone, { top: C.stoneTop });
+  box(m, -0.74, 0.07, 0.55, -0.62, 0.12, 0.66, C.stone, { top: C.stoneTop });
+  mound(m, -0.78, 0.12, 0.13, 0.12, 0.05, 0.04, -0.2, 0.1, C.earth, C.earthTop);
+  return 0.85;
+}
+// 石桥：一湾水（土岸一圈），一道五孔石拱桥东西跨过，桥面拱起、两边栏板；岸边三株垂柳
+function lmBridge(m) {
+  pool(m, 0, 0, 0.9, 0.74, 0.01, C.earthTop, 0, Math.PI * 2, 20);
+  pool(m, 0, 0, 0.8, 0.64, 0.016, C.water, 0, Math.PI * 2, 20);
+  const L = 1.05, B = 0.12, N = 12, Y = (x) => 0.07 + 0.17 * (1 - (x / L) ** 2);
+  for (let i = 0; i < N; i++) {
+    const x0 = -L + 2 * L * i / N, x1 = -L + 2 * L * (i + 1) / N, y0 = Y(x0), y1 = Y(x1);
+    m.quad([x0, y0, B], [x1, y1, B], [x1, y1, -B], [x0, y0, -B], C.stoneTop);
+    for (const sz of [B, -B]) {
+      m.quad([x0, -0.3, sz], [x1, -0.3, sz], [x1, y1, sz], [x0, y0, sz], C.stone);
+      m.quad([x0, y0, sz], [x1, y1, sz], [x1, y1 + 0.045, sz], [x0, y0 + 0.045, sz], C.stoneTop);
+    }
+  }
+  for (const sx of [-1, 1]) m.quad([sx * L, -0.3, B], [sx * L, -0.3, -B], [sx * L, Y(L), -B], [sx * L, Y(L), B], C.stone);
+  for (const sz of [B + 0.003, -B - 0.003]) {
+    for (const [cx, rr] of [[-0.46, 0.085], [-0.23, 0.1], [0, 0.12], [0.23, 0.1], [0.46, 0.085]]) {
+      for (let k = 0; k < 7; k++) {
+        const a0 = Math.PI * k / 7, a1 = Math.PI * (k + 1) / 7;
+        m.tri([cx, 0.016, sz], [cx + Math.cos(a0) * rr, 0.016 + Math.sin(a0) * rr, sz], [cx + Math.cos(a1) * rr, 0.016 + Math.sin(a1) * rr, sz], C.arch);
+      }
+    }
+  }
+  tree(m, -0.78, -0.5, 1.2, C.willow); tree(m, 0.82, 0.42, 1.15, C.willow); tree(m, 0.55, -0.66, 1.0, C.willow);
+  return 1.05;
+}
+// 残垣（营造半损）：一圈院墙断成几截、墙头焦黑；台基上几根焦柱（一根倒了）、一片塌下来的顶；一地碎砖瓦，一股烟，两株枯树
+function lmRuin(m) {
+  const r = rng(907);
+  flat(m, -0.62, -0.62, 0.62, 0.62, 0.016, tint(C.dust, 0.76));
+  for (let i = 0; i < 4; i++) {
+    m.push(0, 0, 0, i * Math.PI / 2);
+    for (let k = 0; k < 5; k++) {
+      if (r() < 0.35) continue;
+      const x0 = -0.66 + 1.32 * k / 5, x1 = x0 + 1.32 / 5 - 0.05;
+      box(m, x0, -0.4, 0.6, x1, 0.03 + r() * 0.11, 0.66, C.earth, { top: C.burnt });
+    }
+    m.pop();
+  }
+  box(m, -0.34, -0.4, -0.24, 0.34, 0.05, 0.16, C.stoneTop);
+  for (const [x, z, hh] of [[-0.28, -0.18, 0.21], [0.28, -0.18, 0.15], [-0.28, 0.1, 0.1], [0.1, 0.1, 0.18], [0.28, 0.1, 0.07]]) box(m, x - 0.016, 0.05, z - 0.016, x + 0.016, 0.05 + hh, z + 0.016, C.black);
+  box(m, -0.22, 0.05, 0, 0.16, 0.085, 0.035, C.black);
+  m.quad([-0.3, 0.06, 0.14], [0.24, 0.06, 0.14], [0.2, 0.2, -0.14], [-0.26, 0.17, -0.14], C.tileDark);
+  for (let k = 0; k < 6; k++) {
+    const x = (r() - 0.5) * 1.0, z = 0.25 + r() * 0.25;
+    box(m, x - 0.05, -0.1, z - 0.04, x + 0.05, 0.02 + r() * 0.04, z + 0.04, pick(r, [C.ash, C.burnt, C.stoneTop]));
+  }
+  smoke(m, 0, -0.05, 0.22, 3, 0.6);
+  for (const [x, z] of [[-0.5, -0.45], [0.5, 0.42]]) {
+    box(m, x - 0.012, -0.2, z - 0.012, x + 0.012, 0.22, z + 0.012, C.black, { faces: 'nsew' });
+    box(m, x - 0.09, 0.15, z - 0.01, x, 0.17, z + 0.01, C.black);
+  }
+  return 0.75;
+}
+// 营造地标（model/settlement.js 给的样子）→ 模型：半损的画残垣；建了港而近处既不近海、河埠也没落点的，在四周画一座河埠
+export const LANDMARK_MODEL = {
+  academy: 'academy', granary: 'granary', waterworks: 'waterworks', workshop: 'workshop', fort: 'fort', beacon: 'beacon', temple: 'temple',
+  shrine: 'shrine', relay: 'relay', yamen: 'yamen', bridge: 'bridge', scaffold: 'scaffold', ruin: 'ruinS', port: 'wharf'
+};
+
 // 各样：搭法（搭完返回城墙外沿半宽）
 const BUILD = {
   town0: (m) => town(m, 0), town1: (m) => town(m, 1), city0: (m) => city(m, 0), city1: (m) => city(m, 1),
   grand0: (m) => grand(m, 0), grand1: (m) => grand(m, 1), metro0: (m) => metro(m, 0), metro1: (m) => metro(m, 1),
-  capital, ruin, yurtS, yurtL, stockS, stockL, market, port: (m) => port(m, true), wharf: (m) => port(m, false)
+  capital, ruin, yurtS, yurtL, stockS, stockL, market, port: (m) => port(m, true), wharf: (m) => port(m, false),
+  academy: lmAcademy, granary: lmGranary, waterworks: lmWaterworks, workshop: lmWorkshop, fort: lmFort, beacon: lmBeacon, temple: lmTemple,
+  shrine: lmShrine, relay: lmRelay, yamen: lmYamen, bridge: lmBridge, scaffold: lmScaffold, ruinS: lmRuin
 };
 export const TOWN_KINDS = Object.keys(BUILD);
-// 有远看那一份的（城郭、京城、残城）；帐、寨、市镇、港本就几百面，不另做
+// 有远看那一份的（城郭、京城、残城）；帐、寨、市镇、港、营造地标本就几百到一两千面，不另做
 const HAS_FAR = /^(town|city|grand|metro)\d$|^(capital|ruin)$/;
 // 近看、远看两份按城在屏上的宽（像素）交替：LOD_PX[0] 以下只画远看那份，LOD_PX[1] 以上只画近看那份，其间以抖点互补地换
 export const LOD_PX = [48, 66];

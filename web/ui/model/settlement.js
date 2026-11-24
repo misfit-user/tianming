@@ -88,6 +88,9 @@ const LANDMARK_WORDS = [
 ];
 const LANDMARK_CATEGORY = { economic: 'workshop', military: 'fort', cultural: 'academy', administrative: 'yamen', religious: 'shrine', infrastructure: 'relay' };
 const LANDMARK_MAX = 4;                   // 建成的至多画四样（同样的只画一座），另加在建、半损各一
+// 地标会有哪几样（舆图照这张备模型）：认得出的各样，港、市不在其列（另设港、添市镇），加在建、半损
+export const LANDMARK_KINDS = [...new Set([...LANDMARK_WORDS.map(([kind]) => kind), ...Object.values(LANDMARK_CATEGORY)])]
+  .filter((kind) => kind !== 'port' && kind !== 'market').concat(['scaffold', 'ruin']);
 export function landmarkOf(b) {
   const name = String((b && (b.name || b.type)) || '');
   for (const [kind, re] of LANDMARK_WORDS) if (re.test(name)) return kind;

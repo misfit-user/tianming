@@ -8,7 +8,7 @@ import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
-import { createTowns, townModel } from './towns3d.js';
+import { createTowns, townModel, LANDMARK_MODEL } from './towns3d.js';
 import { createLabels, realmTitle } from './labels.js';
 import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb } from './looks.js';
 import { createPainter, noiseTex } from './paint.js';
@@ -524,7 +524,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   }
 
   // ---------- 聚落：府州治所的城郭（按繁华分档，见 model/settlement.js）、市镇、港、营造地标；近看才显 ----------
-  // 中、高画质画立体城郭（towns3d.js，照 CK3 地图上的领地模型）；低画质照旧画点景小图。营造地标暂仍是点景小图。
+  // 中、高画质画立体城郭与营造地标（towns3d.js，照 CK3 地图上的领地模型与特殊建筑）；低画质照旧画点景小图。
   // 没给分档时（舆图台、开局读数之前）：京城，要府大一号，其余小一号（立体的画府城、小城）
   const cityUniforms = { ...spriteUniforms, uFadePx: { value: new THREE.Vector2(9, 15) }, uMaxPx: { value: 72 } };
   const towns = q.tier === 'low' ? null : createTowns({
@@ -535,7 +535,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const CITY_KIND = ['town', 'city', 'grand', 'metro'];
   const CITY_SPRITE = [SPRITE.town, SPRITE.city, SPRITE.grand, SPRITE.metro];   // 小城、府城、大府、都会
   const CITY_SIZE = [3.4, 3.9, 4.6, 5.3];
-  // 营造地标（settle[i].landmarks 里的样子 → 图）；半损的画一小片残垣（借残城那张，画小）
+  // 营造地标（settle[i].landmarks 里的样子 → 图，低画质用；立体的见 towns3d.js LANDMARK_MODEL）；半损的画一小片残垣（借残城那张，画小）
   const LANDMARK_SPRITE = {
     academy: SPRITE.academy, granary: SPRITE.granary, waterworks: SPRITE.waterworks, workshop: SPRITE.workshop, fort: SPRITE.fort, beacon: SPRITE.beacon,
     temple: SPRITE.temple, shrine: SPRITE.shrine, relay: SPRITE.relay, yamen: SPRITE.yamen, bridge: SPRITE.bridge, scaffold: SPRITE.scaffold, ruin: SPRITE.ruin, port: SPRITE.port
@@ -561,6 +561,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   // 立体城郭：样子、档 → 模型（城郭四档各两种街巷，按府州下标单双取）
   const TOWN_SCALE = 0.85;                    // 模型比例：江南府州挨得紧，再大城与城就碰上了
   const KIND_SCALE = { yurtS: 1.5, yurtL: 1.35, stockS: 1.2, stockL: 1.1 };   // 帐、寨本身小，放大些与城郭相当（一处牧地、一处土司也是一方之治）
+  const LANDMARK_SCALE = 1.1;                 // 营造地标：模型本身比城郭小一圈，摆出来放大些（镜头最近时也有四五十像素宽，看得出是什么）
   function seatModel(i, k) {
     const st = settle && settle[i], v = i % 2;
     if (k === 2 && palaceAt(st)) return 'capital';
@@ -619,7 +620,16 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       ringed.forEach((kk, j) => {
         const at = ring[j];
         if (!at) return;
-        if (towns && kk === 'port') { solid.push({ kind: 'wharf', x: at[0], z: at[1], h: groundOf(at[0], at[1], 0.8), yaw: (i % 4) * Math.PI / 2, scale: TOWN_SCALE }); return; }
+        if (towns) {
+          // 立体地标坐北朝南不转（河埠按府州转个向）；占地记下，林木、村舍不从里头冒出来
+          const kind = LANDMARK_MODEL[kk];
+          if (!kind) return;
+          const wharf = kind === 'wharf', mdl = townModel(kind), s = wharf ? TOWN_SCALE : LANDMARK_SCALE, yaw = wharf ? (i % 4) * Math.PI / 2 : 0;
+          solid.push({ kind, x: at[0], z: at[1], h: groundOf(at[0], at[1], mdl.hw * s), yaw, scale: s });
+          const e = Math.max(mdl.hw, mdl.north, mdl.south) * s;
+          foot.push(yaw ? [at[0] - e, at[1] - e, at[0] + e, at[1] + e] : [at[0] - mdl.hw * s, at[1] - mdl.north * s, at[0] + mdl.hw * s, at[1] + mdl.south * s]);
+          return;
+        }
         if (LANDMARK_SPRITE[kk] != null) items.push([at[0], heightAt(at[0], at[1]), at[1], LANDMARK_SIZE[kk] || 2.8, LANDMARK_SPRITE[kk]]);
       });
     });
@@ -687,8 +697,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const ringSlots = (seat) => {
     if (typeof seat === 'object') {
       const { hw, depth: D } = seat;
-      return [[-(hw + 1.7), -0.3 * D], [hw + 1.7, -0.3 * D], [-(hw + 1.7), -0.75 * D], [hw + 1.7, -0.75 * D], [-(hw + 4.5), -0.4 * D], [hw + 4.5, -0.4 * D],
-        [-(hw + 1.5), 1.7], [hw + 1.5, 1.7], [0, -(D + 1.8)]];
+      return [[-(hw + 1.95), -0.3 * D], [hw + 1.95, -0.3 * D], [-(hw + 1.95), -0.75 * D], [hw + 1.95, -0.75 * D], [-(hw + 5.0), -0.4 * D], [hw + 5.0, -0.4 * D],
+        [-(hw + 1.8), 1.9], [hw + 1.8, 1.9], [0, -(D + 2.0)]];
     }
     const R = seat / 2 + 1.5;
     return RING_SLOTS.map(([dr, a]) => [Math.cos(a) * (R + dr), Math.sin(a) * (R + dr)]);

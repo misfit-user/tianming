@@ -444,6 +444,7 @@ uniform float uDpr;
 uniform vec2 uHalfView;
 uniform vec2 uFadePx;          // 屏上多大开始显、多大全显（CSS 像素）
 uniform float uMaxPx;
+uniform vec2 uOutPx;           // 屏上多大开始淡出、淡尽（近看换成立体的那层；不换的给极大）
 uniform float uFogNear;
 uniform float uFogFar;
 uniform vec3 uCam;
@@ -459,7 +460,7 @@ void main() {
   float px = min(s, uMaxPx);
   gl_PointSize = px * uDpr;
   gl_Position.y += px * 0.5 / uHalfView.y * gl_Position.w;
-  vFade = smoothstep(uFadePx.x, uFadePx.y, s);
+  vFade = smoothstep(uFadePx.x, uFadePx.y, s) * (1.0 - smoothstep(uOutPx.x, uOutPx.y, s));
   vFog = smoothstep(uFogNear, uFogFar, distance(p, uCam));
   vType = aType;
 }`;

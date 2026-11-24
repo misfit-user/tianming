@@ -8,7 +8,7 @@ import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
-import { createTowns, townModel, LANDMARK_MODEL } from './towns3d.js';
+import { createTowns, createScatter, townModel, LANDMARK_MODEL } from './towns3d.js';
 import { createLabels, realmTitle } from './labels.js';
 import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb } from './looks.js';
 import { createPainter, noiseTex } from './paint.js';
@@ -410,10 +410,21 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   lines.setPolitics(realmByRegion);
   scene.add(lines.group);
   // ---------- 点景：山上的树（山河境的树位）、平原湿润处的村舍 ----------
+  // 中、高画质另有一层立体的（towns3d.js createScatter）：远处仍画点景小图（几万处画成点最省），推近到小图屏上
+  // SCATTER_OUT 那么大时小图淡出、立体的以抖点淡入。两边按同一把尺子（小图的屏上大小）量，恰好接上
+  const SCATTER_OUT = new THREE.Vector2(16, 24);
+  const SCATTER_K = { pine: 0.8, dot: 0.85, jia: 0.9, grove: 0.9, willow: 0.9, hamlet: 1, hamletB: 1 };   // 点景小图大小 → 模型比例（树的小图四边留白多，立体的缩一点才一般大）
+  const SCATTER_OF = { [SPRITE.pine]: 'pine', [SPRITE.dot]: 'dot', [SPRITE.jia]: 'jia', [SPRITE.grove]: 'grove', [SPRITE.willow]: 'willow', [SPRITE.hamlet]: 'hamlet', [SPRITE.hamletB]: 'hamletB' };
+  const scatter = q.trees && q.tier !== 'low' ? createScatter({
+    uRelief: uniforms.uRelief, uPx: uniforms.uPx, uCam: uniforms.uCam, uFogNear: uniforms.uFogNear, uFogFar: uniforms.uFogFar,
+    uFogColor: uniforms.uFogColor, uLookT: uniforms.uLookT, uFadePx: { value: SCATTER_OUT }
+  }, SCATTER_K) : null;
+  if (scatter) scene.add(scatter.group);
   const spriteUniforms = {
     uRelief: uniforms.uRelief, uPx: uniforms.uPx, uHalfView: uniforms.uHalfView, uCam: uniforms.uCam,
     uFogNear: uniforms.uFogNear, uFogFar: uniforms.uFogFar, uFogColor: uniforms.uFogColor,
-    uDpr: { value: stage.size.dpr || 1 }, uFadePx: { value: new THREE.Vector2(7, 12) }, uMaxPx: { value: 34 }, uAtlas: { value: atlas() }
+    uDpr: { value: stage.size.dpr || 1 }, uFadePx: { value: new THREE.Vector2(7, 12) }, uMaxPx: { value: 34 }, uAtlas: { value: atlas() },
+    uOutPx: { value: scatter ? SCATTER_OUT.clone() : new THREE.Vector2(1e5, 2e5) }
   };
   let trees = null;                           // 点景远看都小过数像素、淡尽了，整层不画
   let treeItems = [];                         // 林木（开局按地形定死）
@@ -521,12 +532,22 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     const all = outsideTowns(treeItems.concat(villagesNow())).sort((a, b) => a[2] - b[2]);
     trees = spriteLayer(all, spriteUniforms);
     scene.add(trees);
+    if (!scatter) return;
+    // 立体的那层：同一批位置。树随手转个向；村舍大体坐北朝南，只偏一点
+    const list = [];
+    for (const [x, h, y, size, t] of all) {
+      const kind = SCATTER_OF[t];
+      if (!kind) continue;
+      const r = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
+      list.push({ kind, x, z: y, h, size, yaw: kind.startsWith('hamlet') ? (r - 0.5) * 0.7 : r * Math.PI * 2 });
+    }
+    scatter.set(list);
   }
 
   // ---------- 聚落：府州治所的城郭（按繁华分档，见 model/settlement.js）、市镇、港、营造地标；近看才显 ----------
   // 中、高画质画立体城郭与营造地标（towns3d.js，照 CK3 地图上的领地模型与特殊建筑）；低画质照旧画点景小图。
   // 没给分档时（舆图台、开局读数之前）：京城，要府大一号，其余小一号（立体的画府城、小城）
-  const cityUniforms = { ...spriteUniforms, uFadePx: { value: new THREE.Vector2(9, 15) }, uMaxPx: { value: 72 } };
+  const cityUniforms = { ...spriteUniforms, uFadePx: { value: new THREE.Vector2(9, 15) }, uMaxPx: { value: 72 }, uOutPx: { value: new THREE.Vector2(1e5, 2e5) } };
   const towns = q.tier === 'low' ? null : createTowns({
     uRelief: uniforms.uRelief, uPx: uniforms.uPx, uCam: uniforms.uCam, uFogNear: uniforms.uFogNear, uFogFar: uniforms.uFogFar,
     uFogColor: uniforms.uFogColor, uLookT: uniforms.uLookT, uFadePx: { value: new THREE.Vector2(11, 18) }
@@ -872,6 +893,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     lines.update(pose().dist * 1.6);
     uniforms.uZoom.value = 0;
     if (towns) towns.update(camera);              // 城郭按这一镜重挑
+    if (scatter) scatter.update(camera);          // 林木、村舍的立体版也是
     const c = shoot(width, height);
     const g = c.getContext('2d');
     g.strokeStyle = 'rgba(40,24,14,0.7)';
@@ -925,6 +947,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uniforms.uZoom.value = 1 - Math.min(1, Math.max(0, (dist - 700) / 700));
     lines.update(dist);
     if (towns) towns.update(camera);              // 城郭按这一镜重挑
+    if (scatter) scatter.update(camera);          // 林木、村舍的立体版也是
     const c = shoot(width, height);
     uniforms.uZoom.value = zoom;
     lines.setViewport(stage.size.w, stage.size.h);
@@ -985,6 +1008,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       lines.update(dist, tier);
       if (trees) trees.visible = dist < 1100;
       if (towns) { towns.group.visible = dist < 1400; if (towns.group.visible) towns.update(camera); }   // 再远最大的京城也小过十一像素，整层不画
+      if (scatter) { scatter.group.visible = dist < 700; if (scatter.group.visible) scatter.update(camera); }   // 再远点景小图都没长到该换立体的大小
       if (hk !== hoverKey) {
         hoverKey = hk;
         uniforms.uHover.value = g ? g.key : -1;
@@ -1113,6 +1137,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     get labelsReady() { return labels.ready; },
     get labelStats() { return labels.stats; },
     get townStats() { return towns ? towns.stats : null; },          // 立体城郭：几座、多少面（低画质为 null）
+    get scatterStats() { return scatter ? scatter.stats : null; },   // 林木、村舍的立体版：几处、分几块、上一帧画了几处多少面（低画质为 null）
     get labelsPlaced() { return labels.placed; },
     // 舆图世界坐标落在屏幕上的位置（高度取地形）；第三项为真＝这点在镜头背后（或远过远截面），投出来的位置会翻到画面另一头，不可用
     worldToScreen(x, y) {

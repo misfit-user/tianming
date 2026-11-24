@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // 新界面舆图的立体城郭与营造地标（web/ui/scene/map/towns3d.js）：各样模型都搭得出、顶点没有坏数、远看那份比近看省面；
-// 聚落等第（web/ui/model/settlement.js）会给的每样营造地标都有立体模型；各地标的名义半宽罩得住模型本身（摆放、占地、多远开始显都按它）。
+// 聚落等第（web/ui/model/settlement.js）会给的每样营造地标都有立体模型；各地标的名义半宽罩得住模型本身（摆放、占地、多远开始显都按它）；
+// 林木、村舍的立体版省面，分块挑着画：近看只画镜头里那一片、远了不画。
 // 模块是 ES 模块、引着 three：拷进临时目录（目录标成 ES 模块），three 取仓里 vendor 的那份放进临时目录的 node_modules。
 'use strict';
 const fs = require('fs');
@@ -78,6 +79,33 @@ function badVertices(geometry) {
       check(ew <= md.hw * 1.08 + 0.05 && ns <= md.hw * 1.25 + 0.1, `${kind} 东西 ${ew.toFixed(2)}、南北 ${ns.toFixed(2)} 在半宽 ${md.hw} 之内`);
       check(md.hw < t.townModel('town0').hw, `${kind} 比最小的城郭小（半宽 ${md.hw}）`);
     }
+
+    // 林木、村舍的立体版：每样都省面（几千处一起画）
+    for (const kind of t.SCATTER_KINDS) {
+      const md = t.townModel(kind);
+      check(md.tris <= 80 && md.far === null, `${kind} 省面（${md.tris} 面，不另做远看那份）`);
+    }
+    // 分块挑着画：近看只画镜头里那一片（远处那片太小、镜头背后那片看不见都不画），远了一处不画，拉回来又画上；不认得的样子不收
+    const THREE = await import(pathToFileURL(path.join(three, 'three.module.js')).href);
+    const shared = {
+      uRelief: { value: 20 }, uPx: { value: 900 / (2 * Math.tan(Math.PI / 12)) }, uCam: { value: new THREE.Vector3() }, uFogNear: { value: 1e6 },
+      uFogFar: { value: 2e6 }, uFogColor: { value: new THREE.Vector3() }, uLookT: { value: 1 }, uFadePx: { value: new THREE.Vector2(16, 24) }
+    };
+    const sc = t.createScatter(shared, { pine: 0.8, hamlet: 1 });
+    const spot = (x0, z0, kindOf) => Array.from({ length: 40 }, (_, i) => ({ kind: kindOf(i), x: x0 + (i % 8) * 2, z: z0 + Math.floor(i / 8) * 2, h: 0.05, yaw: 0, size: 1.5 }));
+    sc.set(spot(1000, 800, (i) => (i % 2 ? 'pine' : 'hamlet')).concat(spot(1600, 300, () => 'pine'), spot(1000, 930, () => 'pine'), [{ kind: '不认得', x: 1000, z: 800, h: 0, yaw: 0, size: 1.5 }]));
+    check(sc.stats.instances === 120, `收下 120 处（不认得的不收）：${sc.stats.instances}`);
+    const cam = new THREE.PerspectiveCamera(30, 16 / 9, 0.5, 4000);
+    const look = (dist) => {
+      cam.position.set(1008, 1 + dist * Math.cos(0.95), 804 + dist * Math.sin(0.95));
+      cam.lookAt(1008, 1, 804);
+      sc.update(cam);
+      return sc.stats.drawn;
+    };
+    check(look(75) === 40, `近看只画镜头里那一片 40 处：${look(75)}`);
+    check(look(2000) === 0, `远了一处也不画：${look(2000)}`);
+    check(look(75) === 40, '拉回来又画上');
+    sc.dispose();
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

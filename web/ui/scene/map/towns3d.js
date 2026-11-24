@@ -23,7 +23,8 @@ const C = {
   hull: [0.41, 0.31, 0.22], sail: [0.66, 0.35, 0.23], pole: [0.26, 0.21, 0.17], banner: [0.7, 0.21, 0.15], black: [0.17, 0.15, 0.14],
   brick: [0.64, 0.4, 0.3], bamboo: [0.72, 0.65, 0.43], dust: [0.75, 0.69, 0.58], willow: [0.47, 0.6, 0.38], arch: [0.2, 0.25, 0.27],
   paddy: [0.5, 0.63, 0.36], paddyWet: [0.46, 0.6, 0.57], rice: [0.79, 0.71, 0.42], dike: [0.69, 0.63, 0.47],
-  horse: [0.52, 0.36, 0.23], horseDark: [0.27, 0.21, 0.17], horseLight: [0.85, 0.81, 0.73]
+  horse: [0.52, 0.36, 0.23], horseDark: [0.27, 0.21, 0.17], horseLight: [0.85, 0.81, 0.73],
+  jade: [0.38, 0.56, 0.44], deep: [0.27, 0.43, 0.37], pale: [0.6, 0.71, 0.5], hay: [0.8, 0.69, 0.42]
 };
 
 // ---------- 搭几何：三角形逐个放（法线按面，着色器按正反面翻，绕向不拘），带顶点色；可套平移、绕竖轴转 ----------
@@ -993,14 +994,104 @@ export const LANDMARK_MODEL = {
   shrine: 'shrine', relay: 'relay', yamen: 'yamen', bridge: 'bridge', scaffold: 'scaffold', ruin: 'ruinS', port: 'wharf'
 };
 
+// ---------- 林木、村舍（点景小图的立体版：近看才换上，远处仍是小图） ----------
+// 照山水画点景的几样：松（层层横出的针叶团）、点叶（石绿圆冠）、夹叶（几团淡绿小冠）、杂树（高低三株）、柳（扁冠垂丝）、
+// 村舍（两间屋、一株树）、庄（三间屋围着晒场、一垛草、一株树）。每株二三十面、每处村舍四五十面，几千处一起画也不重。
+// 高约一单位，摆放时照点景小图的大小缩放（index.js SCATTER_K）
+
+// 树冠：n 棱的一团，腰圈在 y、半径 r，往上收成尖、往下收一圈再收成尖（高 h：腰上六成、腰下四成）；band 为假时省掉下面那圈（上下各一尖）
+function crown(m, x, y, z, r, h, col, n = 6, band = true) {
+  const top = [x, y + h * 0.6, z], bot = [x, y - h * 0.4, z], lo = 0.72, ly = y - h * 0.22;
+  for (let i = 0; i < n; i++) {
+    const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
+    const p0 = [x + c0 * r, y, z + s0 * r], p1 = [x + c1 * r, y, z + s1 * r];
+    m.tri(p0, p1, top, col);
+    if (band) {
+      const q0 = [x + c0 * r * lo, ly, z + s0 * r * lo], q1 = [x + c1 * r * lo, ly, z + s1 * r * lo];
+      m.quad(q0, q1, p1, p0, tint(col, 0.88));
+      m.tri(q1, q0, bot, tint(col, 0.76));
+    } else m.tri(p1, p0, bot, tint(col, 0.8));
+  }
+}
+// 干：一根细方柱，往地下多伸一截
+function trunk(m, x, z, h, w = 0.035) { box(m, x - w, -0.25, z - w, x + w, h, z + w, C.wood, { faces: 'nsew' }); }
+// 松：一根干，三层六棱的扁锥（针叶团），一层比一层小、左右略错开
+function scPine(m) {
+  trunk(m, 0, 0, 0.66, 0.032);
+  for (const [y, r, h, dx, k] of [[0.22, 0.4, 0.22, 0.03, 0.95], [0.42, 0.31, 0.2, -0.04, 1.05], [0.6, 0.21, 0.2, 0.02, 1.15]]) {
+    const c = tint(C.deep, k), apex = [dx, y + h, 0];
+    for (let i = 0; i < 6; i++) {
+      const a0 = (i + 0.5) * Math.PI / 3, a1 = a0 + Math.PI / 3;
+      m.tri([dx + Math.cos(a0) * r, y, Math.sin(a0) * r], [dx + Math.cos(a1) * r, y, Math.sin(a1) * r], apex, c);
+    }
+  }
+  return 0.4;
+}
+// 点叶：直干，一团石绿圆冠
+function scDot(m) {
+  trunk(m, 0, 0, 0.3);
+  crown(m, 0, 0.5, 0, 0.36, 0.74, C.jade, 6);
+  return 0.36;
+}
+// 夹叶：直干，三团淡绿小冠错落
+function scJia(m) {
+  trunk(m, 0, 0, 0.3, 0.03);
+  for (const [x, y, z, r] of [[-0.15, 0.42, 0.05, 0.22], [0.15, 0.46, -0.05, 0.23], [0, 0.64, 0.02, 0.2]]) crown(m, x, y, z, r, r * 1.8, C.pale, 5, false);
+  return 0.36;
+}
+// 杂树：高低三株，冠色深浅不一
+function scGrove(m) {
+  for (const [x, z, h, r, col] of [[-0.22, 0.06, 0.6, 0.21, C.jade], [0.15, -0.08, 0.78, 0.25, C.leafDark], [0.04, 0.2, 0.46, 0.18, C.pale]]) {
+    trunk(m, x, z, h - r * 1.6, 0.025);
+    crown(m, x, h - r * 0.6, z, r, r * 2, col, 5, false);
+  }
+  return 0.42;
+}
+// 柳：短干，一团扁冠，冠沿垂下一圈细丝
+function scWillow(m) {
+  trunk(m, 0, 0, 0.44, 0.04);
+  crown(m, 0, 0.58, 0, 0.32, 0.26, C.willow, 6);
+  const n = 9, w = 0.055;
+  for (let i = 0; i < n; i++) {
+    const a = (i + 0.3) / n * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a), x = ca * 0.3, z = sa * 0.3;
+    m.quad([x - sa * w, 0.55, z + ca * w], [x + sa * w, 0.55, z - ca * w], [x * 1.1 + sa * w * 0.4, 0.17, z * 1.1 - ca * w * 0.4], [x * 1.1 - sa * w * 0.4, 0.17, z * 1.1 + ca * w * 0.4], tint(C.willow, 0.9));
+  }
+  return 0.36;
+}
+// 村舍：两间小屋（一间瓦顶、一间草顶），屋后一株树
+function scHamlet(m) {
+  house(m, -0.12, 0.04, 0.42, 0.24, 0.13, C.plaster, C.tile, false, -0.3);
+  house(m, 0.25, 0.17, 0.3, 0.2, 0.11, C.plaster2, C.thatch, true, -0.3);
+  trunk(m, 0.3, -0.2, 0.26, 0.025);
+  crown(m, 0.3, 0.38, -0.2, 0.17, 0.28, C.jade, 5, false);
+  return 0.44;
+}
+// 庄：三间屋围着一块晒场，场边一垛草，屋后一株树
+function scHamletB(m) {
+  flat(m, -0.2, -0.06, 0.24, 0.24, 0.014, C.ground);
+  house(m, -0.04, -0.22, 0.52, 0.24, 0.14, C.plaster, C.tile, false, -0.3);
+  house(m, -0.4, 0.06, 0.36, 0.2, 0.12, C.plaster2, C.tile, true, -0.3);
+  house(m, 0.4, 0.02, 0.32, 0.2, 0.11, C.earthHouse, C.thatch, true, -0.3);
+  for (let i = 0; i < 6; i++) {
+    const a0 = i * Math.PI / 3, a1 = a0 + Math.PI / 3, x = 0.12, z = 0.2, r = 0.08;
+    m.tri([x + Math.cos(a0) * r, -0.02, z + Math.sin(a0) * r], [x + Math.cos(a1) * r, -0.02, z + Math.sin(a1) * r], [x, 0.15, z], C.hay);
+  }
+  trunk(m, -0.42, -0.34, 0.28, 0.025);
+  crown(m, -0.42, 0.42, -0.34, 0.18, 0.3, C.jade, 5, false);
+  return 0.52;
+}
+
 // 各样：搭法（搭完返回城墙外沿半宽）
 const BUILD = {
   town0: (m) => town(m, 0), town1: (m) => town(m, 1), city0: (m) => city(m, 0), city1: (m) => city(m, 1),
   grand0: (m) => grand(m, 0), grand1: (m) => grand(m, 1), metro0: (m) => metro(m, 0), metro1: (m) => metro(m, 1),
   capital, ruin, yurtS, yurtL, stockS, stockL, market, port: (m) => port(m, true), wharf: (m) => port(m, false),
   academy: lmAcademy, granary: lmGranary, waterworks: lmWaterworks, workshop: lmWorkshop, fort: lmFort, beacon: lmBeacon, temple: lmTemple,
-  shrine: lmShrine, relay: lmRelay, yamen: lmYamen, bridge: lmBridge, scaffold: lmScaffold, ruinS: lmRuin
+  shrine: lmShrine, relay: lmRelay, yamen: lmYamen, bridge: lmBridge, scaffold: lmScaffold, ruinS: lmRuin,
+  pine: scPine, dot: scDot, jia: scJia, grove: scGrove, willow: scWillow, hamlet: scHamlet, hamletB: scHamletB
 };
+// 林木、村舍那几样（createScatter 画的）
+export const SCATTER_KINDS = ['pine', 'dot', 'jia', 'grove', 'willow', 'hamlet', 'hamletB'];
 export const TOWN_KINDS = Object.keys(BUILD);
 // 有远看那一份的（城郭、京城、残城）；帐、寨、市镇、港、营造地标本就几百到一两千面，不另做
 const HAS_FAR = /^(town|city|grand|metro)\d$|^(capital|ruin)$/;
@@ -1129,5 +1220,124 @@ export function createTowns(shared) {
       return { instances: n, tris, drawn: dn, drawnTris: dtris };
     },
     dispose() { for (const rec of layers.values()) for (const p of rec.parts) { p.geo.dispose(); p.mesh.material.dispose(); } layers.clear(); }
+  };
+}
+
+// 一层林木、村舍的立体版：全图几万处，按四十八个世界单位一块分好。每帧只挑镜头里、又近到开始显的那几块，把块里的实例整段拷进缓冲，
+// 挑出的块与上帧一样就不重传。k：各样「点景小图的大小 → 模型比例」。着色器里的屏上宽按点景小图的大小算（uSize = 1/k），
+// 所以 shared.uFadePx 与点景小图淡出的门槛（index.js 里小图那层的 uOutPx）是同一把尺子：小图淡出时立体的以抖点淡入，恰好接上。
+// set(list)：list 每项 { kind, x, z, h（落脚处地面高，0～1）, yaw, size（点景小图的大小） }，整层换过
+export function createScatter(shared, k) {
+  const group = new THREE.Group();
+  const CH = 48;
+  const parts = new Map();
+  let chunks = [], sent = null;
+  function partFor(kind) {
+    if (parts.has(kind)) return parts.get(kind);
+    const model = townModel(kind), geo = new THREE.InstancedBufferGeometry();
+    for (const a of ['position', 'normal', 'aColor']) geo.setAttribute(a, model.geometry.getAttribute(a));
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { ...shared, uSize: { value: 1 / k[kind] }, uLod: { value: new THREE.Vector3(0, 0, 0) } },
+      vertexShader: townVertex, fragmentShader: townFragment, side: THREE.DoubleSide
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.frustumCulled = false;
+    mesh.renderOrder = 18;
+    mesh.visible = false;
+    group.add(mesh);
+    const p = { kind, model, geo, mesh, cap: 0, base: null, ys: null, total: 0, n: 0 };
+    parts.set(kind, p);
+    return p;
+  }
+  function set(list) {
+    const grid = new Map(), totals = new Map();
+    for (const it of list) {
+      if (!k[it.kind]) continue;
+      const key = Math.floor(it.x / CH) * 4096 + Math.floor(it.z / CH);
+      if (!grid.has(key)) grid.set(key, []);
+      grid.get(key).push(it);
+      totals.set(it.kind, (totals.get(it.kind) || 0) + 1);
+    }
+    for (const [kind, n] of totals) {
+      const p = partFor(kind);
+      if (n <= p.cap) continue;
+      p.cap = n;
+      p.base = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3);
+      p.ys = new THREE.InstancedBufferAttribute(new Float32Array(n * 2), 2);
+      p.base.setUsage(THREE.DynamicDrawUsage);
+      p.ys.setUsage(THREE.DynamicDrawUsage);
+      p.geo.setAttribute('aBase', p.base);
+      p.geo.setAttribute('aYS', p.ys);
+    }
+    for (const p of parts.values()) p.total = totals.get(p.kind) || 0;
+    chunks = [];
+    for (const items of grid.values()) {
+      let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity, h0 = Infinity, h1 = -Infinity, size = 0, reach = 0;
+      const by = new Map();
+      for (const it of items) {
+        x0 = Math.min(x0, it.x); x1 = Math.max(x1, it.x); z0 = Math.min(z0, it.z); z1 = Math.max(z1, it.z);
+        h0 = Math.min(h0, it.h); h1 = Math.max(h1, it.h);
+        size = Math.max(size, it.size);
+        reach = Math.max(reach, townModel(it.kind).radius * k[it.kind] * it.size);
+        if (!by.has(it.kind)) by.set(it.kind, []);
+        by.get(it.kind).push(it);
+      }
+      const data = [];
+      for (const [kind, arr] of by) {
+        const base = new Float32Array(arr.length * 3), ys = new Float32Array(arr.length * 2);
+        arr.forEach((it, i) => {
+          base[i * 3] = it.x; base[i * 3 + 1] = it.h; base[i * 3 + 2] = it.z;
+          ys[i * 2] = it.yaw || 0; ys[i * 2 + 1] = k[kind] * it.size;
+        });
+        data.push({ part: parts.get(kind), base, ys, n: arr.length });
+      }
+      chunks.push({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, r: Math.hypot(x1 - x0, z1 - z0) / 2 + reach, hm: (h0 + h1) / 2, hh: (h1 - h0) / 2, size, data });
+    }
+    sent = null;
+  }
+  const frustum = new THREE.Frustum(), pv = new THREE.Matrix4(), sphere = new THREE.Sphere(), pass = [];
+  function update(camera) {
+    camera.updateMatrixWorld();
+    pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    frustum.setFromProjectionMatrix(pv);
+    const relief = shared.uRelief.value, uPx = shared.uPx.value, lo = shared.uFadePx.value.x * 0.9, cam = camera.position;
+    pass.length = 0;
+    let sig = 0;
+    for (let i = 0; i < chunks.length; i++) {
+      const c = chunks[i];
+      sphere.center.set(c.x, c.hm * relief, c.z);
+      sphere.radius = c.r + c.hh * relief;
+      if (!frustum.intersectsSphere(sphere)) continue;
+      if (c.size * uPx / Math.max(cam.distanceTo(sphere.center) - sphere.radius, 1) < lo) continue;
+      pass.push(c);
+      sig = (Math.imul(sig, 31) + i + 1) | 0;
+    }
+    sig = (Math.imul(sig, 7) + pass.length) | 0;
+    if (sig === sent) return;
+    sent = sig;
+    for (const p of parts.values()) p.n = 0;
+    for (const c of pass) {
+      for (const d of c.data) {
+        const p = d.part;
+        p.base.array.set(d.base, p.n * 3);
+        p.ys.array.set(d.ys, p.n * 2);
+        p.n += d.n;
+      }
+    }
+    for (const p of parts.values()) {
+      p.geo.instanceCount = p.n;
+      p.mesh.visible = p.n > 0;
+      if (p.n) { p.base.needsUpdate = true; p.ys.needsUpdate = true; }
+    }
+  }
+  return {
+    group, set, update,
+    // 全图几处、分几块，上一帧挑出来画的几处、多少面
+    get stats() {
+      let n = 0, drawn = 0, tris = 0;
+      for (const p of parts.values()) { n += p.total; drawn += p.geo.instanceCount; tris += p.geo.instanceCount * p.model.tris; }
+      return { instances: n, chunks: chunks.length, drawn, drawnTris: tris };
+    },
+    dispose() { for (const p of parts.values()) { p.geo.dispose(); p.mesh.material.dispose(); } parts.clear(); chunks = []; }
   };
 }

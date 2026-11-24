@@ -423,7 +423,9 @@ function _endTurn_finalizeRecords(shizhengji, zhengwen, playerStatus, playerInne
   szjTitle = szjTitle || '';
   szjSummary = szjSummary || '';
   personnelChanges = personnelChanges || [];
-  hourenXishuo = hourenXishuo || zhengwen || '';
+  // 后人戏说：模型没写就空着。原先拿正文顶上，史记卷里正文、后人戏说两页一字不差，
+  //   推演提示里的前情、记忆回填也把正文读两遍（2026-11-24）
+  hourenXishuo = hourenXishuo || '';
   // ★2026-07-01·归一叙事里的字面转义(agent 模式常见坑):AI 把段落分隔写成字面 "\n\n"、或过度转义 \\n/\\"·
   //   JSON.parse 后仍是「字面反斜杠+n」→ 渲染直出 "\n\n"/误显英文 n·且下方时政记 split(/\n{2,}/) 按真换行
   //   分段失效→整段糊成一坨。此处统一转真换行/引号(所有来源:agent finalize/deepen、LLM 管线、史记回放共此入口)。
@@ -437,6 +439,8 @@ function _endTurn_finalizeRecords(shizhengji, zhengwen, playerStatus, playerInne
   zhengwen = _unescNarr(zhengwen);
   shiluText = _unescNarr(shiluText);
   hourenXishuo = _unescNarr(hourenXishuo);
+  // 只写了后人戏说、没写正文时，上游已把它挪作正文（tm-endturn-apply.js），这里不再记第二份
+  if (hourenXishuo && hourenXishuo.trim() === zhengwen.trim()) hourenXishuo = '';
   playerStatus = _unescNarr(playerStatus);
   playerInner = _unescNarr(playerInner);
   turnSummary = _unescNarr(turnSummary);

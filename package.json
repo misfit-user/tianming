@@ -155,6 +155,7 @@
       "!web/preview/workshop-ui-concepts/**",
       "!web/ui/**",
       "!web/vendor/three/**",
+      "!web/vendor/opencc/**",
       "!web/.git-defunct-*/**/*",
       "!web/.git/**/*",
       "!web/_archive/**/*",

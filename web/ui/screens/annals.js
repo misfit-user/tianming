@@ -3,6 +3,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { num } from '../core/numerals.js';
 import { juan } from '../kit/index.js';
+import { hant } from '../core/hant.js';
 
 export const EDICT_LABEL = { political: '政令', military: '军令', diplomatic: '外交', economic: '经济', personnel: '人事', other: '其他', pol: '政令', mil: '军令', dip: '外交', eco: '经济', oth: '其他', xinglu: '行止' };
 
@@ -36,9 +37,12 @@ export function openAnnals({ game, profile, idx = null, onArchive }) {
     else if (vol === 'edicts') page = h('div',
       a.edicts.length ? h('section', h('h5', t.ownOrders), a.edicts.map(([k, v]) => h('p.an-edict', h('b', (k === 'decree' ? t.decree : EDICT_LABEL[k] || k) + '　'), v))) : null,
       a.edictReports.length ? h('section', h('h5', t.echo), h('ol.an-list', a.edictReports.map((x) => h('li', x)))) : null);
-    else page = prose((vs.find(([k]) => k === vol) || [, , ''])[2], vol);
+    else {
+      const text = (vs.find(([k]) => k === vol) || [, , ''])[2];
+      page = prose(vol === 'shilu' ? hant(text) : text, vol);   // 实录用刻本字：先按词转繁体（core/hant.js）
+    }
     replaceChildren(body,
-      h('header.an-head', h('b', a.title || a.time), a.title ? h('small', a.time) : null, a.summary ? h('p', a.summary) : null),
+      h('header.an-head', h('b', hant(a.title || a.time)), a.title ? h('small', a.time) : null, a.summary ? h('p', a.summary) : null),
       a.playerInner ? h('p.an-inner', a.playerInner) : null,
       tabs, h('div.an-page.q-scroll.ink', page));
     if (j) j.body.querySelector('.tiantou small') && (j.body.querySelector('.tiantou small').textContent = `第${num(a.turn)}回合 · 第${num(a.idx + 1)}卷共${num(a.total)}卷`);

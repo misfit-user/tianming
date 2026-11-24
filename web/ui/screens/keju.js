@@ -6,6 +6,7 @@ import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
 import { juan } from '../kit/index.js';
+import { hantName } from '../core/hant.js';   // 金榜人名用刻本字，先转繁体；名次小字是楷体，不转
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const SLOTS = [['zhuangyuan', '状元'], ['bangyan', '榜眼'], ['tanhua', '探花']];
@@ -198,9 +199,9 @@ export function createKeju({ root, game, profile, onPerson, onReform }) {
     const top = ex.results.slice(0, 3), rest = ex.results.slice(3);
     return [
       h('div.kj-bang', h('h3', '金榜题名'), h('div.cols',
-        h('section.jia', h('h6', '第一甲'), top.map((c, i) => h('p', h('small', SLOTS[i][1]), h('b', c.name)))),
-        rest.length ? h('section', h('h6', '第二甲'), rest.slice(0, Math.ceil(rest.length / 2)).map((c) => h('p', h('b', c.name)))) : null,
-        rest.length > 1 ? h('section', h('h6', '第三甲'), rest.slice(Math.ceil(rest.length / 2)).map((c) => h('p', h('b', c.name)))) : null),
+        h('section.jia', h('h6', '第一甲'), top.map((c, i) => h('p', h('small', SLOTS[i][1]), h('b', hantName(c.name))))),
+        rest.length ? h('section', h('h6', '第二甲'), rest.slice(0, Math.ceil(rest.length / 2)).map((c) => h('p', h('b', hantName(c.name))))) : null,
+        rest.length > 1 ? h('section', h('h6', '第三甲'), rest.slice(Math.ceil(rest.length / 2)).map((c) => h('p', h('b', hantName(c.name))))) : null),
         ex.ranking && ex.ranking.auto ? h('small.auto', '未亲钦三甲，按综合分定') : null),
       h('div.kj-roll.gold', ex.results.map((c, i) => h('div.kj-cand' + (i < 3 ? '.' + SLOTS[i][0] : ''),
         h('i', i < 3 ? SLOTS[i][1].charAt(0) : num(c.rank)), h('div', h('b', c.name, c.inChars && onPerson ? h('button.link', { type: 'button', onclick: () => person(c.name) }, '列传') : null),
@@ -221,7 +222,7 @@ export function createKeju({ root, game, profile, onPerson, onReform }) {
   function renderHist(x) {
     if (!x) return [h('p.ce-unk', '无此科')];
     return [head(`${x.date}${x.enke ? '·恩科' : ''}`, [x.examiner && `主考${x.examiner}${x.party ? `（${x.party}）` : ''}`, x.passed != null && `取${num(Number(x.passed) || 0)}人`, x.quality && `质量「${x.quality}」`].filter(Boolean).join(' · ')),
-      x.top3.length ? h('div.kj-bang', h('h3', '金榜'), h('div.cols', h('section.jia', h('h6', '第一甲'), x.top3.map((n, i) => h('p', h('small', SLOTS[i] ? SLOTS[i][1] : ''), h('b', n)))))) : null,
+      x.top3.length ? h('div.kj-bang', h('h3', '金榜'), h('div.cols', h('section.jia', h('h6', '第一甲'), x.top3.map((n, i) => h('p', h('small', SLOTS[i] ? SLOTS[i][1] : ''), h('b', hantName(n))))))) : null,
       x.question ? h('section.kj-block', h('h5', '策题'), h('p.kj-quote', x.question)) : null];
   }
   function renderEco() {

@@ -30,6 +30,7 @@
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
 import { bus } from '../core/bus.js';
+import { setHantNames, warmHant } from '../core/hant.js';
 import { waitKernel, installKernelBridge, disableLegacyStyles, setGameSurface } from './kernel.js';
 import * as select from './select.js';
 import * as config from './config.js';
@@ -71,6 +72,9 @@ async function boot() {
       await waitKernel();
       disableLegacyStyles();
       installKernelBridge();
+      // 刻本字简→繁：人名单（一简多繁的字，人名里照原字）
+      setHantNames(() => (w.GM && Array.isArray(w.GM.chars) ? w.GM.chars.map((c) => c && c.name) : []));
+      warmHant();
       const loader = w.TMOfficialScenarioLoader;
       if (loader && typeof loader.ready === 'function') await loader.ready();
       bus.emit('kernel:ready', {});

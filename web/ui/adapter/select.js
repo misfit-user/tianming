@@ -445,6 +445,11 @@ export function situation() {
 
 // 史官实录：回合史记（GM.shijiHistory，每回合一条）。目录与单条全文
 const txt = (v) => (v == null ? '' : typeof v === 'string' ? v : String(v));
+// 卷里与前面某卷一字不差的不另列一页（旧档的后人戏说多是拿正文顶的，正文也有与时政记同文的）
+export function distinctVol(v, ...before) {
+  const t = txt(v).trim();
+  return t && !before.some((b) => txt(b).trim() === t) ? txt(v) : '';
+}
 function lineOf(x) {
   if (x == null) return '';
   if (typeof x === 'string') return x;
@@ -464,7 +469,7 @@ export function annal(idx) {
   if (!s) return null;
   return {
     idx: i, total: list.length, turn: s.turn, time: txt(s.time), title: txt(s.szjTitle), summary: txt(s.turnSummary), szjSummary: txt(s.szjSummary),
-    shilu: txt(s.shilu), shizhengji: txt(s.shizhengji), zhengwen: txt(s.zhengwen && s.zhengwen !== s.shizhengji ? s.zhengwen : ''), houren: txt(s.houren),
+    shilu: txt(s.shilu), shizhengji: txt(s.shizhengji), zhengwen: distinctVol(s.zhengwen, s.shizhengji), houren: distinctVol(s.houren, s.zhengwen, s.shizhengji),
     playerStatus: txt(s.playerStatus), playerInner: txt(s.playerInner),
     personnel: (Array.isArray(s.personnel) ? s.personnel : []).map(lineOf).filter(Boolean),
     edicts: s.edicts && typeof s.edicts === 'object' ? Object.entries(s.edicts).filter(([, v]) => v && typeof v === 'string' && v.trim()).map(([k, v]) => [k, v]) : [],

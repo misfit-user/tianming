@@ -4,6 +4,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
+import { hant } from '../core/hant.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const SORTS = [['recent', '近作'], ['quality', '品第'], ['author', '作者']];
@@ -116,7 +117,7 @@ export function createWenyuan({ root, game, profile, onPerson }) {
   // 典籍：线装书衣加题签，一旁提要
   function cover(x) {
     return h('div.wy-preset',
-      h('div.wy-cover', h('i.wy-slip', x.title.replace(/[《》]/g, '')), x.preserved ? h('i.wy-stamp.kept', '传世') : null, x.forbidden ? h('i.wy-stamp.ban', '查禁') : null),
+      h('div.wy-cover', h('i.wy-slip', hant(x.title.replace(/[《》]/g, ''))), x.preserved ? h('i.wy-stamp.kept', '传世') : null, x.forbidden ? h('i.wy-stamp.ban', '查禁') : null),
       h('div.wy-tiyao', h('h5', '提要'),
         h('dl', x.genre ? [h('dt', '门类'), h('dd', x.genre)] : null, x.date ? [h('dt', '成书'), h('dd', x.date)] : null, x.status ? [h('dt', '版本'), h('dd', x.status)] : null),
         x.desc ? h('p', x.desc) : null, x.note ? h('p.note', x.note) : null));

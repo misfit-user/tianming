@@ -4,6 +4,7 @@
 // 可见之律：史记的「国势升降」取自核心指标快照（GM._metricHistory），是真值之差；奏报失真层开着时不列。
 // 写口两处，与老史馆同：起居注可加批注（_annotation），纪事可标要事（_starred）。
 import { turnTag } from '../core/numerals.js';
+import { distinctVol } from './select.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -133,7 +134,7 @@ export function catalog() {
     if (!s) return;
     const turn = Number(s.turn || i + 1);
     const personnel = (Array.isArray(s.personnel) ? s.personnel : []);
-    const vols = [['实录', s.shilu], ['时政记', s.shizhengji], ['正文', s.zhengwen && s.zhengwen !== s.shizhengji ? s.zhengwen : ''], ['后人戏说', s.houren],
+    const vols = [['实录', s.shilu], ['时政记', s.shizhengji], ['正文', distinctVol(s.zhengwen, s.shizhengji)], ['后人戏说', distinctVol(s.houren, s.zhengwen, s.shizhengji)],
       ['续时政记', s.shizhengji2], ['起居', s.qijuHistory], ['御批回听', s.yupiHuiting]].map(([k, v]) => [k, str(v)]).filter(([, v]) => v);
     push({
       id: `shiji-${i}`, cat: 'shiji', turn, seq: i, when: when(turn, s), type: str(s.szjType || s.type) || '时政', auth: authority(s), starred: !!s._starred,

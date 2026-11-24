@@ -2,6 +2,7 @@
 import { h, replaceChildren } from '../../core/dom.js';
 import { num, delta, grade, gradeIndex } from '../../core/numerals.js';
 import { tiao } from './tiao.js';
+import { hant } from '../../core/hant.js';
 
 // 账：zhang('帑廪', [{ k: '银', v: 1230000, d: -820000, unit: '两' }, …])
 export function zhang(label, rows) {
@@ -51,9 +52,9 @@ export function zhou({ name, src, dead = false, onclick, title }) {
   return h('figure.q-zhou' + (dead ? '.dead' : ''), { onclick, title: title || name, tabIndex: onclick ? 0 : null, dataset: { person: name || '' } }, face, h('figcaption', name));
 }
 
-// 邸报刻本一叶：keben('邸报', [{ tag: '急', text: '…', soft }, …])
+// 邸报刻本一叶：keben('邸报', [{ tag: '急', text: '…', soft }, …])。题与各条用刻本字，先转繁体（core/hant.js）；条首小签是楷体，不转
 export function keben(title, items) {
-  return h('article.q-keben.q-zhi', h('h3', title), items.map((it) => h('p' + (it.soft ? '.soft' : ''), it.tag ? h('em', it.tag) : null, it.text)));
+  return h('article.q-keben.q-zhi', h('h3', hant(title)), items.map((it) => h('p' + (it.soft ? '.soft' : ''), it.tag ? h('em', it.tag) : null, hant(it.text))));
 }
 
 // 朱丝栏小笺：jian({ title, sub, rows: [['民心','下上','bad'], …], warn })

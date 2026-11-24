@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 新界面舆图的聚落等第（web/ui/model/settlement.js）：繁华分、分档与回差、样子（城郭/帐幕/山寨）、残破进出、村舍疏密、市镇与港。
+// 新界面舆图的聚落等第（web/ui/model/settlement.js）：繁华分、分档与回差、样子（城郭/帐幕/山寨）、地域（日本按年份、朝鲜）、残破进出、村舍疏密、市镇与港。
 // 模块是 ES 模块，拷成 .mjs 再 import（CI 上的 Node 版本不论认不认得出 ES 写法都能跑）。
 'use strict';
 const fs = require('fs');
@@ -55,6 +55,33 @@ function check(cond, msg) {
     check(m.styleOf({ kind: '城', terrain: '平原', factionType: '游牧' }) === 'city', '剧本记作城的就是城');
     check(m.styleOf({ kind: '直辖政区', terrain: '边塞', factionType: '部落' }) === 'city', '汉地的城被部落占了，城还是城');
     check(m.styleOf({ kind: '军政或羁縻战略地块', terrain: '草原', factionType: '主权国' }) === 'city', '草原上的军镇是城');
+
+    // 地域（三部官方剧本里的写法）：日本按年份分有没有天守；法理所属定样子，此刻谁占着不算；中原照旧
+    const cu = m.cultureOf;
+    check(cu({ dejure: '德川幕府', regionType: 'foreign_shogunate', kind: '城下', year: 1627 }) === 'japan', '天启的江户：城下町');
+    check(cu({ dejure: '德川幕府下诸藩', regionType: 'foreign_shogunate', kind: '国', year: 1627 }) === 'japan', '天启四国诸藩：城下町');
+    check(cu({ dejure: '虾夷地诸部', regionType: 'frontier_trade_zone', kind: '城下', year: 1627 }) === 'japan', '松前氏的城下');
+    check(cu({ dejure: '虾夷地诸部', regionType: 'frontier_trade_zone', kind: '港', year: 1627 }) === 'japan', '箱馆、江差两港');
+    check(cu({ dejure: '日本', regionType: '令制国', kind: '', year: 840 }) === 'japanOld', '晚唐的平安京：不筑天守');
+    check(cu({ dejure: '日本', regionType: 'normal', kind: '国', year: 1127 }) === 'japanOld', '绍宋的日本诸国：不筑天守');
+    check(cu({ dejure: '日本', year: 1580 }) === 'japan' && cu({ dejure: '日本', year: 1579 }) === 'japanOld', '安土城（一五七九）为界');
+    check(cu({ dejure: '朝鲜', regionType: 'fanbang', kind: '道', year: 1627 }) === 'korea', '天启朝鲜八道');
+    check(cu({ dejure: '高丽', regionType: 'normal', kind: '京', year: 1127 }) === 'korea', '绍宋高丽');
+    check(cu({ dejure: '新罗', kind: '州', year: 840 }) === 'korea', '晚唐新罗');
+    check(cu({ dejure: '渤海', kind: '府', year: 840 }) === null, '渤海照中原');
+    check(cu({ dejure: '明朝廷', regionType: 'frontier_defense', kind: '镇', year: 1627 }) === null, '明朝的城照中原');
+    check(cu({ dejure: '后金', regionType: 'banner_core', kind: '城', year: 1627 }) === null, '后金照中原');
+    check(cu({}) === null, '什么都没有照中原');
+    // 游戏里读到的样子：剧本政区类别只写「政区」，区划自己记「城下」「港」；所属是部落联盟（松前氏）也认得是城
+    check(m.styleOf({ kind: '政区', terrain: '沿海', factionType: '部落联盟', divisionType: '城下' }) === 'city', '松前氏的城下是城');
+    check(m.styleOf({ kind: '政区', terrain: '沿海', factionType: '部落联盟', divisionType: '港' }) === 'city', '箱馆、江差是港');
+    check(m.styleOf({ kind: '政区', terrain: '沿海', factionType: '部落联盟', divisionType: '部' }) === 'tribal', '虾夷各部照旧画山寨');
+    check(cu({ dejure: '德川幕府', regionType: 'foreign_shogunate', kind: '政区', divisionType: '城下', year: 1627 }) === 'japan', '政区类别只写政区，看区划类别');
+    check(cu({ dejure: '', regionType: '', kind: '政区', divisionType: '城下', year: 1627 }) === 'japan', '法理所属没读到，城下二字也认得');
+    const ownerChanged = m.settlementOf({ prosperity: 60, commerce: 3e6, mouths: 5e5, kind: '城下', terrain: '平原', factionType: '主权国', dejure: '德川幕府', year: 1627 });
+    check(ownerChanged.style === 'city' && ownerChanged.culture === 'japan', `别国占着的日本城下町还是城下町（${JSON.stringify(ownerChanged)}）`);
+    const koCamp = m.settlementOf({ prosperity: 50, kind: '牧地', terrain: '草原', dejure: '朝鲜', year: 1627 });
+    check(koCamp.style === 'nomad' && koCamp.culture === null, '帐幕、山寨不分地域');
 
     // 残破：繁荣跌破十四进，回到十八以上才出；京城不画残破；天灾兵燹砍去一半也算
     const poor = { prosperity: 11, commerce: 3e4, mouths: 6e5, kind: '直辖政区', terrain: '高原', factionType: '主权国' };

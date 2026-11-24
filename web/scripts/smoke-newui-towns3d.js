@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // 新界面舆图的立体城郭与营造地标（web/ui/scene/map/towns3d.js）：各样模型都搭得出、顶点没有坏数、远看那份比近看省面；
 // 聚落等第（web/ui/model/settlement.js）会给的每样营造地标都有立体模型；各地标的名义半宽罩得住模型本身（摆放、占地、多远开始显都按它）；
-// 林木、村舍的立体版省面，分块挑着画：近看只画镜头里那一片、远了不画。
+// 林木、村舍的立体版省面，分块挑着画：近看只画镜头里那一片、远了不画；日本、朝鲜诸样（towns3d-east.js）各档都有、越档越大。
 // 模块是 ES 模块、引着 three：拷进临时目录（目录标成 ES 模块），three 取仓里 vendor 的那份放进临时目录的 node_modules。
 'use strict';
 const fs = require('fs');
@@ -32,7 +32,7 @@ function badVertices(geometry) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-towns3d-'));
   try {
     fs.writeFileSync(path.join(dir, 'package.json'), '{"type":"module"}');
-    for (const f of ['towns3d.js', 'shaders.js']) fs.copyFileSync(path.join(WEB, 'ui', 'scene', 'map', f), path.join(dir, f));
+    for (const f of ['towns3d.js', 'towns3d-east.js', 'shaders.js']) fs.copyFileSync(path.join(WEB, 'ui', 'scene', 'map', f), path.join(dir, f));
     fs.copyFileSync(path.join(WEB, 'ui', 'model', 'settlement.js'), path.join(dir, 'settlement.js'));
     const three = path.join(dir, 'node_modules', 'three');
     fs.mkdirSync(three, { recursive: true });
@@ -54,6 +54,22 @@ function badVertices(geometry) {
     // 城郭四档、京城、残城都有远看那份；帐、寨、市镇、港、地标没有
     for (const kind of ['town0', 'city1', 'grand0', 'metro1', 'capital', 'ruin']) check(!!t.townModel(kind).far, `${kind} 有远看那份`);
     for (const kind of ['yurtS', 'market', 'port', 'academy', 'fort']) check(t.townModel(kind).far === null, `${kind} 不另做远看那份`);
+    // 日本、朝鲜诸样（towns3d-east.js）：聚落等第给的每个地域，四档两种、都城都有模型，都有远看那份；档越高占地越大；
+    // 日本天守越档越高（最高处是天守顶），安土以前那一路（不筑城）比同档城下町矮
+    const east = await import(pathToFileURL(path.join(dir, 'towns3d-east.js')).href);
+    for (const c of Object.values(s.CULTURE)) {
+      const pre = east.EAST_KIND[c];
+      check(!!pre, `地域 ${c} 有模型前缀`);
+      for (const kind of [`${pre}Cap`, ...[0, 1, 2, 3].flatMap((tier) => [`${pre}${tier}0`, `${pre}${tier}1`])]) {
+        check(t.TOWN_KINDS.includes(kind) && !!t.townModel(kind).far, `${kind} 有，且有远看那份`);
+      }
+      const hw = [0, 1, 2, 3].map((tier) => t.townModel(`${pre}${tier}0`).hw).concat(t.townModel(`${pre}Cap`).hw);
+      check(hw.every((x, i) => i === 0 || x > hw[i - 1]), `${c} 档越高占地越大：${hw.join(' < ')}`);
+    }
+    const top = (kind) => t.townModel(kind).geometry.boundingBox.max.y;
+    const jpTop = [0, 1, 2, 3].map((tier) => top(`jp${tier}0`));
+    check(jpTop.every((y, i) => i === 0 || y > jpTop[i - 1]), `天守越档越高：${jpTop.map((y) => y.toFixed(2)).join(' < ')}`);
+    for (const tier of [1, 2, 3]) check(top(`jo${tier}0`) < top(`jp${tier}0`), `安土以前不筑天守，比同档城下町矮（第 ${tier} 档）`);
     let threw = false;
     try { t.townModel('没有这样'); } catch (e) { threw = /没有这样的城郭模型/.test(e.message); }
     check(threw, '要一样没有的模型就报错，不悄悄画空');

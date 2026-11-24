@@ -756,7 +756,8 @@ export async function mapLayer(mode) {
 
 // ---------- 舆图聚落：各府州治所画几等城郭（定档在 model/settlement.js）要的数 ----------
 // 户口、繁荣、商贸不受奏报失真遮盖（方志里照列真数；遮的是丁口、民心、吏治），外地方志也只给等第——城郭的档本就是等第，各处照画。
-// 营造也不遮（方志营造志外地照列）。返回 { 府州 id: { prosperity, commerce, mouths, damage, kind, terrain, factionType, buildings: [{ name, category, status }] } }。
+// 营造也不遮（方志营造志外地照列）。返回 { 府州 id: { prosperity, commerce, mouths, damage, kind, terrain, factionType, dejure, regionType, divisionType, year,
+// buildings: [{ name, category, status }] } }。
 // 全图读一遍约六百毫秒（天启三百余块），分批让出主线程；同一回合内缓存
 const settleCache = new Map();
 export async function settlements() {
@@ -773,6 +774,18 @@ export async function settlements() {
     const f = facs.find((x) => String(x.id || x.name) === k || (n && x.name === n));
     return f ? String(f.type || f.factionType || '') : '';
   };
+  // 定地域（城郭照哪里的样子画，model/settlement.js cultureOf）：法理所属、政区类别各块自带；年份全图一个（日本以安土城为界分有没有天守）。
+  // 有的势力（天启的日本、大越）区划树里同一块记两份：prefectures 平列只有名与类别，children 树里那份才带法理所属、政区类别；
+  // 舆图取到的若是平列那份，按 id 找带全的那份
+  const year = Number(date().year) || Number((w.P && w.P.time && w.P.time.year) || 0);
+  const fullDiv = new Map();
+  (function walk(o, depth) {
+    if (!o || typeof o !== 'object' || depth > 12) return;
+    if (Array.isArray(o)) { o.forEach((x) => walk(x, depth + 1)); return; }
+    if (o.id && (o.dejureOwner || o.regionType) && !fullDiv.has(String(o.id))) fullDiv.set(String(o.id), o);
+    for (const kk of ['divisions', 'children', 'prefectures']) if (o[kk]) walk(o[kk], depth + 1);
+  })(Object.values(g.adminHierarchy || {}), 0);
+  const divOf = (live) => (live && !live.dejureOwner && !live.regionType && live.id != null && fullDiv.get(String(live.id))) || live;
   // 营造（画地标用）：在册建筑一回合只取一次，按所在府州名分好——内核 getAllBuildingsCompat 每调一回要走一遍整棵区划树。
   // 一处府州的建筑照方志营造志（fangzhi.js worksOf）的取法：区划自己的 buildings 在前，再按区划名、府州名、全名找，按「所在|类型或名」去重
   const byPlace = new Map();
@@ -814,6 +827,8 @@ export async function settlements() {
         damage: der ? Math.max(Number(der.farmland) || 0, Number(der.commerceVolume) || 0) : 0,
         kind: String(parts.regionLevel ? parts.regionLevel(r) || '' : '').split(' · ')[0],
         terrain: String(d.terrain || r.terrain || ''), factionType: facType(r),
+        dejure: String((divOf(live) && divOf(live).dejureOwner) || ''), regionType: String((divOf(live) && divOf(live).regionType) || ''),
+        divisionType: String((live && live.divisionType) || ''), year,
         buildings: worksAt(r, live)
       };
     } catch (_e) { /* 这一块读不到就不给分档，舆图照旧画府城 */ }

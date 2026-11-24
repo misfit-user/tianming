@@ -44,15 +44,31 @@ export function tierOf(score, lines, prev = null) {
 const NOMAD_KIND = /牧地|牙帐|碛地/;
 const TRIBAL_KIND = /土司|峒|部落地|村落|山洞|寨/;
 const SETTLED_KIND = /城|港|府|州|郡|京|军|镇|县|道|节度|都督|令制国|王都/;
-export function styleOf({ kind = '', terrain = '', factionType = '' } = {}) {
+export function styleOf({ kind = '', terrain = '', factionType = '', divisionType = '' } = {}) {
   const k = String(kind), t = String(terrain), f = String(factionType);
-  if (/城|港/.test(k)) return STYLE.city;
+  // 区划自己记作城下町、港的（松前氏的城下、箱馆江差）：剧本政区类别只写「政区」，所属势力又是部落联盟，看这一项才认得是城
+  if (/城|港/.test(k) || /城下|港/.test(String(divisionType))) return STYLE.city;
   // 游牧、部族只看地块本身（类别、地貌），不看此刻谁占着：汉地的城被草原上的势力占了，城还是城
   if (NOMAD_KIND.test(k) || (/草原/.test(t) && !SETTLED_KIND.test(k))) return STYLE.nomad;
   if (TRIBAL_KIND.test(k) || (/羁縻之地/.test(k) && /山|河谷|林/.test(t))) return STYLE.tribal;
   // 林海、寒地、海岛上的部落联盟（野人女真、虾夷之类）：剧本记作「政区」，只能看势力类别认
   if (/部落|部族|部盟/.test(f) && /林|寒|沿海|岛/.test(t) && !SETTLED_KIND.test(k)) return STYLE.tribal;
   return STYLE.city;
+}
+
+// 地域：城郭照哪里的样子画（舆图 towns3d-east.js）。null 照中原的方城砖墙。
+// 看法理所属（dejure，打下来也不变：汉地的城被别国占了还是汉地的样子）、政区类别（regionType，如 foreign_shogunate、令制国）、
+// 地块类别（kind，剧本政区类别如「令制国」；divisionType，区划自己的类别如「城下」）。日本按年份分：安土城（一五七九）以后筑天守、町成城下町；之前不筑城，国衙、国分寺、平安京那一路
+export const CULTURE = { japan: 'japan', japanOld: 'japanOld', korea: 'korea' };
+const JAPAN_OWNER = /日本|幕府|德川|丰臣|织田|倭国/;
+const KOREA_OWNER = /朝鲜|高丽|新罗|百济|高句丽|耽罗/;
+export function cultureOf({ dejure = '', regionType = '', kind = '', divisionType = '', year = 0 } = {}) {
+  const d = String(dejure), rt = String(regionType), k = `${kind}|${divisionType}`;
+  // 松前氏的城下、箱馆江差两港：法理上记在虾夷地诸部名下，城与港是和人的
+  const japan = JAPAN_OWNER.test(d) || /shogunate|令制国/.test(rt) || /城下|令制国/.test(k) || (/虾夷/.test(d) && /港/.test(k));
+  if (japan) return Number(year) >= 1580 ? CULTURE.japan : CULTURE.japanOld;
+  if (KOREA_OWNER.test(d)) return CULTURE.korea;
+  return null;
 }
 
 // 四郊村舍的疏密（乘在按地形撒的村舍上，1 为原样）：户口密度（口/世界像素²，一世界像素约二十五平方公里）取对数。
@@ -116,8 +132,9 @@ export function worksOf(buildings) {
   return { landmarks, port, markets };
 }
 
-// 一处府州的聚落。info：{ prosperity, commerce, mouths, damage（耕地、商贸被砍去的较大一项，0～1）, kind, terrain, factionType, capital, buildings }；
-// prev：上回给这一处的结果（回差用）。返回 { style, score, tier, ruined, markets, port, portBuilt, landmarks }
+// 一处府州的聚落。info：{ prosperity, commerce, mouths, damage（耕地、商贸被砍去的较大一项，0～1）, kind, terrain, factionType, capital, buildings,
+//   dejure, regionType, divisionType, year（定地域，见 cultureOf） }；
+// prev：上回给这一处的结果（回差用）。返回 { style, culture（只给城郭，见 cultureOf）, score, tier, ruined, markets, port, portBuilt, landmarks }
 // tier：城郭 0 小城 … 3 都会；帐幕、山寨 0 小、1 大。ruined 只给定居之地。markets：市镇几处（至多三处）；
 // port：设不设港——商贸够了要治所近海才设；建了港（portBuilt）近海设在海岸、不近海设在河边、连河也不近就摆在治所旁，都由舆图判；landmarks：见 worksOf
 export function settlementOf(info = {}, prev = null) {
@@ -136,5 +153,6 @@ export function settlementOf(info = {}, prev = null) {
   const markets = ruined ? 0 : Math.min(MARKET_LINES.length, (byTrade ? MARKET_LINES.filter((x) => c >= x).length : 0) + works.markets);
   const portBuilt = !ruined && works.port;
   const port = portBuilt || (byTrade && c >= PORT_LINE);
-  return { style, score, tier, ruined, markets, port, portBuilt, landmarks: works.landmarks };
+  const culture = style === STYLE.city ? cultureOf(info) : null;
+  return { style, culture, score, tier, ruined, markets, port, portBuilt, landmarks: works.landmarks };
 }

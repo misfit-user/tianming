@@ -9,6 +9,7 @@
 // 墙、屋往地下多伸一截，坡地上不悬空。模型原点在城的正中，舆图摆放时把城往北挪，让南沿落在治所那一点（府州名、军旗都在治所下方）。
 import * as THREE from 'three';
 import { townVertex, townFragment } from './shaders.js';
+import { eastBuilders } from './towns3d-east.js';
 
 // ---------- 用色（与山川设色同一路：灰砖、黛瓦、粉墙、朱柱、黄琉璃） ----------
 const C = {
@@ -352,10 +353,12 @@ function junk(m, x, z, yaw, L) {
 }
 
 // ---------- 城内 ----------
-// 一片街坊：矩形里一排排民居（坐北朝南为主，间有厢房横置），keep 里的方块留空（衙署、寺、塔、鼓楼）
-function quarter(m, r, x0, z0, x1, z1, density, keep, burnt = false) {
-  const walls = burnt ? [C.burnt, C.ash] : [C.plaster, C.plaster, C.plaster2, C.earthHouse];
-  const roofs = burnt ? [C.black, C.burnt] : [C.tile, C.tile, C.tileLight, C.tileDark];
+// 一片街坊：矩形里一排排民居（坐北朝南为主，间有厢房横置），keep 里的方块留空（衙署、寺、塔、鼓楼）。
+// look：别处的样子（towns3d-east.js）换墙色 walls、瓦色 roofs，build(m, 心x, 心z, 宽, 深, 墙高, 墙色, 瓦色, 横置, r) 换盖什么样的屋（不给照盖 house）
+function quarter(m, r, x0, z0, x1, z1, density, keep, burnt = false, look = null) {
+  const walls = burnt ? [C.burnt, C.ash] : (look && look.walls) || [C.plaster, C.plaster, C.plaster2, C.earthHouse];
+  const roofs = burnt ? [C.black, C.burnt] : (look && look.roofs) || [C.tile, C.tile, C.tileLight, C.tileDark];
+  const build = (look && look.build) || house;
   let z = z0 + 0.02;
   while (z + 0.2 < z1) {
     const rowD = 0.19 + r() * 0.07;
@@ -367,7 +370,11 @@ function quarter(m, r, x0, z0, x1, z1, density, keep, burnt = false) {
         const side = !FAR && r() < 0.2, cx = (x + xe) / 2, cz = z + rowD / 2;
         const hw = side ? Math.min(rowD * 0.92, 0.26) : xe - x, hd = side ? Math.min(xe - x, 0.2) : rowD;
         if (burnt && r() < 0.45) box(m, cx - hw / 2, -0.5, cz - hd / 2, cx + hw / 2, 0.05 + r() * 0.05, cz + hd / 2, pick(r, walls));
-        else house(m, cx, cz, hw, hd, 0.095 + r() * 0.035, pick(r, walls), pick(r, roofs), side);
+        else {
+          const wh = 0.095 + r() * 0.035, wall = pick(r, walls), roof = pick(r, roofs);
+          if (build === house) house(m, cx, cz, hw, hd, wh, wall, roof, side);
+          else build(m, cx, cz, hw, hd, wh, wall, roof, side, r);
+        }
       } else if (!hit && !burnt && r() < 0.3) tree(m, (x + xe) / 2, z + rowD / 2, 0.8 + r() * 0.5);
       x = xe + 0.02 + r() * 0.035;
     }
@@ -1088,13 +1095,18 @@ const BUILD = {
   capital, ruin, yurtS, yurtL, stockS, stockL, market, port: (m) => port(m, true), wharf: (m) => port(m, false),
   academy: lmAcademy, granary: lmGranary, waterworks: lmWaterworks, workshop: lmWorkshop, fort: lmFort, beacon: lmBeacon, temple: lmTemple,
   shrine: lmShrine, relay: lmRelay, yamen: lmYamen, bridge: lmBridge, scaffold: lmScaffold, ruinS: lmRuin,
-  pine: scPine, dot: scDot, jia: scJia, grove: scGrove, willow: scWillow, hamlet: scHamlet, hamletB: scHamletB
+  pine: scPine, dot: scDot, jia: scJia, grove: scGrove, willow: scWillow, hamlet: scHamlet, hamletB: scHamletB,
+  // 日本、朝鲜诸样（towns3d-east.js）：器件从这里递过去
+  ...eastBuilders({
+    C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, archway, hall, courtyard, tree, pagoda, quarter, pool, flag, smoke,
+    rng, pick, tint, far: () => FAR
+  })
 };
 // 林木、村舍那几样（createScatter 画的）
 export const SCATTER_KINDS = ['pine', 'dot', 'jia', 'grove', 'willow', 'hamlet', 'hamletB'];
 export const TOWN_KINDS = Object.keys(BUILD);
 // 有远看那一份的（城郭、京城、残城）；帐、寨、市镇、港、营造地标本就几百到一两千面，不另做
-const HAS_FAR = /^(town|city|grand|metro)\d$|^(capital|ruin)$/;
+const HAS_FAR = /^(town|city|grand|metro)\d$|^(jp|jo|ko)\d\d$|^(capital|ruin|jpCap|joCap|koCap)$/;
 // 近看、远看两份按城在屏上的宽（像素）交替：LOD_PX[0] 以下只画远看那份，LOD_PX[1] 以上只画近看那份，其间以抖点互补地换
 export const LOD_PX = [48, 66];
 const models = new Map();

@@ -561,7 +561,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   // 立体城郭：样子、档 → 模型（城郭四档各两种街巷，按府州下标单双取）
   const TOWN_SCALE = 0.85;                    // 模型比例：江南府州挨得紧，再大城与城就碰上了
   const KIND_SCALE = { yurtS: 1.5, yurtL: 1.35, stockS: 1.2, stockL: 1.1 };   // 帐、寨本身小，放大些与城郭相当（一处牧地、一处土司也是一方之治）
-  const LANDMARK_SCALE = 1.1;                 // 营造地标：模型本身比城郭小一圈，摆出来放大些（镜头最近时也有四五十像素宽，看得出是什么）
+  const LANDMARK_SCALE = 1.3;                 // 营造地标：模型本身比城郭小一圈，摆出来放大些（镜头最近时五十来像素宽，与先前点景小图相当，看得出是什么）
   function seatModel(i, k) {
     const st = settle && settle[i], v = i % 2;
     if (k === 2 && palaceAt(st)) return 'capital';
@@ -697,8 +697,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const ringSlots = (seat) => {
     if (typeof seat === 'object') {
       const { hw, depth: D } = seat;
-      return [[-(hw + 1.95), -0.3 * D], [hw + 1.95, -0.3 * D], [-(hw + 1.95), -0.75 * D], [hw + 1.95, -0.75 * D], [-(hw + 5.0), -0.4 * D], [hw + 5.0, -0.4 * D],
-        [-(hw + 1.8), 1.9], [hw + 1.8, 1.9], [0, -(D + 2.0)]];
+      return [[-(hw + 2.2), -0.3 * D], [hw + 2.2, -0.3 * D], [-(hw + 2.2), -0.75 * D], [hw + 2.2, -0.75 * D], [-(hw + 5.6), -0.4 * D], [hw + 5.6, -0.4 * D],
+        [-(hw + 2.0), 2.1], [hw + 2.0, 2.1], [0, -(D + 2.3)]];
     }
     const R = seat / 2 + 1.5;
     return RING_SLOTS.map(([dr, a]) => [Math.cos(a) * (R + dr), Math.sin(a) * (R + dr)]);
@@ -708,12 +708,12 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     if (ringMemo.has(key)) return ringMemo.get(key);
     const [cx, cy] = regions[i].center, sp = spotsOf(i);
     const taken = [...sp.markets, sp.port, sp.wharf].filter(Boolean);
-    const out = [];
+    const out = [], gap = typeof seat === 'object' ? 3.2 : 2.8;   // 立体地标摆出来比点景小图宽，彼此多隔一点
     for (const [dx, dy] of ringSlots(seat)) {
       if (out.length >= 7) break;
       const x = cx + dx, y = cy + dy;
       if (regionIndexAt(x, y) !== i || landOf(x, y) < 0.5 || wetOf(x, y)) continue;
-      if (taken.concat(out).some(([tx, ty]) => Math.hypot(tx - x, ty - y) < 2.8)) continue;
+      if (taken.concat(out).some(([tx, ty]) => Math.hypot(tx - x, ty - y) < gap)) continue;
       out.push([x, y]);
     }
     ringMemo.set(key, out);

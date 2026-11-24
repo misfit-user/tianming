@@ -8,7 +8,7 @@ import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
-import { createTowns, createScatter, townModel, LANDMARK_MODEL } from './towns3d.js';
+import { createTowns, createScatter, townModel, LANDMARK_MODEL, localKind } from './towns3d.js';
 import { EAST_KIND } from './towns3d-east.js';
 import { SOUTH_KIND } from './towns3d-south.js';
 import { createLabels, realmTitle } from './labels.js';
@@ -561,7 +561,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   // 营造地标（settle[i].landmarks 里的样子 → 图，低画质用；立体的见 towns3d.js LANDMARK_MODEL）；半损的画一小片残垣（借残城那张，画小）
   const LANDMARK_SPRITE = {
     academy: SPRITE.academy, granary: SPRITE.granary, waterworks: SPRITE.waterworks, workshop: SPRITE.workshop, fort: SPRITE.fort, beacon: SPRITE.beacon,
-    temple: SPRITE.temple, shrine: SPRITE.shrine, relay: SPRITE.relay, yamen: SPRITE.yamen, bridge: SPRITE.bridge, scaffold: SPRITE.scaffold, ruin: SPRITE.ruin, port: SPRITE.port
+    temple: SPRITE.temple, shrine: SPRITE.shrine, church: SPRITE.shrine, relay: SPRITE.relay, yamen: SPRITE.yamen, bridge: SPRITE.bridge, scaffold: SPRITE.scaffold,
+    ruin: SPRITE.ruin, port: SPRITE.port
   };
   const LANDMARK_SIZE = { fort: 3.1, scaffold: 2.6, ruin: 2.5, port: 3.0 };    // 其余 2.8
   const wetOf = waterSampler(d.water);
@@ -630,16 +631,18 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       const marks = (st && st.landmarks) || [];
       if (!st || (!st.markets && !st.port && !marks.length)) return;
       const sp = spotsOf(i);
+      // 市镇、港、地标跟着城郭的地域换样子（日本的町与湊、朝鲜的场市、西洋据点的广场与教堂……，见 towns3d.js localKind）
+      const culture = st.culture;
       sp.markets.slice(0, st.markets).forEach(([mx, my], j) => {
         if (!towns) { items.push([mx, heightAt(mx, my), my, 2.5, SPRITE.market]); return; }
-        solid.push({ kind: 'market', x: mx, z: my, h: groundOf(mx, my, 1.1), yaw: ((i + j) % 4) * Math.PI / 2, scale: TOWN_SCALE });
+        solid.push({ kind: localKind('market', culture), x: mx, z: my, h: groundOf(mx, my, 1.1), yaw: ((i + j) % 4) * Math.PI / 2, scale: TOWN_SCALE });
         foot.push([mx - 1.3, my - 1.3, mx + 1.3, my + 1.3]);
       });
       // 港：近海设在海岸（栈桥朝海）；不近海而真建了港（漕运码头、渡口）设在河边；近处连河也没有，就摆在治所旁
       const portAt = st.port ? sp.port || (st.portBuilt ? sp.wharf : null) : null;
       if (portAt && towns) {
         const sea = portAt === sp.port, dir = sea ? sp.portDir : [0, 1];
-        solid.push({ kind: sea ? 'port' : 'wharf', x: portAt[0] + dir[0] * (sea ? 0.45 : 0), z: portAt[1] + dir[1] * (sea ? 0.45 : 0), h: heightAt(portAt[0], portAt[1]), yaw: sea ? Math.atan2(dir[0], dir[1]) : (i % 4) * Math.PI / 2, scale: TOWN_SCALE });
+        solid.push({ kind: localKind(sea ? 'port' : 'wharf', culture), x: portAt[0] + dir[0] * (sea ? 0.45 : 0), z: portAt[1] + dir[1] * (sea ? 0.45 : 0), h: heightAt(portAt[0], portAt[1]), yaw: sea ? Math.atan2(dir[0], dir[1]) : (i % 4) * Math.PI / 2, scale: TOWN_SCALE });
         foot.push([portAt[0] - 1.1, portAt[1] - 1.1, portAt[0] + 1.1, portAt[1] + 1.1]);
       } else if (portAt) items.push([portAt[0], heightAt(portAt[0], portAt[1]), portAt[1], 3.0, SPRITE.port]);
       const ringed = st.portBuilt && !portAt ? ['port', ...marks] : marks;
@@ -649,9 +652,9 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
         if (!at) return;
         if (towns) {
           // 立体地标坐北朝南不转（河埠按府州转个向）；占地记下，林木、村舍不从里头冒出来
-          const kind = LANDMARK_MODEL[kk];
-          if (!kind) return;
-          const wharf = kind === 'wharf', mdl = townModel(kind), s = wharf ? TOWN_SCALE : LANDMARK_SCALE, yaw = wharf ? (i % 4) * Math.PI / 2 : 0;
+          const base = LANDMARK_MODEL[kk];
+          if (!base) return;
+          const kind = localKind(base, culture), wharf = base === 'wharf', mdl = townModel(kind), s = wharf ? TOWN_SCALE : LANDMARK_SCALE, yaw = wharf ? (i % 4) * Math.PI / 2 : 0;
           solid.push({ kind, x: at[0], z: at[1], h: groundOf(at[0], at[1], mdl.hw * s), yaw, scale: s });
           const e = Math.max(mdl.hw, mdl.north, mdl.south) * s;
           foot.push(yaw ? [at[0] - e, at[1] - e, at[0] + e, at[1] + e] : [at[0] - mdl.hw * s, at[1] - mdl.north * s, at[0] + mdl.hw * s, at[1] + mdl.south * s]);

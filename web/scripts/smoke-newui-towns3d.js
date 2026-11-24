@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // 新界面舆图的立体城郭与营造地标（web/ui/scene/map/towns3d.js）：各样模型都搭得出、顶点没有坏数、远看那份比近看省面；
 // 聚落等第（web/ui/model/settlement.js）会给的每样营造地标都有立体模型；各地标的名义半宽罩得住模型本身（摆放、占地、多远开始显都按它）；
-// 林木、村舍的立体版省面，分块挑着画：近看只画镜头里那一片、远了不画；日本、朝鲜（towns3d-east.js）与大越、南洋、西洋据点（towns3d-south.js）诸样各档都有、越档越大。
+// 林木、村舍的立体版省面，分块挑着画：近看只画镜头里那一片、远了不画；日本、朝鲜（towns3d-east.js）与大越、南洋、西洋据点（towns3d-south.js）诸样各档都有、越档越大；
+// 那几处的城外诸样（市镇、港、河埠与寺、祠庙、教堂、书院、堡、官署）照地域换了样子，占地不比舆图留的大，港贴海面、河埠随地面，其余各处一样。
 // 模块是 ES 模块、引着 three：拷进临时目录（目录标成 ES 模块），three 取仓里 vendor 的那份放进临时目录的 node_modules。
 'use strict';
 const fs = require('fs');
@@ -67,10 +68,44 @@ function badVertices(geometry) {
       const hw = [0, 1, 2, 3].map((tier) => t.townModel(`${pre}${tier}0`).hw).concat(t.townModel(`${pre}Cap`).hw);
       check(hw.every((x, i) => i === 0 || x > hw[i - 1]), `${c} 档越高占地越大：${hw.join(' < ')}`);
     }
+    // 城郭的名义半宽（摆放、留地、多远开始显都按它）与实际搭出来的相符：东西半宽不少于它的九成，也不出它的一倍六（护城河、关厢在墙外）
+    const CITY = /^(town|city|grand|metro)\d$|^(jp|jo|ko|vn|sea|we)\d\d$|^(capital|ruin|jpCap|joCap|koCap|vnCap|seaCap|weCap)$/;
+    for (const kind of t.TOWN_KINDS.filter((k) => CITY.test(k))) {
+      const md = t.townModel(kind), bb = md.geometry.boundingBox, ew = Math.max(-bb.min.x, bb.max.x);
+      check(ew >= md.hw * 0.9 && ew <= md.hw * 1.6, `${kind} 实际东西半宽 ${ew.toFixed(2)} 与名义 ${md.hw} 相符`);
+    }
     const top = (kind) => t.townModel(kind).geometry.boundingBox.max.y;
     const jpTop = [0, 1, 2, 3].map((tier) => top(`jp${tier}0`));
     check(jpTop.every((y, i) => i === 0 || y > jpTop[i - 1]), `天守越档越高：${jpTop.map((y) => y.toFixed(2)).join(' < ')}`);
     for (const tier of [1, 2, 3]) check(top(`jo${tier}0`) < top(`jp${tier}0`), `安土以前不筑天守，比同档城下町矮（第 ${tier} 档）`);
+    // 城外诸样照地域（towns3d-east.js EAST_LOCAL、towns3d-south.js SOUTH_LOCAL，舆图按 localKind 取）：每个地域的市镇、港、河埠都换了样子；
+    // 换成的模型都有、省面、不另做远看那份。市镇、港、河埠占地不出舆图给它留的地（市镇半宽 1.3、港 1.1，index.js 记占地按这个），
+    // 北沿南沿不比中原那份远；港有贴海面的顶点（栈、船贴海面），河埠一个也没有（随地面）。地标名义半宽罩得住、比最小的城郭小。
+    const seaCount = (g) => { const c = g.getAttribute('aColor').array; let n = 0; for (let i = 3; i < c.length; i += 4) if (c[i] === 0) n++; return n; };
+    const span = (md) => { const bb = md.geometry.boundingBox; return [Math.max(-bb.min.x, bb.max.x), md.north, md.south]; };
+    const RESERVE = { market: 1.3, port: 1.1, wharf: 1.1 };
+    const local = { ...east.EAST_LOCAL, ...south.SOUTH_LOCAL };
+    for (const c of Object.values(s.CULTURE)) {
+      const table = local[c];
+      check(!!table, `地域 ${c} 有城外诸样表`);
+      for (const base of ['market', 'port', 'wharf']) check(t.localKind(base, c) !== base, `${c} 的 ${base} 换了样子：${t.localKind(base, c)}`);
+      for (const [base, kind] of Object.entries(table)) {
+        check(t.localKind(base, c) === kind && t.TOWN_KINDS.includes(kind), `${c} ${base} → ${kind}`);
+        const md = t.townModel(kind), [ew, n, so] = span(md);
+        check(md.far === null && md.tris <= 2000, `${kind} 省面（${md.tris} 面，不另做远看那份）`);
+        if (RESERVE[base]) {
+          const [, rn, rso] = span(t.townModel(base));
+          check(ew <= RESERVE[base] && n <= Math.max(RESERVE[base], rn + 0.05) && so <= rso + 0.05, `${kind} 占地不出留的地（东西 ${ew.toFixed(2)}，北 ${n.toFixed(2)}，南 ${so.toFixed(2)}）`);
+          if (base !== 'market') check(base === 'port' ? seaCount(md.geometry) > 0 : seaCount(md.geometry) === 0, `${kind} ${base === 'port' ? '栈、船贴海面' : '随地面，没有贴海面的'}`);
+        } else {
+          check(ew <= md.hw * 1.08 + 0.05 && Math.max(n, so) <= md.hw * 1.25 + 0.1 && md.hw < t.townModel('town0').hw, `${kind} 东西 ${ew.toFixed(2)}、南北 ${Math.max(n, so).toFixed(2)} 在半宽 ${md.hw} 之内，比最小的城郭小`);
+        }
+      }
+    }
+    for (const base of ['granary', 'waterworks', 'workshop', 'beacon', 'relay', 'bridge', 'scaffold', 'ruinS']) check(Object.values(s.CULTURE).every((c) => t.localKind(base, c) === base), `${base} 各处一样`);
+    check(['market', 'port', 'temple', 'church'].every((b) => t.localKind(b, null) === b && t.localKind(b, '') === b), '没给地域（中原）照原样');
+    check(t.LANDMARK_MODEL.church === 'church' && t.localKind('church', 'west') !== 'church' && t.localKind('church', 'japan') === 'church', '教堂：西洋据点画西式的，别处照中原画殿');
+    check(t.localKind('temple', 'west') === 'temple' && t.localKind('shrine', 'west') === 'shrine', '西洋据点的寺、祠庙照中原（华人的庙）');
     let threw = false;
     try { t.townModel('没有这样'); } catch (e) { threw = /没有这样的城郭模型/.test(e.message); }
     check(threw, '要一样没有的模型就报错，不悄悄画空');

@@ -2,15 +2,16 @@
 // 城郭四档越大墙越高、门楼越多、民居越密：小城土墙一门；府城砖墙雉堞、四门城楼、鼓楼、衙署；大府添角楼、瓮城、钟楼、塔、关厢；
 // 都会四门瓮城、正南箭楼、护城河、七级塔、寺。京城外城之内套一座朱墙黄瓦的皇城。残城断墙塌楼、屋舍焦黑、两股烟；
 // 帐幕、山寨、市镇、港、河埠各一套。府州名下真建了的营造另画营造地标（书院、仓廒、水利、工坊、堡、烽燧、佛寺、祠庙、驿、官署、
-// 石桥，在建的脚手架、半损的残垣），摆在城郭四周。
+// 石桥，在建的脚手架、半损的残垣），摆在城郭四周。日本、朝鲜、大越、南洋、西洋据点的城郭照当地样子（towns3d-east.js、towns3d-south.js），
+// 那几处的市镇、港，与寺、祠庙、教堂、书院、堡、官署几样地标也照当地样子（localKind 按地域换模型名）；仓廒、水利之类各处一样。
 // 全用代码现搭，不带模型文件：每样一份几何（城郭四档各两种街巷，相邻府州不雷同），同一样的城实例化一回画完。
 // 尺度：世界一单位约五公里，城比真城大五六倍——最近处一座府城也才六十来像素宽，所以块面要简明好认（CK3 美术也这么说：
 // 照最大缩放、最小地块定尺寸，形要硬朗，不能像玩具）。高度不随起伏倍率伸缩，只有落脚处的地面高跟着地形走；
 // 墙、屋往地下多伸一截，坡地上不悬空。模型原点在城的正中，舆图摆放时把城往北挪，让南沿落在治所那一点（府州名、军旗都在治所下方）。
 import * as THREE from 'three';
 import { townVertex, townFragment } from './shaders.js';
-import { eastBuilders } from './towns3d-east.js';
-import { southBuilders } from './towns3d-south.js';
+import { eastBuilders, EAST_LOCAL } from './towns3d-east.js';
+import { southBuilders, SOUTH_LOCAL } from './towns3d-south.js';
 
 // ---------- 用色（与山川设色同一路：灰砖、黛瓦、粉墙、朱柱、黄琉璃） ----------
 const C = {
@@ -333,8 +334,8 @@ function stilt(m, x, z, w, d, raise, wh, rot = 0) {
   gableRoof(m, 0, raise + wh, 0, w / 2 + 0.05, d / 2 + 0.07, d * 0.75, C.thatch, C.woodLight, w / 2, d / 2);
   m.pop();
 }
-// 帆船：吃水线 y=0，长 L，头朝 +x；一张褐红篷帆
-function junk(m, x, z, yaw, L) {
+// 帆船：吃水线 y=0，长 L，头朝 +x；一张篷帆（默认褐红，朝鲜那样的白布帆、草席帆另给颜色）
+function junk(m, x, z, yaw, L, sail = C.sail) {
   m.push(x, 0, z, yaw);
   const b = L * 0.17, hh = L * 0.12;
   const S = [[-L / 2, b * 0.7], [L * 0.32, b], [L / 2, 0], [L * 0.32, -b], [-L / 2, -b * 0.7]];
@@ -347,7 +348,7 @@ function junk(m, x, z, yaw, L) {
   box(m, -0.012, hh, -0.012, 0.012, hh + L * 0.95, 0.012, C.pole, { faces: 'nsew' });
   // 篷帆斜着张（与船身成三十来度），从哪边看都看得见帆面
   m.push(0, 0, 0, 0.6);
-  m.quad([-L * 0.02, hh + L * 0.18, 0], [L * 0.4, hh + L * 0.22, 0], [L * 0.36, hh + L * 0.9, 0], [-L * 0.02, hh + L * 0.92, 0], C.sail);
+  m.quad([-L * 0.02, hh + L * 0.18, 0], [L * 0.4, hh + L * 0.22, 0], [L * 0.36, hh + L * 0.9, 0], [-L * 0.02, hh + L * 0.92, 0], sail);
   for (let k = 1; k < 4; k++) { const yy = hh + L * (0.18 + 0.18 * k); m.quad([-L * 0.02, yy, 0.002], [L * 0.39, yy + 0.01, 0.002], [L * 0.39, yy + 0.022, 0.002], [-L * 0.02, yy + 0.012, 0.002], C.hull); }
   m.pop();
   m.pop();
@@ -997,10 +998,16 @@ function lmRuin(m) {
   return 0.75;
 }
 // 营造地标（model/settlement.js 给的样子）→ 模型：半损的画残垣；建了港而近处既不近海、河埠也没落点的，在四周画一座河埠
+// 教堂（天主堂）本地仍画祠庙那样的殿（那时多是中式殿宇），西洋据点、南洋另画西式教堂
 export const LANDMARK_MODEL = {
   academy: 'academy', granary: 'granary', waterworks: 'waterworks', workshop: 'workshop', fort: 'fort', beacon: 'beacon', temple: 'temple',
-  shrine: 'shrine', relay: 'relay', yamen: 'yamen', bridge: 'bridge', scaffold: 'scaffold', ruin: 'ruinS', port: 'wharf'
+  shrine: 'shrine', church: 'church', relay: 'relay', yamen: 'yamen', bridge: 'bridge', scaffold: 'scaffold', ruin: 'ruinS', port: 'wharf'
 };
+// 城外诸样按地域换模型：市镇 market、港 port、河埠 wharf 与地标模型名 → 那一地域的样子；聚落等第没给地域（中原）或那一地域没另做的照原样
+export function localKind(kind, culture) {
+  const table = culture ? EAST_LOCAL[culture] || SOUTH_LOCAL[culture] : null;
+  return (table && table[kind]) || kind;
+}
 
 // ---------- 林木、村舍（点景小图的立体版：近看才换上，远处仍是小图） ----------
 // 照山水画点景的几样：松（层层横出的针叶团）、点叶（石绿圆冠）、夹叶（几团淡绿小冠）、杂树（高低三株）、柳（扁冠垂丝）、
@@ -1093,14 +1100,14 @@ function scHamletB(m) {
 // 递给别处诸样（towns3d-east.js、towns3d-south.js）的器件；far() 问此刻搭的是不是远看那份
 const KIT = {
   C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, archway, hall, courtyard, tree, pagoda, quarter, pool, flag, smoke,
-  wallRing, stilt, palisade, rng, pick, tint, far: () => FAR
+  wallRing, stilt, palisade, junk, rng, pick, tint, far: () => FAR
 };
 const BUILD = {
   town0: (m) => town(m, 0), town1: (m) => town(m, 1), city0: (m) => city(m, 0), city1: (m) => city(m, 1),
   grand0: (m) => grand(m, 0), grand1: (m) => grand(m, 1), metro0: (m) => metro(m, 0), metro1: (m) => metro(m, 1),
   capital, ruin, yurtS, yurtL, stockS, stockL, market, port: (m) => port(m, true), wharf: (m) => port(m, false),
   academy: lmAcademy, granary: lmGranary, waterworks: lmWaterworks, workshop: lmWorkshop, fort: lmFort, beacon: lmBeacon, temple: lmTemple,
-  shrine: lmShrine, relay: lmRelay, yamen: lmYamen, bridge: lmBridge, scaffold: lmScaffold, ruinS: lmRuin,
+  shrine: lmShrine, church: lmShrine, relay: lmRelay, yamen: lmYamen, bridge: lmBridge, scaffold: lmScaffold, ruinS: lmRuin,
   pine: scPine, dot: scDot, jia: scJia, grove: scGrove, willow: scWillow, hamlet: scHamlet, hamletB: scHamletB,
   // 日本、朝鲜诸样（towns3d-east.js）、大越南洋西洋据点诸样（towns3d-south.js）：器件从这里递过去
   ...eastBuilders(KIT),

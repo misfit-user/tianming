@@ -125,7 +125,8 @@ function check(cond, msg) {
     // 营造地标：按名字归类（三部官方剧本的营造类型名，加几个易混的），认不出看类别，都认不出不画
     const KIND = {
       书院: 'academy', '文庙·学宫': 'academy', 贡院: 'academy', 学校: 'academy',
-      城隍庙: 'shrine', 关帝庙: 'shrine', '宗祠·祠堂': 'shrine', 生祠: 'shrine', 道观: 'shrine', 清真寺: 'shrine', 天主堂: 'shrine',
+      城隍庙: 'shrine', 关帝庙: 'shrine', '宗祠·祠堂': 'shrine', 生祠: 'shrine', 道观: 'shrine', 清真寺: 'shrine', 礼拜寺: 'shrine', 妈祖庙: 'shrine',
+      天主堂: 'church', 教堂: 'church', 礼拜堂: 'church',
       佛寺: 'temple', 观音寺: 'temple', 寺院救济所: 'temple',
       '箭楼·敌台': 'fort', 城墙: 'fort', '长城·关隘': 'fort', 关城: 'fort', 卫所: 'fort', '边镇·总兵府': 'fort', 水寨: 'fort',
       烽火台: 'beacon', 烽候: 'beacon', 巡检司: 'beacon',

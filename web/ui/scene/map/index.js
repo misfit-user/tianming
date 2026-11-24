@@ -10,6 +10,7 @@ import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './
 import { spriteAtlas, SPRITE } from './sprites.js';
 import { createTowns, createScatter, townModel, LANDMARK_MODEL } from './towns3d.js';
 import { EAST_KIND } from './towns3d-east.js';
+import { SOUTH_KIND } from './towns3d-south.js';
 import { createLabels, realmTitle } from './labels.js';
 import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb } from './looks.js';
 import { createPainter, noiseTex } from './paint.js';
@@ -586,8 +587,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const LANDMARK_SCALE = 1.3;                 // 营造地标：模型本身比城郭小一圈，摆出来放大些（镜头最近时五十来像素宽，与先前点景小图相当，看得出是什么）
   function seatModel(i, k) {
     const st = settle && settle[i], v = i % 2;
-    // 日本、朝鲜的城郭照当地的样子（towns3d-east.js）：都城到大府以上画那一国的都城，小国的都城照它自己的档
-    const east = st && st.style === 'city' && !st.ruined && EAST_KIND[st.culture];
+    // 日本、朝鲜、大越、南洋、西洋据点的城郭照当地的样子（towns3d-east.js、towns3d-south.js）：都城到大府以上画那一国的都城，小国的都城照它自己的档
+    const east = st && st.style === 'city' && !st.ruined && (EAST_KIND[st.culture] || SOUTH_KIND[st.culture]);
     if (east) return k === 2 && st.tier >= 2 ? `${east}Cap` : `${east}${Math.min(3, st.tier)}${v}`;
     if (k === 2 && palaceAt(st)) return 'capital';
     if (k === 2 && st.style === 'nomad') return 'yurtL';

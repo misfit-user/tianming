@@ -756,7 +756,7 @@ export async function mapLayer(mode) {
 
 // ---------- 舆图聚落：各府州治所画几等城郭（定档在 model/settlement.js）要的数 ----------
 // 户口、繁荣、商贸不受奏报失真遮盖（方志里照列真数；遮的是丁口、民心、吏治），外地方志也只给等第——城郭的档本就是等第，各处照画。
-// 营造也不遮（方志营造志外地照列）。返回 { 府州 id: { prosperity, commerce, mouths, damage, kind, terrain, factionType, dejure, regionType, divisionType, year,
+// 营造也不遮（方志营造志外地照列）。返回 { 府州 id: { prosperity, commerce, mouths, damage, kind, terrain, factionType, dejure, regionType, divisionType, name, year,
 // buildings: [{ name, category, status }] } }。
 // 全图读一遍约六百毫秒（天启三百余块），分批让出主线程；同一回合内缓存
 const settleCache = new Map();
@@ -828,7 +828,7 @@ export async function settlements() {
         kind: String(parts.regionLevel ? parts.regionLevel(r) || '' : '').split(' · ')[0],
         terrain: String(d.terrain || r.terrain || ''), factionType: facType(r),
         dejure: String((divOf(live) && divOf(live).dejureOwner) || ''), regionType: String((divOf(live) && divOf(live).regionType) || ''),
-        divisionType: String((live && live.divisionType) || ''), year,
+        divisionType: String((live && live.divisionType) || ''), name: String((live && live.name) || r.name || ''), year,
         buildings: worksAt(r, live)
       };
     } catch (_e) { /* 这一块读不到就不给分档，舆图照旧画府城 */ }

@@ -48,6 +48,8 @@ export function styleOf({ kind = '', terrain = '', factionType = '', divisionTyp
   const k = String(kind), t = String(terrain), f = String(factionType);
   // 区划自己记作城下町、港的（松前氏的城下、箱馆江差）：剧本政区类别只写「政区」，所属势力又是部落联盟，看这一项才认得是城
   if (/城|港/.test(k) || /城下|港/.test(String(divisionType))) return STYLE.city;
+  // 台湾西南诸社（新港社、萧垄社……）：番社是部落的聚落
+  if (/社$/.test(String(divisionType))) return STYLE.tribal;
   // 游牧、部族只看地块本身（类别、地貌），不看此刻谁占着：汉地的城被草原上的势力占了，城还是城
   if (NOMAD_KIND.test(k) || (/草原/.test(t) && !SETTLED_KIND.test(k))) return STYLE.nomad;
   if (TRIBAL_KIND.test(k) || (/羁縻之地/.test(k) && /山|河谷|林/.test(t))) return STYLE.tribal;
@@ -56,18 +58,29 @@ export function styleOf({ kind = '', terrain = '', factionType = '', divisionTyp
   return STYLE.city;
 }
 
-// 地域：城郭照哪里的样子画（舆图 towns3d-east.js）。null 照中原的方城砖墙。
+// 地域：城郭照哪里的样子画（舆图 towns3d-east.js 日本朝鲜、towns3d-south.js 大越南洋西洋据点）。null 照中原的方城砖墙。
 // 看法理所属（dejure，打下来也不变：汉地的城被别国占了还是汉地的样子）、政区类别（regionType，如 foreign_shogunate、令制国）、
 // 地块类别（kind，剧本政区类别如「令制国」；divisionType，区划自己的类别如「城下」）。日本按年份分：安土城（一五七九）以后筑天守、町成城下町；之前不筑城，国衙、国分寺、平安京那一路
-export const CULTURE = { japan: 'japan', japanOld: 'japanOld', korea: 'korea' };
+export const CULTURE = { japan: 'japan', japanOld: 'japanOld', korea: 'korea', viet: 'viet', seasia: 'seasia', west: 'west' };
 const JAPAN_OWNER = /日本|幕府|德川|丰臣|织田|倭国/;
 const KOREA_OWNER = /朝鲜|高丽|新罗|百济|高句丽|耽罗/;
-export function cultureOf({ dejure = '', regionType = '', kind = '', divisionType = '', year = 0 } = {}) {
+const VIET_OWNER = /大越|交趾|大瞿越|安南国/;
+// 南洋诸国：缅甸、暹罗、柬埔寨、老挝一路，占婆，南海半岛与海岛诸邦（三部剧本里的名号）
+const SEASIA_OWNER = /骠国|真腊|堕和罗|环王|占城|占婆|蒲甘|吕宋|麻逸|米沙鄢|蒲端|南海半岛|下缅甸|室利佛逝|三佛齐|阇婆|满剌加|暹罗|缅甸|老挝|澜沧|柬埔寨|勃固|罗斛/;
+// 西洋据点：西班牙马尼拉、葡萄牙澳门、荷兰大员
+const WEST_OWNER = /西班牙|葡萄牙|荷兰|东印度公司|英吉利|佛郎机/;
+export function cultureOf({ dejure = '', regionType = '', kind = '', divisionType = '', name = '', year = 0 } = {}) {
   const d = String(dejure), rt = String(regionType), k = `${kind}|${divisionType}`;
+  // 澳门那样只在上一级记了政区类别（租借港、公司殖民地、殖民总督区）、没写法理所属的，也认作西洋据点
+  if (WEST_OWNER.test(d) || /leased_port|company_colony|colonial/.test(rt)) return CULTURE.west;
+  // 占城旧地：大越治下，占婆的砖塔犹在
+  if (/占城|占婆/.test(String(name))) return CULTURE.seasia;
   // 松前氏的城下、箱馆江差两港：法理上记在虾夷地诸部名下，城与港是和人的
   const japan = JAPAN_OWNER.test(d) || /shogunate|令制国/.test(rt) || /城下|令制国/.test(k) || (/虾夷/.test(d) && /港/.test(k));
   if (japan) return Number(year) >= 1580 ? CULTURE.japan : CULTURE.japanOld;
   if (KOREA_OWNER.test(d)) return CULTURE.korea;
+  if (VIET_OWNER.test(d)) return CULTURE.viet;
+  if (SEASIA_OWNER.test(d)) return CULTURE.seasia;
   return null;
 }
 
@@ -133,7 +146,7 @@ export function worksOf(buildings) {
 }
 
 // 一处府州的聚落。info：{ prosperity, commerce, mouths, damage（耕地、商贸被砍去的较大一项，0～1）, kind, terrain, factionType, capital, buildings,
-//   dejure, regionType, divisionType, year（定地域，见 cultureOf） }；
+//   dejure, regionType, divisionType, name, year（定地域，见 cultureOf） }；
 // prev：上回给这一处的结果（回差用）。返回 { style, culture（只给城郭，见 cultureOf）, score, tier, ruined, markets, port, portBuilt, landmarks }
 // tier：城郭 0 小城 … 3 都会；帐幕、山寨 0 小、1 大。ruined 只给定居之地。markets：市镇几处（至多三处）；
 // port：设不设港——商贸够了要治所近海才设；建了港（portBuilt）近海设在海岸、不近海设在河边、连河也不近就摆在治所旁，都由舆图判；landmarks：见 worksOf

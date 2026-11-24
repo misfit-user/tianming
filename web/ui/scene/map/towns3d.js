@@ -10,6 +10,7 @@
 import * as THREE from 'three';
 import { townVertex, townFragment } from './shaders.js';
 import { eastBuilders } from './towns3d-east.js';
+import { southBuilders } from './towns3d-south.js';
 
 // ---------- 用色（与山川设色同一路：灰砖、黛瓦、粉墙、朱柱、黄琉璃） ----------
 const C = {
@@ -1089,6 +1090,11 @@ function scHamletB(m) {
 }
 
 // 各样：搭法（搭完返回城墙外沿半宽）
+// 递给别处诸样（towns3d-east.js、towns3d-south.js）的器件；far() 问此刻搭的是不是远看那份
+const KIT = {
+  C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, archway, hall, courtyard, tree, pagoda, quarter, pool, flag, smoke,
+  wallRing, stilt, palisade, rng, pick, tint, far: () => FAR
+};
 const BUILD = {
   town0: (m) => town(m, 0), town1: (m) => town(m, 1), city0: (m) => city(m, 0), city1: (m) => city(m, 1),
   grand0: (m) => grand(m, 0), grand1: (m) => grand(m, 1), metro0: (m) => metro(m, 0), metro1: (m) => metro(m, 1),
@@ -1096,17 +1102,15 @@ const BUILD = {
   academy: lmAcademy, granary: lmGranary, waterworks: lmWaterworks, workshop: lmWorkshop, fort: lmFort, beacon: lmBeacon, temple: lmTemple,
   shrine: lmShrine, relay: lmRelay, yamen: lmYamen, bridge: lmBridge, scaffold: lmScaffold, ruinS: lmRuin,
   pine: scPine, dot: scDot, jia: scJia, grove: scGrove, willow: scWillow, hamlet: scHamlet, hamletB: scHamletB,
-  // 日本、朝鲜诸样（towns3d-east.js）：器件从这里递过去
-  ...eastBuilders({
-    C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, archway, hall, courtyard, tree, pagoda, quarter, pool, flag, smoke,
-    rng, pick, tint, far: () => FAR
-  })
+  // 日本、朝鲜诸样（towns3d-east.js）、大越南洋西洋据点诸样（towns3d-south.js）：器件从这里递过去
+  ...eastBuilders(KIT),
+  ...southBuilders(KIT)
 };
 // 林木、村舍那几样（createScatter 画的）
 export const SCATTER_KINDS = ['pine', 'dot', 'jia', 'grove', 'willow', 'hamlet', 'hamletB'];
 export const TOWN_KINDS = Object.keys(BUILD);
 // 有远看那一份的（城郭、京城、残城）；帐、寨、市镇、港、营造地标本就几百到一两千面，不另做
-const HAS_FAR = /^(town|city|grand|metro)\d$|^(jp|jo|ko)\d\d$|^(capital|ruin|jpCap|joCap|koCap)$/;
+const HAS_FAR = /^(town|city|grand|metro)\d$|^(jp|jo|ko|vn|sea|we)\d\d$|^(capital|ruin|jpCap|joCap|koCap|vnCap|seaCap|weCap)$/;
 // 近看、远看两份按城在屏上的宽（像素）交替：LOD_PX[0] 以下只画远看那份，LOD_PX[1] 以上只画近看那份，其间以抖点互补地换
 export const LOD_PX = [48, 66];
 const models = new Map();

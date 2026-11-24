@@ -52,6 +52,7 @@ function check(cond, msg) {
     check(out['r-lone'].dejure === '' && out['r-lone'].regionType === '', '两份都不带的空着');
     check(Object.values(out).every((x) => x.year === 1627), '年份照内核历法（不是剧本开局年）');
     check(out['r-edo'].kind === '政区', '剧本政区类别照旧');
+    check(out['r-edo'].name === '江户' && out['r-lone'].name === '孤块', '地块名递下去（认占城旧地）');
     console.log(`[smoke-newui-settle-read] PASS ${passed} 项`);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 新界面舆图的聚落等第（web/ui/model/settlement.js）：繁华分、分档与回差、样子（城郭/帐幕/山寨）、地域（日本按年份、朝鲜）、残破进出、村舍疏密、市镇与港。
+// 新界面舆图的聚落等第（web/ui/model/settlement.js）：繁华分、分档与回差、样子（城郭/帐幕/山寨）、地域（日本按年份、朝鲜、大越、南洋、西洋据点）、残破进出、村舍疏密、市镇与港。
 // 模块是 ES 模块，拷成 .mjs 再 import（CI 上的 Node 版本不论认不认得出 ES 写法都能跑）。
 'use strict';
 const fs = require('fs');
@@ -72,6 +72,15 @@ function check(cond, msg) {
     check(cu({ dejure: '明朝廷', regionType: 'frontier_defense', kind: '镇', year: 1627 }) === null, '明朝的城照中原');
     check(cu({ dejure: '后金', regionType: 'banner_core', kind: '城', year: 1627 }) === null, '后金照中原');
     check(cu({}) === null, '什么都没有照中原');
+    check(cu({ dejure: '大越', regionType: 'foreign_kingdom_split', divisionType: '京', year: 1627 }) === 'viet', '天启的升龙');
+    check(cu({ dejure: '大越李朝', divisionType: '京', year: 1127 }) === 'viet', '绍宋的大越李朝');
+    check(cu({ dejure: '大越', divisionType: '府', name: '占城旧地', year: 1627 }) === 'seasia', '占城旧地画占婆那一路');
+    check(cu({ dejure: '蒲甘王朝', divisionType: '都城', year: 1127 }) === 'seasia' && cu({ dejure: '骠国', year: 840 }) === 'seasia' && cu({ dejure: '环王', year: 840 }) === 'seasia', '蒲甘、骠国、环王');
+    check(cu({ dejure: '西班牙·马尼拉', regionType: 'colonial_governorate', divisionType: '城', year: 1627 }) === 'west', '马尼拉');
+    check(cu({ dejure: '葡萄牙·澳门', divisionType: '城', year: 1627 }) === 'west' && cu({ dejure: '荷兰·台海(东印度公司)', divisionType: '城', year: 1627 }) === 'west', '澳门、大员');
+    check(cu({ dejure: '', regionType: 'leased_port', year: 1627 }) === 'west', '澳门：上一级只记了租借港');
+    check(cu({ dejure: '唐朝廷', name: '安南都护府', year: 840 }) === null && cu({ dejure: '南诏', year: 840 }) === null, '唐的安南、南诏照中原');
+    check(m.styleOf({ kind: '政区', terrain: '平原', factionType: '公司', divisionType: '社' }) === 'tribal', '台湾的番社画山寨');
     // 游戏里读到的样子：剧本政区类别只写「政区」，区划自己记「城下」「港」；所属是部落联盟（松前氏）也认得是城
     check(m.styleOf({ kind: '政区', terrain: '沿海', factionType: '部落联盟', divisionType: '城下' }) === 'city', '松前氏的城下是城');
     check(m.styleOf({ kind: '政区', terrain: '沿海', factionType: '部落联盟', divisionType: '港' }) === 'city', '箱馆、江差是港');

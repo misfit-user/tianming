@@ -4,6 +4,7 @@
 // 林木、村舍的立体版省面，分块挑着画：近看只画镜头里那一片、远了不画；日本、朝鲜（towns3d-east.js）与大越、南洋、西洋据点（towns3d-south.js）诸样各档都有、越档越大；
 // 那几处的城外诸样（市镇、港、河埠与寺、祠庙、教堂、书院、堡、官署）与四郊村舍照地域换了样子，占地不比舆图留的大，港贴海面、河埠随地面，其余各处一样；
 // 治所画哪一样（seatKind）：中原照四档、京城、残城，那几处照当地的四档、都城，残破的画那里的残城（与府城一般大）。
+// 城郭近看、远看两份按舆图的钟换，显出、收掉也按钟淡（createTowns）：镜头停下来每座城只画一份、全显，不停在半抖点。
 // 模块是 ES 模块、引着 three：拷进临时目录（目录标成 ES 模块），three 取仓里 vendor 的那份放进临时目录的 node_modules。
 'use strict';
 const fs = require('fs');
@@ -187,6 +188,92 @@ function badVertices(geometry) {
     check(look(2000) === 0, `远了一处也不画：${look(2000)}`);
     check(look(75) === 40, '拉回来又画上');
     sc.dispose();
+
+    // 城郭近看、远看两份按舆图的钟换：过了门槛才换，换的那一会儿（LOD_FADE 秒）两份都画，近看那份的成数由 1 走到 0（或反过来）；
+    // 显出、收掉也一样按钟淡入淡出。镜头停下来每座城只画一份、全显，没有停在半抖点的；两道门槛之间照上一帧；
+    // 正换着又折回去，成数接着往回走，不跳；刚进镜头的按门槛正中直接取，不交替；拍一张的（不给钟）也直接取，且不动活舆图记着的
+    const [S0, S1] = [11, 18];
+    const towns = t.createTowns({ ...shared, uFadePx: { value: new THREE.Vector2(S0, S1) } });
+    const md0 = t.townModel('town0'), [P0, P1] = t.LOD_PX, FADE = t.LOD_FADE;
+    // 市镇摆得远远的，镜头里只有那座城（正换着的几座只算它）
+    towns.set([{ kind: 'town0', x: 500, z: 500, h: 0.05, yaw: 0, scale: 0.85 }, { kind: 'market', x: 1500, z: 500, h: 0.05, yaw: 0, scale: 0.85 }]);
+    const [nearMesh, farMesh] = [1, 2].map((mode) => towns.group.children.find((m) => m.material.uniforms.uPart.value === mode));
+    check(!!nearMesh && !!farMesh && towns.group.children.some((m) => m.material.uniforms.uPart.value === 0), '有远看那份的城一近一远两层，市镇只一层');
+    const aim = (px) => {
+      const d = 2 * md0.hw * 0.85 * shared.uPx.value / px;
+      cam.position.set(500, 1 + d * Math.cos(0.8), 500 + d * Math.sin(0.8));
+      cam.lookAt(500, 1, 500);
+    };
+    const frameAt = (px, now) => {
+      aim(px);
+      towns.update(cam, now);
+      const n = nearMesh.geometry.instanceCount, f = farMesh.geometry.instanceCount;
+      const a = n ? nearMesh.geometry.getAttribute('aFade').array : f ? farMesh.geometry.getAttribute('aFade').array : [NaN, NaN];
+      return { n, f, lod: a[0], vis: a[1], fading: towns.stats.fading };
+    };
+    const show = (r) => `近 ${r.n} 远 ${r.f} 成数 ${Number.isNaN(r.lod) ? '-' : r.lod.toFixed(3)} 显 ${Number.isNaN(r.vis) ? '-' : r.vis.toFixed(3)} 正换着 ${r.fading}`;
+    let r = frameAt(80, 10);
+    check(r.n === 1 && r.f === 0 && r.lod === 1 && r.vis === 1 && r.fading === 0, `头一帧大过门槛：只画近看那份、全显（${show(r)}）`);
+    r = frameAt((P0 + P1) / 2, 10.016);
+    check(r.n === 1 && r.f === 0 && r.fading === 0, `退到两道门槛之间：仍画近看那份（${show(r)}）`);
+    r = frameAt(P0 - 6, 10.032);
+    check(r.n === 1 && r.f === 0, `刚窄过 ${P0} 像素：这一帧起换（${show(r)}）`);
+    const fadeAttr = nearMesh.geometry.getAttribute('aFade');
+    let v0 = fadeAttr.version;
+    r = frameAt(P0 - 6, 10.032 + FADE / 2);
+    check(r.n === 1 && r.f === 1 && Math.abs(r.lod - 0.5) < 0.01 && r.fading === 1, `换到一半：两份都画，近看那份占五成（${show(r)}）`);
+    check(fadeAttr.version > v0, '换着的那一会儿：成数变了就重传');
+    v0 = fadeAttr.version;
+    r = frameAt(P0 - 6, 10.032 + FADE / 2);
+    check(fadeAttr.version === v0, '镜头不动、钟也没走：不重传');
+    r = frameAt(80, 10.032 + FADE * 2 / 3);
+    check(r.n === 1 && r.f === 1 && Math.abs(r.lod - 1 / 3) < 0.01, `正换着又拉近：从换到的三成三往回走，不跳（${show(r)}）`);
+    r = frameAt(80, 10.032 + FADE * 2 / 3 + FADE + 0.01);
+    check(r.n === 1 && r.f === 0 && r.lod === 1 && r.fading === 0, `换回去了：只画近看那份（${show(r)}）`);
+    // 镜头停在各样远近（换份那一段、显出那一段也在内），停下来过了 LOD_FADE 秒：显着的只画一份、全显，收着的一份不画
+    let now = 20;
+    const rest = [];
+    for (const px of [30, 40, 48, P0 + 1, (P0 + P1) / 2, P1 - 1, 62, 66, 90, 62, P1 - 1, P0 + 1, 48, 30, 20, (S0 + S1) / 2, S0 + 0.5, 8, S0 + 0.5, (S0 + S1) / 2, 20]) {
+      frameAt(px, now);
+      r = frameAt(px, now + FADE + 0.01);
+      rest.push(`${px}:${r.n}${r.f}`);
+      now += 1;
+      check(r.fading === 0 && (r.n + r.f === 0 || (r.n + r.f === 1 && r.vis === 1)), `停在 ${px} 像素：只画一份、全显，或一份不画（${show(r)}）`);
+    }
+    check(rest[6] === '62:10' && rest[13] === '30:01' && rest[17] === '8:00' && rest[16] === `${S0 + 0.5}:01` && rest[18] === `${S0 + 0.5}:00` && rest[20] === '20:01',
+      `大了画近看那份、小了画远看那份，再小收掉；显出、收掉的门槛之间照上一回：${rest.join(' ')}`);
+    // 收掉、显出都按钟淡：窄过收掉的门槛，这一帧起淡出，一半时显五成；宽过显出的门槛再淡入
+    r = frameAt(5, now);
+    check(r.f === 1 && r.vis === 1, `刚窄过 ${S0} 像素：这一帧起淡出（${show(r)}）`);
+    r = frameAt(5, now + FADE / 2);
+    check(r.f === 1 && Math.abs(r.vis - 0.5) < 0.01 && r.fading === 1, `淡出一半：显五成（${show(r)}）`);
+    r = frameAt(5, now + FADE + 0.01);
+    check(r.n === 0 && r.f === 0 && r.fading === 0, `淡完：一份也不画（${show(r)}）`);
+    r = frameAt(30, now + FADE + 0.02);
+    r = frameAt(30, now + FADE + 0.02 + FADE / 2);
+    check(r.f === 1 && Math.abs(r.vis - 0.5) < 0.01 && r.fading === 1, `再拉近宽过 ${S1} 像素：淡入一半显五成（${show(r)}）`);
+    now += 5;
+    // 镜头转开（城不在镜头里，不记它），再转回换份那一段：按门槛正中直接取，不交替
+    cam.position.set(2000, 60, 2000);
+    cam.lookAt(2100, 0, 2100);
+    towns.update(cam, now);
+    check(nearMesh.geometry.instanceCount + farMesh.geometry.instanceCount === 0, '镜头转开：这座城不画');
+    r = frameAt(P0 - 4, now + 0.016);
+    check(r.n === 0 && r.f === 1 && r.lod === 0 && r.vis === 1 && r.fading === 0, `再转回来：直接画远看那份、全显（${show(r)}）`);
+    // 拍一张（不给钟）：照门槛正中取；之后活舆图接着照它记着的画，不因这一张换份
+    aim(80);
+    towns.update(cam);
+    check(nearMesh.geometry.instanceCount === 1 && farMesh.geometry.instanceCount === 0 && towns.stats.fading === 0, '拍一张：大过门槛直接画近看那份');
+    aim(S0 + 0.5);
+    towns.update(cam);
+    check(nearMesh.geometry.instanceCount + farMesh.geometry.instanceCount === 0, `拍一张：窄过显出那两道门槛正中（${(S0 + S1) / 2} 像素）就不画`);
+    r = frameAt(P0 - 4, now + 0.032);
+    check(r.n === 0 && r.f === 1 && r.vis === 1 && r.fading === 0, `拍完回到活舆图：仍是远看那份、全显，没有换份（${show(r)}）`);
+    // 换过一批城：都按门槛正中重取
+    towns.set([{ kind: 'town0', x: 500, z: 500, h: 0.05, yaw: 0, scale: 0.85 }]);
+    r = frameAt(P1 - 1, now + 0.048);
+    check(r.n === 1 && r.f === 0 && r.fading === 0, `换过一批城：头一帧按门槛正中取（${show(r)}）`);
+    towns.dispose();
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

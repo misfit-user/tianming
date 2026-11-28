@@ -555,9 +555,10 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   // 中、高画质画立体城郭与营造地标（towns3d.js，照 CK3 地图上的领地模型与特殊建筑）；低画质照旧画点景小图。
   // 没给分档时（舆图台、开局读数之前）：京城，要府大一号，其余小一号（立体的画府城、小城）
   const cityUniforms = { ...spriteUniforms, uFadePx: { value: new THREE.Vector2(9, 15) }, uMaxPx: { value: 72 }, uOutPx: { value: new THREE.Vector2(1e5, 2e5) } };
+  // 立体城郭占地宽在屏上窄过十二像素收掉、宽过十五像素显出（其间照上一帧；显出、收掉约三分之一秒淡完，见 towns3d.js createTowns）
   const towns = q.tier === 'low' ? null : createTowns({
     uRelief: uniforms.uRelief, uPx: uniforms.uPx, uCam: uniforms.uCam, uFogNear: uniforms.uFogNear, uFogFar: uniforms.uFogFar,
-    uFogColor: uniforms.uFogColor, uLookT: uniforms.uLookT, uFadePx: { value: new THREE.Vector2(11, 18) }
+    uFogColor: uniforms.uFogColor, uLookT: uniforms.uLookT, uFadePx: { value: new THREE.Vector2(12, 15) }
   });
   if (towns) scene.add(towns.group);
   // 营造地标（settle[i].landmarks 里的样子 → 图，低画质用；立体的见 towns3d.js LANDMARK_MODEL）；半损的画一小片残垣（借残城那张，画小）
@@ -994,7 +995,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       const hk = g ? MODE[g.tier] + ':' + g.key : '';
       lines.update(dist, tier);
       if (trees) trees.visible = dist < 1100;
-      if (towns) { towns.group.visible = dist < 1400; if (towns.group.visible) towns.update(camera); }   // 再远最大的京城也小过十一像素，整层不画
+      if (towns) { towns.group.visible = dist < 1400; if (towns.group.visible) towns.update(camera, time); }   // 再远最大的京城也小过十一像素，整层不画；显出收掉、近看远看两份按舆图的钟换
       if (scatter) { scatter.group.visible = dist < 700; if (scatter.group.visible) scatter.update(camera); }   // 再远点景小图都没长到该换立体的大小
       if (hk !== hoverKey) {
         hoverKey = hk;
@@ -1123,7 +1124,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     setImportant(list) { labels.setImportant(list); buildCities(); },
     get labelsReady() { return labels.ready; },
     get labelStats() { return labels.stats; },
-    get townStats() { return towns ? towns.stats : null; },          // 立体城郭：几座、多少面（低画质为 null）
+    get townStats() { return towns ? towns.stats : null; },          // 立体城郭：几座、多少面、几座正淡入淡出或换着份（低画质为 null）
     get scatterStats() { return scatter ? scatter.stats : null; },   // 林木、村舍的立体版：几处、分几块、上一帧画了几处多少面（低画质为 null）
     get labelsPlaced() { return labels.placed; },
     // 舆图世界坐标落在屏幕上的位置（高度取地形）；第三项为真＝这点在镜头背后（或远过远截面），投出来的位置会翻到画面另一头，不可用

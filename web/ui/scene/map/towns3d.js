@@ -1141,8 +1141,11 @@ export function seatKind(st, k, v) {
   if (st.ruined) return 'ruin';
   return `${CITY_KIND[st.tier] || 'city'}${v}`;
 }
-// 近看、远看两份按城在屏上的宽（像素）交替：LOD_PX[0] 以下只画远看那份，LOD_PX[1] 以上只画近看那份，其间以抖点互补地换
-export const LOD_PX = [48, 66];
+// 近看、远看两份按城在屏上的宽（像素，按到镜头的直线距离量）换：画着远看那份的宽过 LOD_PX[1] 换成近看那份，画着近看那份的窄过 LOD_PX[0] 换成远看那份，
+// 其间照上一帧画的那份（镜头停在门槛上也不来回换）。换的时候两份以抖点互补地交替，LOD_FADE 秒换完。
+// 先前按屏上宽在 48～66 像素那一段里交替，镜头停在那一段，那几座城就一直是半抖点的样子
+export const LOD_PX = [52, 60];
+export const LOD_FADE = 0.3;
 const models = new Map();
 // 一样模型：{ geometry, far（远看那一份 { geometry, tris }，没有为 null）, hw 城墙外沿半宽（摆地标、定多大开始显）,
 // north 北沿, south 南沿（连瓮城、护城河、关厢，从模型原点量起）, radius 外接球半径, tris 三角形数 }
@@ -1168,10 +1171,12 @@ export function townModel(kind) {
 }
 
 // 一层城郭：同一样的城一份实例化几何（有远看那份的另起一份，两份以抖点互补地换）。
-// shared：与山川共用的 uRelief、uPx、uCam、uFogNear、uFogFar、uFogColor、uLookT，外加 uFadePx（占地宽在屏上多少像素开始显、全显）。
+// shared：与山川共用的 uRelief、uPx、uCam、uFogNear、uFogFar、uFogColor、uLookT，外加 uFadePx：占地宽在屏上窄过 x 像素收掉、宽过 y 像素显出，
+// 其间照上一帧（显出、收掉也像换份一样，LOD_FADE 秒里以抖点淡入淡出——先前按屏上宽在 x～y 那一段里淡，镜头停着，远处的市镇、地标就一直是半抖点）。
 // set(list)：list 每项 { kind, x, z, h（落脚处地面高，0～1）, yaw, scale }，整层换过（只记下，画哪些由 update 挑）。
-// update(camera)：每帧挑镜头里看得见、又大到开始显的那些写进实例缓冲，近看、远看两份各挑各的——全图四百来座城、七八十万面，
-// 不挑的话每帧顶点要算两百多万个
+// update(camera, now)：每帧挑镜头里看得见、又显着的那些写进实例缓冲，近看、远看两份各挑各的——全图四百来座城、七八十万面，
+// 不挑的话每帧顶点要算两百多万个。now 是舆图的钟（秒）：每座城显没显、画着哪一份、换到几成按它记。
+// 方志卷首、案上绢图那样拍一张的不给 now：按两道门槛正中直接取，也不动活舆图记着的
 export function createTowns(shared) {
   const group = new THREE.Group();
   const layers = new Map();
@@ -1180,7 +1185,7 @@ export function createTowns(shared) {
     const geo = new THREE.InstancedBufferGeometry();
     for (const k of ['position', 'normal', 'aColor']) geo.setAttribute(k, geometry.getAttribute(k));
     const mat = new THREE.ShaderMaterial({
-      uniforms: { ...shared, uSize: { value: model.hw * 2 }, uLod: { value: new THREE.Vector3(LOD_PX[0], LOD_PX[1], mode) } },
+      uniforms: { ...shared, uSize: { value: model.hw * 2 }, uPart: { value: mode } },
       vertexShader: townVertex, fragmentShader: townFragment, side: THREE.DoubleSide
     });
     const mesh = new THREE.Mesh(geo, mat);
@@ -1188,13 +1193,15 @@ export function createTowns(shared) {
     mesh.renderOrder = 19;
     mesh.visible = false;
     group.add(mesh);
-    return { mesh, geo, mode, tris, cap: 0, base: null, ys: null, n: 0 };
+    return { mesh, geo, mode, tris, cap: 0, base: null, ys: null, fade: null, n: 0 };
   }
   function layerFor(kind) {
     if (layers.has(kind)) return layers.get(kind);
     const model = townModel(kind);
     const parts = model.far ? [part(model.geometry, model, 1, model.tris), part(model.far.geometry, model, 2, model.far.tris)] : [part(model.geometry, model, 0, model.tris)];
-    const rec = { model, parts, items: [] };
+    // 每座另记：vis 显着（1）还是收着（0）、visSince 换成这样的时刻；near、since 同样记画着近看那份（1）还是远看那份（0）；
+    // seen 上回在镜头里记它是第几帧（frame）
+    const rec = { model, parts, items: [], vis: null, visSince: null, near: null, since: null, seen: null };
     layers.set(kind, rec);
     return rec;
   }
@@ -1206,32 +1213,60 @@ export function createTowns(shared) {
       const rec = layerFor(kind);
       rec.items = items;
       rec.gen = (rec.gen | 0) + 1;                // 换了一批城，下帧必重传
+      const n = items.length;
+      Object.assign(rec, { vis: new Uint8Array(n), visSince: new Float64Array(n), near: new Uint8Array(n), since: new Float64Array(n), seen: new Uint32Array(n) });
       for (const p of rec.parts) {
         if (items.length <= p.cap) continue;
         p.cap = Math.ceil(items.length * 1.25) + 4;
         p.base = new THREE.InstancedBufferAttribute(new Float32Array(p.cap * 3), 3);
         p.ys = new THREE.InstancedBufferAttribute(new Float32Array(p.cap * 2), 2);
-        p.base.setUsage(THREE.DynamicDrawUsage);
-        p.ys.setUsage(THREE.DynamicDrawUsage);
+        p.fade = new THREE.InstancedBufferAttribute(new Float32Array(p.cap * 2), 2);
+        for (const a of [p.base, p.ys, p.fade]) a.setUsage(THREE.DynamicDrawUsage);
         p.geo.setAttribute('aBase', p.base);
         p.geo.setAttribute('aYS', p.ys);
+        p.geo.setAttribute('aFade', p.fade);
       }
     }
   }
-  // 挑出来的一座写进实例缓冲；sig 记这一帧挑了哪些（与上帧一样就不重传，镜头不动时一帧不传）
-  const put = (p, it, s, k) => {
+  // 挑出来的一座写进实例缓冲，t 是近看那份占几成、show 显出几成；sig 记这一帧挑了哪些、各到几成
+  // （与上帧一样就不重传：镜头不动、没有正换着的城时一帧不传）
+  const put = (p, it, s, k, t, show) => {
     const n = p.n++;
     p.base.array[n * 3] = it.x; p.base.array[n * 3 + 1] = it.h; p.base.array[n * 3 + 2] = it.z;
     p.ys.array[n * 2] = it.yaw || 0; p.ys.array[n * 2 + 1] = s;
+    p.fade.array[n * 2] = t; p.fade.array[n * 2 + 1] = show;
     p.sig = (Math.imul(p.sig, 31) + k + 1) | 0;
+    p.sig = (Math.imul(p.sig, 31) + Math.round(t * 255) * 256 + Math.round(show * 255)) | 0;
   };
+  let frame = 1, fading = 0;                      // frame 从 1 起：刚换过一批城时 seen 全是 0，头一帧就算「上一帧没记着」
+  // 一样「是不是」按钟走（显没显、画不画近看那份）：state[k] 1 或 0，since[k] 换成这样的时刻。上一帧没记着（fresh：刚进镜头、刚换过一批城）
+  // 就按两道门槛正中直接取，不交替；记着的过了门槛（是 1 的窄过 lo、是 0 的宽过 hi）才换，LOD_FADE 秒里换完；
+  // 正换着又折回去的，从换到的那一成往回走。回此刻「是」占几成
+  function ease(state, since, k, fresh, v, lo, hi, now) {
+    if (fresh) {
+      state[k] = v >= (lo + hi) / 2 ? 1 : 0;
+      since[k] = -Infinity;
+      return state[k];
+    }
+    const on = state[k] === 1, want = on ? v >= lo : v > hi;
+    if (want !== on) {
+      const done = Math.min(1, (now - since[k]) / LOD_FADE);
+      since[k] = now - (1 - done) * LOD_FADE;
+      state[k] = want ? 1 : 0;
+    }
+    const a = Math.min(1, Math.max(0, (now - since[k]) / LOD_FADE));
+    return state[k] ? a : 1 - a;
+  }
   const frustum = new THREE.Frustum(), pv = new THREE.Matrix4(), sphere = new THREE.Sphere();
-  function update(camera) {
+  function update(camera, now) {
+    const live = Number.isFinite(now);
+    if (live) frame++;
+    fading = 0;
     camera.updateMatrixWorld();
     pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     frustum.setFromProjectionMatrix(pv);
-    // 屏上宽按到镜头的直线距离估（比着色器用的进深略小，所以门槛各让一成，宁多挑勿漏）
-    const relief = shared.uRelief.value, uPx = shared.uPx.value, lo = shared.uFadePx.value.x * 0.9, cam = camera.position;
+    // 屏上宽按到镜头的直线距离估
+    const relief = shared.uRelief.value, uPx = shared.uPx.value, lo = shared.uFadePx.value.x, hi = shared.uFadePx.value.y, cam = camera.position;
     for (const rec of layers.values()) {
       const { model, items, parts } = rec;
       for (const p of parts) { p.n = 0; p.sig = rec.gen | 0; }
@@ -1241,14 +1276,24 @@ export function createTowns(shared) {
         sphere.radius = model.radius * s;
         if (!frustum.intersectsSphere(sphere)) continue;
         const px = 2 * model.hw * s * uPx / Math.max(cam.distanceTo(sphere.center), 1);
-        if (px < lo) continue;
-        if (parts.length === 1) { put(parts[0], it, s, k); continue; }
-        if (px > LOD_PX[0] * 0.9) put(parts[0], it, s, k);
-        if (px < LOD_PX[1] * 1.1) put(parts[1], it, s, k);
+        let show, t;
+        if (live) {
+          const fresh = rec.seen[k] !== frame - 1;
+          rec.seen[k] = frame;
+          show = ease(rec.vis, rec.visSince, k, fresh, px, lo, hi, now);
+          t = parts.length > 1 ? ease(rec.near, rec.since, k, fresh, px, LOD_PX[0], LOD_PX[1], now) : 1;
+        } else {
+          show = px >= (lo + hi) / 2 ? 1 : 0;
+          t = parts.length > 1 && px < (LOD_PX[0] + LOD_PX[1]) / 2 ? 0 : 1;
+        }
+        if (show <= 0) continue;
+        if (t > 0) put(parts[0], it, s, k, t, show);
+        if (t < 1) put(parts[1], it, s, k, t, show);
+        if (show < 1 || (t > 0 && t < 1)) fading++;
       }
       for (const p of parts) {
         const sig = (Math.imul(p.sig, 7) + p.n) | 0;
-        if (p.n && sig !== p.sent) { p.base.needsUpdate = true; p.ys.needsUpdate = true; p.sent = sig; }
+        if (p.n && sig !== p.sent) { p.base.needsUpdate = true; p.ys.needsUpdate = true; p.fade.needsUpdate = true; p.sent = sig; }
         p.geo.instanceCount = p.n;
         p.mesh.visible = p.n > 0;
       }
@@ -1256,14 +1301,15 @@ export function createTowns(shared) {
   }
   return {
     group, set, update,
-    // 立体城郭的数目与面数：instances、tris 全图（按近看那份算），drawn、drawnTris 上一帧挑出来画的（近看、远看两份各算各的）
+    // 立体城郭的数目与面数：instances、tris 全图（按近看那份算），drawn、drawnTris 上一帧挑出来画的（近看、远看两份各算各的），
+    // fading 上一帧正淡入淡出、正换着份（两份都画）的几座
     get stats() {
       let n = 0, tris = 0, dn = 0, dtris = 0;
       for (const rec of layers.values()) {
         n += rec.items.length; tris += rec.items.length * rec.model.tris;
         for (const p of rec.parts) { dn += p.geo.instanceCount; dtris += p.geo.instanceCount * p.tris; }
       }
-      return { instances: n, tris, drawn: dn, drawnTris: dtris };
+      return { instances: n, tris, drawn: dn, drawnTris: dtris, fading };
     },
     dispose() { for (const rec of layers.values()) for (const p of rec.parts) { p.geo.dispose(); p.mesh.material.dispose(); } layers.clear(); }
   };
@@ -1283,7 +1329,7 @@ export function createScatter(shared, k) {
     const model = townModel(kind), geo = new THREE.InstancedBufferGeometry();
     for (const a of ['position', 'normal', 'aColor']) geo.setAttribute(a, model.geometry.getAttribute(a));
     const mat = new THREE.ShaderMaterial({
-      uniforms: { ...shared, uSize: { value: 1 / k[kind] }, uLod: { value: new THREE.Vector3(0, 0, 0) } },
+      uniforms: { ...shared, uSize: { value: 1 / k[kind] }, uPart: { value: 3 } },
       vertexShader: townVertex, fragmentShader: townFragment, side: THREE.DoubleSide
     });
     const mesh = new THREE.Mesh(geo, mat);

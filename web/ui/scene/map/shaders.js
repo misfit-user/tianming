@@ -484,11 +484,12 @@ export const townVertex = /* glsl */`
 attribute vec4 aColor;
 attribute vec3 aBase;
 attribute vec2 aYS;
+attribute vec2 aFade;          // 城郭每座：x 近看那份占几成、y 显出几成（towns3d.js 按钟记，换的那一会儿 LOD_FADE 秒在 0～1 间，其余时候不是 0 就是 1）
 uniform float uRelief;
 uniform float uPx;
 uniform float uSize;
-uniform vec2 uFadePx;
-uniform vec3 uLod;             // 近看、远看两份换的像素宽（x 起、y 止）；z：0 只此一份、1 近看那份、2 远看那份
+uniform vec2 uFadePx;          // 林木村舍按屏上宽淡入：x 起、y 全显（像素）
+uniform float uPart;           // 城郭 0 只此一份、1 近看那份、2 远看那份；3 林木村舍（没有 aFade，按屏上宽淡入）
 uniform float uFogNear;
 uniform float uFogFar;
 uniform vec3 uCam;
@@ -501,8 +502,9 @@ void main() {
   vec3 base = vec3(aBase.x, aBase.y * uRelief, aBase.z);
   vec4 mb = viewMatrix * vec4(base, 1.0);
   float px = uSize * aYS.y * uPx / max(-mb.z, 1.0);
-  float lod = uLod.z < 0.5 ? 1.0 : (uLod.z < 1.5 ? smoothstep(uLod.x, uLod.y, px) : 1.0 - smoothstep(uLod.x, uLod.y, px));
-  vFade = smoothstep(uFadePx.x, uFadePx.y, px) * lod;
+  float vis = uPart > 2.5 ? smoothstep(uFadePx.x, uFadePx.y, px) : aFade.y;
+  float lod = uPart > 0.5 && uPart < 1.5 ? aFade.x : (uPart > 1.5 && uPart < 2.5 ? 1.0 - aFade.x : 1.0);
+  vFade = vis * lod;
   if (vFade <= 0.0) { gl_Position = vec4(0.0, 0.0, 2.0, 1.0); return; }
   float c = cos(aYS.x), s = sin(aYS.x);
   vec3 p = position * aYS.y;
@@ -514,11 +516,11 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
 }`;
 // 受光与山川同一个方向（西北高处），另加天光、镜头这边一点补光（朝南的墙面不至于黑成一片）；墙脚、屋脚按离地高低压暗。
-// 远了以抖点淡去（不用半透明，免排序）；近看、远看两份换时远看那份抖点取反，两份恰好互补；案上旧绢褪色发黄；远雾同地面
+// 淡入淡出以抖点（不用半透明，免排序）；近看、远看两份换时远看那份抖点取反，两份恰好互补；案上旧绢褪色发黄；远雾同地面
 export const townFragment = /* glsl */`
 uniform vec3 uFogColor;
 uniform float uLookT;
-uniform vec3 uLod;
+uniform float uPart;
 varying vec3 vColor;
 varying vec3 vNormal;
 varying float vY;
@@ -528,7 +530,7 @@ float bayer2(vec2 a) { a = floor(a); return fract(a.x * 0.5 + a.y * a.y * 0.75);
 float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
 void main() {
   float b = bayer4(gl_FragCoord.xy);
-  if (uLod.z > 1.5) { if (vFade < 1.0 && vFade < 1.0 - b) discard; }
+  if (uPart > 1.5 && uPart < 2.5) { if (vFade < 1.0 && vFade < 1.0 - b) discard; }
   else if (vFade < 1.0 && vFade <= b) discard;
   vec3 N = normalize(gl_FrontFacing ? vNormal : -vNormal);
   vec3 L = normalize(vec3(-0.55, 0.75, -0.35));

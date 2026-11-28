@@ -1,6 +1,9 @@
 // 舆图点景：程序现画的一张小图集（松、点叶、夹叶、杂树、柳、村舍、城郭、京城，聚落各档的庄、城、帐、寨、市镇、港，营造地标），每格 64×64，竖着贴在地面上（点精灵）。
 // 画法照山水画里的点景：墨线勾干、石绿石青点叶、屋顶淡墨；远看只是一点颜色，近看才认得出是什么。
-// 格序见 SPRITE（着色器按格号取）。
+// 格序见 SPRITE（着色器按格号取）。日本、朝鲜、大越、南洋、西洋据点诸样（sprites-east.js、sprites-south.js）接在后头，见文末
+import { eastPainters, EAST_SPRITE_LOCAL } from './sprites-east.js';
+import { southPainters, SOUTH_SPRITE_LOCAL } from './sprites-south.js';
+
 export const SPRITE = {
   pine: 0, dot: 1, jia: 2, grove: 3, willow: 4, hamlet: 5, city: 6, capital: 7,
   // 聚落各档（model/settlement.js 定档）：庄、小城、大府、都会、残城、市镇、港、帐、牙帐、寨、大寨
@@ -8,7 +11,7 @@ export const SPRITE = {
   // 营造地标（真建了才画）：书院、仓廒、水利、工坊、堡、烽燧、佛寺、祠庙、驿、官署、在建、石桥
   academy: 19, granary: 20, waterworks: 21, workshop: 22, fort: 23, beacon: 24, temple: 25, shrine: 26, relay: 27, yamen: 28, scaffold: 29, bridge: 30
 };
-const CELL = 64, COLS = 8, ROWS = 4;              // 着色器 spriteFragment 按 8×4 格取，改这里要一起改
+const CELL = 64, COLS = 8, ROWS = 16;             // 着色器 spriteFragment 按 ATLAS 的格数取（舆图建点景层时传进去）
 
 const INK = 'rgba(38,32,26,', GREEN = [92, 140, 108], DEEP = [52, 92, 86], BLUE = [70, 112, 128];
 const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
@@ -710,6 +713,92 @@ function junk(g, x, y, w, sail) {
   g.lineWidth = 0.6;
   for (let k = 1; k < 4; k++) { const yy = y - 4 - w * 0.2 * k; g.beginPath(); g.moveTo(x - 0.5, yy); g.lineTo(x + w * 0.38, yy + 1.2); g.stroke(); }
 }
+// 一块方：填色，描一道墨边（lw 为 0 不描）
+function rect(g, x, y, w, h, fill, lw = 1) {
+  g.fillStyle = fill;
+  g.fillRect(x, y, w, h);
+  if (!lw) return;
+  g.strokeStyle = INK + '0.85)';
+  g.lineWidth = lw;
+  g.strokeRect(x, y, w, h);
+}
+// 一块多边形：填色，描墨边（lw 为 0 不描）
+function poly(g, pts, fill, lw = 1) {
+  g.beginPath();
+  g.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+  g.closePath();
+  g.fillStyle = fill;
+  g.fill();
+  if (!lw) return;
+  g.strokeStyle = INK + '0.85)';
+  g.lineWidth = lw;
+  g.stroke();
+}
+// 坡顶：檐口在 y、高 h，身宽 w；两头出挑 o，顶比身各收 t（四坡、歇山、两坡看去都是这样一个梯形，檐角略翘）
+function slope(g, cx, y, w, h, color, o = 2, t = w * 0.2, lw = 0.9) {
+  g.beginPath();
+  g.moveTo(cx - w / 2 - o, y);
+  g.quadraticCurveTo(cx - w / 2 + t * 0.15, y - h * 0.3, cx - w / 2 + t, y - h);
+  g.lineTo(cx + w / 2 - t, y - h);
+  g.quadraticCurveTo(cx + w / 2 - t * 0.15, y - h * 0.3, cx + w / 2 + o, y);
+  g.closePath();
+  g.fillStyle = color;
+  g.fill();
+  g.strokeStyle = INK + '0.88)';
+  g.lineWidth = lw;
+  g.stroke();
+}
+// 翘角顶（朝鲜、大越）：檐口两头翘起、当中垂下（当中落在 y，两头高 tip×h），脊在 y - h、两头略起
+function curved(g, cx, y, w, h, color, o = 3, tip = 0.45, lw = 0.9) {
+  const L = cx - w / 2 - o, R = cx + w / 2 + o;
+  g.beginPath();
+  g.moveTo(L, y - h * tip);
+  g.quadraticCurveTo(cx, y + h * tip, R, y - h * tip);
+  g.lineTo(cx + w / 2 - w * 0.2, y - h);
+  g.quadraticCurveTo(cx, y - h * 0.88, cx - w / 2 + w * 0.2, y - h);
+  g.closePath();
+  g.fillStyle = color;
+  g.fill();
+  g.strokeStyle = INK + '0.88)';
+  g.lineWidth = lw;
+  g.stroke();
+}
+
+// ---------- 日本、朝鲜、大越、南洋、西洋据点诸样 ----------
+// 低画质时城郭、市镇、港、营造地标都画小图，中、高画质远看时的村舍也是小图：这些地域照当地的样子另画一套（与立体模型 towns3d-east.js、
+// towns3d-south.js 对得上）。格号接在原有各格之后（第 31 格空着），按 sprites-east.js、sprites-south.js 返回的次序排
+const KIT = { INK, GREEN, DEEP, BLUE, rgba, stroke, trunk, blob, wall, gate, tower, eave, hall, house, roofs, pagoda, banner, palisade, junk, rect, poly, slope, curved };
+const LOCAL_PAINT = { ...eastPainters(KIT), ...southPainters(KIT) };
+const LOCAL_FIRST = 32;
+Object.keys(LOCAL_PAINT).forEach((name, i) => {
+  SPRITE[name] = LOCAL_FIRST + i;
+  PAINT[name] = LOCAL_PAINT[name];
+});
+const SPRITE_LOCAL = { ...EAST_SPRITE_LOCAL, ...SOUTH_SPRITE_LOCAL };
+// 某一地域（settlement.js 的 culture）的某一样用哪一格：base 是原样的格名（城郭各档 town、city、grand、metro、capital，残城 ruin，
+// market、port，营造地标，hamlet、hamletB……）。那一地域没有当地样子的，给 fallback（不给就是原样那一格）
+export function localSprite(base, culture, fallback = SPRITE[base]) {
+  const name = culture && SPRITE_LOCAL[culture] ? SPRITE_LOCAL[culture][base] : null;
+  return name && SPRITE[name] != null ? SPRITE[name] : fallback;
+}
+// 府州治所画哪一格、世界尺寸多大（低画质时城郭画小图；立体的见 towns3d.js seatKind，分法同那里）：st 聚落等第（没有为 null），
+// k 0 寻常、1 要府、2 京城。城郭四档：小城、府城、大府、都会（要府大一号）；京城那一套只给繁华到大府以上的城郭之都；
+// 日本、朝鲜、大越、南洋、西洋据点照当地的样子（都城也是；残城那几处还没有当地的样子，照原样）
+const CITY_SIZE = [3.4, 3.9, 4.6, 5.3];
+const CITY_CELL = ['town', 'city', 'grand', 'metro'];
+export function seatSpriteOf(st, k) {
+  const local = (base) => localSprite(base, st && st.style === 'city' ? st.culture : null);
+  const palace = !st || (st.style === 'city' && !st.ruined && st.tier >= 2);     // 与 towns3d.js seatKind 同一条
+  if (k === 2 && palace) return [local('capital'), 6.0];
+  if (k === 2 && st.style === 'nomad') return [SPRITE.yurtL, 4.0];
+  if (k === 2 && st.style === 'tribal') return [SPRITE.stockL, 3.9];
+  if (!st) return [SPRITE.city, k === 1 ? 3.3 : 2.6];
+  if (st.style === 'nomad') return st.tier ? [SPRITE.yurtL, 4.0] : [SPRITE.yurtS, 3.2];
+  if (st.style === 'tribal') return st.tier ? [SPRITE.stockL, 3.9] : [SPRITE.stockS, 3.2];
+  if (st.ruined) return [local('ruin'), 3.8];
+  return [local(CITY_CELL[st.tier] || 'city'), (CITY_SIZE[st.tier] ?? 3.9) + (k >= 1 ? 0.3 : 0)];
+}
 
 let atlasCanvas = null;
 export function spriteAtlas() {
@@ -730,4 +819,4 @@ export function spriteAtlas() {
   atlasCanvas = c;
   return c;
 }
-export const ATLAS = { cols: COLS, rows: ROWS };
+export const ATLAS = { cols: COLS, rows: ROWS, used: LOCAL_FIRST + Object.keys(LOCAL_PAINT).length };

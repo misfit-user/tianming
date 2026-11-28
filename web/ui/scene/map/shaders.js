@@ -434,7 +434,7 @@ void main() {
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }`;
 
-// 点景：竖贴在地上的小图（图集 8×4 格，见 sprites.js）。大小按世界尺寸随远近缩放，太小时淡去；下沿落在所在点上
+// 点景：竖贴在地上的小图（图集 ATLAS_COLS×ATLAS_ROWS 格，见 sprites.js ATLAS，建点景层时作 defines 传进来）。大小按世界尺寸随远近缩放，太小时淡去；下沿落在所在点上
 export const spriteVertex = /* glsl */`
 attribute float aSize;
 attribute float aType;
@@ -471,8 +471,8 @@ varying float vType;
 varying float vFade;
 varying float vFog;
 void main() {
-  float col = mod(vType, 8.0), row = floor(vType / 8.0 + 0.01);          // 图集 8×4 格（sprites.js COLS、ROWS）
-  vec4 t = texture2D(uAtlas, (vec2(col, row) + gl_PointCoord) / vec2(8.0, 4.0));
+  float k = floor(vType + 0.5), row = floor(k / ATLAS_COLS + 0.01), col = k - row * ATLAS_COLS;     // 格号 → 第几行第几列
+  vec4 t = texture2D(uAtlas, (vec2(col, row) + gl_PointCoord) / vec2(ATLAS_COLS, ATLAS_ROWS));
   float a = t.a * vFade * (1.0 - vFog);
   if (a < 0.02) discard;
   gl_FragColor = vec4(mix(t.rgb, uFogColor, vFog * 0.6) * a, a);    // 预乘

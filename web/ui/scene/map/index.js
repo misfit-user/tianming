@@ -7,10 +7,8 @@ import { W, H, loadImage, decodeDem, coastField, waterMask, landSampler, waterSa
 import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
-import { spriteAtlas, SPRITE } from './sprites.js';
-import { createTowns, createScatter, townModel, LANDMARK_MODEL, SCATTER_KINDS, localKind } from './towns3d.js';
-import { EAST_KIND } from './towns3d-east.js';
-import { SOUTH_KIND } from './towns3d-south.js';
+import { spriteAtlas, SPRITE, ATLAS, localSprite, seatSpriteOf } from './sprites.js';
+import { createTowns, createScatter, townModel, LANDMARK_MODEL, SCATTER_KINDS, localKind, seatKind } from './towns3d.js';
 import { createLabels, realmTitle } from './labels.js';
 import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb } from './looks.js';
 import { createPainter, noiseTex } from './paint.js';
@@ -147,6 +145,7 @@ function spriteLayer(items, uniforms) {
   geo.setAttribute('aType', new THREE.BufferAttribute(type, 1));
   const pts = new THREE.Points(geo, new THREE.ShaderMaterial({
     uniforms, vertexShader: spriteVertex, fragmentShader: spriteFragment,
+    defines: { ATLAS_COLS: ATLAS.cols.toFixed(1), ATLAS_ROWS: ATLAS.rows.toFixed(1) },
     transparent: true, depthWrite: false, premultipliedAlpha: true, blending: THREE.CustomBlending,
     blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor
   }));
@@ -537,7 +536,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     if (trees) { scene.remove(trees); trees.geometry.dispose(); trees.material.dispose(); trees = null; }
     // 由北往南排（镜头多朝北看，远的先画、近的压上去）
     const all = outsideTowns(treeItems.concat(villagesNow())).sort((a, b) => a[2] - b[2]);
-    trees = spriteLayer(all, spriteUniforms);
+    // 小图那层：日本、朝鲜、大越、南洋诸处的村舍远看也换当地的小图（sprites.js localSprite），树与柳照旧
+    trees = spriteLayer(all.map((t) => (t[5] ? [t[0], t[1], t[2], t[3], localSprite(SCATTER_OF[t[4]], t[5], t[4])] : t)), spriteUniforms);
     scene.add(trees);
     if (!scatter) return;
     // 立体的那层：同一批位置。树随手转个向；村舍大体坐北朝南，只偏一点，日本、朝鲜、大越、南洋诸处换当地的村舍（localKind）
@@ -560,9 +560,6 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uFogColor: uniforms.uFogColor, uLookT: uniforms.uLookT, uFadePx: { value: new THREE.Vector2(11, 18) }
   });
   if (towns) scene.add(towns.group);
-  const CITY_KIND = ['town', 'city', 'grand', 'metro'];
-  const CITY_SPRITE = [SPRITE.town, SPRITE.city, SPRITE.grand, SPRITE.metro];   // 小城、府城、大府、都会
-  const CITY_SIZE = [3.4, 3.9, 4.6, 5.3];
   // 营造地标（settle[i].landmarks 里的样子 → 图，低画质用；立体的见 towns3d.js LANDMARK_MODEL）；半损的画一小片残垣（借残城那张，画小）
   const LANDMARK_SPRITE = {
     academy: SPRITE.academy, granary: SPRITE.granary, waterworks: SPRITE.waterworks, workshop: SPRITE.workshop, fort: SPRITE.fort, beacon: SPRITE.beacon,
@@ -574,37 +571,13 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const spotMemo = new Map();                 // 府州下标 → 市镇、港、河埠的落点（算一回留着；档变了只换显不显）
   const ringMemo = new Map();                 // 「府州下标|城郭大小」→ 地标的落点
   let cities = null;
-  // 京城那一套（外城套皇城）只给繁华到大府以上的城郭之都；草原上的汗庭画牙帐、山寨之地画大寨，小国小部的都城照它自己的档画
-  const palaceAt = (st) => !st || (st.style === 'city' && !st.ruined && st.tier >= 2);
-  function seatSprite(i, k) {
-    const st = settle && settle[i];
-    if (k === 2 && palaceAt(st)) return [SPRITE.capital, 6.0];
-    if (k === 2 && st.style === 'nomad') return [SPRITE.yurtL, 4.0];
-    if (k === 2 && st.style === 'tribal') return [SPRITE.stockL, 3.9];
-    if (!st) return [SPRITE.city, k === 1 ? 3.3 : 2.6];
-    if (st.style === 'nomad') return st.tier ? [SPRITE.yurtL, 4.0] : [SPRITE.yurtS, 3.2];
-    if (st.style === 'tribal') return st.tier ? [SPRITE.stockL, 3.9] : [SPRITE.stockS, 3.2];
-    if (st.ruined) return [SPRITE.ruin, 3.8];
-    return [CITY_SPRITE[st.tier] ?? SPRITE.city, (CITY_SIZE[st.tier] ?? 3.9) + (k >= 1 ? 0.3 : 0)];
-  }
-  // 立体城郭：样子、档 → 模型（城郭四档各两种街巷，按府州下标单双取）
+  // 治所画哪一样：点景小图（低画质）见 sprites.js seatSpriteOf，立体城郭见 towns3d.js seatKind（城郭四档各两种街巷，按府州下标单双取）。
+  // 京城那一套只给繁华到大府以上的城郭之都；草原上的汗庭画牙帐、山寨之地画大寨；日本、朝鲜、大越、南洋、西洋据点照当地的样子
+  const seatSprite = (i, k) => seatSpriteOf(settle && settle[i], k);
+  const seatModel = (i, k) => seatKind(settle && settle[i], k, i % 2);
   const TOWN_SCALE = 0.85;                    // 模型比例：江南府州挨得紧，再大城与城就碰上了
   const KIND_SCALE = { yurtS: 1.5, yurtL: 1.35, stockS: 1.2, stockL: 1.1 };   // 帐、寨本身小，放大些与城郭相当（一处牧地、一处土司也是一方之治）
   const LANDMARK_SCALE = 1.3;                 // 营造地标：模型本身比城郭小一圈，摆出来放大些（镜头最近时五十来像素宽，与先前点景小图相当，看得出是什么）
-  function seatModel(i, k) {
-    const st = settle && settle[i], v = i % 2;
-    // 日本、朝鲜、大越、南洋、西洋据点的城郭照当地的样子（towns3d-east.js、towns3d-south.js）：都城到大府以上画那一国的都城，小国的都城照它自己的档
-    const east = st && st.style === 'city' && !st.ruined && (EAST_KIND[st.culture] || SOUTH_KIND[st.culture]);
-    if (east) return k === 2 && st.tier >= 2 ? `${east}Cap` : `${east}${Math.min(3, st.tier)}${v}`;
-    if (k === 2 && palaceAt(st)) return 'capital';
-    if (k === 2 && st.style === 'nomad') return 'yurtL';
-    if (k === 2 && st.style === 'tribal') return 'stockL';
-    if (!st) return k === 1 ? `city${v}` : `town${v}`;
-    if (st.style === 'nomad') return st.tier ? 'yurtL' : 'yurtS';
-    if (st.style === 'tribal') return st.tier ? 'stockL' : 'stockS';
-    if (st.ruined) return 'ruin';
-    return `${CITY_KIND[st.tier] || 'city'}${v}`;
-  }
   // 落脚处的地面高：占地四角与正中取最高（坡地上城不陷进山里，低的那边墙往下伸）
   function groundOf(x, z, hw) {
     let h = heightAt(x, z);
@@ -639,7 +612,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       // 市镇、港、地标跟着城郭的地域换样子（日本的町与湊、朝鲜的场市、西洋据点的广场与教堂……，见 towns3d.js localKind）
       const culture = st.culture;
       sp.markets.slice(0, st.markets).forEach(([mx, my], j) => {
-        if (!towns) { items.push([mx, heightAt(mx, my), my, 2.5, SPRITE.market]); return; }
+        if (!towns) { items.push([mx, heightAt(mx, my), my, 2.5, localSprite('market', culture)]); return; }
         solid.push({ kind: localKind('market', culture), x: mx, z: my, h: groundOf(mx, my, 1.1), yaw: ((i + j) % 4) * Math.PI / 2, scale: TOWN_SCALE });
         foot.push([mx - 1.3, my - 1.3, mx + 1.3, my + 1.3]);
       });
@@ -649,7 +622,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
         const sea = portAt === sp.port, dir = sea ? sp.portDir : [0, 1];
         solid.push({ kind: localKind(sea ? 'port' : 'wharf', culture), x: portAt[0] + dir[0] * (sea ? 0.45 : 0), z: portAt[1] + dir[1] * (sea ? 0.45 : 0), h: heightAt(portAt[0], portAt[1]), yaw: sea ? Math.atan2(dir[0], dir[1]) : (i % 4) * Math.PI / 2, scale: TOWN_SCALE });
         foot.push([portAt[0] - 1.1, portAt[1] - 1.1, portAt[0] + 1.1, portAt[1] + 1.1]);
-      } else if (portAt) items.push([portAt[0], heightAt(portAt[0], portAt[1]), portAt[1], 3.0, SPRITE.port]);
+      } else if (portAt) items.push([portAt[0], heightAt(portAt[0], portAt[1]), portAt[1], 3.0, localSprite('port', culture)]);
       const ringed = st.portBuilt && !portAt ? ['port', ...marks] : marks;
       const ring = ringed.length ? ringOf(i, seat) : [];
       ringed.forEach((kk, j) => {
@@ -665,7 +638,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
           foot.push(yaw ? [at[0] - e, at[1] - e, at[0] + e, at[1] + e] : [at[0] - mdl.hw * s, at[1] - mdl.north * s, at[0] + mdl.hw * s, at[1] + mdl.south * s]);
           return;
         }
-        if (LANDMARK_SPRITE[kk] != null) items.push([at[0], heightAt(at[0], at[1]), at[1], LANDMARK_SIZE[kk] || 2.8, LANDMARK_SPRITE[kk]]);
+        if (LANDMARK_SPRITE[kk] != null) items.push([at[0], heightAt(at[0], at[1]), at[1], LANDMARK_SIZE[kk] || 2.8, localSprite(kk, culture, LANDMARK_SPRITE[kk])]);
       });
     });
     footprints = foot;

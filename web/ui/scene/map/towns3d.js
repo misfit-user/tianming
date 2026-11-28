@@ -10,8 +10,8 @@
 // 墙、屋往地下多伸一截，坡地上不悬空。模型原点在城的正中，舆图摆放时把城往北挪，让南沿落在治所那一点（府州名、军旗都在治所下方）。
 import * as THREE from 'three';
 import { townVertex, townFragment } from './shaders.js';
-import { eastBuilders, EAST_LOCAL } from './towns3d-east.js';
-import { southBuilders, SOUTH_LOCAL } from './towns3d-south.js';
+import { eastBuilders, EAST_LOCAL, EAST_KIND } from './towns3d-east.js';
+import { southBuilders, SOUTH_LOCAL, SOUTH_KIND } from './towns3d-south.js';
 
 // ---------- 用色（与山川设色同一路：灰砖、黛瓦、粉墙、朱柱、黄琉璃） ----------
 const C = {
@@ -1119,6 +1119,23 @@ export const SCATTER_KINDS = ['pine', 'dot', 'jia', 'grove', 'willow', 'hamlet',
 export const TOWN_KINDS = Object.keys(BUILD);
 // 有远看那一份的（城郭、京城、残城）；帐、寨、市镇、港、营造地标本就几百到一两千面，不另做
 const HAS_FAR = /^(town|city|grand|metro)\d$|^(jp|jo|ko|vn|sea|we)\d\d$|^(capital|ruin|jpCap|joCap|koCap|vnCap|seaCap|weCap)$/;
+// 府州治所画哪一样城郭（舆图 index.js 按它摆）：st 聚落等第（settlement.js settlementOf 给的，没有为 null），k 0 寻常、1 要府、2 京城，
+// v 0、1 两种街巷换着用。日本、朝鲜、大越、南洋、西洋据点照当地的样子：都城到大府以上画那一国的都城（小国的都城照它自己的档），残破的照中原画残城；
+// 京城那一套（外城套皇城）只给繁华到大府以上的城郭之都，草原上的汗庭画牙帐、山寨之地画大寨；没给分档时京城、要府大一号（画府城），其余画小城
+const CITY_KIND = ['town', 'city', 'grand', 'metro'];
+export function seatKind(st, k, v) {
+  const pre = st && st.style === 'city' && !st.ruined && (EAST_KIND[st.culture] || SOUTH_KIND[st.culture]);
+  if (pre) return k === 2 && st.tier >= 2 ? `${pre}Cap` : `${pre}${Math.min(3, st.tier)}${v}`;
+  const palace = !st || (st.style === 'city' && !st.ruined && st.tier >= 2);     // 与 sprites.js seatSpriteOf 同一条
+  if (k === 2 && palace) return 'capital';
+  if (k === 2 && st.style === 'nomad') return 'yurtL';
+  if (k === 2 && st.style === 'tribal') return 'stockL';
+  if (!st) return k === 1 ? `city${v}` : `town${v}`;
+  if (st.style === 'nomad') return st.tier ? 'yurtL' : 'yurtS';
+  if (st.style === 'tribal') return st.tier ? 'stockL' : 'stockS';
+  if (st.ruined) return 'ruin';
+  return `${CITY_KIND[st.tier] || 'city'}${v}`;
+}
 // 近看、远看两份按城在屏上的宽（像素）交替：LOD_PX[0] 以下只画远看那份，LOD_PX[1] 以上只画近看那份，其间以抖点互补地换
 export const LOD_PX = [48, 66];
 const models = new Map();

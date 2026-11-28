@@ -8,7 +8,7 @@ import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE, ATLAS, localSprite, seatSpriteOf } from './sprites.js';
-import { createTowns, createScatter, townModel, LANDMARK_MODEL, SCATTER_KINDS, localKind, seatKind } from './towns3d.js';
+import { createTowns, createScatter, townModel, LANDMARK_MODEL, SCATTER_KINDS, localKind, seatKind, fitSeats } from './towns3d.js';
 import { createLabels, realmTitle } from './labels.js';
 import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb } from './looks.js';
 import { createPainter, noiseTex } from './paint.js';
@@ -585,22 +585,51 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) h = Math.max(h, heightAt(x + sx * hw * 0.7, z + sz * hw * 0.7));
     return h;
   }
+  // 治所的城郭挪到 (x, y)（南沿正中）、半宽 hw、进深 D 行不行：南沿正中与城心落在本府州里，四角、正中都在陆上、不在河湖海里，
+  // 也不压着本府州的市镇、港（四角可以伸进邻府，邻府的城郭 fitSeats 自会让开）
+  function seatFree(i, x, y, hw, D) {
+    if (regionIndexAt(x, y) !== i || regionIndexAt(x, y - D / 2) !== i) return false;
+    for (const [px, py] of [[x, y], [x - hw, y], [x + hw, y], [x - hw, y - D], [x + hw, y - D], [x, y - D / 2]]) {
+      if (landOf(px, py) < 0.5 || wetOf(px, py)) return false;
+    }
+    const st = settle && settle[i];
+    if (!st || (!st.markets && !st.port)) return true;
+    const sp = spotsOf(i), spots = sp.markets.slice(0, st.markets).concat(st.port && sp.port ? [sp.port] : []);
+    return spots.every(([mx, my]) => mx + 1.3 < x - hw || mx - 1.3 > x + hw || my + 1.3 < y - D || my - 1.3 > y);
+  }
+  // 各府州治所的立体城郭：哪一样、多大、南沿落在哪。挨得太近、彼此叠着的，后摆的缩、挪着让开（towns3d.js fitSeats）：
+  // 京城、要府先摆，城郭先于寨、帐。回每府州 { kind, mdl（模型）, s（比例）, x, y }
+  let seatsFitted = [];
+  function seatTowns(caps, seats) {
+    const list = regions.map((r, i) => {
+      const k = caps.has(i) ? 2 : seats.has(i) ? 1 : 0;
+      const kind = seatModel(i, k), capital = kind === 'capital' || kind.endsWith('Cap'), mdl = townModel(kind);
+      const s = TOWN_SCALE * (KIND_SCALE[kind] || 1) * (k >= 1 && !capital ? 1.08 : 1);
+      return { kind, mdl, s, x: r.center[0], y: r.center[1], hw: mdl.hw * s, depth: (mdl.north + mdl.south) * s, rank: k * 2 + (/^(yurt|stock)/.test(kind) ? 0 : 1) };
+    });
+    const at = fitSeats(list, (j, x, y, f) => seatFree(j, x, y, list[j].hw * f, list[j].depth * f));
+    seatsFitted = [];
+    at.forEach((a, j) => {
+      if (a.f < 1 || a.x !== list[j].x || a.y !== list[j].y) seatsFitted.push({ i: j, name: regions[j].name, dx: +(a.x - list[j].x).toFixed(2), dy: +(a.y - list[j].y).toFixed(2), f: a.f });
+    });
+    return list.map((t, j) => ({ kind: t.kind, mdl: t.mdl, s: t.s * at[j].f, x: at[j].x, y: at[j].y }));
+  }
   function buildCities() {
     if (cities) { scene.remove(cities); cities.geometry.dispose(); cities.material.dispose(); cities = null; }
-    if (!regions.length) { if (towns) towns.set([]); footprints = []; return; }
+    if (!regions.length) { if (towns) towns.set([]); footprints = []; seatsFitted = []; return; }
     const caps = labels.capitals, seats = labels.important;
     const items = [], solid = [], foot = [];
+    const fit = towns ? seatTowns(caps, seats) : null;
     regions.forEach((r, i) => {
       const [x, y] = r.center;
       const k = caps.has(i) ? 2 : seats.has(i) ? 1 : 0;
       let seat;
       if (towns) {
-        // 立体城郭往北挪，南沿落在治所那一点：府州名、军旗都在治所下方，不压着城
-        const kind = seatModel(i, k), capital = kind === 'capital' || kind.endsWith('Cap');
-        const s = TOWN_SCALE * (KIND_SCALE[kind] || 1) * (k >= 1 && !capital ? 1.08 : 1), mdl = townModel(kind), zc = y - mdl.south * s;
-        solid.push({ kind, x, z: zc, h: groundOf(x, zc, mdl.hw * s), yaw: 0, scale: s });
-        foot.push([x - mdl.hw * s - 0.5, zc - mdl.north * s - 0.5, x + mdl.hw * s + 0.5, y + 0.5]);
-        seat = { hw: mdl.hw * s, depth: (mdl.north + mdl.south) * s };
+        // 立体城郭往北挪，南沿落在治所那一点：府州名、军旗都在治所下方，不压着城（挨得太近让开过的，南沿落在让开那一处）
+        const { kind, mdl, s, x: tx, y: ty } = fit[i], zc = ty - mdl.south * s;
+        solid.push({ kind, x: tx, z: zc, h: groundOf(tx, zc, mdl.hw * s), yaw: 0, scale: s });
+        foot.push([tx - mdl.hw * s - 0.5, zc - mdl.north * s - 0.5, tx + mdl.hw * s + 0.5, ty + 0.5]);
+        seat = { hw: mdl.hw * s, depth: (mdl.north + mdl.south) * s, at: [tx, ty] };
       } else {
         const [sprite, size] = seatSprite(i, k);
         items.push([x, heightAt(x, y), y, size, sprite]);
@@ -712,12 +741,14 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     const R = seat / 2 + 1.5;
     return RING_SLOTS.map(([dr, a]) => [Math.cos(a) * (R + dr), Math.sin(a) * (R + dr)]);
   };
+  // 立体城郭挨得太近让开过的（seat.at 是城南沿正中），地标绕着让开以后的城摆
   function ringOf(i, seat) {
-    const key = typeof seat === 'object' ? `${i}|${seat.hw.toFixed(2)}|${seat.depth.toFixed(2)}` : `${i}|${seat}`;
+    const solid = typeof seat === 'object', [cx, cy] = solid && seat.at ? seat.at : regions[i].center;
+    const key = solid ? `${i}|${seat.hw.toFixed(2)}|${seat.depth.toFixed(2)}|${cx.toFixed(2)}|${cy.toFixed(2)}` : `${i}|${seat}`;
     if (ringMemo.has(key)) return ringMemo.get(key);
-    const [cx, cy] = regions[i].center, sp = spotsOf(i);
+    const sp = spotsOf(i);
     const taken = [...sp.markets, sp.port, sp.wharf].filter(Boolean);
-    const out = [], gap = typeof seat === 'object' ? 3.2 : 2.8;   // 立体地标摆出来比点景小图宽，彼此多隔一点
+    const out = [], gap = solid ? 3.2 : 2.8;   // 立体地标摆出来比点景小图宽，彼此多隔一点
     for (const [dx, dy] of ringSlots(seat)) {
       if (out.length >= 7) break;
       const x = cx + dx, y = cy + dy;
@@ -1125,6 +1156,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     get labelsReady() { return labels.ready; },
     get labelStats() { return labels.stats; },
     get townStats() { return towns ? towns.stats : null; },          // 立体城郭：几座、多少面、几座正淡入淡出或换着份（低画质为 null）
+    get seatsFitted() { return seatsFitted; },                       // 治所挨得太近、立体城郭让开过的：府州下标、名、挪了多远、缩到几成
     get scatterStats() { return scatter ? scatter.stats : null; },   // 林木、村舍的立体版：几处、分几块、上一帧画了几处多少面（低画质为 null）
     get labelsPlaced() { return labels.placed; },
     // 舆图世界坐标落在屏幕上的位置（高度取地形）；第三项为真＝这点在镜头背后（或远过远截面），投出来的位置会翻到画面另一头，不可用

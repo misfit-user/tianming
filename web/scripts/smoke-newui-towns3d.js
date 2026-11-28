@@ -5,6 +5,7 @@
 // 那几处的城外诸样（市镇、港、河埠与寺、祠庙、教堂、书院、堡、官署）与四郊村舍照地域换了样子，占地不比舆图留的大，港贴海面、河埠随地面，其余各处一样；
 // 治所画哪一样（seatKind）：中原照四档、京城、残城，那几处照当地的四档、都城，残破的画那里的残城（与府城一般大）。
 // 城郭近看、远看两份按舆图的钟换，显出、收掉也按钟淡（createTowns）：镜头停下来每座城只画一份、全显，不停在半抖点。
+// 治所挨得太近的让开（fitSeats）：先摆的不动，后摆的缩、挪着让开，摆完不叠。
 // 模块是 ES 模块、引着 three：拷进临时目录（目录标成 ES 模块），three 取仓里 vendor 的那份放进临时目录的 node_modules。
 'use strict';
 const fs = require('fs');
@@ -274,6 +275,64 @@ function badVertices(geometry) {
     r = frameAt(P1 - 1, now + 0.048);
     check(r.n === 1 && r.f === 0 && r.fading === 0, `换过一批城：头一帧按门槛正中取（${show(r)}）`);
     towns.dispose();
+
+    // 治所挨得太近的让开（fitSeats）：京城、要府、城郭先于寨帐、大的先摆，先摆的不动；后摆的先在原处缩，
+    // 还叠着就在本府州里挪（free 说行才挪），挪不开再在原处缩，不小过 FIT.min；摆完彼此不叠
+    const FIT = t.FIT;
+    const rectOf = (s, a) => [a.x - s.hw * a.f, a.y - s.depth * a.f, a.x + s.hw * a.f, a.y];
+    // 叠着（或贴得不到一成五个单位，看着就连成一片）的有几对
+    const overlaps = (seats, at) => {
+      let n = 0;
+      for (let a = 0; a < seats.length; a++) {
+        for (let b = a + 1; b < seats.length; b++) {
+          const p = rectOf(seats[a], at[a]), q = rectOf(seats[b], at[b]);
+          if (Math.max(q[0] - p[2], p[0] - q[2], q[1] - p[3], p[1] - q[3]) < 0.15) n++;
+        }
+      }
+      return n;
+    };
+    const apart = [{ x: 0, y: 0, hw: 1, depth: 2, rank: 1 }, { x: 10, y: 0, hw: 1, depth: 2, rank: 1 }];
+    check(t.fitSeats(apart, () => true).every((a, j) => a.f === 1 && a.x === apart[j].x && a.y === apart[j].y), '隔得开的照原样摆');
+    const pair = [{ x: 0, y: 0, hw: 1.2, depth: 2.4, rank: 4 }, { x: 2.3, y: 0, hw: 1.2, depth: 2.4, rank: 1 }];
+    for (const seats of [pair, [pair[1], pair[0]]]) {
+      const at = t.fitSeats(seats, () => true), cap = seats.indexOf(pair[0]), other = 1 - cap;
+      check(at[cap].f === 1 && at[cap].x === 0 && at[other].f < 1 && at[other].f >= FIT.shrink && at[other].x === 2.3 && overlaps(seats, at) === 0,
+        `京城不动，挨着的那座在原处缩到 ${at[other].f} 就放得下（京城排第 ${cap + 1}）`);
+    }
+    const close = [{ x: 0, y: 0, hw: 1.4, depth: 2.6, rank: 0 }, { x: 0.5, y: 0.3, hw: 1.2, depth: 2.4, rank: 1 }];
+    const calls = [];
+    const ca = t.fitSeats(close, (j, x, y, f) => { calls.push([j, f]); return true; });
+    const moved = Math.hypot(ca[0].x - close[0].x, ca[0].y - close[0].y);
+    check(ca[1].f === 1 && ca[1].x === 0.5 && ca[1].y === 0.3 && moved > 0 && moved <= FIT.reach + 1e-9 && ca[0].f === FIT.move && overlaps(close, ca) === 0,
+      `城郭先摆不动（寨子虽大），寨子挪开 ${moved.toFixed(2)}、缩到 ${ca[0].f}`);
+    check(calls.length > 0 && calls.every(([j, f]) => j === 0 && f === FIT.move), '问挪处行不行时给的是寨子那座、挪时的比例');
+    for (const free of [() => false, null]) {
+      const at = t.fitSeats(close, free);
+      check(at[1].f === 1 && at[0].x === 0 && at[0].y === 0 && at[0].f === FIT.min, `挪不开（${free ? '不许挪' : '没给挪处'}）就在原处缩到 ${at[0].f}`);
+    }
+    const ranked = [{ x: 0, y: 0, hw: 1.2, depth: 2.4, rank: 1 }, { x: 0.6, y: 0, hw: 1, depth: 2, rank: 3 }];
+    const ra = t.fitSeats(ranked, () => true);
+    check(ra[1].f === 1 && ra[1].x === 0.6 && (ra[0].f < 1 || ra[0].x !== 0 || ra[0].y !== 0), '要府先摆不动，寻常的让开');
+    // 镇江、扬州那样：先摆的大城往北伸过了后摆那座的治所，后摆的又挪不出那么远（只许挪两个半单位）——先摆的一并缩到八成（不挪），后摆的往北挪开；
+    // 离得近却不挡着的那座缩过又还原；先摆的若是京城就不缩，后摆的只好缩到最小叠着
+    const zy = [{ x: 0, y: 3.8, hw: 2.8, depth: 7.4, rank: 3 }, { x: -0.4, y: 0, hw: 2.76, depth: 7.4, rank: 3 }, { x: 8, y: 0, hw: 2.78, depth: 2, rank: 3 }];
+    const within = (seats, d) => (j, x, y) => Math.hypot(x - seats[j].x, y - seats[j].y) <= d + 1e-9;
+    const za = t.fitSeats(zy, within(zy, 2.5));
+    const zMoved = Math.hypot(za[1].x - zy[1].x, za[1].y - zy[1].y);
+    check(za[0].f === 0.8 && za[0].x === 0 && za[0].y === 3.8 && za[1].f === 0.8 && za[1].y < zy[1].y && zMoved <= 2.5 + 1e-9 && za[2].f === 1 && overlaps(zy, za) === 0,
+      `先摆的缩到 ${za[0].f} 不挪、后摆的缩到 ${za[1].f} 往北挪 ${zMoved.toFixed(2)}、不挡着的那座还原成 ${za[2].f}，摆完不叠`);
+    const zc = zy.map((s, j) => (j === 0 ? { ...s, rank: 4 } : s)), zca = t.fitSeats(zc, within(zc, 2.5));
+    check(zca[0].f === 1 && zca[1].f === FIT.min && zca[1].x === zc[1].x && zca[1].y === zc[1].y, `先摆的是京城：京城不缩，后摆的缩到 ${zca[1].f} 摆在原处`);
+    const far = t.fitSeats(zy, within(zy, 9));
+    check(far[0].f === 1 && far[1].f === FIT.move && far[1].y <= zy[0].y - zy[0].depth - FIT.gap + 1e-9 && overlaps(zy, far) === 0,
+      `挪得远（大城挪的远近随城大小放宽）：先摆的不缩，后摆的往北挪过它的北沿（${far[1].y.toFixed(2)}）`);
+    // 台湾大员一带那样：三城三社相去一两个单位，摆完一处不叠；挪处只许在附近（像本府州那样有边）
+    const tw = [[0, 0, 1.19, 2.4, 1], [-0.4, -1.2, 1.19, 2.4, 1], [1.6, 0.2, 1.19, 2.4, 1], [2.6, -0.8, 1.38, 2.7, 0], [1.8, -2.4, 1.38, 2.7, 0], [1.2, -3.6, 1.38, 2.7, 0]]
+      .map(([x, y, hw, depth, rank]) => ({ x, y, hw, depth, rank }));
+    const twAt = t.fitSeats(tw, (j, x, y) => Math.abs(x - 1) < 6 && Math.abs(y + 1.5) < 6);
+    check(overlaps(tw, twAt) === 0 && twAt.every((a, j) => a.f >= FIT.min && Math.hypot(a.x - tw[j].x, a.y - tw[j].y) <= FIT.reach + 1e-9),
+      `三城三社挤在一处：摆完不叠（${twAt.map((a) => `${a.f}@${a.x.toFixed(1)},${a.y.toFixed(1)}`).join(' ')}）`);
+    check(overlaps(tw, tw.map((s) => ({ x: s.x, y: s.y, f: 1 }))) > 0, '照原样摆是叠着的（上一项不是白测）');
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

@@ -1141,6 +1141,67 @@ export function seatKind(st, k, v) {
   if (st.ruined) return 'ruin';
   return `${CITY_KIND[st.tier] || 'city'}${v}`;
 }
+// 治所挨得太近的（台湾大员一带三城三社相去不过十来里，武昌汉阳隔江相望，镇江的城往北伸过江压进扬州），城郭照原样摆就叠在一起。
+// 按先后逐座摆：京城、要府在先，城郭先于寨、帐，大的在先。后摆的与已摆的叠着，依次试：
+//   一、在原处缩（不小过 FIT.shrink）；
+//   二、比例乘 FIT.move 往外挪，由近及远一圈一圈找，同一圈从正东起转（离治所不过 FIT.reach 与城半宽一倍半里大的那个；挪到哪行不行由 free 定）；
+//   三、挡着的先摆那几座一并缩（只缩不挪，京城不缩），缩到 0.9、0.8、FIT.shrink 各试一回，这一座同样大小在原处或挪着放；放下了，只留真挡着的那几座缩着；
+//   四、在原处缩到放得下为止（不小过 FIT.min），再试缩到 FIT.min 挪着放；
+//   都不成（府州只是一条沙洲之类）就缩到 FIT.min 摆在原处，叠着也只好叠着。
+// seats 每项 { x, y（治所，城郭南沿落在这里）, hw, depth（照原比例的半宽、南北进深）, rank（大的先摆；FIT.capital 以上是京城） }；
+// free(j, x, y, f)：第 j 座挪到 (x, y)、比例乘 f 行不行（舆图 index.js 给：在本府州里、在陆上之类；不给就不挪）。
+// 回每座 { x, y, f }：城郭南沿落在 (x, y)，比例再乘 f（先摆的为后摆的缩过，f 是缩过的）
+export const FIT = { gap: 0.2, shrink: 0.7, move: 0.8, reach: 3, min: 0.45, capital: 4 };
+export function fitSeats(seats, free = null) {
+  const order = seats.map((_, j) => j).sort((a, b) => seats[b].rank - seats[a].rank || seats[b].hw - seats[a].hw || a - b);
+  const placed = [], out = seats.map(() => null), box = [];     // box：已摆那几座的占地，out 改了随手重算
+  const rect = (s, x, y, f) => [x - s.hw * f, y - s.depth * f, x + s.hw * f, y];
+  const apart = (r, q) => r[2] + FIT.gap <= q[0] || q[2] + FIT.gap <= r[0] || r[3] + FIT.gap <= q[1] || q[3] + FIT.gap <= r[1];
+  const clear = (r) => placed.every((i) => apart(r, box[i]));
+  const resize = (i, f) => { out[i] = { ...out[i], f }; box[i] = rect(seats[i], out[i].x, out[i].y, f); };
+  const reachOf = (s) => Math.max(FIT.reach, s.hw * 1.5);
+  const home = (s, f0, f1) => {
+    for (let f = f0; f >= f1 - 1e-9; f -= 0.05) {
+      const g = Math.round(f * 100) / 100;
+      if (clear(rect(s, s.x, s.y, g))) return { x: s.x, y: s.y, f: g };
+    }
+    return null;
+  };
+  const ring = (s, j, f) => {
+    if (!free) return null;
+    for (let rad = 0.5; rad <= reachOf(s) + 1e-9; rad += 0.5) {
+      const n = Math.max(8, Math.round(rad * 8));
+      for (let q = 0; q < n; q++) {
+        const a = q / n * Math.PI * 2, x = s.x + Math.cos(a) * rad, y = s.y + Math.sin(a) * rad;
+        if (clear(rect(s, x, y, f)) && free(j, x, y, f)) return { x, y, f };
+      }
+    }
+    return null;
+  };
+  for (const j of order) {
+    const s = seats[j];
+    let got = home(s, 1, FIT.shrink) || ring(s, j, FIT.move);
+    if (!got) {
+      const span = reachOf(s) + s.hw + s.depth;
+      const near = placed.filter((i) => seats[i].rank < FIT.capital && Math.hypot(out[i].x - s.x, out[i].y - s.y) < span + seats[i].hw + seats[i].depth);
+      for (const g of [0.9, 0.8, FIT.shrink]) {
+        const was = near.map((i) => out[i].f);
+        near.forEach((i) => resize(i, Math.min(out[i].f, g)));
+        got = home(s, g, g) || ring(s, j, g);
+        if (got) {
+          const mine = rect(s, got.x, got.y, got.f);
+          near.forEach((i, n) => { if (apart(mine, rect(seats[i], out[i].x, out[i].y, was[n]))) resize(i, was[n]); });
+          break;
+        }
+        near.forEach((i, n) => resize(i, was[n]));
+      }
+    }
+    out[j] = got || home(s, FIT.shrink - 0.05, FIT.min) || ring(s, j, FIT.min) || { x: s.x, y: s.y, f: FIT.min };
+    box[j] = rect(s, out[j].x, out[j].y, out[j].f);
+    placed.push(j);
+  }
+  return out;
+}
 // 近看、远看两份按城在屏上的宽（像素，按到镜头的直线距离量）换：画着远看那份的宽过 LOD_PX[1] 换成近看那份，画着近看那份的窄过 LOD_PX[0] 换成远看那份，
 // 其间照上一帧画的那份（镜头停在门槛上也不来回换）。换的时候两份以抖点互补地交替，LOD_FADE 秒换完。
 // 先前按屏上宽在 48～66 像素那一段里交替，镜头停在那一段，那几座城就一直是半抖点的样子

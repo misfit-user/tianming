@@ -5,7 +5,7 @@
 // 那几处的城外诸样（市镇、港、河埠与寺、祠庙、教堂、书院、堡、官署）与四郊村舍照地域换了样子，占地不比舆图留的大，港贴海面、河埠随地面，其余各处一样；
 // 治所画哪一样（seatKind）：中原照四档、京城、残城，那几处照当地的四档、都城，残破的画那里的残城（与府城一般大）。
 // 城郭近看、远看两份按舆图的钟换，显出、收掉也按钟淡（createTowns）：镜头停下来每座城只画一份、全显，不停在半抖点。
-// 治所挨得太近的让开（fitSeats）：先摆的不动，后摆的缩、挪着让开，摆完不叠。
+// 治所挨得太近的让开（fitSeats）：先摆的不动，后摆的缩、挪着让开，摆完不叠；寻常的实在摆不下就不画，也不占地。
 // 模块是 ES 模块、引着 three：拷进临时目录（目录标成 ES 模块），three 取仓里 vendor 的那份放进临时目录的 node_modules。
 'use strict';
 const fs = require('fs');
@@ -280,11 +280,12 @@ function badVertices(geometry) {
     // 还叠着就在本府州里挪（free 说行才挪），挪不开再在原处缩，不小过 FIT.min；摆完彼此不叠
     const FIT = t.FIT;
     const rectOf = (s, a) => [a.x - s.hw * a.f, a.y - s.depth * a.f, a.x + s.hw * a.f, a.y];
-    // 叠着（或贴得不到一成五个单位，看着就连成一片）的有几对
+    // 叠着（或贴得不到一成五个单位，看着就连成一片）的有几对（不画的不算）
     const overlaps = (seats, at) => {
       let n = 0;
       for (let a = 0; a < seats.length; a++) {
         for (let b = a + 1; b < seats.length; b++) {
+          if (!at[a].f || !at[b].f) continue;
           const p = rectOf(seats[a], at[a]), q = rectOf(seats[b], at[b]);
           if (Math.max(q[0] - p[2], p[0] - q[2], q[1] - p[3], p[1] - q[3]) < 0.15) n++;
         }
@@ -306,10 +307,18 @@ function badVertices(geometry) {
     check(ca[1].f === 1 && ca[1].x === 0.5 && ca[1].y === 0.3 && moved > 0 && moved <= FIT.reach + 1e-9 && ca[0].f === FIT.move && overlaps(close, ca) === 0,
       `城郭先摆不动（寨子虽大），寨子挪开 ${moved.toFixed(2)}、缩到 ${ca[0].f}`);
     check(calls.length > 0 && calls.every(([j, f]) => j === 0 && f === FIT.move), '问挪处行不行时给的是寨子那座、挪时的比例');
+    // 挪不开：寻常的（这里是寨子）就不画（f 为 0）；要府照旧在原处缩到最小
     for (const free of [() => false, null]) {
       const at = t.fitSeats(close, free);
-      check(at[1].f === 1 && at[0].x === 0 && at[0].y === 0 && at[0].f === FIT.min, `挪不开（${free ? '不许挪' : '没给挪处'}）就在原处缩到 ${at[0].f}`);
+      check(at[1].f === 1 && at[0].x === 0 && at[0].y === 0 && at[0].f === 0, `挪不开（${free ? '不许挪' : '没给挪处'}）：寻常的不画（${at[0].f}）`);
+      const big = [{ ...close[0], rank: FIT.keep }, { ...close[1], rank: FIT.keep + 1 }], bt = t.fitSeats(big, free);
+      check(bt[1].f === 1 && bt[0].x === 0 && bt[0].y === 0 && bt[0].f === FIT.min, `挪不开（${free ? '不许挪' : '没给挪处'}）：要府在原处缩到 ${bt[0].f}`);
     }
+    // 不画的不占地：后摆的照原样摆，不为它缩（它若缩到最小摆着，后摆这座就得缩）
+    const skip = [{ x: 0, y: 0, hw: 1.2, depth: 2.4, rank: 3 }, { x: 0.5, y: 0.3, hw: 1.4, depth: 2.6, rank: 1 }, { x: 0.5, y: 0.9, hw: 0.3, depth: 0.5, rank: 0 }];
+    const sk = t.fitSeats(skip, () => false);
+    check(sk[0].f === 1 && sk[1].f === 0 && sk[2].f === 1 && sk[2].x === 0.5 && sk[2].y === 0.9, `摆不下的不画、也不挡后摆的：${sk.map((a) => a.f).join(' ')}`);
+    check(t.fitSeats([skip[0], { ...skip[1], rank: FIT.keep }, skip[2]], () => false)[2].f < 1, '那座若是要府、缩到最小摆着，后摆这座就得缩（上一项不是白测）');
     const ranked = [{ x: 0, y: 0, hw: 1.2, depth: 2.4, rank: 1 }, { x: 0.6, y: 0, hw: 1, depth: 2, rank: 3 }];
     const ra = t.fitSeats(ranked, () => true);
     check(ra[1].f === 1 && ra[1].x === 0.6 && (ra[0].f < 1 || ra[0].x !== 0 || ra[0].y !== 0), '要府先摆不动，寻常的让开');

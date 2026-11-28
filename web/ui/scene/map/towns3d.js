@@ -1147,11 +1147,12 @@ export function seatKind(st, k, v) {
 //   二、比例乘 FIT.move 往外挪，由近及远一圈一圈找，同一圈从正东起转（离治所不过 FIT.reach 与城半宽一倍半里大的那个；挪到哪行不行由 free 定）；
 //   三、挡着的先摆那几座一并缩（只缩不挪，京城不缩），缩到 0.9、0.8、FIT.shrink 各试一回，这一座同样大小在原处或挪着放；放下了，只留真挡着的那几座缩着；
 //   四、在原处缩到放得下为止（不小过 FIT.min），再试缩到 FIT.min 挪着放；
-//   都不成（府州只是一条沙洲之类）就缩到 FIT.min 摆在原处，叠着也只好叠着。
+//   都不成（府州只是一条沙洲之类）：要府、京城（rank 不小于 FIT.keep）缩到 FIT.min 摆在原处，叠着也只好叠着；寻常的就不画这座城（f 为 0，也不占地，
+//   府州名、军旗照旧）——台湾北线尾那府州是大员城下一条宽一个多单位的沙洲，最小一号的城也放不下，城又紧贴着大员的城墙，缩小了摆也是两城叠着。
 // seats 每项 { x, y（治所，城郭南沿落在这里）, hw, depth（照原比例的半宽、南北进深）, rank（大的先摆；FIT.capital 以上是京城） }；
 // free(j, x, y, f)：第 j 座挪到 (x, y)、比例乘 f 行不行（舆图 index.js 给：在本府州里、在陆上之类；不给就不挪）。
-// 回每座 { x, y, f }：城郭南沿落在 (x, y)，比例再乘 f（先摆的为后摆的缩过，f 是缩过的）
-export const FIT = { gap: 0.2, shrink: 0.7, move: 0.8, reach: 3, min: 0.45, capital: 4 };
+// 回每座 { x, y, f }：城郭南沿落在 (x, y)，比例再乘 f（先摆的为后摆的缩过，f 是缩过的）；f 为 0 的不画。低画质的治所小图也照这样摆（index.js）
+export const FIT = { gap: 0.2, shrink: 0.7, move: 0.8, reach: 3, min: 0.45, capital: 4, keep: 2 };
 export function fitSeats(seats, free = null) {
   const order = seats.map((_, j) => j).sort((a, b) => seats[b].rank - seats[a].rank || seats[b].hw - seats[a].hw || a - b);
   const placed = [], out = seats.map(() => null), box = [];     // box：已摆那几座的占地，out 改了随手重算
@@ -1196,7 +1197,8 @@ export function fitSeats(seats, free = null) {
         near.forEach((i, n) => resize(i, was[n]));
       }
     }
-    out[j] = got || home(s, FIT.shrink - 0.05, FIT.min) || ring(s, j, FIT.min) || { x: s.x, y: s.y, f: FIT.min };
+    out[j] = got || home(s, FIT.shrink - 0.05, FIT.min) || ring(s, j, FIT.min) || { x: s.x, y: s.y, f: s.rank >= FIT.keep ? FIT.min : 0 };
+    if (!out[j].f) continue;                     // 不画的不占地，后摆的不必让它
     box[j] = rect(s, out[j].x, out[j].y, out[j].f);
     placed.push(j);
   }

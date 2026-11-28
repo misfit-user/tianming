@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // 新界面舆图的点景小图（web/ui/scene/map/sprites.js，日本朝鲜诸样 sprites-east.js、大越南洋西洋据点诸样 sprites-south.js）：
 // 图集每格都画得出（拿一个假的画布照画一遍，记下每格落了几笔、笔落在哪），格号不重、不出图集；
-// 低画质时日本、朝鲜、大越、南洋、西洋据点的城郭各档、都城、市镇、港、营造地标与远看的村舍照地域换当地的小图（localSprite、seatSpriteOf），
+// 低画质时日本、朝鲜、大越、南洋、西洋据点的城郭各档、都城、残城、市镇、港、营造地标与远看的村舍照地域换当地的小图（localSprite、seatSpriteOf），
 // 立体模型换了样子的（towns3d-east.js EAST_LOCAL、towns3d-south.js SOUTH_LOCAL）小图也换，立体照原样的小图也照原样；中原、没给地域的照原样，林木各处一样。
 // 模块是 ES 模块：拷进临时目录（目录标成 ES 模块）再引，不要浏览器。
 'use strict';
@@ -83,7 +83,7 @@ function fakeCanvas() {
         `${name} 画在格里、落在地上（x ${c.x0.toFixed(1)}～${c.x1.toFixed(1)}，y ${c.y0.toFixed(1)}～${c.y1.toFixed(1)}）`);
     }
 
-    // 照地域换小图：城郭各档、都城、市镇、港、村舍各处都换；大小与中原一样
+    // 照地域换小图：城郭各档、都城、残城、市镇、港、村舍各处都换；大小与中原一样
     const cityOf = (tier, culture = null, ruined = false) => ({ style: 'city', culture, tier, ruined });
     const isLocal = (cell) => cell >= LOCAL_FIRST;
     for (const c of Object.values(s.CULTURE)) {
@@ -94,9 +94,10 @@ function fakeCanvas() {
         }
       }
       check(sp.seatSpriteOf(cityOf(0, c), 0)[0] !== sp.seatSpriteOf(cityOf(3, c), 0)[0], `${c} 小城与都会不是同一格`);
-      const cap = sp.seatSpriteOf(cityOf(2, c), 2);
+      const cap = sp.seatSpriteOf(cityOf(2, c), 2), ruin = sp.seatSpriteOf(cityOf(1, c, true), 0);
       check(isLocal(cap[0]) && cap[0] !== SPRITE.capital && cap[1] === sp.seatSpriteOf(cityOf(2), 2)[1], `${c} 的都城画那一国的都城：#${cap[0]}`);
       check(sp.seatSpriteOf(cityOf(1, c), 2)[0] === sp.seatSpriteOf(cityOf(1, c), 0)[0], `${c} 小国的都城照它自己的档`);
+      check(isLocal(ruin[0]) && ruin[0] !== SPRITE.ruin && ruin[1] === sp.seatSpriteOf(cityOf(1, null, true), 0)[1], `${c} 残破的画那里的残城：#${ruin[0]}`);
       for (const base of ['market', 'port', 'hamlet', 'hamletB']) check(isLocal(sp.localSprite(base, c)), `${c} 的 ${base} 换当地的小图：#${sp.localSprite(base, c)}`);
       for (const base of ['pine', 'dot', 'jia', 'grove', 'willow']) check(sp.localSprite(base, c) === SPRITE[base], `${c} 的林木 ${base} 照原样`);
       // 立体换了样子的小图也换，立体照原样的小图也照原样（河埠的小图就是港那格）
@@ -113,6 +114,9 @@ function fakeCanvas() {
     check(sp.localSprite('market', 'xyz') === SPRITE.market && sp.localSprite('market', null) === SPRITE.market && sp.localSprite('church', null, 7) === 7, '没给地域、认不得的地域照原样');
     check(sp.seatSpriteOf({ style: 'tribal', culture: 'japan', tier: 1 }, 0)[0] === SPRITE.stockL && sp.seatSpriteOf({ style: 'nomad', tier: 0 }, 2)[0] === SPRITE.yurtL, '帐、寨照原样（地域只认城郭）');
     check(sp.localSprite('church', 'west', -1) === sp.localSprite('church', 'seasia', -1) && sp.localSprite('church', 'japan', -1) === -1, '教堂：西洋据点、南洋画西式教堂，别处照祠庙那格');
+    // 聚落等第算出来的：日本的令制国凋敝到底 → 落城那格
+    const jpRuined = s.settlementOf({ prosperity: 5, commerce: 1e5, mouths: 1e5, kind: '令制国', dejure: '日本', regionType: 'foreign_shogunate', year: 1621 });
+    check(jpRuined.ruined && sp.seatSpriteOf(jpRuined, 0)[0] === sp.localSprite('ruin', 'japan') && sp.localSprite('ruin', 'japan') !== SPRITE.ruin, '日本的府州残破了画落城那格');
   } finally {
     delete globalThis.document;
     fs.rmSync(dir, { recursive: true, force: true });

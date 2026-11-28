@@ -4,14 +4,14 @@
 // 画法与 sprites.js 一路：墨线勾、淡彩填；每格 64×64，下沿是地面。格号由 sprites.js 按这里返回的次序接在原有各格之后，
 // 哪一地域的哪一样用哪一格见 EAST_SPRITE_LOCAL（舆图经 sprites.js 的 localSprite 查）。
 export function eastPainters(kit) {
-  const { INK, GREEN, DEEP, rgba, trunk, blob, banner, palisade, rect, poly, slope, curved } = kit;
+  const { INK, GREEN, DEEP, rgba, trunk, blob, banner, palisade, rect, poly, slope, curved, ruinWall, smokeCol, deadTree, rubble, charredHouse } = kit;
   const ink = (a) => `${INK}${a})`;
   // 日本（照 towns3d-east.js 的 J）
   const PLASTER = 'rgba(242,240,232,0.98)', BLACK = 'rgba(64,60,56,0.97)', JROOF = 'rgba(92,102,116,0.97)', JROOF_L = 'rgba(122,130,142,0.96)';
   const JSTONE = 'rgba(172,170,160,0.98)', VERM = 'rgba(210,84,52,0.97)', BARK = 'rgba(134,102,78,0.97)', TSUIJI = 'rgba(228,210,166,0.98)';
   const WOOD = 'rgba(122,96,74,0.97)', WOOD_D = 'rgba(88,70,56,0.97)', THATCH = 'rgba(180,158,114,0.97)', JGREEN = 'rgba(108,152,126,0.97)';
   const GOLD = 'rgba(224,180,66,0.98)', BRONZE = 'rgba(92,108,92,0.97)', HULL = 'rgba(108,82,60,0.97)', SAIL = 'rgba(246,242,230,0.97)';
-  const MAT = 'rgba(200,180,134,0.97)', EARTH_W = 'rgba(196,174,136,0.97)', PIER = 'rgba(92,70,48,0.95)';
+  const MAT = 'rgba(200,180,134,0.97)', EARTH_W = 'rgba(196,174,136,0.97)', PIER = 'rgba(92,70,48,0.95)', CHAR = 'rgba(58,52,48,0.97)';
   const WATER = 'rgba(112,152,166,0.86)', LEAF = 'rgba(96,132,118,0.9)', DEEP_A = rgba(DEEP, 0.93), GREEN_A = rgba(GREEN, 0.95);
   // 朝鲜（照 K）
   const KSTONE = 'rgba(200,198,188,0.98)', KROOF = 'rgba(82,84,90,0.97)', KPILLAR = 'rgba(160,70,52,0.97)', KGREEN = 'rgba(84,146,118,0.97)';
@@ -935,27 +935,102 @@ export function eastPainters(kit) {
     onggi(g, 57, 62, 0.7);
   }
 
+  // ======================= 残城（凋敝或兵燹） =======================
+  // 落城：堀与石垣犹在；天守烧得只剩台上一截参差的焦壁、两根焦柱，一股烟；土塀断成几截；前头町屋烧塌了；一株枯树
+  function jpRuin(g, r) {
+    deadTree(g, 56, 62);
+    ishigaki(g, 28, 51, 30, 8, 22);
+    poly(g, [[19, 43.2], [19, 37], [22, 35], [24, 38], [27, 33], [30, 37], [33, 35.5], [36, 38.5], [37, 43.2]], CHAR, 0.9);
+    g.strokeStyle = ink(0.92);
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(22, 43);
+    g.lineTo(22.5, 30);
+    g.moveTo(33, 43);
+    g.lineTo(32.5, 31.5);
+    g.stroke();
+    smokeCol(g, 27, 33, r);
+    water(g, 2, 58, 55, 4);
+    for (const [x0, x1, h0, h1] of [[4, 14, 4, 2.5], [20, 30, 5, 3], [40, 52, 3.5, 2]]) ruinWall(g, x0, x1, 58.5, h0, h1, PLASTER, r);
+    for (const [x, w] of [[10, 12], [30, 11], [48, 12]]) charredHouse(g, x, 62.5, w);
+    rubble(g, 6, 56, 60.5, r);
+  }
+  // 残府（安土以前）：国衙正殿的台基上一排焦柱、一片塌下的桧皮顶，一股烟；筑地塀断成几截；人家烧塌了；一株枯树
+  function joRuin(g, r) {
+    deadTree(g, 57, 62);
+    rect(g, 10, 46, 36, 3, 'rgba(206,194,166,0.98)', 0.8);
+    g.strokeStyle = ink(0.92);
+    g.lineWidth = 1.4;
+    g.beginPath();
+    for (const [x, h] of [[14, 9], [19, 6], [24, 10], [30, 5], [35, 8], [41, 7]]) {
+      g.moveTo(x, 46);
+      g.lineTo(x, 46 - h);
+    }
+    g.stroke();
+    poly(g, [[27, 41], [44, 37.5], [47, 46], [30, 46]], 'rgba(96,76,62,0.96)', 0.8);
+    smokeCol(g, 21, 36, r);
+    for (const [x0, x1, h0, h1] of [[3, 15, 5, 3.5], [21, 33, 6, 4], [40, 50, 4.5, 2.5]]) ruinWall(g, x0, x1, 57, h0, h1, TSUIJI, r);
+    for (const [x, w] of [[9, 12], [30, 11], [49, 11]]) charredHouse(g, x, 62.5, w);
+    rubble(g, 6, 56, 60.5, r);
+  }
+  // 朝鲜的残城：城圈断成几截，虹霓门的石台、拱洞犹在，门楼烧剩焦柱，一股烟；城里草房烧塌了；一株枯树
+  function koRuin(g, r) {
+    deadTree(g, 58, 56, 0.85);
+    const cut = (ranges, draw) => {
+      g.save();
+      g.beginPath();
+      for (const [x0, x1] of ranges) g.rect(x0, 0, x1 - x0, 64);
+      g.clip();
+      draw();
+      g.restore();
+    };
+    cut([[4, 20], [27, 40], [46, 60]], () => ringBack(g, 32, 51, 27, 8, 2.4));
+    for (const [x, w] of [[18, 10], [40, 11], [28, 9]]) charredHouse(g, x, 52.5, w);
+    smokeCol(g, 22, 42, r);
+    cut([[4, 13], [19, 45], [51, 60]], () => ringFront(g, 32, 51, 27, 8, 5, r));
+    for (const x of [13, 19, 45, 51]) blob(g, x, 54.5 + (x > 30 ? 0.5 : 0), 1.6, 2.6, ink(0.45));
+    rect(g, 27.5, 53, 9, 8, KSTONE, 0.9);
+    g.fillStyle = ink(0.9);
+    g.beginPath();
+    g.moveTo(29.8, 61);
+    g.lineTo(29.8, 56.6);
+    g.arc(32, 56.6, 2.2, Math.PI, 0);
+    g.lineTo(34.2, 61);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = ink(0.92);
+    g.lineWidth = 1.4;
+    g.beginPath();
+    g.moveTo(29, 53);
+    g.lineTo(29.4, 46.5);
+    g.moveTo(35, 53);
+    g.lineTo(34.6, 48.5);
+    g.stroke();
+    rubble(g, 10, 54, 60.5, r, 10, 'rgba(150,146,136,0.92)');
+  }
+
   return {
     jpS, jpL, jpCap, jpMarket, jpPort: (g) => port(g, false), jpTemple: (g) => temple(g, 5, false), jpShrine, jpAcademy: (g) => academy(g, false),
     jpFort, jpYamen, jpHamlet,
     joS, joL, joCap, joMarket, joPort: (g) => port(g, true), joTemple: (g) => temple(g, 7, true), joAcademy: (g) => academy(g, true), joFort, joYamen,
-    koS, koL, koCap, koMarket, koPort, koTemple, koShrine, koAcademy, koFort, koYamen, koHamlet
+    koS, koL, koCap, koMarket, koPort, koTemple, koShrine, koAcademy, koFort, koYamen, koHamlet,
+    jpRuin, joRuin, koRuin
   };
 }
 
-// 地域 → { 原样的格名: 当地的格名 }。城郭四档（town、city、grand、metro）分小、大两样，都城（capital）另一样；
+// 地域 → { 原样的格名: 当地的格名 }。城郭四档（town、city、grand、metro）分小、大两样，都城（capital）、残城（ruin）各另一样；
 // 安土以前的社、村舍与安土以后同画。没列的照原样（仓廒、水利之类各处一样）
 export const EAST_SPRITE_LOCAL = {
   japan: {
-    town: 'jpS', city: 'jpS', grand: 'jpL', metro: 'jpL', capital: 'jpCap', market: 'jpMarket', port: 'jpPort',
+    town: 'jpS', city: 'jpS', grand: 'jpL', metro: 'jpL', capital: 'jpCap', ruin: 'jpRuin', market: 'jpMarket', port: 'jpPort',
     temple: 'jpTemple', shrine: 'jpShrine', academy: 'jpAcademy', fort: 'jpFort', yamen: 'jpYamen', hamlet: 'jpHamlet', hamletB: 'jpHamlet'
   },
   japanOld: {
-    town: 'joS', city: 'joS', grand: 'joL', metro: 'joL', capital: 'joCap', market: 'joMarket', port: 'joPort',
+    town: 'joS', city: 'joS', grand: 'joL', metro: 'joL', capital: 'joCap', ruin: 'joRuin', market: 'joMarket', port: 'joPort',
     temple: 'joTemple', shrine: 'jpShrine', academy: 'joAcademy', fort: 'joFort', yamen: 'joYamen', hamlet: 'jpHamlet', hamletB: 'jpHamlet'
   },
   korea: {
-    town: 'koS', city: 'koS', grand: 'koL', metro: 'koL', capital: 'koCap', market: 'koMarket', port: 'koPort',
+    town: 'koS', city: 'koS', grand: 'koL', metro: 'koL', capital: 'koCap', ruin: 'koRuin', market: 'koMarket', port: 'koPort',
     temple: 'koTemple', shrine: 'koShrine', academy: 'koAcademy', fort: 'koFort', yamen: 'koYamen', hamlet: 'koHamlet', hamletB: 'koHamlet'
   }
 };

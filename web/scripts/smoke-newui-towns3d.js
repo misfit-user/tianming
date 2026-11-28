@@ -3,7 +3,7 @@
 // 聚落等第（web/ui/model/settlement.js）会给的每样营造地标都有立体模型；各地标的名义半宽罩得住模型本身（摆放、占地、多远开始显都按它）；
 // 林木、村舍的立体版省面，分块挑着画：近看只画镜头里那一片、远了不画；日本、朝鲜（towns3d-east.js）与大越、南洋、西洋据点（towns3d-south.js）诸样各档都有、越档越大；
 // 那几处的城外诸样（市镇、港、河埠与寺、祠庙、教堂、书院、堡、官署）与四郊村舍照地域换了样子，占地不比舆图留的大，港贴海面、河埠随地面，其余各处一样；
-// 治所画哪一样（seatKind）：中原照四档、京城、残城，那几处照当地的四档、都城（残破的照中原画残城）。
+// 治所画哪一样（seatKind）：中原照四档、京城、残城，那几处照当地的四档、都城，残破的画那里的残城（与府城一般大）。
 // 模块是 ES 模块、引着 three：拷进临时目录（目录标成 ES 模块），three 取仓里 vendor 的那份放进临时目录的 node_modules。
 'use strict';
 const fs = require('fs');
@@ -63,14 +63,16 @@ function badVertices(geometry) {
     for (const c of Object.values(s.CULTURE)) {
       const pre = east.EAST_KIND[c] || south.SOUTH_KIND[c];
       check(!!pre, `地域 ${c} 有模型前缀`);
-      for (const kind of [`${pre}Cap`, ...[0, 1, 2, 3].flatMap((tier) => [`${pre}${tier}0`, `${pre}${tier}1`])]) {
+      for (const kind of [`${pre}Cap`, `${pre}Ruin`, ...[0, 1, 2, 3].flatMap((tier) => [`${pre}${tier}0`, `${pre}${tier}1`])]) {
         check(t.TOWN_KINDS.includes(kind) && !!t.townModel(kind).far, `${kind} 有，且有远看那份`);
       }
+      // 残城与那里的府城一般大（中原的残城也照府城画）
+      check(Math.abs(t.townModel(`${pre}Ruin`).hw - t.townModel(`${pre}10`).hw) < 0.06, `${pre}Ruin 与 ${pre}10 一般大：${t.townModel(`${pre}Ruin`).hw}、${t.townModel(`${pre}10`).hw}`);
       const hw = [0, 1, 2, 3].map((tier) => t.townModel(`${pre}${tier}0`).hw).concat(t.townModel(`${pre}Cap`).hw);
       check(hw.every((x, i) => i === 0 || x > hw[i - 1]), `${c} 档越高占地越大：${hw.join(' < ')}`);
     }
     // 城郭的名义半宽（摆放、留地、多远开始显都按它）与实际搭出来的相符：东西半宽不少于它的九成，也不出它的一倍六（护城河、关厢在墙外）
-    const CITY = /^(town|city|grand|metro)\d$|^(jp|jo|ko|vn|sea|we)\d\d$|^(capital|ruin|jpCap|joCap|koCap|vnCap|seaCap|weCap)$/;
+    const CITY = /^(town|city|grand|metro)\d$|^(jp|jo|ko|vn|sea|we)(\d\d|Cap|Ruin)$|^(capital|ruin)$/;
     for (const kind of t.TOWN_KINDS.filter((k) => CITY.test(k))) {
       const md = t.townModel(kind), bb = md.geometry.boundingBox, ew = Math.max(-bb.min.x, bb.max.x);
       check(ew >= md.hw * 0.9 && ew <= md.hw * 1.6, `${kind} 实际东西半宽 ${ew.toFixed(2)} 与名义 ${md.hw} 相符`);
@@ -116,7 +118,7 @@ function badVertices(geometry) {
     try { t.townModel('没有这样'); } catch (e) { threw = /没有这样的城郭模型/.test(e.message); }
     check(threw, '要一样没有的模型就报错，不悄悄画空');
 
-    // 治所画哪一样（seatKind，舆图按它摆）：中原四档、京城、残城、帐、寨照旧；日本、朝鲜、大越、南洋、西洋据点照当地（残破的照中原画残城）
+    // 治所画哪一样（seatKind，舆图按它摆）：中原四档、京城、残城、帐、寨照旧；日本、朝鲜、大越、南洋、西洋据点照当地，残破的画那里的残城
     const CITY_KIND = ['town', 'city', 'grand', 'metro'];
     const city = (tier, culture = null, ruined = false) => ({ style: 'city', culture, tier, ruined });
     check(t.seatKind(null, 2, 0) === 'capital' && t.seatKind(null, 1, 1) === 'city1' && t.seatKind(null, 0, 0) === 'town0', '没给分档：京城、要府画府城、其余小城');
@@ -129,9 +131,12 @@ function badVertices(geometry) {
       const pre = east.EAST_KIND[c] || south.SOUTH_KIND[c];
       for (let tier = 0; tier < 4; tier++) check(t.seatKind(city(tier, c), 1, 1) === `${pre}${tier}1`, `${c} 第 ${tier} 档 → ${pre}${tier}1`);
       check(t.seatKind(city(2, c), 2, 0) === `${pre}Cap` && t.seatKind(city(1, c), 2, 0) === `${pre}10`, `${c} 的都城：大府以上画都城，小国的照它自己的档`);
-      check(t.seatKind(city(1, c, true), 0, 0) === 'ruin' && t.seatKind(city(3, c, true), 1, 1) === 'ruin', `${c} 残破的照中原画残城`);
+      check(t.seatKind(city(1, c, true), 0, 0) === `${pre}Ruin` && t.seatKind(city(3, c, true), 1, 1) === `${pre}Ruin`, `${c} 残破的画那里的残城 ${pre}Ruin`);
       for (const st of [city(0, c), city(3, c), city(2, c, true)]) for (const k of [0, 1, 2]) check(t.TOWN_KINDS.includes(t.seatKind(st, k, 0)), `${c} 给的模型都有：${t.seatKind(st, k, 0)}`);
     }
+    // 聚落等第算出来的：日本的令制国凋敝到底 → 落城
+    const jpRuined = s.settlementOf({ prosperity: 5, commerce: 1e5, mouths: 1e5, kind: '令制国', dejure: '日本', regionType: 'foreign_shogunate', year: 1621 });
+    check(jpRuined.culture === 'japan' && jpRuined.ruined && t.seatKind(jpRuined, 0, 0) === 'jpRuin', `日本的府州残破了画落城：${JSON.stringify({ culture: jpRuined.culture, ruined: jpRuined.ruined })}`);
 
     // 聚落等第会给的每样地标都有立体模型（加四周那座河埠）
     check(s.LANDMARK_KINDS.length >= 13 && s.LANDMARK_KINDS.includes('scaffold') && s.LANDMARK_KINDS.includes('ruin'), `地标样数 ${s.LANDMARK_KINDS.length}，含在建、半损`);

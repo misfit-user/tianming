@@ -15,11 +15,13 @@
 //   朝鲜——场市（白布遮阳棚、酒幕旗、榉树）；浦口（瓦仓、草房，白布帆、草席帆的船）；寺刹（天王门、石台上大雄殿、三层石塔、
 //   梵钟阁）；祠堂（三门、红箭门）；书院（石台上两层门楼、讲堂、东西斋、后头祠堂）；镇堡（随势小石城、虹霓门、将台）；官衙（三门、东轩、内衙、红箭门）。
 // 四郊村舍（点景近看换上的，每样八十面以内）：日本茅草农家、小土蔵、杉、稻架；朝鲜草房、瓦房、酱缸台。
+// 残城（聚落等第给 ruined，舆图照 towns3d.js seatKind 取）：日本落城——堀、石垣犹在，天守烧剩天守台上的焦壁焦柱；安土以前国衙烧剩台基焦柱；
+//   朝鲜城圈断成几截、门楼烧剩焦柱。屋舍焦黑一半、烟、枯树，同中原的残城。
 // k：towns3d.js 递来的器件（颜色、方块、屋顶、民居、街坊……，far() 问此刻搭的是不是远看那份）。各样搭完返回占地半宽。
 const YAW = { s: 0, e: Math.PI / 2, n: Math.PI, w: -Math.PI / 2 };
 
 export function eastBuilders(k) {
-  const { C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, hall, courtyard, tree, pagoda, quarter, pool, flag, palisade, junk, crown, trunk, rng, pick } = k;
+  const { C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, hall, courtyard, tree, pagoda, quarter, pool, flag, smoke, deadTree, palisade, junk, crown, trunk, rng, pick } = k;
   const far = k.far;
 
   // ======================= 日本 =======================
@@ -824,7 +826,84 @@ export function eastBuilders(k) {
     return 0.52;
   }
 
-  const out = { jpCap, joCap, koCap, jpHamlet, jpHamletB, koHamlet, koHamletB };
+  // ======================= 残城（凋敝或兵燹，聚落等第给 ruined） =======================
+  // 照当地的城画残破的那一样（中原的见 towns3d.js ruin）：墙断成几截、墙头焦黑，楼阁烧得只剩焦柱，屋舍焦黑一半没了顶，烟，枯树。
+  // 落城（日本，安土以后）：堀与石垣犹在；本丸土塀只剩几截，天守烧得只剩天守台上一截焦壁、几根焦柱；城下町烧了一半
+  function jpRuin(m) {
+    const r = rng(1181), hw = 1.95, cz = -0.5, ha = 0.56, hb = 0.48, top = 0.16, mw = 0.16;
+    moatRing(m, 0, cz, ha + 0.08, hb + 0.08, mw);
+    flat(m, -0.07, cz + hb + 0.08, 0.07, cz + hb + 0.08 + mw, 0.024, C.earth);
+    mound(m, 0, cz, ha + 0.07, hb + 0.07, ha, hb, -0.4, top, J.stone, C.ash);
+    for (const [x0, z0, x1, z1] of [[-ha, -hb, -0.1, -hb + 0.025], [0.14, -hb, ha, -hb + 0.025], [-ha, -hb + 0.025, -ha + 0.025, hb * 0.25],
+      [ha - 0.025, -hb * 0.35, ha, hb - 0.025], [-ha, hb - 0.025, -0.12, hb], [0.28, hb - 0.025, ha, hb]]) {
+      if (r() < 0.8) box(m, x0, top - 0.25, cz + z0, x1, top + 0.015 + r() * 0.035, cz + z1, J.plaster, { top: C.burnt });
+    }
+    const tx = -0.14, tz = cz - 0.1, ta = 0.25, tb = 0.2, s = ta / 0.26, y = top + 0.09 * s;
+    mound(m, tx, tz, ta + 0.09 * s, tb + 0.09 * s, ta + 0.035 * s, tb + 0.035 * s, top - 0.3, y, J.stone, C.ash);
+    box(m, tx - ta, y, tz - tb, tx - ta * 0.15, y + 0.07, tz + tb, C.burnt);
+    box(m, tx + ta * 0.3, y, tz - tb, tx + ta, y + 0.035, tz - tb * 0.2, C.burnt);
+    for (const [px, pz, h] of [[-0.85, -0.75, 0.17], [0.15, -0.6, 0.12], [0.75, 0.65, 0.1], [-0.3, 0.75, 0.15]]) {
+      box(m, tx + px * ta - 0.012, y, tz + pz * tb - 0.012, tx + px * ta + 0.012, y + h, tz + pz * tb + 0.012, C.black, { faces: 'nsew' });
+    }
+    smoke(m, tx, tz, y + 0.07, 4);
+    const keep = [[-ha - mw - 0.18, cz - hb - mw - 0.18, ha + mw + 0.18, cz + hb + mw + 0.18]], south = cz + hb + 0.08 + mw;
+    flat(m, -0.08, south, 0.08, hw, 0.026, J.street);
+    keep.push([-0.1, south, 0.1, hw]);
+    flat(m, -hw, 0.55, hw, 0.69, 0.026, J.street);
+    keep.push([-hw, 0.53, hw, 0.71]);
+    quarter(m, r, -hw + 0.04, -hw + 0.04, hw - 0.04, hw - 0.04, 0.72, keep, true);
+    smoke(m, 0.95, 1.05, 0.05, 3);
+    for (const [x, z] of [[-1.35, 1.25], [1.3, -1.15], [-1.15, -1.35]]) deadTree(m, x, z);
+    return hw;
+  }
+  // 残府（日本，安土以前）：国衙的筑地塀断成几截；正殿只剩台基上一排焦柱、一片塌下的顶；人家烧了一半
+  function joRuin(m) {
+    const r = rng(1281), hw = 1.95, cz = -0.75, a = 0.53, b = 0.44;
+    flat(m, -0.09, -hw, 0.09, hw, 0.026, J.street);
+    flat(m, -hw, 0.62, hw, 0.76, 0.026, J.street);
+    const keep = [[-0.11, -hw, 0.11, hw], [-hw, 0.6, hw, 0.78], [-a - 0.05, cz - b - 0.05, a + 0.05, cz + b + 0.05]];
+    for (const [x0, z0, x1, z1] of [[-a, -b, -a * 0.3, -b + 0.035], [a * 0.1, -b, a, -b + 0.035], [-a, -b + 0.035, -a + 0.035, b * 0.4],
+      [a - 0.035, -b * 0.6, a, b - 0.035], [-a, b - 0.035, -0.1, b], [0.12, b - 0.035, a * 0.7, b]]) {
+      if (r() < 0.85) box(m, x0, -0.25, cz + z0, x1, 0.035 + r() * 0.05, cz + z1, J.tsuiji, { top: C.burnt });
+    }
+    box(m, -0.32, -0.4, cz - 0.24, 0.32, 0.06, cz + 0.12, C.stoneTop, { top: C.ash });
+    for (let i = 0; i < 5; i++) {
+      for (const z of [cz - 0.18, cz + 0.06]) {
+        if (r() < 0.75) box(m, -0.26 + i * 0.13 - 0.013, 0.06, z - 0.013, -0.26 + i * 0.13 + 0.013, 0.12 + r() * 0.1, z + 0.013, C.black, { faces: 'nsew' });
+      }
+    }
+    m.quad([0.05, 0.07, cz + 0.14], [0.34, 0.07, cz + 0.14], [0.3, 0.18, cz - 0.08], [0.02, 0.18, cz - 0.08], C.burnt);
+    smoke(m, 0.05, cz - 0.05, 0.12, 4);
+    quarter(m, r, -hw + 0.04, -hw + 0.04, hw - 0.04, hw - 0.04, 0.6, keep, true);
+    smoke(m, -0.95, 1.1, 0.05, 3);
+    for (const [x, z] of [[-1.3, -1.2], [1.25, 1.3], [1.2, -1.25]]) deadTree(m, x, z);
+    return hw;
+  }
+  // 朝鲜的残城：城圈断成几截（留下的高低参差、墙头焦黑），南门石台、拱洞犹在，门楼烧剩几根焦柱；城里屋舍焦黑一半
+  function koRuin(m) {
+    const r = rng(1381), a = 1.85, b = 1.65, h = 0.32, t = 0.16, pts = loopPts(a, b, 2.4, 28, 0.06, r);
+    loopGround(m, pts, 0.018, C.ash);
+    for (let i = 0; i < pts.length; i++) {
+      if (r() < 0.3) continue;
+      const [x0, z0] = pts[i], [x1, z1] = pts[(i + 1) % pts.length], dx = x1 - x0, dz = z1 - z0, len = Math.hypot(dx, dz);
+      m.push((x0 + x1) / 2, 0, (z0 + z1) / 2, Math.atan2(-dz, dx));
+      box(m, -len / 2 - t * 0.35, -1, -t / 2, len / 2 + t * 0.35, h * (0.35 + 0.65 * r()), t / 2, K.stone, { top: C.burnt });
+      m.pop();
+    }
+    kGate(m, b, h, t, 0.42, 0);
+    for (const sx of [-1, 0.2, 1]) box(m, sx * 0.13 - 0.012, h + 0.04, b - t / 2 - 0.012, sx * 0.13 + 0.012, h + 0.12 + r() * 0.06, b - t / 2 + 0.012, C.black, { faces: 'nsew' });
+    flat(m, -0.09, -b * 0.2, 0.09, b - t, 0.026, K.street);
+    const keep = [[-0.11, -b * 0.25, 0.11, b]];
+    for (const [x0, z0, x1, z1] of [[-a * 0.8, -b * 0.55, a * 0.8, b * 0.55], [-a * 0.55, -b * 0.82, a * 0.55, -b * 0.55], [-a * 0.55, b * 0.55, a * 0.55, b * 0.82]]) {
+      quarter(m, r, x0, z0, x1, z1, 0.7, keep, true);
+    }
+    smoke(m, -0.5, -0.4, 0.05, 4);
+    smoke(m, 0.6, 0.5, 0.05, 3);
+    for (const [x, z] of [[-1.1, 0.9], [1.0, -0.95], [0.5, 1.1]]) deadTree(m, x, z);
+    return a;
+  }
+
+  const out = { jpCap, joCap, koCap, jpRuin, joRuin, koRuin, jpHamlet, jpHamletB, koHamlet, koHamletB };
   for (let t = 0; t < 4; t++) for (let v = 0; v < 2; v++) { out[`jp${t}${v}`] = jp(t, v); out[`jo${t}${v}`] = jo(t, v); out[`ko${t}${v}`] = ko(t, v); }
   Object.assign(out, {
     jpMarket: (m) => jpMarket(m), joMarket: (m) => jpMarket(m, true), koMarket,

@@ -2,7 +2,7 @@
 // 红瓦翘角的砖城与门楼、三关门与砖塔、钟形佛塔与砖塔、层层收顶的尖阁、高脚屋与椰、棱堡与教堂、西洋帆船……
 // 格号由 sprites.js 按这里返回的次序接在日本、朝鲜诸样之后；哪一地域的哪一样用哪一格见 SOUTH_SPRITE_LOCAL。
 export function southPainters(kit) {
-  const { INK, rgba, stroke, blob, wall, gate, junk, palisade, rect, poly, slope, curved } = kit;
+  const { INK, rgba, stroke, blob, wall, gate, junk, palisade, rect, poly, slope, curved, ruinWall, smokeCol, deadTree, rubble } = kit;
   const ink = (a) => `${INK}${a})`;
   // 大越（照 towns3d-south.js 的 S）
   const VWALL = 'rgba(178,160,136,0.98)', VROOF = 'rgba(160,96,76,0.97)', VROOF2 = 'rgba(142,86,70,0.97)', VPILLAR = 'rgba(150,62,46,0.96)';
@@ -817,10 +817,78 @@ export function southPainters(kit) {
     g.fill();
   }
 
+  // ======================= 残城（凋敝或兵燹） =======================
+  // 大越的残城：砖石城墙断成几截、墙头焦黑，门洞塌了半边，门楼的红瓦顶塌在墙头，瓦砾里几片红瓦，一股烟；一株槟榔、一株枯树
+  function vnRuin(g, r) {
+    palm(g, 58, 52, 18, -2);
+    deadTree(g, 6, 62, 0.8);
+    smokeCol(g, 33, 38, r);
+    for (const [x0, x1, h0, h1] of [[3, 19, 13, 8], [23, 31, 15, 11], [38, 52, 9, 5]]) ruinWall(g, x0, x1, 61, h0, h1, VWALL, r);
+    g.fillStyle = ink(0.9);
+    g.beginPath();
+    g.moveTo(31, 61);
+    g.lineTo(31, 55);
+    g.arc(34, 55, 3, Math.PI, Math.PI * 1.6);
+    g.lineTo(35, 61);
+    g.closePath();
+    g.fill();
+    poly(g, [[20, 47.5], [24, 43.5], [31, 45], [33, 49], [27, 49.6]], VROOF, 0.8);
+    rubble(g, 14, 52, 60.5, r, 12);
+    rubble(g, 18, 46, 60.5, r, 6, 'rgba(170,98,76,0.95)');
+  }
+  // 南洋的残城（阿瑜陀耶那样）：护城河犹在，红砖城断成几截；城里佛塔白灰剥尽、钟身塌了半截，砖塔顶塌了，荒树长在砖堆里；一株椰，一股烟
+  function seaRuin(g, r) {
+    palm(g, 6, 50, 18, 1.5);
+    rect(g, 16, 46, 18, 2.4, BRICK_D, 0.7);
+    rect(g, 18.5, 43.6, 13, 2.4, BRICK_D, 0.7);
+    poly(g, [[19.6, 43.6], [19.4, 38], [21, 34.5], [23, 36.2], [25, 32.6], [27.4, 35.4], [29.4, 34], [30.6, 38], [30.4, 43.6]], BRICK, 0.8);
+    rect(g, 40, 46, 13, 2.6, BRICK_D, 0.7);
+    rect(g, 41.6, 39, 9.8, 7, BRICK, 0.7);
+    g.fillStyle = ink(0.85);
+    g.beginPath();
+    g.moveTo(45.1, 46);
+    g.lineTo(45.1, 42);
+    g.lineTo(46.5, 40.6);
+    g.lineTo(47.9, 42);
+    g.lineTo(47.9, 46);
+    g.closePath();
+    g.fill();
+    poly(g, [[42.6, 39], [42.6, 36.4], [44.6, 35], [46.4, 36.6], [48.6, 34.6], [50.4, 36.4], [50.4, 39]], BRICK, 0.7);
+    for (const [x, y, s] of [[49.5, 35.5, 0.7], [21.5, 35.5, 0.6], [36, 44, 0.8]]) {
+      blob(g, x, y - 2 * s, 4 * s, 3.2 * s, rgba([70, 112, 76], 0.95));
+      blob(g, x - 1 * s, y - 3 * s, 2.4 * s, 2 * s, rgba([96, 140, 96], 0.95));
+    }
+    smokeCol(g, 36, 34, r, 4);
+    for (const [x0, x1, h0, h1] of [[2, 16, 9, 6], [22, 36, 10, 7], [42, 60, 7, 4]]) ruinWall(g, x0, x1, 60, h0, h1, BRICK, r);
+    water(g, 0, 64, 63.6, 3.4);
+    rubble(g, 8, 58, 58.6, r, 12, 'rgba(150,98,76,0.92)');
+  }
+  // 西洋据点的残城：教堂没了顶，只剩参差的山花墙、黑洞洞的门窗，墙头熏黑，一股烟；棱堡的墙断成几截，一座炮台塌了半边；一株椰
+  function weRuin(g, r) {
+    palm(g, 58, 50, 18, -1.5);
+    poly(g, [[20, 53], [20, 38], [23, 36], [26, 33], [28, 35], [31, 30], [34, 34], [37, 33], [40, 38], [40, 53]], CHURCH, 0.9);
+    for (const [x, y] of [[25, 35.5], [31, 32.5], [37, 35]]) blob(g, x, y, 3, 1.6, ink(0.45));
+    g.fillStyle = ink(0.88);
+    g.beginPath();
+    g.moveTo(27.6, 53);
+    g.lineTo(27.6, 47);
+    g.arc(30, 47, 2.4, Math.PI, 0);
+    g.lineTo(32.4, 53);
+    g.closePath();
+    g.fill();
+    for (const x of [23.6, 35.4]) g.fillRect(x, 41.5, 2, 3.4);
+    smokeCol(g, 31, 30, r, 4);
+    poly(g, [[3, 62], [4, 52], [10, 50.5], [10, 63]], FORT, 0.9);
+    poly(g, [[10, 63], [10, 50.5], [14, 53], [17, 52], [17, 62]], FORT_D, 0.9);
+    for (const [x0, x1, h0, h1] of [[17, 26, 8, 6], [32, 44, 9, 5], [48, 56, 6, 4]]) ruinWall(g, x0, x1, 61, h0, h1, FORT, r);
+    rubble(g, 14, 56, 60.5, r, 12, 'rgba(176,164,140,0.92)');
+  }
+
   return {
     vnS, vnL, vnCap, vnMarket, vnPort, vnTemple, vnShrine, vnAcademy, vnFort, vnYamen, vnHamlet,
     seaS, seaL, seaCap, seaMarket, seaPort, seaTemple, seaShrine, seaAcademy, seaFort, seaYamen, seaHamlet,
-    weS, weL, weCap, weMarket, wePort, weChurch, weAcademy, weFort, weYamen
+    weS, weL, weCap, weMarket, wePort, weChurch, weAcademy, weFort, weYamen,
+    vnRuin, seaRuin, weRuin
   };
 }
 
@@ -829,15 +897,15 @@ export function southPainters(kit) {
 // 南洋的天主堂画西式教堂；西洋据点城外的村舍是尼巴屋，同南洋
 export const SOUTH_SPRITE_LOCAL = {
   viet: {
-    town: 'vnS', city: 'vnS', grand: 'vnL', metro: 'vnL', capital: 'vnCap', market: 'vnMarket', port: 'vnPort',
+    town: 'vnS', city: 'vnS', grand: 'vnL', metro: 'vnL', capital: 'vnCap', ruin: 'vnRuin', market: 'vnMarket', port: 'vnPort',
     temple: 'vnTemple', shrine: 'vnShrine', academy: 'vnAcademy', fort: 'vnFort', yamen: 'vnYamen', hamlet: 'vnHamlet', hamletB: 'vnHamlet'
   },
   seasia: {
-    town: 'seaS', city: 'seaL', grand: 'seaL', metro: 'seaL', capital: 'seaCap', market: 'seaMarket', port: 'seaPort',
+    town: 'seaS', city: 'seaL', grand: 'seaL', metro: 'seaL', capital: 'seaCap', ruin: 'seaRuin', market: 'seaMarket', port: 'seaPort',
     temple: 'seaTemple', shrine: 'seaShrine', church: 'weChurch', academy: 'seaAcademy', fort: 'seaFort', yamen: 'seaYamen', hamlet: 'seaHamlet', hamletB: 'seaHamlet'
   },
   west: {
-    town: 'weS', city: 'weL', grand: 'weL', metro: 'weL', capital: 'weCap', market: 'weMarket', port: 'wePort',
+    town: 'weS', city: 'weL', grand: 'weL', metro: 'weL', capital: 'weCap', ruin: 'weRuin', market: 'weMarket', port: 'wePort',
     church: 'weChurch', academy: 'weAcademy', fort: 'weFort', yamen: 'weYamen', hamlet: 'seaHamlet', hamletB: 'seaHamlet'
   }
 };

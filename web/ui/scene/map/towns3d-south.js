@@ -13,11 +13,14 @@
 //   西洋据点——市（石铺广场、喷泉、石屋、白布摊棚、尼巴屋）；港（石砌货栈、石码头、西洋帆船与华船）；教堂（大教堂、修院、十字架）；
 //   学院（石屋围院、小教堂）；堡（棱堡小城、炮）；官署（两层石厅、下层拱廊、广场、旗）。寺、祠庙照原样（华人的庙）。
 // 四郊村舍（点景近看换上的，每样八十面以内）：大越草屋与红瓦屋、槟榔；南洋高脚屋、椰（西洋据点四郊的尼巴屋同此）。
+// 残城（聚落等第给 ruined，舆图照 towns3d.js seatKind 取）：大越方城断墙、门楼烧剩焦柱；南洋（阿瑜陀耶那样）红砖城断墙，佛塔砖塔塌了顶，
+//   高脚屋烧剩焦柱，荒树长在砖堆里；西洋据点棱堡断墙、炮台塌半截，教堂没了顶。屋舍焦黑一半、烟，同中原的残城。
 // k：towns3d.js 递来的器件。各样搭完返回占地半宽。
 const YAW = { s: 0, e: Math.PI / 2, n: Math.PI, w: -Math.PI / 2 };
 
 export function southBuilders(k) {
-  const { C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, hall, courtyard, pagoda, quarter, pool, flag, rng, pick, stilt, palisade, wallRing, junk } = k;
+  const { C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, hall, courtyard, tree, pagoda, quarter, pool, flag, smoke, rng, pick, stilt, palisade, wallRing,
+    brokenWalls, deadTree, junk } = k;
   const far = k.far;
   const S = {
     brick: [0.68, 0.43, 0.33], brickTop: [0.62, 0.4, 0.31], vnWall: [0.69, 0.62, 0.53], vnWallTop: [0.62, 0.56, 0.48],
@@ -716,7 +719,101 @@ export function southBuilders(k) {
     return 0.52;
   }
 
-  const out = { vnCap, seaCap, weCap, vnHamlet, vnHamletB, seaHamlet, seaHamletB };
+  // ======================= 残城（凋敝或兵燹，聚落等第给 ruined） =======================
+  // 照当地的城画残破的那一样（中原的见 towns3d.js ruin）：墙断成几截、墙头焦黑，楼阁烧得只剩焦柱，屋舍焦黑一半，烟，枯树
+  // 高脚屋烧剩的焦柱：矩形里散几处，有的还剩一截焦黑的楼板；间以荒树。远看那份只画楼板
+  function charredStilts(m, r, x0, z0, x1, z1, density, keep = []) {
+    for (let z = z0 + 0.15; z < z1 - 0.15; z += 0.4 + r() * 0.12) {
+      for (let x = x0 + 0.15 + r() * 0.1; x < x1 - 0.15; x += 0.44 + r() * 0.15) {
+        if (keep.some(([a, b, c, d]) => x + 0.2 > a && x - 0.2 < c && z + 0.2 > b && z - 0.2 < d)) continue;
+        if (r() > density) {
+          if (r() < 0.4) tree(m, x, z, 0.9 + r() * 0.4, C.leafDark);
+          continue;
+        }
+        const w = 0.13 + r() * 0.05, d = 0.1 + r() * 0.03, hh = 0.06 + r() * 0.06;
+        if (!far()) for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) box(m, x + sx * w - 0.012, -0.3, z + sz * d - 0.012, x + sx * w + 0.012, hh + r() * 0.04, z + sz * d + 0.012, C.black, { faces: 'nsew' });
+        if (far() || r() < 0.5) box(m, x - w, 0.06, z - d, x + w, 0.08, z + d, C.burnt);
+      }
+    }
+  }
+  // 大越的残城：方城的墙断成几截，南门砖台犹在、门楼只剩焦柱；城里屋舍焦黑一半；城外几株椰
+  function vnRuin(m) {
+    const r = rng(1481), hw = 1.9, h = 0.32, t = 0.16, inner = hw - t;
+    flat(m, -inner, -inner, inner, inner, 0.02, C.ash);
+    brokenWalls(m, r, hw, h, t, S.vnWall, S.vnWallTop);
+    vnGate(m, hw, h * 0.8, t, 0.42, 0);
+    for (const sx of [-1, 0.3, 1]) box(m, sx * 0.12 - 0.012, h * 0.8 + 0.03, hw - t / 2 - 0.012, sx * 0.12 + 0.012, h * 0.8 + 0.12 + r() * 0.06, hw - t / 2 + 0.012, C.black, { faces: 'nsew' });
+    flat(m, -0.1, -inner, 0.1, inner, 0.028, C.street);
+    const keep = [[-0.12, -inner, 0.12, inner]], g0 = 0.15;
+    for (const [x0, z0, x1, z1] of [[-inner, -inner, -g0, -g0], [g0, -inner, inner, -g0], [-inner, g0, -g0, inner], [g0, g0, inner, inner]]) {
+      quarter(m, r, x0 + 0.03, z0 + 0.03, x1 - 0.02, z1 - 0.02, 0.7, keep, true);
+    }
+    smoke(m, -0.6, -0.5, 0.05, 4);
+    smoke(m, 0.7, 0.6, 0.05, 3);
+    for (const [x, z] of [[-2.1, 0.6], [2.05, -0.8], [0.9, 2.1], [-1.0, -2.1]]) palm(m, x, z, 1.1, r() * 6);
+    for (const [x, z] of [[-1.2, 1.1], [1.15, -1.2]]) deadTree(m, x, z);
+    return hw;
+  }
+  // 塌了的佛塔：方台犹在，白灰剥尽露出红砖，钟身只剩半截，顶上一截断刹
+  function brokenStupa(m, x, z, s) {
+    mound(m, x, z, 0.17 * s, 0.17 * s, 0.15 * s, 0.15 * s, -0.3, 0.035 * s, S.brickTop);
+    mound(m, x, z, 0.14 * s, 0.14 * s, 0.12 * s, 0.12 * s, 0.035 * s, 0.065 * s, S.brickTop);
+    mound(m, x, z, 0.115 * s, 0.115 * s, 0.095 * s, 0.095 * s, 0.065 * s, 0.15 * s, S.brick, C.ash);
+    box(m, x - 0.012 * s, 0.15 * s, z - 0.012 * s, x + 0.012 * s, 0.2 * s, z + 0.012 * s, S.brickTop, { faces: 'nsew' });
+  }
+  // 塌了顶的砖塔：方台、下两节犹在，顶上的圆锥塌了，脚下两堆砖
+  function brokenPrang(m, x, z, s) {
+    let y = 0.04 * s, a = 0.11 * s;
+    box(m, x - a * 1.25, -0.3, z - a * 1.25, x + a * 1.25, y, z + a * 1.25, S.brickTop);
+    for (let i = 0; i < 2; i++) {
+      const hh = (i === 0 ? 0.13 : 0.05) * s;
+      box(m, x - a, y, z - a, x + a, y + hh, z + a, S.brick, { top: C.ash });
+      y += hh;
+      a *= 0.8;
+    }
+    for (const [dx, dz] of [[0.17, 0.1], [-0.13, 0.16]]) box(m, x + (dx - 0.05) * s, -0.1, z + (dz - 0.04) * s, x + (dx + 0.05) * s, 0.03 * s, z + (dz + 0.04) * s, S.brickTop);
+  }
+  // 南洋的残城（阿瑜陀耶那样）：护城河犹在，红砖城断成几截；城里佛塔、砖塔塌了顶，高脚屋烧剩焦柱，荒树长在砖堆里；城外几株椰
+  function seaRuin(m) {
+    const r = rng(1581), hw = 1.9, h = 0.26, t = 0.13, inner = hw - t, a = hw + 0.1, b = a + 0.22;
+    flat(m, -inner, -inner, inner, inner, 0.02, C.ash);
+    flat(m, -b, a, b, b, 0.012, C.water); flat(m, -b, -b, b, -a, 0.012, C.water);
+    flat(m, -b, -a, -a, a, 0.012, C.water); flat(m, a, -a, b, a, 0.012, C.water);
+    brokenWalls(m, r, hw, h, t, S.brick, S.brickTop);
+    const keep = [[-0.9, 0.1, -0.2, 0.8], [0.35, -0.7, 1.05, 0], [0.15, 0.5, 0.75, 1.1]];
+    brokenStupa(m, -0.55, 0.45, 1.4);
+    brokenPrang(m, 0.7, -0.35, 1.1);
+    brokenStupa(m, 0.45, 0.8, 1.0);
+    charredStilts(m, r, -inner + 0.05, -inner + 0.05, inner - 0.05, inner - 0.05, 0.5, keep);
+    smoke(m, -0.2, -0.6, 0.05, 4);
+    smoke(m, 0.9, 0.9, 0.05, 3);
+    for (const [x, z] of [[-2.25, 0.5], [2.2, -0.7], [0.6, 2.25], [-0.8, -2.25]]) palm(m, x, z, 1.1, r() * 6);
+    return hw;
+  }
+  // 西洋据点的残城：棱堡的幕墙断成几截、一座炮台塌了半截；教堂没了顶（四面墙、正面山花墙、黑门犹在）；城里石屋焦黑一半；
+  // 城外尼巴屋烧剩焦柱；烟，几株椰
+  function weRuin(m) {
+    const r = rng(1681), hw = 1.9, fa = 0.85, fh = 0.24, ft = 0.12, bs = Math.max(0.2, fa * 0.16);
+    flat(m, -fa, -fa, fa, fa, 0.02, C.ash);
+    brokenWalls(m, r, fa, fh, ft, S.fort, S.fortTop);
+    [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sz], i) => {
+      m.push(sx * fa, 0, sz * fa, Math.PI / 4);
+      box(m, -bs, -1, -bs, bs, i === 1 ? fh * 0.45 : fh + 0.02, bs, S.fort, { top: i === 1 ? C.burnt : S.fortTop });
+      m.pop();
+    });
+    const cx = 0.25, cz = -0.25, ca = 0.11, cb = 0.26, ch = 0.14;
+    box(m, cx - ca, -0.4, cz - cb, cx + ca, ch, cz + cb, S.church, { top: C.burnt });
+    m.quad([cx - ca - 0.012, ch, cz + cb + 0.005], [cx + ca + 0.012, ch, cz + cb + 0.005], [cx + ca * 0.45, ch + ca * 1.15, cz + cb + 0.005], [cx - ca * 0.45, ch + ca * 1.15, cz + cb + 0.005], S.church);
+    m.quad([cx - ca * 0.32, 0, cz + cb + 0.008], [cx + ca * 0.32, 0, cz + cb + 0.008], [cx + ca * 0.32, ch * 0.62, cz + cb + 0.008], [cx - ca * 0.32, ch * 0.62, cz + cb + 0.008], C.hole);
+    smoke(m, cx, cz, ch, 3);
+    quarter(m, r, -fa + ft + 0.03, -fa + ft + 0.03, fa - ft - 0.03, fa - ft - 0.03, 0.55, [[cx - ca - 0.06, cz - cb - 0.06, cx + ca + 0.06, cz + cb + 0.06]], true);
+    charredStilts(m, r, -hw + 0.1, -hw + 0.1, hw - 0.1, hw - 0.1, 0.4, [[-fa - 0.3, -fa - 0.3, fa + 0.3, fa + 0.3]]);
+    smoke(m, -1.2, 1.0, 0.05, 3);
+    for (const [x, z] of [[-1.95, 0.3], [1.95, -0.5], [0.4, 1.95]]) palm(m, x, z, 1.1, r() * 6);
+    return hw;
+  }
+
+  const out = { vnCap, seaCap, weCap, vnRuin, seaRuin, weRuin, vnHamlet, vnHamletB, seaHamlet, seaHamletB };
   for (let t = 0; t < 4; t++) for (let v = 0; v < 2; v++) { out[`vn${t}${v}`] = vn(t, v); out[`sea${t}${v}`] = sea(t, v); out[`we${t}${v}`] = we(t, v); }
   Object.assign(out, {
     vnMarket, seaMarket, weMarket,

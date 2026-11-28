@@ -765,10 +765,54 @@ function curved(g, cx, y, w, h, color, o = 3, tip = 0.45, lw = 0.9) {
   g.stroke();
 }
 
+// 残城的器件（各地的残城用，画法照中原那格残城）：一截断墙（x0～x1，脚在 y，两头高 h0、h1，墙头参差、焦黑一抹）
+function ruinWall(g, x0, x1, y, h0, h1, fill, r) {
+  g.beginPath();
+  g.moveTo(x0, y);
+  g.lineTo(x0, y - h0);
+  for (let x = x0 + 2; x < x1; x += 2) g.lineTo(x, y - h0 + (h0 - h1) * (x - x0) / (x1 - x0) + (r() - 0.5) * 3);
+  g.lineTo(x1, y - h1);
+  g.lineTo(x1, y);
+  g.closePath();
+  g.fillStyle = fill;
+  g.fill();
+  g.strokeStyle = INK + '0.9)';
+  g.lineWidth = 1.2;
+  g.stroke();
+  blob(g, (x0 + x1) / 2, y - Math.max(h0, h1) + 2, (x1 - x0) * 0.3, 1.6, INK + '0.5)');
+}
+// 一股烟：脚在 (x, y)，n 团往上越大越淡
+function smokeCol(g, x, y, r, n = 5) {
+  for (let k = 0; k < n; k++) blob(g, x + k * 1.5 + (r() - 0.5) * 2, y - k * 6.5, 3.4 + k * 1.4, 2.6 + k * 1.1, `rgba(${92 + k * 18},${88 + k * 18},${84 + k * 18},${0.75 - k * 0.11})`);
+}
+// 枯树：脚在 (x, y)，几笔焦干枯枝
+function deadTree(g, x, y, s = 1) {
+  g.strokeStyle = INK + '0.9)';
+  g.lineWidth = 1.7 * s;
+  g.beginPath();
+  g.moveTo(x, y); g.lineTo(x - 1 * s, y - 22 * s);
+  g.moveTo(x - 1 * s, y - 15 * s); g.lineTo(x - 7 * s, y - 22 * s);
+  g.moveTo(x - 1 * s, y - 17 * s); g.lineTo(x + 5 * s, y - 24 * s);
+  g.moveTo(x - 4 * s, y - 19 * s); g.lineTo(x - 6 * s, y - 26 * s);
+  g.stroke();
+}
+// 一地瓦砾：x0～x1 之间，脚在 y 一带
+function rubble(g, x0, x1, y, r, n = 14, color = 'rgba(104,90,74,0.92)') {
+  for (let k = 0; k < n; k++) blob(g, x0 + r() * (x1 - x0), y + r() * 2.5, 1.5 + r(), 1, color);
+}
+// 烧塌了的屋：一截焦黑的墙根，一片歪下来的焦顶
+function charredHouse(g, x, y, w) {
+  rect(g, x - w / 2, y - 3, w, 3, 'rgba(84,74,66,0.96)', 0.7);
+  poly(g, [[x - w / 2 - 1, y - 2.6], [x - w * 0.2, y - 6], [x + w * 0.3, y - 4.6], [x + w / 2 + 1, y - 2.2]], 'rgba(52,46,42,0.96)', 0.7);
+}
+
 // ---------- 日本、朝鲜、大越、南洋、西洋据点诸样 ----------
 // 低画质时城郭、市镇、港、营造地标都画小图，中、高画质远看时的村舍也是小图：这些地域照当地的样子另画一套（与立体模型 towns3d-east.js、
 // towns3d-south.js 对得上）。格号接在原有各格之后（第 31 格空着），按 sprites-east.js、sprites-south.js 返回的次序排
-const KIT = { INK, GREEN, DEEP, BLUE, rgba, stroke, trunk, blob, wall, gate, tower, eave, hall, house, roofs, pagoda, banner, palisade, junk, rect, poly, slope, curved };
+const KIT = {
+  INK, GREEN, DEEP, BLUE, rgba, stroke, trunk, blob, wall, gate, tower, eave, hall, house, roofs, pagoda, banner, palisade, junk, rect, poly, slope, curved,
+  ruinWall, smokeCol, deadTree, rubble, charredHouse
+};
 const LOCAL_PAINT = { ...eastPainters(KIT), ...southPainters(KIT) };
 const LOCAL_FIRST = 32;
 Object.keys(LOCAL_PAINT).forEach((name, i) => {
@@ -784,7 +828,7 @@ export function localSprite(base, culture, fallback = SPRITE[base]) {
 }
 // 府州治所画哪一格、世界尺寸多大（低画质时城郭画小图；立体的见 towns3d.js seatKind，分法同那里）：st 聚落等第（没有为 null），
 // k 0 寻常、1 要府、2 京城。城郭四档：小城、府城、大府、都会（要府大一号）；京城那一套只给繁华到大府以上的城郭之都；
-// 日本、朝鲜、大越、南洋、西洋据点照当地的样子（都城也是；残城那几处还没有当地的样子，照原样）
+// 日本、朝鲜、大越、南洋、西洋据点照当地的样子（都城、残城也是）
 const CITY_SIZE = [3.4, 3.9, 4.6, 5.3];
 const CITY_CELL = ['town', 'city', 'grand', 'metro'];
 export function seatSpriteOf(st, k) {

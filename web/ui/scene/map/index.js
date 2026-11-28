@@ -572,7 +572,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const ringMemo = new Map();                 // 「府州下标|城郭大小」→ 地标的落点
   let cities = null;
   // 治所画哪一样：点景小图（低画质）见 sprites.js seatSpriteOf，立体城郭见 towns3d.js seatKind（城郭四档各两种街巷，按府州下标单双取）。
-  // 京城那一套只给繁华到大府以上的城郭之都；草原上的汗庭画牙帐、山寨之地画大寨；日本、朝鲜、大越、南洋、西洋据点照当地的样子
+  // 京城那一套只给繁华到大府以上的城郭之都；草原上的汗庭画牙帐、山寨之地画大寨；日本、朝鲜、大越、南洋、西洋据点照当地的样子，残城也是
   const seatSprite = (i, k) => seatSpriteOf(settle && settle[i], k);
   const seatModel = (i, k) => seatKind(settle && settle[i], k, i % 2);
   const TOWN_SCALE = 0.85;                    // 模型比例：江南府州挨得紧，再大城与城就碰上了

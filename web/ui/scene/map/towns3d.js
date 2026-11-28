@@ -281,6 +281,11 @@ function tree(m, x, z, s, col = C.leaf) {
   const ring = [[x + r, y, z], [x, y, z + r], [x - r, y, z], [x, y, z - r]];
   for (let i = 0; i < 4; i++) { const p = ring[i], q = ring[(i + 1) % 4]; m.tri(p, q, top, col); m.tri(q, p, bot, tint(col, 0.8)); }
 }
+// 枯树：一截焦黑的干、一根横枝（各地的残城用）
+function deadTree(m, x, z) {
+  box(m, x - 0.012, -0.2, z - 0.012, x + 0.012, 0.22, z + 0.012, C.black, { faces: 'nsew' });
+  box(m, x - 0.09, 0.15, z - 0.01, x, 0.17, z + 0.01, C.black);
+}
 // 烟：几团八面体，越往上越大越淡；s 整股的大小（小景用小一号的）
 function smoke(m, x, z, y0, n = 4, s = 1) {
   for (let i = 0; i < n; i++) {
@@ -1100,7 +1105,7 @@ function scHamletB(m) {
 // 递给别处诸样（towns3d-east.js、towns3d-south.js）的器件；far() 问此刻搭的是不是远看那份
 const KIT = {
   C, box, flat, mound, hipRoof, skirt, gableRoof, house, pavilion, archway, hall, courtyard, tree, pagoda, quarter, pool, flag, smoke,
-  wallRing, stilt, palisade, junk, crown, trunk, rng, pick, tint, far: () => FAR
+  wallRing, brokenWalls, deadTree, stilt, palisade, junk, crown, trunk, rng, pick, tint, far: () => FAR
 };
 const BUILD = {
   town0: (m) => town(m, 0), town1: (m) => town(m, 1), city0: (m) => city(m, 0), city1: (m) => city(m, 1),
@@ -1117,15 +1122,15 @@ const BUILD = {
 export const SCATTER_KINDS = ['pine', 'dot', 'jia', 'grove', 'willow', 'hamlet', 'hamletB',
   'jpHamlet', 'jpHamletB', 'koHamlet', 'koHamletB', 'vnHamlet', 'vnHamletB', 'seaHamlet', 'seaHamletB'];
 export const TOWN_KINDS = Object.keys(BUILD);
-// 有远看那一份的（城郭、京城、残城）；帐、寨、市镇、港、营造地标本就几百到一两千面，不另做
-const HAS_FAR = /^(town|city|grand|metro)\d$|^(jp|jo|ko|vn|sea|we)\d\d$|^(capital|ruin|jpCap|joCap|koCap|vnCap|seaCap|weCap)$/;
+// 有远看那一份的（城郭、京城、残城，各地的也是）；帐、寨、市镇、港、营造地标本就几百到一两千面，不另做
+const HAS_FAR = /^(town|city|grand|metro)\d$|^(jp|jo|ko|vn|sea|we)(\d\d|Cap|Ruin)$|^(capital|ruin)$/;
 // 府州治所画哪一样城郭（舆图 index.js 按它摆）：st 聚落等第（settlement.js settlementOf 给的，没有为 null），k 0 寻常、1 要府、2 京城，
-// v 0、1 两种街巷换着用。日本、朝鲜、大越、南洋、西洋据点照当地的样子：都城到大府以上画那一国的都城（小国的都城照它自己的档），残破的照中原画残城；
+// v 0、1 两种街巷换着用。日本、朝鲜、大越、南洋、西洋据点照当地的样子：都城到大府以上画那一国的都城，残破的画那里的残城（小国的都城照它自己的档）；
 // 京城那一套（外城套皇城）只给繁华到大府以上的城郭之都，草原上的汗庭画牙帐、山寨之地画大寨；没给分档时京城、要府大一号（画府城），其余画小城
 const CITY_KIND = ['town', 'city', 'grand', 'metro'];
 export function seatKind(st, k, v) {
-  const pre = st && st.style === 'city' && !st.ruined && (EAST_KIND[st.culture] || SOUTH_KIND[st.culture]);
-  if (pre) return k === 2 && st.tier >= 2 ? `${pre}Cap` : `${pre}${Math.min(3, st.tier)}${v}`;
+  const pre = st && st.style === 'city' && (EAST_KIND[st.culture] || SOUTH_KIND[st.culture]);
+  if (pre) return st.ruined ? `${pre}Ruin` : k === 2 && st.tier >= 2 ? `${pre}Cap` : `${pre}${Math.min(3, st.tier)}${v}`;
   const palace = !st || (st.style === 'city' && !st.ruined && st.tier >= 2);     // 与 sprites.js seatSpriteOf 同一条
   if (k === 2 && palace) return 'capital';
   if (k === 2 && st.style === 'nomad') return 'yurtL';

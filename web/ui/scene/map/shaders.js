@@ -438,13 +438,13 @@ void main() {
 export const spriteVertex = /* glsl */`
 attribute float aSize;
 attribute float aType;
+attribute float aOut;          // 近看换成立体占了几成（林木、村舍那层由 towns3d.js createScatter 按舆图的钟写，换的那一会儿在 0～1 间），小图按它淡出；别的点景是 0
 uniform float uRelief;
 uniform float uPx;
 uniform float uDpr;
 uniform vec2 uHalfView;
 uniform vec2 uFadePx;          // 屏上多大开始显、多大全显（CSS 像素）
 uniform float uMaxPx;
-uniform vec2 uOutPx;           // 屏上多大开始淡出、淡尽（近看换成立体的那层；不换的给极大）
 uniform float uFogNear;
 uniform float uFogFar;
 uniform vec3 uCam;
@@ -460,7 +460,7 @@ void main() {
   float px = min(s, uMaxPx);
   gl_PointSize = px * uDpr;
   gl_Position.y += px * 0.5 / uHalfView.y * gl_Position.w;
-  vFade = smoothstep(uFadePx.x, uFadePx.y, s) * (1.0 - smoothstep(uOutPx.x, uOutPx.y, s));
+  vFade = smoothstep(uFadePx.x, uFadePx.y, s) * (1.0 - aOut);
   vFog = smoothstep(uFogNear, uFogFar, distance(p, uCam));
   vType = aType;
 }`;
@@ -478,18 +478,15 @@ void main() {
   gl_FragColor = vec4(mix(t.rgb, uFogColor, vFog * 0.6) * a, a);    // 预乘
 }`;
 
-// 城郭立体模型（towns3d.js）：实例化，每座一个落脚点、转角、缩放。落脚处地面高乘起伏倍率（随远近变），模型本身的高度不乘；
-// aColor.a 为 0 的顶点（港的栈桥、船）贴海面。占地宽在屏上太小就整座收掉（按落脚点算，一座城各顶点一致，不会扯出尖刺）
+// 城郭立体模型（towns3d.js；林木、村舍的立体版同用）：实例化，每座一个落脚点、转角、缩放。落脚处地面高乘起伏倍率（随远近变），模型本身的高度不乘；
+// aColor.a 为 0 的顶点（港的栈桥、船）贴海面。显几成、画哪一份由 towns3d.js 按舆图的钟定好递进来（aFade）；一成不显的整座收掉（一座城各顶点一致，不会扯出尖刺）
 export const townVertex = /* glsl */`
 attribute vec4 aColor;
 attribute vec3 aBase;
 attribute vec2 aYS;
-attribute vec2 aFade;          // 城郭每座：x 近看那份占几成、y 显出几成（towns3d.js 按钟记，换的那一会儿 LOD_FADE 秒在 0～1 间，其余时候不是 0 就是 1）
+attribute vec2 aFade;          // 每座（每处）：x 近看那份占几成、y 显出几成（towns3d.js 按钟记，换的那一会儿 LOD_FADE 秒在 0～1 间，其余时候不是 0 就是 1）
 uniform float uRelief;
-uniform float uPx;
-uniform float uSize;
-uniform vec2 uFadePx;          // 林木村舍按屏上宽淡入：x 起、y 全显（像素）
-uniform float uPart;           // 城郭 0 只此一份、1 近看那份、2 远看那份；3 林木村舍（没有 aFade，按屏上宽淡入）
+uniform float uPart;           // 0 只此一份（林木村舍也是）、1 近看那份、2 远看那份
 uniform float uFogNear;
 uniform float uFogFar;
 uniform vec3 uCam;
@@ -500,11 +497,8 @@ varying float vFade;
 varying float vFog;
 void main() {
   vec3 base = vec3(aBase.x, aBase.y * uRelief, aBase.z);
-  vec4 mb = viewMatrix * vec4(base, 1.0);
-  float px = uSize * aYS.y * uPx / max(-mb.z, 1.0);
-  float vis = uPart > 2.5 ? smoothstep(uFadePx.x, uFadePx.y, px) : aFade.y;
-  float lod = uPart > 0.5 && uPart < 1.5 ? aFade.x : (uPart > 1.5 && uPart < 2.5 ? 1.0 - aFade.x : 1.0);
-  vFade = vis * lod;
+  float lod = uPart > 0.5 && uPart < 1.5 ? aFade.x : (uPart > 1.5 ? 1.0 - aFade.x : 1.0);
+  vFade = aFade.y * lod;
   if (vFade <= 0.0) { gl_Position = vec4(0.0, 0.0, 2.0, 1.0); return; }
   float c = cos(aYS.x), s = sin(aYS.x);
   vec3 p = position * aYS.y;
@@ -530,7 +524,7 @@ float bayer2(vec2 a) { a = floor(a); return fract(a.x * 0.5 + a.y * a.y * 0.75);
 float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
 void main() {
   float b = bayer4(gl_FragCoord.xy);
-  if (uPart > 1.5 && uPart < 2.5) { if (vFade < 1.0 && vFade < 1.0 - b) discard; }
+  if (uPart > 1.5) { if (vFade < 1.0 && vFade < 1.0 - b) discard; }
   else if (vFade < 1.0 && vFade <= b) discard;
   vec3 N = normalize(gl_FrontFacing ? vNormal : -vNormal);
   vec3 L = normalize(vec3(-0.55, 0.75, -0.35));

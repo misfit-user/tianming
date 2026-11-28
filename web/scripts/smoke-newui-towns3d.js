@@ -5,6 +5,7 @@
 // 那几处的城外诸样（市镇、港、河埠与寺、祠庙、教堂、书院、堡、官署）与四郊村舍照地域换了样子，占地不比舆图留的大，港贴海面、河埠随地面，其余各处一样；
 // 治所画哪一样（seatKind）：中原照四档、京城、残城，那几处照当地的四档、都城，残破的画那里的残城（与府城一般大）。
 // 城郭近看、远看两份按舆图的钟换，显出、收掉也按钟淡（createTowns）：镜头停下来每座城只画一份、全显，不停在半抖点。
+// 林木、村舍小图换立体也按钟换（createScatter，小图那层的 aOut 随着写）：镜头停下来每处只是小图或只是立体；镜头停着一处不算。
 // 治所挨得太近的让开（fitSeats）：先摆的不动，后摆的缩、挪着让开，摆完不叠；寻常的实在摆不下就不画，也不占地。
 // 模块是 ES 模块、引着 three：拷进临时目录（目录标成 ES 模块），three 取仓里 vendor 的那份放进临时目录的 node_modules。
 'use strict';
@@ -189,6 +190,94 @@ function badVertices(geometry) {
     check(look(2000) === 0, `远了一处也不画：${look(2000)}`);
     check(look(75) === 40, '拉回来又画上');
     sc.dispose();
+
+    // 林木、村舍小图换立体也按舆图的钟换（SCATTER_PX 两道门槛、LOD_FADE 秒）：换的那一会儿立体以几成画，小图那层（aOut）按同一个数淡出；
+    // 镜头停下来每处只是小图或只是立体，不停在半透明、半抖点；两道门槛之间照上一帧；镜头停着一处不算、不重传，之后接着照记着的换；
+    // 出了镜头、一下拉远的，小图全显；拍一张（不给钟）按门槛正中直接取，不动活舆图记着的；换过一批都重取
+    const [Q0, Q1] = t.SCATTER_PX, SF = t.LOD_FADE, QM = (Q0 + Q1) / 2;
+    const sv = t.createScatter(shared, { pine: 0.8 });
+    const aOut = new THREE.BufferAttribute(new Uint8Array(3), 1, true);
+    sv.set([{ kind: 'pine', x: 500, z: 500, h: 0.05, yaw: 0, size: 1.5, si: 0 }, { kind: 'pine', x: 2500, z: 500, h: 0.05, yaw: 0, size: 1.5, si: 2 }], aOut);
+    const pineMesh = sv.group.children[0], sFade = pineMesh.geometry.getAttribute('aFade');
+    const aimAt = (px) => {
+      const d = 1.5 * shared.uPx.value / px;
+      cam.position.set(500, 1 + d * Math.cos(0.8), 500 + d * Math.sin(0.8));
+      cam.lookAt(500, 1, 500);
+    };
+    const step = (px, now) => {
+      aimAt(px);
+      sv.update(cam, now);
+      const n = pineMesh.geometry.instanceCount;
+      return { n, t: n ? sFade.array[1] : 0, out: aOut.array[0] / 255, fading: sv.stats.fading };
+    };
+    const said = (r) => `立体 ${r.n} 成数 ${r.t.toFixed(3)} 小图淡出 ${r.out.toFixed(3)} 正换着 ${r.fading}`;
+    let q = step(30, 10);
+    check(q.n === 1 && q.t === 1 && q.out === 1 && q.fading === 0, `头一帧大过门槛：直接画立体、小图淡尽（${said(q)}）`);
+    q = step(QM, 10.016);
+    check(q.n === 1 && q.t === 1 && q.out === 1, `退到两道门槛之间：仍画立体（${said(q)}）`);
+    q = step(Q0 - 2, 10.032);
+    check(q.n === 1 && q.t === 1, `刚窄过 ${Q0} 像素：这一帧起换（${said(q)}）`);
+    let sv0 = sFade.version, ov0 = aOut.version;
+    aOut.clearUpdateRanges();
+    q = step(Q0 - 2, 10.032 + SF / 2);
+    check(q.n === 1 && Math.abs(q.t - 0.5) < 0.01 && Math.abs(q.out - 0.5) < 0.01 && q.fading === 1, `换到一半：立体画五成、小图显五成（${said(q)}）`);
+    check(sFade.version > sv0 && aOut.version > ov0 && aOut.updateRanges.length === 1 && aOut.updateRanges[0].start === 0 && aOut.updateRanges[0].count === 1,
+      `换着的那一会儿：立体的成数、小图那层都重传（小图只传改了的那一个：${JSON.stringify(aOut.updateRanges)}）`);
+    sv0 = sFade.version; ov0 = aOut.version;
+    step(Q0 - 2, 10.032 + SF / 2);
+    check(sFade.version === sv0 && aOut.version === ov0, '镜头不动、钟也没走：不重传');
+    q = step(30, 10.032 + SF * 2 / 3);
+    check(q.n === 1 && Math.abs(q.t - 1 / 3) < 0.01 && Math.abs(q.out - 1 / 3) < 0.01, `正换着又拉近：从换到的三成三往回走，不跳（${said(q)}）`);
+    q = step(30, 10.032 + SF * 2 / 3 + SF + 0.01);
+    check(q.n === 1 && q.t === 1 && q.out === 1 && q.fading === 0, `换回去了：只画立体、小图淡尽（${said(q)}）`);
+    // 停在各样远近：停下来过了 LOD_FADE 秒，只是立体（小图淡尽）或只是小图（全显）
+    let tq = 20;
+    const rested = [];
+    for (const px of [30, 23, QM, Q0 + 0.5, 17, 15, 12, 15, 17, Q0 + 0.5, QM, Q1 - 0.5, 23, 30]) {
+      step(px, tq);
+      q = step(px, tq + SF + 0.01);
+      rested.push(`${px}:${q.n}`);
+      tq += 1;
+      check(q.fading === 0 && ((q.n === 1 && q.t === 1 && q.out === 1) || (q.n === 0 && q.out === 0)), `停在 ${px} 像素：只是立体或只是小图（${said(q)}）`);
+    }
+    check(rested[2] === `${QM}:1` && rested[3] === `${Q0 + 0.5}:1` && rested[4] === '17:0' && rested[9] === `${Q0 + 0.5}:0` && rested[10] === `${QM}:0` && rested[12] === '23:1',
+      `近了画立体、远了画小图，两道门槛之间照上一回：${rested.join(' ')}`);
+    // 镜头停着、没有正换着的：一处不算、不重传；停过几帧再挪，仍照记着的（不当成刚进镜头按门槛正中取）
+    step(QM, tq);
+    sv0 = sFade.version; ov0 = aOut.version;
+    for (let i = 1; i <= 4; i++) step(QM, tq + i * 0.016);
+    check(sv.stats.checked === 0 && sFade.version === sv0 && aOut.version === ov0, `镜头停着：一处不算（${sv.stats.checked}）、不重传`);
+    q = step(Q0 + 0.5, tq + 0.2);
+    check(sv.stats.checked > 0 && q.n === 1 && q.t === 1, `停过几帧再挪到 ${Q0 + 0.5} 像素：仍画立体（${said(q)}）`);
+    // 镜头转开：立体不画、小图全显；转回来在两道门槛之间，按门槛正中直接取
+    cam.position.set(3000, 60, 3000);
+    cam.lookAt(3100, 0, 3100);
+    sv.update(cam, tq + 0.3);
+    check(pineMesh.geometry.instanceCount === 0 && aOut.array[0] === 0 && sv.stats.out === 0, '镜头转开：立体不画，小图全显');
+    q = step(Q0 + 0.5, tq + 0.4);
+    check(q.n === 0 && q.out === 0 && q.fading === 0, `再转回来、在两道门槛之间：直接是小图（${said(q)}）`);
+    // 一下拉得很远（那一块最近处也窄过门槛八成，整块不算）：直接换回小图
+    step(30, tq + 1);
+    step(30, tq + 1 + SF + 0.01);
+    q = step(8, tq + 2);
+    check(q.n === 0 && q.out === 0, `一下拉到 8 像素：直接换回小图（${said(q)}）`);
+    // 拍一张（不给钟）：照门槛正中取；拍完回到活舆图仍照记着的画
+    q = step(Q0 + 0.5, tq + 3);
+    aimAt(30);
+    sv.update(cam);
+    check(pineMesh.geometry.instanceCount === 1 && aOut.array[0] === 255 && sv.stats.fading === 0, '拍一张：大过门槛正中直接画立体，小图淡尽');
+    q = step(Q0 + 0.5, tq + 3.016);
+    check(q.n === 0 && q.out === 0 && q.fading === 0, `拍完回到活舆图：仍是小图，没有换（${said(q)}）`);
+    check(aOut.array[2] === 0, '镜头里从没有过的那处：小图一直全显');
+    // 换过一批：小图那层先全显，头一帧都按门槛正中取
+    step(30, tq + 4);
+    q = step(30, tq + 4 + SF / 2);
+    check(q.out > 0.4 && q.out < 0.6, `换过一批之前正换着（${said(q)}）`);
+    sv.set([{ kind: 'pine', x: 500, z: 500, h: 0.05, yaw: 0, size: 1.5, si: 0 }], aOut);
+    check(aOut.array[0] === 0, '换过一批：小图那层先全显');
+    q = step(Q0 + 0.5, tq + 4.016);
+    check(q.n === 0 && q.out === 0 && q.fading === 0, `换过一批：头一帧按门槛正中取（${said(q)}）`);
+    sv.dispose();
 
     // 城郭近看、远看两份按舆图的钟换：过了门槛才换，换的那一会儿（LOD_FADE 秒）两份都画，近看那份的成数由 1 走到 0（或反过来）；
     // 显出、收掉也一样按钟淡入淡出。镜头停下来每座城只画一份、全显，没有停在半抖点的；两道门槛之间照上一帧；

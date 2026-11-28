@@ -1209,6 +1209,28 @@ export function fitSeats(seats, free = null) {
 // 先前按屏上宽在 48～66 像素那一段里交替，镜头停在那一段，那几座城就一直是半抖点的样子
 export const LOD_PX = [52, 60];
 export const LOD_FADE = 0.3;
+// 林木、村舍点景小图换立体那一段同样按钟换（门槛按小图的屏上大小，像素，到镜头的直线距离量）：画着小图的宽过 SCATTER_PX[1] 换立体，
+// 画着立体的窄过 SCATTER_PX[0] 换回小图，其间照上一帧；换的时候小图淡出、立体以抖点淡入，LOD_FADE 秒换完。
+// 先前按屏上宽在 16～24 像素那一段里交替，镜头停着，离镜头那么远的一圈林木村舍就一直是半透明的小图叠着半抖点的立体
+export const SCATTER_PX = [18, 22];
+// 一样「是不是」按钟走（城郭显没显、画不画近看那份，林木村舍画不画立体）：state[k] 1 或 0，since[k] 换成这样的时刻。
+// 上一帧没记着（fresh：刚进镜头、刚换过一批）就按两道门槛正中直接取，不交替；记着的过了门槛（是 1 的窄过 lo、是 0 的宽过 hi）才换，
+// LOD_FADE 秒里换完；正换着又折回去的，从换到的那一成往回走。回此刻「是」占几成
+function ease(state, since, k, fresh, v, lo, hi, now) {
+  if (fresh) {
+    state[k] = v >= (lo + hi) / 2 ? 1 : 0;
+    since[k] = -Infinity;
+    return state[k];
+  }
+  const on = state[k] === 1, want = on ? v >= lo : v > hi;
+  if (want !== on) {
+    const done = Math.min(1, (now - since[k]) / LOD_FADE);
+    since[k] = now - (1 - done) * LOD_FADE;
+    state[k] = want ? 1 : 0;
+  }
+  const a = Math.min(1, Math.max(0, (now - since[k]) / LOD_FADE));
+  return state[k] ? a : 1 - a;
+}
 const models = new Map();
 // 一样模型：{ geometry, far（远看那一份 { geometry, tris }，没有为 null）, hw 城墙外沿半宽（摆地标、定多大开始显）,
 // north 北沿, south 南沿（连瓮城、护城河、关厢，从模型原点量起）, radius 外接球半径, tris 三角形数 }
@@ -1244,11 +1266,11 @@ export function createTowns(shared) {
   const group = new THREE.Group();
   const layers = new Map();
   // 一份几何一个网格；mode 0 只此一份、1 近看那份、2 远看那份（着色器按它定换份时的抖点）
-  function part(geometry, model, mode, tris) {
+  function part(geometry, mode, tris) {
     const geo = new THREE.InstancedBufferGeometry();
     for (const k of ['position', 'normal', 'aColor']) geo.setAttribute(k, geometry.getAttribute(k));
     const mat = new THREE.ShaderMaterial({
-      uniforms: { ...shared, uSize: { value: model.hw * 2 }, uPart: { value: mode } },
+      uniforms: { ...shared, uPart: { value: mode } },
       vertexShader: townVertex, fragmentShader: townFragment, side: THREE.DoubleSide
     });
     const mesh = new THREE.Mesh(geo, mat);
@@ -1261,7 +1283,7 @@ export function createTowns(shared) {
   function layerFor(kind) {
     if (layers.has(kind)) return layers.get(kind);
     const model = townModel(kind);
-    const parts = model.far ? [part(model.geometry, model, 1, model.tris), part(model.far.geometry, model, 2, model.far.tris)] : [part(model.geometry, model, 0, model.tris)];
+    const parts = model.far ? [part(model.geometry, 1, model.tris), part(model.far.geometry, 2, model.far.tris)] : [part(model.geometry, 0, model.tris)];
     // 每座另记：vis 显着（1）还是收着（0）、visSince 换成这样的时刻；near、since 同样记画着近看那份（1）还是远看那份（0）；
     // seen 上回在镜头里记它是第几帧（frame）
     const rec = { model, parts, items: [], vis: null, visSince: null, near: null, since: null, seen: null };
@@ -1302,24 +1324,6 @@ export function createTowns(shared) {
     p.sig = (Math.imul(p.sig, 31) + Math.round(t * 255) * 256 + Math.round(show * 255)) | 0;
   };
   let frame = 1, fading = 0;                      // frame 从 1 起：刚换过一批城时 seen 全是 0，头一帧就算「上一帧没记着」
-  // 一样「是不是」按钟走（显没显、画不画近看那份）：state[k] 1 或 0，since[k] 换成这样的时刻。上一帧没记着（fresh：刚进镜头、刚换过一批城）
-  // 就按两道门槛正中直接取，不交替；记着的过了门槛（是 1 的窄过 lo、是 0 的宽过 hi）才换，LOD_FADE 秒里换完；
-  // 正换着又折回去的，从换到的那一成往回走。回此刻「是」占几成
-  function ease(state, since, k, fresh, v, lo, hi, now) {
-    if (fresh) {
-      state[k] = v >= (lo + hi) / 2 ? 1 : 0;
-      since[k] = -Infinity;
-      return state[k];
-    }
-    const on = state[k] === 1, want = on ? v >= lo : v > hi;
-    if (want !== on) {
-      const done = Math.min(1, (now - since[k]) / LOD_FADE);
-      since[k] = now - (1 - done) * LOD_FADE;
-      state[k] = want ? 1 : 0;
-    }
-    const a = Math.min(1, Math.max(0, (now - since[k]) / LOD_FADE));
-    return state[k] ? a : 1 - a;
-  }
   const frustum = new THREE.Frustum(), pv = new THREE.Matrix4(), sphere = new THREE.Sphere();
   function update(camera, now) {
     const live = Number.isFinite(now);
@@ -1378,21 +1382,28 @@ export function createTowns(shared) {
   };
 }
 
-// 一层林木、村舍的立体版：全图几万处，按四十八个世界单位一块分好。每帧只挑镜头里、又近到开始显的那几块，把块里的实例整段拷进缓冲，
-// 挑出的块与上帧一样就不重传。k：各样「点景小图的大小 → 模型比例」。着色器里的屏上宽按点景小图的大小算（uSize = 1/k），
-// 所以 shared.uFadePx 与点景小图淡出的门槛（index.js 里小图那层的 uOutPx）是同一把尺子：小图淡出时立体的以抖点淡入，恰好接上。
-// set(list)：list 每项 { kind, x, z, h（落脚处地面高，0～1）, yaw, size（点景小图的大小） }，整层换过
+// 一层林木、村舍的立体版：全图几万处，按四十八个世界单位一块分好。每帧先挑镜头里、又近到可能该换立体的那几块，块里每处按钟记着画小图还是立体
+// （ease，门槛 SCATTER_PX，与城郭换份同一个钟），画立体的（连正换着的）写进实例缓冲，与上帧一样就不重传。k：各样「点景小图的大小 → 模型比例」。
+// set(list, sprites)：list 每项 { kind, x, z, h（落脚处地面高，0～1）, yaw, size（点景小图的大小）, si（点景层里第几个小图，没有给 -1） }，整层换过；
+// sprites 是点景层（index.js spriteLayer）的 aOut（每个小图一字节：立体占几成），这里随换随写，小图按它淡出，与立体恰好接上。
+// update(camera, now)：now 是舆图的钟（秒）。方志卷首、案上绢图那样拍一张的不给 now：按两道门槛正中直接取，也不动活舆图记着的。
+// 活舆图上镜头没动、又没有正换着的，一处不算（几千处每帧都算一遍也要一两毫秒）
 export function createScatter(shared, k) {
   const group = new THREE.Group();
   const CH = 48;
   const parts = new Map();
-  let chunks = [], sent = null;
+  let chunks = [], gen = 0;
+  // 每处（下标即 list 里第几项）：near 画着立体（1）还是小图（0）、since 换成这样的时刻、seen 上回挑到它是第几帧
+  let near = new Uint8Array(0), since = new Float64Array(0), seen = new Uint32Array(0);
+  // 点景层的 aOut；lit 上一回写成不是 0 的那些小图，stamp 每个小图最近在第几回（tick）写过
+  let sprites = null, lit = [], next = [], stamp = new Uint32Array(0), tick = 0;
+  let frame = 1, fading = 0, checked = 0, still = null;
   function partFor(kind) {
     if (parts.has(kind)) return parts.get(kind);
     const model = townModel(kind), geo = new THREE.InstancedBufferGeometry();
     for (const a of ['position', 'normal', 'aColor']) geo.setAttribute(a, model.geometry.getAttribute(a));
     const mat = new THREE.ShaderMaterial({
-      uniforms: { ...shared, uSize: { value: 1 / k[kind] }, uPart: { value: 3 } },
+      uniforms: { ...shared, uPart: { value: 0 } },
       vertexShader: townVertex, fragmentShader: townFragment, side: THREE.DoubleSide
     });
     const mesh = new THREE.Mesh(geo, mat);
@@ -1400,100 +1411,144 @@ export function createScatter(shared, k) {
     mesh.renderOrder = 18;
     mesh.visible = false;
     group.add(mesh);
-    const p = { kind, model, geo, mesh, cap: 0, base: null, ys: null, total: 0, n: 0 };
+    const p = { kind, model, geo, mesh, cap: 0, base: null, ys: null, fade: null, total: 0, n: 0, sig: 0, sent: null };
     parts.set(kind, p);
     return p;
   }
-  function set(list) {
+  function set(list, aOut = null) {
     const grid = new Map(), totals = new Map();
-    for (const it of list) {
-      if (!k[it.kind]) continue;
+    list.forEach((it, id) => {
+      if (!k[it.kind]) return;
       const key = Math.floor(it.x / CH) * 4096 + Math.floor(it.z / CH);
       if (!grid.has(key)) grid.set(key, []);
-      grid.get(key).push(it);
+      grid.get(key).push({ it, id });
       totals.set(it.kind, (totals.get(it.kind) || 0) + 1);
-    }
+    });
     for (const [kind, n] of totals) {
       const p = partFor(kind);
       if (n <= p.cap) continue;
       p.cap = n;
       p.base = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3);
       p.ys = new THREE.InstancedBufferAttribute(new Float32Array(n * 2), 2);
-      p.base.setUsage(THREE.DynamicDrawUsage);
-      p.ys.setUsage(THREE.DynamicDrawUsage);
+      p.fade = new THREE.InstancedBufferAttribute(new Float32Array(n * 2), 2);
+      for (const a of [p.base, p.ys, p.fade]) a.setUsage(THREE.DynamicDrawUsage);
       p.geo.setAttribute('aBase', p.base);
       p.geo.setAttribute('aYS', p.ys);
+      p.geo.setAttribute('aFade', p.fade);
     }
     for (const p of parts.values()) p.total = totals.get(p.kind) || 0;
     chunks = [];
     for (const items of grid.values()) {
       let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity, h0 = Infinity, h1 = -Infinity, size = 0, reach = 0;
       const by = new Map();
-      for (const it of items) {
+      for (const e of items) {
+        const it = e.it;
         x0 = Math.min(x0, it.x); x1 = Math.max(x1, it.x); z0 = Math.min(z0, it.z); z1 = Math.max(z1, it.z);
         h0 = Math.min(h0, it.h); h1 = Math.max(h1, it.h);
         size = Math.max(size, it.size);
         reach = Math.max(reach, townModel(it.kind).radius * k[it.kind] * it.size);
         if (!by.has(it.kind)) by.set(it.kind, []);
-        by.get(it.kind).push(it);
+        by.get(it.kind).push(e);
       }
       const data = [];
       for (const [kind, arr] of by) {
-        const base = new Float32Array(arr.length * 3), ys = new Float32Array(arr.length * 2);
-        arr.forEach((it, i) => {
+        const n = arr.length, base = new Float32Array(n * 3), ys = new Float32Array(n * 2), ids = new Int32Array(n), sizes = new Float32Array(n), si = new Int32Array(n);
+        arr.forEach(({ it, id }, i) => {
           base[i * 3] = it.x; base[i * 3 + 1] = it.h; base[i * 3 + 2] = it.z;
           ys[i * 2] = it.yaw || 0; ys[i * 2 + 1] = k[kind] * it.size;
+          ids[i] = id; sizes[i] = it.size; si[i] = Number.isInteger(it.si) ? it.si : -1;
         });
-        data.push({ part: parts.get(kind), base, ys, n: arr.length });
+        data.push({ part: parts.get(kind), base, ys, ids, sizes, si, n });
       }
       chunks.push({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, r: Math.hypot(x1 - x0, z1 - z0) / 2 + reach, hm: (h0 + h1) / 2, hh: (h1 - h0) / 2, size, data });
     }
-    sent = null;
+    near = new Uint8Array(list.length); since = new Float64Array(list.length); seen = new Uint32Array(list.length);
+    sprites = aOut;
+    if (aOut) { aOut.array.fill(0); aOut.needsUpdate = true; }   // 小图那层先全显（换过一批都按门槛正中重取）
+    stamp = new Uint32Array(aOut ? aOut.count : 0);
+    lit = []; next = [];
+    gen++;
+    still = null;
   }
-  const frustum = new THREE.Frustum(), pv = new THREE.Matrix4(), sphere = new THREE.Sphere(), pass = [];
-  function update(camera) {
+  // 画立体的一处写进实例缓冲：t 立体占几成；sig 记这一帧挑了哪些、各到几成
+  const put = (p, d, j, id, t) => {
+    const n = p.n++;
+    p.base.array[n * 3] = d.base[j * 3]; p.base.array[n * 3 + 1] = d.base[j * 3 + 1]; p.base.array[n * 3 + 2] = d.base[j * 3 + 2];
+    p.ys.array[n * 2] = d.ys[j * 2]; p.ys.array[n * 2 + 1] = d.ys[j * 2 + 1];
+    p.fade.array[n * 2] = 1; p.fade.array[n * 2 + 1] = t;
+    p.sig = (Math.imul(p.sig, 31) + id + 1) | 0;
+    p.sig = (Math.imul(p.sig, 31) + Math.round(t * 255)) | 0;
+  };
+  const frustum = new THREE.Frustum(), pv = new THREE.Matrix4(), sphere = new THREE.Sphere(), at = new THREE.Vector3();
+  function update(camera, now) {
+    const live = Number.isFinite(now);
     camera.updateMatrixWorld();
     pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    const relief = shared.uRelief.value, uPx = shared.uPx.value, cam = camera.position;
+    // 镜头没动、没有正换着的：照上一帧（也不记这一帧，免得下帧把这些都当成刚进镜头）
+    if (live && still && !fading && still.relief === relief && still.px === uPx && still.pv.equals(pv)) { checked = 0; return; }
+    if (live) frame++;
+    tick++;
+    fading = 0;
+    checked = 0;
     frustum.setFromProjectionMatrix(pv);
-    const relief = shared.uRelief.value, uPx = shared.uPx.value, lo = shared.uFadePx.value.x * 0.9, cam = camera.position;
-    pass.length = 0;
-    let sig = 0;
+    const [lo, hi] = SCATTER_PX, mid = (lo + hi) / 2;
+    for (const p of parts.values()) { p.n = 0; p.sig = gen; }
+    const arr = sprites ? sprites.array : null;
+    let a0 = Infinity, a1 = -1;                  // 这一回点景层改了哪一段
+    next.length = 0;
     for (let i = 0; i < chunks.length; i++) {
       const c = chunks[i];
       sphere.center.set(c.x, c.hm * relief, c.z);
       sphere.radius = c.r + c.hh * relief;
       if (!frustum.intersectsSphere(sphere)) continue;
-      if (c.size * uPx / Math.max(cam.distanceTo(sphere.center) - sphere.radius, 1) < lo) continue;
-      pass.push(c);
-      sig = (Math.imul(sig, 31) + i + 1) | 0;
-    }
-    sig = (Math.imul(sig, 7) + pass.length) | 0;
-    if (sig === sent) return;
-    sent = sig;
-    for (const p of parts.values()) p.n = 0;
-    for (const c of pass) {
+      // 块里最近那处也窄过换回小图门槛的八成：一处也不画立体（刚窄过门槛的那些还在算，淡得出去）
+      if (c.size * uPx / Math.max(cam.distanceTo(sphere.center) - sphere.radius, 1) < lo * 0.8) continue;
       for (const d of c.data) {
-        const p = d.part;
-        p.base.array.set(d.base, p.n * 3);
-        p.ys.array.set(d.ys, p.n * 2);
-        p.n += d.n;
+        for (let j = 0; j < d.n; j++) {
+          const id = d.ids[j];
+          at.set(d.base[j * 3], d.base[j * 3 + 1] * relief, d.base[j * 3 + 2]);
+          const px = d.sizes[j] * uPx / Math.max(cam.distanceTo(at), 1);
+          checked++;
+          let t;
+          if (live) {
+            const fresh = seen[id] !== frame - 1;
+            seen[id] = frame;
+            t = ease(near, since, id, fresh, px, lo, hi, now);
+          } else t = px >= mid ? 1 : 0;
+          if (t > 0) put(d.part, d, j, id, t);
+          if (live && now - since[id] < LOD_FADE) fading++;          // 正换着（刚换的那一帧成数还是整的，也算）
+          const s = d.si[j];
+          if (!arr || s < 0) continue;
+          const v = Math.round(t * 255);
+          stamp[s] = tick;
+          if (v) next.push(s);
+          if (arr[s] !== v) { arr[s] = v; if (s < a0) a0 = s; if (s > a1) a1 = s; }
+        }
       }
     }
+    // 上一回画着立体、这一回没挑到的（出了镜头、远了）：小图全显
+    if (arr) for (const s of lit) if (stamp[s] !== tick && arr[s]) { arr[s] = 0; if (s < a0) a0 = s; if (s > a1) a1 = s; }
+    [lit, next] = [next, lit];
+    if (arr && a1 >= a0) { sprites.addUpdateRange(a0, a1 - a0 + 1); sprites.needsUpdate = true; }
     for (const p of parts.values()) {
+      const sig = (Math.imul(p.sig, 7) + p.n) | 0;
+      if (p.n && sig !== p.sent) { p.base.needsUpdate = true; p.ys.needsUpdate = true; p.fade.needsUpdate = true; p.sent = sig; }
       p.geo.instanceCount = p.n;
       p.mesh.visible = p.n > 0;
-      if (p.n) { p.base.needsUpdate = true; p.ys.needsUpdate = true; }
     }
+    still = live ? { relief, px: uPx, pv: pv.clone() } : null;
   }
   return {
     group, set, update,
-    // 全图几处、分几块，上一帧挑出来画的几处、多少面；kinds 各样全图几处
+    // 全图几处、分几块，上一帧画立体的几处、多少面，其中正换着的几处（fading）、小图那层正淡着或淡尽了的几处（out）、
+    // 上一帧算了几处（checked，镜头停着为 0）；kinds 各样全图几处
     get stats() {
       let n = 0, drawn = 0, tris = 0;
       const kinds = {};
       for (const p of parts.values()) { n += p.total; drawn += p.geo.instanceCount; tris += p.geo.instanceCount * p.model.tris; if (p.total) kinds[p.kind] = p.total; }
-      return { instances: n, chunks: chunks.length, drawn, drawnTris: tris, kinds };
+      return { instances: n, chunks: chunks.length, drawn, drawnTris: tris, fading, out: lit.length, checked, kinds };
     },
-    dispose() { for (const p of parts.values()) { p.geo.dispose(); p.mesh.material.dispose(); } parts.clear(); chunks = []; }
+    dispose() { for (const p of parts.values()) { p.geo.dispose(); p.mesh.material.dispose(); } parts.clear(); chunks = []; sprites = null; lit = []; }
   };
 }
